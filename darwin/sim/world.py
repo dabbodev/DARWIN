@@ -1,0 +1,190 @@
+"""World container for DARWIN simulator state."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+from darwin.models.device import Device
+from darwin.models.hub import RegistryHub, TrafficHub
+from darwin.models.lane import LogicalLane
+from darwin.sim.event_log import EventLog
+from darwin.traffic.routing import attach_device, connect_neighbor
+
+
+@dataclass(slots=True)
+class World:
+    current_time: int = 0
+    devices: dict[str, Device] = field(default_factory=dict)
+    registry_hubs: dict[str, RegistryHub] = field(default_factory=dict)
+    traffic_hubs: dict[str, TrafficHub] = field(default_factory=dict)
+    lanes: dict[str, LogicalLane] = field(default_factory=dict)
+    events: list[str] = field(default_factory=list)
+    event_log: EventLog = field(default_factory=EventLog)
+    action_results: list[object] = field(default_factory=list)
+
+    def add_device(self, device: Device) -> None:
+        self.devices[device.device_id] = device
+
+    def add_registry_hub(self, hub: RegistryHub) -> None:
+        self.registry_hubs[hub.hub_id] = hub
+
+    def add_traffic_hub(self, hub: TrafficHub) -> None:
+        self.traffic_hubs[hub.hub_id] = hub
+
+    def create_registry_hub(
+        self,
+        hub_id: str,
+        scope_path: str,
+        parent_hub_id: str | None = None,
+    ) -> RegistryHub:
+        hub = RegistryHub(
+            hub_id=hub_id,
+            scope_path=scope_path,
+            parent_hub_id=parent_hub_id,
+        )
+        self.add_registry_hub(hub)
+        return hub
+
+    def create_traffic_hub(self, hub_id: str) -> TrafficHub:
+        hub = TrafficHub(hub_id=hub_id)
+        self.add_traffic_hub(hub)
+        return hub
+
+    def create_hybrid_hub(
+        self,
+        hub_id: str,
+        scope_path: str,
+        parent_hub_id: str | None = None,
+    ) -> tuple[RegistryHub, TrafficHub]:
+        registry_hub = self.create_registry_hub(
+            hub_id=hub_id,
+            scope_path=scope_path,
+            parent_hub_id=parent_hub_id,
+        )
+        traffic_hub = self.create_traffic_hub(hub_id)
+        return registry_hub, traffic_hub
+
+    def connect_traffic_hubs(self, from_hub_id: str, to_hub_id: str) -> None:
+        connect_neighbor(self.traffic_hubs[from_hub_id], self.traffic_hubs[to_hub_id])
+
+    def attach_device_to_traffic(self, device_id: str, traffic_hub_id: str) -> None:
+        attach_device(self.traffic_hubs[traffic_hub_id], self.devices[device_id])
+
+    def advance_time(self, ticks: int = 1) -> None:
+        if ticks < 0:
+            raise ValueError("ticks must be non-negative")
+        self.current_time += ticks
+
+    def log(self, message: str, event_type: str | None = None) -> None:
+        self.event_log.write(self.current_time, message, event_type=event_type)
+        self.events.append(self.event_log.lines[-1])
+
+    def snapshot(self, detailed: bool = False) -> dict[str, object]:
+        if detailed:
+            return self.detailed_snapshot()
+
+        return {
+            "time": self.current_time,
+            "devices": sorted(self.devices),
+            "registry_hubs": sorted(self.registry_hubs),
+            "traffic_hubs": sorted(self.traffic_hubs),
+            "lanes": sorted(self.lanes),
+        }
+
+    def detailed_snapshot(self) -> dict[str, object]:
+        return {
+            "current_time": self.current_time,
+            "devices": {
+                device_id: {
+                    "label": device.label,
+                    "passport_id": device.passport_id,
+                    "current_registry_hub": device.current_registry_hub,
+                    "current_traffic_hub": device.current_traffic_hub,
+                    "state": device.state,
+                    "checkpoint_tier": device.checkpoint_tier,
+                }
+                for device_id, device in sorted(self.devices.items())
+            },
+            "registry_hubs": {
+                hub_id: {
+                    "scope_path": hub.scope_path,
+                    "parent_hub_id": hub.parent_hub_id,
+                    "labels": dict(sorted(hub.labels.items())),
+                    "devices": {
+                        device_id: {
+                            "label": record.current_label,
+                            "requested_label": record.requested_label,
+                            "state": record.current_state,
+                            "attachment": record.current_attachment,
+                            "checkpoint_tier": record.checkpoint_tier,
+                        }
+                        for device_id, record in sorted(hub.devices.items())
+                    },
+                    "conflicts": {
+                        conflict_id: {
+                            "conflict_type": conflict.conflict_type,
+                            "requested_label": conflict.requested_label,
+                            "existing_device_id": conflict.existing_device_id,
+                            "requesting_device_id": conflict.requesting_device_id,
+                            "assigned_temp_label": conflict.assigned_temp_label,
+                            "status": conflict.status,
+                        }
+                        for conflict_id, conflict in sorted(hub.conflicts.items())
+                    },
+                    "quarantines": {
+                        device_id: {
+                            "reason": quarantine.reason,
+                            "source_hub_id": quarantine.source_hub_id,
+                            "status": quarantine.status,
+                        }
+                        for device_id, quarantine in sorted(hub.quarantines.items())
+                    },
+                }
+                for hub_id, hub in sorted(self.registry_hubs.items())
+            },
+            "traffic_hubs": {
+                hub_id: {
+                    "neighbors": sorted(hub.neighbors),
+                    "direct_attachments": {
+                        device_id: {
+                            "hub_id": record.hub_id,
+                            "status": record.status,
+                            "attachment_type": record.attachment_type,
+                        }
+                        for device_id, record in sorted(hub.direct_attachments.items())
+                    },
+                    "lanes": sorted(hub.lanes),
+                    "recommendations": [
+                        recommendation.recommendation_type
+                        for recommendation in hub.growth_recommendations
+                    ],
+                }
+                for hub_id, hub in sorted(self.traffic_hubs.items())
+            },
+            "lanes": {
+                lane_id: {
+                    "source": lane.source_device_id,
+                    "target": lane.target_device_id,
+                    "state": lane.state,
+                    "route": list(lane.current_route),
+                    "last_sent_sequence": lane.last_sent_sequence,
+                    "last_acknowledged_sequence": lane.last_acknowledged_sequence,
+                }
+                for lane_id, lane in sorted(self.lanes.items())
+            },
+            "recommendations": {
+                hub_id: [
+                    {
+                        "recommendation_id": recommendation.recommendation_id,
+                        "recommendation_type": recommendation.recommendation_type,
+                        "affected_hubs": list(recommendation.affected_hubs),
+                        "affected_branches": list(recommendation.affected_branches),
+                        "reason": recommendation.reason,
+                        "confidence": recommendation.confidence,
+                        "status": recommendation.status,
+                    }
+                    for recommendation in hub.growth_recommendations
+                ]
+                for hub_id, hub in sorted(self.traffic_hubs.items())
+            },
+        }

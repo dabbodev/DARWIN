@@ -1,0 +1,24 @@
+scenario_id: 006_mac_spoof_symbolic_failure
+name: Symbolic spoof failure
+setup:
+  registry_hubs:
+    - hub_id: hub_home_001
+      scope_path: global.family.david.home
+  devices:
+    - device_id: dev_A9F3
+      label: phone
+steps:
+  - action: register_device
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    label: phone
+  - action: verify_rolling_proof
+    registry_hub: hub_home_001
+    device: dev_A9F3
+    proof_valid: false
+assertions:
+  - type: quarantine_exists
+    registry_hub: hub_home_001
+    device: dev_A9F3
+  - type: event_seen
+    event_type: rolling_proof_failed

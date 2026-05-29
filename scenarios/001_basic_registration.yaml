@@ -1,0 +1,28 @@
+scenario_id: 001_basic_registration
+name: Basic registration
+setup:
+  registry_hubs:
+    - hub_id: hub_home_001
+      scope_path: global.family.david.home
+  devices:
+    - device_id: dev_A9F3
+      label: my_pc
+      checkpoint_tier: 2
+steps:
+  - action: register_device
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    label: my_pc
+  - action: resolve_label
+    registry_hub: hub_home_001
+    label: my_pc
+assertions:
+  - type: device_registered
+    registry_hub: hub_home_001
+    device: dev_A9F3
+  - type: label_maps_to
+    registry_hub: hub_home_001
+    label: my_pc
+    device: dev_A9F3
+  - type: event_seen
+    event_type: registered_device

@@ -1,0 +1,17 @@
+scenario_id: 007_congestion_bridge_recommendation
+name: Congestion bridge recommendation
+setup:
+  traffic_hubs:
+    - hub_id: traffic_home_001
+steps:
+  - action: record_cross_tree_packet
+    traffic_hub: traffic_home_001
+    from_branch: global.family.home
+    to_branch: global.family.office
+    count: 11
+  - action: recommend_traffic_bridge
+    traffic_hub: traffic_home_001
+assertions:
+  - type: recommendation_exists
+    traffic_hub: traffic_home_001
+    recommendation_type: create_traffic_bridge

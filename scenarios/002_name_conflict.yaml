@@ -1,0 +1,32 @@
+scenario_id: 002_name_conflict
+name: Name conflict
+setup:
+  registry_hubs:
+    - hub_id: hub_home_001
+      scope_path: global.family.david.home
+  devices:
+    - device_id: dev_A9F3
+      label: my_pc
+    - device_id: dev_B2C8
+      label: my_pc
+steps:
+  - action: register_device
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    label: my_pc
+  - action: register_device
+    device: dev_B2C8
+    registry_hub: hub_home_001
+    label: my_pc
+assertions:
+  - type: label_maps_to
+    registry_hub: hub_home_001
+    label: my_pc
+    device: dev_A9F3
+  - type: label_maps_to
+    registry_hub: hub_home_001
+    label: my_pc_temp_B2C8
+    device: dev_B2C8
+  - type: conflict_exists
+    registry_hub: hub_home_001
+    conflict_type: label_conflict
