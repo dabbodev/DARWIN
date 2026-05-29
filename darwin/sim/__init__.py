@@ -13,6 +13,7 @@ from darwin.sim.scenarios import (
     validate_scenario_dict,
     validate_scenario_file,
 )
+from darwin.sim.visualize import scenario_result_to_mermaid, snapshot_to_mermaid, world_to_mermaid
 from darwin.sim.world import World
 
 __all__ = [
@@ -29,6 +30,9 @@ __all__ = [
     "load_scenario_file",
     "run_scenario",
     "run_scenario_dict",
+    "scenario_result_to_mermaid",
+    "snapshot_to_mermaid",
     "validate_scenario_dict",
     "validate_scenario_file",
+    "world_to_mermaid",
 ]

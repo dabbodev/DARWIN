@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 import darwin
-from darwin.sim.export import export_events, export_result, export_snapshot
+from darwin.sim.export import export_events, export_mermaid, export_result, export_snapshot
 from darwin.sim.runner import ScenarioRunResult, run_scenario
 from darwin.sim.scenarios import (
     ScenarioLoadError,
@@ -52,6 +52,21 @@ def build_parser() -> argparse.ArgumentParser:
         metavar="PATH",
         help="write the full scenario result summary JSON to PATH",
     )
+    run_parser.add_argument(
+        "--export-mermaid",
+        metavar="PATH",
+        help="write a Mermaid topology diagram to PATH",
+    )
+    run_parser.add_argument(
+        "--no-mermaid-devices",
+        action="store_true",
+        help="omit attached device nodes from Mermaid export",
+    )
+    run_parser.add_argument(
+        "--no-mermaid-lanes",
+        action="store_true",
+        help="omit logical lane route comments from Mermaid export",
+    )
 
     list_parser = subparsers.add_parser("list-scenarios", help="list available scenarios")
     list_parser.add_argument(
@@ -83,6 +98,9 @@ def main(argv: list[str] | None = None) -> int:
             export_snapshot_path=args.export_snapshot,
             export_events_path=args.export_events,
             export_result_path=args.export_result,
+            export_mermaid_path=args.export_mermaid,
+            include_mermaid_devices=not args.no_mermaid_devices,
+            include_mermaid_lanes=not args.no_mermaid_lanes,
         )
 
     if args.command == "list-scenarios":
@@ -142,6 +160,9 @@ def _run_command(
     export_snapshot_path: str | None = None,
     export_events_path: str | None = None,
     export_result_path: str | None = None,
+    export_mermaid_path: str | None = None,
+    include_mermaid_devices: bool = True,
+    include_mermaid_lanes: bool = True,
 ) -> int:
     validation = validate_scenario_file(scenario_path)
     if not validation.passed:
@@ -158,6 +179,9 @@ def _run_command(
             export_snapshot_path=export_snapshot_path,
             export_events_path=export_events_path,
             export_result_path=export_result_path,
+            export_mermaid_path=export_mermaid_path,
+            include_mermaid_devices=include_mermaid_devices,
+            include_mermaid_lanes=include_mermaid_lanes,
         )
     except (OSError, ScenarioLoadError, KeyError, TypeError, ValueError) as exc:
         print(f"RUN FAILED {scenario_path}", file=sys.stderr)
@@ -174,6 +198,9 @@ def _write_exports(
     export_snapshot_path: str | None,
     export_events_path: str | None,
     export_result_path: str | None,
+    export_mermaid_path: str | None,
+    include_mermaid_devices: bool,
+    include_mermaid_lanes: bool,
 ) -> None:
     if export_snapshot_path is not None:
         export_snapshot(result, export_snapshot_path)
@@ -181,6 +208,13 @@ def _write_exports(
         export_events(result, export_events_path)
     if export_result_path is not None:
         export_result(result, export_result_path)
+    if export_mermaid_path is not None:
+        export_mermaid(
+            result,
+            export_mermaid_path,
+            include_devices=include_mermaid_devices,
+            include_lanes=include_mermaid_lanes,
+        )
 
 
 def _render_run_result(

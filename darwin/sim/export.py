@@ -1,4 +1,4 @@
-"""Deterministic JSON export helpers for scenario runs."""
+"""Deterministic export helpers for scenario runs."""
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from darwin.sim.runner import ScenarioRunResult
+from darwin.sim.visualize import scenario_result_to_mermaid, write_mermaid
 
 
 def event_log_to_jsonable(result: ScenarioRunResult) -> list[dict[str, object]]:
@@ -52,6 +53,23 @@ def export_snapshot(result: ScenarioRunResult, path: str | Path) -> None:
 
 def export_result(result: ScenarioRunResult, path: str | Path) -> None:
     write_json(path, result_to_jsonable(result))
+
+
+def export_mermaid(
+    result: ScenarioRunResult,
+    path: str | Path,
+    *,
+    include_devices: bool = True,
+    include_lanes: bool = True,
+) -> None:
+    write_mermaid(
+        path,
+        scenario_result_to_mermaid(
+            result,
+            include_devices=include_devices,
+            include_lanes=include_lanes,
+        ),
+    )
 
 
 def write_json(path: str | Path, data: Any) -> None:
