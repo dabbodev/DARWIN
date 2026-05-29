@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import darwin
+from darwin.sim.export import export_events, export_result, export_snapshot
 from darwin.sim.runner import ScenarioRunResult, run_scenario
 from darwin.sim.scenarios import (
     ScenarioLoadError,
@@ -36,6 +37,21 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="print the final deterministic JSON snapshot",
     )
+    run_parser.add_argument(
+        "--export-snapshot",
+        metavar="PATH",
+        help="write the final deterministic JSON snapshot to PATH",
+    )
+    run_parser.add_argument(
+        "--export-events",
+        metavar="PATH",
+        help="write the structured event log JSON to PATH",
+    )
+    run_parser.add_argument(
+        "--export-result",
+        metavar="PATH",
+        help="write the full scenario result summary JSON to PATH",
+    )
 
     list_parser = subparsers.add_parser("list-scenarios", help="list available scenarios")
     list_parser.add_argument(
@@ -61,7 +77,13 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "run":
-        return _run_command(args.scenario, dump_snapshot=args.dump_snapshot)
+        return _run_command(
+            args.scenario,
+            dump_snapshot=args.dump_snapshot,
+            export_snapshot_path=args.export_snapshot,
+            export_events_path=args.export_events,
+            export_result_path=args.export_result,
+        )
 
     if args.command == "list-scenarios":
         return _list_scenarios_command(Path(args.directory))
@@ -97,12 +119,12 @@ def _validate_scenario_command(scenario_path: str) -> int:
         suffix = f" - {result.name}" if result.name else ""
         print(f"VALID {heading}{suffix}")
         for warning in result.warnings:
-            print(f"warning: {warning}")
+            print(f"warning: {warning.render()}")
         return 0
 
     print(f"INVALID {scenario_path}", file=sys.stderr)
     for error in result.errors:
-        print(f"error: {error}", file=sys.stderr)
+        print(f"error: {error.render()}", file=sys.stderr)
     return 1
 
 
@@ -113,17 +135,30 @@ def _display_path(path: Path) -> Path:
         return path
 
 
-def _run_command(scenario_path: str, *, dump_snapshot: bool) -> int:
+def _run_command(
+    scenario_path: str,
+    *,
+    dump_snapshot: bool,
+    export_snapshot_path: str | None = None,
+    export_events_path: str | None = None,
+    export_result_path: str | None = None,
+) -> int:
     validation = validate_scenario_file(scenario_path)
     if not validation.passed:
         print(f"INVALID {scenario_path}", file=sys.stderr)
         for error in validation.errors:
-            print(f"error: {error}", file=sys.stderr)
+            print(f"error: {error.render()}", file=sys.stderr)
         return 1
 
     try:
         scenario = load_scenario(scenario_path)
         result = run_scenario(scenario)
+        _write_exports(
+            result,
+            export_snapshot_path=export_snapshot_path,
+            export_events_path=export_events_path,
+            export_result_path=export_result_path,
+        )
     except (OSError, ScenarioLoadError, KeyError, TypeError, ValueError) as exc:
         print(f"RUN FAILED {scenario_path}", file=sys.stderr)
         print(f"error: {exc}", file=sys.stderr)
@@ -131,6 +166,21 @@ def _run_command(scenario_path: str, *, dump_snapshot: bool) -> int:
 
     print(_render_run_result(result, scenario.name, dump_snapshot=dump_snapshot))
     return 0 if result.passed else 1
+
+
+def _write_exports(
+    result: ScenarioRunResult,
+    *,
+    export_snapshot_path: str | None,
+    export_events_path: str | None,
+    export_result_path: str | None,
+) -> None:
+    if export_snapshot_path is not None:
+        export_snapshot(result, export_snapshot_path)
+    if export_events_path is not None:
+        export_events(result, export_events_path)
+    if export_result_path is not None:
+        export_result(result, export_result_path)
 
 
 def _render_run_result(

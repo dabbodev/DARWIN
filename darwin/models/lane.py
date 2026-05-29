@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from darwin.models.route import RouteCostBreakdown
+
 
 @dataclass(slots=True)
 class LogicalLane:
@@ -16,6 +18,8 @@ class LogicalLane:
     lane_mode: str = "reliable_ordered"
     state: str = "opening"
     current_route: list[str] = field(default_factory=list)
+    route_total_cost: float | None = None
+    route_cost_breakdown: RouteCostBreakdown | None = None
     last_sent_sequence: int = 0
     last_acknowledged_sequence: int = 0
 
@@ -39,6 +43,9 @@ class LaneOpenResult:
     route: list[str] = field(default_factory=list)
     next_hop: str | None = None
     final_hub_id: str | None = None
+    route_status: str | None = None
+    total_cost: float | None = None
+    cost_breakdown: RouteCostBreakdown | None = None
 
 
 @dataclass(slots=True)
@@ -52,6 +59,9 @@ class LaneSendResult:
     route: list[str] = field(default_factory=list)
     next_hop: str | None = None
     final_hub_id: str | None = None
+    route_status: str | None = None
+    total_cost: float | None = None
+    cost_breakdown: RouteCostBreakdown | None = None
     last_sent_sequence: int | None = None
     last_acknowledged_sequence: int | None = None
     payload: Any = None

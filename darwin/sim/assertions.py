@@ -136,6 +136,26 @@ def _lane_sequence(
     )
 
 
+def _route_for_lane(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.traffic_hubs.get(str(assertion.get("traffic_hub")))
+    lane_id = str(assertion.get("lane"))
+    expected = [str(hub_id) for hub_id in assertion.get("expected_route", [])]
+    actual = None
+    if hub is not None and lane_id in hub.lanes:
+        actual = list(hub.lanes[lane_id].current_route)
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"{lane_id} route matches",
+        actual,
+    )
+
+
 def _event_seen(
     world: World,
     assertion_type: str,
@@ -228,6 +248,7 @@ _EVALUATORS = {
     "device_state": _device_state,
     "lane_state": _lane_state,
     "lane_sequence": _lane_sequence,
+    "route_for_lane": _route_for_lane,
     "event_seen": _event_seen,
     "conflict_exists": _conflict_exists,
     "quarantine_exists": _quarantine_exists,

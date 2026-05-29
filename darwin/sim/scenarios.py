@@ -7,6 +7,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from darwin.sim.validation import (
+    ScenarioValidationResult,
+    ValidationIssue,
+    validate_scenario_data,
+)
+
 
 class ScenarioLoadError(ValueError):
     """Raised when scenario input cannot be parsed."""
@@ -14,17 +20,6 @@ class ScenarioLoadError(ValueError):
 
 class YamlSupportMissingError(ScenarioLoadError):
     """Raised when a YAML file is requested but PyYAML is unavailable."""
-
-
-@dataclass(frozen=True, slots=True)
-class ScenarioValidationResult:
-    """Result from lightweight scenario structure validation."""
-
-    passed: bool
-    errors: tuple[str, ...] = ()
-    warnings: tuple[str, ...] = ()
-    scenario_id: str | None = None
-    name: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,76 +76,27 @@ def load_scenario_file(path: str | Path) -> dict[str, Any]:
 
 def validate_scenario_file(path: str | Path) -> ScenarioValidationResult:
     """Parse and validate a scenario file without executing it."""
+    scenario_path = Path(path)
     try:
-        data = load_scenario_file(path)
+        data = load_scenario_file(scenario_path)
     except (OSError, json.JSONDecodeError, ScenarioLoadError) as exc:
-        return ScenarioValidationResult(passed=False, errors=(str(exc),))
-    return validate_scenario_dict(data)
-
-
-def validate_scenario_dict(data: dict[str, Any]) -> ScenarioValidationResult:
-    """Validate the v0.1 scenario shape without running scenario steps."""
-    errors: list[str] = []
-    warnings: list[str] = []
-
-    if not isinstance(data, dict):
         return ScenarioValidationResult(
-            passed=False,
-            errors=("Scenario must be a mapping",),
+            valid=False,
+            errors=(
+                ValidationIssue(str(exc), location="$"),
+            ),
+            path=str(scenario_path),
         )
+    return validate_scenario_dict(data, path=str(scenario_path))
 
-    scenario_id = data.get("scenario_id") or data.get("id")
-    if not isinstance(scenario_id, str) or not scenario_id.strip():
-        errors.append("Scenario requires a non-empty scenario_id")
-        scenario_id = None
-    else:
-        scenario_id = scenario_id.strip()
 
-    raw_name = data.get("name")
-    if isinstance(raw_name, str) and raw_name.strip():
-        name = raw_name.strip()
-    elif scenario_id is not None:
-        name = _infer_name(scenario_id)
-        warnings.append(f"Scenario name missing; inferred {name!r}")
-    else:
-        name = None
-
-    if "setup" not in data:
-        errors.append("Scenario requires setup")
-    elif not isinstance(data["setup"], dict):
-        errors.append("Scenario setup must be a mapping")
-
-    steps = data.get("steps")
-    if not isinstance(steps, list):
-        errors.append("Scenario steps must be a list")
-    else:
-        for index, step in enumerate(steps, start=1):
-            if not isinstance(step, dict):
-                errors.append(f"Scenario step {index} must be a mapping")
-                continue
-            action = step.get("action")
-            if not isinstance(action, str) or not action.strip():
-                errors.append(f"Scenario step {index} requires a non-empty action")
-
-    assertions = data.get("assertions")
-    if not isinstance(assertions, list):
-        errors.append("Scenario assertions must be a list")
-    else:
-        for index, assertion in enumerate(assertions, start=1):
-            if not isinstance(assertion, dict):
-                errors.append(f"Scenario assertion {index} must be a mapping")
-                continue
-            assertion_type = assertion.get("type") or assertion.get("assert")
-            if not isinstance(assertion_type, str) or not assertion_type.strip():
-                errors.append(f"Scenario assertion {index} requires a non-empty type")
-
-    return ScenarioValidationResult(
-        passed=not errors,
-        errors=tuple(errors),
-        warnings=tuple(warnings),
-        scenario_id=scenario_id,
-        name=name,
-    )
+def validate_scenario_dict(
+    data: dict[str, Any],
+    *,
+    path: str | None = None,
+) -> ScenarioValidationResult:
+    """Validate the v0.1 scenario shape without running scenario steps."""
+    return validate_scenario_data(data, path=path)
 
 
 def list_scenario_files(directory: str | Path) -> list[Path]:

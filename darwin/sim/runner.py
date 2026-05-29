@@ -10,6 +10,7 @@ from typing import Any
 from darwin.models.checkpoint import make_checkpoint_packet
 from darwin.models.device import Device
 from darwin.models.hub import LocalDeviceRecord
+from darwin.models.route import LinkMetrics
 from darwin.registry.checkpoints import record_checkpoint as record_checkpoint_op
 from darwin.registry.operations import (
     register_device as register_device_op,
@@ -121,7 +122,11 @@ def _apply_setup(world: World, setup: dict[str, Any]) -> None:
         )
 
     for link_config in _configs(setup.get("links", []), "from"):
-        world.connect_traffic_hubs(str(link_config["from"]), str(link_config["to"]))
+        world.connect_traffic_hubs(
+            str(link_config["from"]),
+            str(link_config["to"]),
+            _link_metrics(link_config),
+        )
 
     for device_config in _configs(setup.get("devices", []), "device_id"):
         device = Device(
@@ -433,3 +438,12 @@ def _optional_str(value: Any) -> str | None:
 
 def _optional_int(value: Any) -> int | None:
     return None if value is None else int(value)
+
+
+def _link_metrics(link_config: dict[str, Any]) -> LinkMetrics:
+    return LinkMetrics(
+        latency_ms=int(link_config.get("latency_ms", 1)),
+        congestion=str(link_config.get("congestion", "low")),
+        trust=str(link_config.get("trust", "verified")),
+        stability=str(link_config.get("stability", "stable")),
+    )
