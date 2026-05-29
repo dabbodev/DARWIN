@@ -12,6 +12,7 @@
 - [ ] Architecture overview and release notes are present in `docs/`.
 - [ ] v0.2 roadmap is present in `docs/`.
 - [ ] Package version is confirmed as `0.1.0`.
+- [ ] Project metadata, README, and root `LICENSE` all identify the license as MIT.
 - [ ] Console script entry point `darwin-sim` is configured and usable.
 - [ ] No real cryptography, authentication, or networking claims are made.
 - [ ] Known limitations are listed in the README.

@@ -51,3 +51,15 @@ def test_version_consistency():
     assert darwin.__version__ == project_version
     assert f"## v{project_version}" in changelog
     assert f"v{project_version}" in release_notes
+
+
+def test_license_consistency():
+    pyproject = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    project = pyproject["project"]
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    license_text = (PROJECT_ROOT / "LICENSE").read_text(encoding="utf-8")
+
+    assert project["license"] == "MIT"
+    assert "License :: OSI Approved :: MIT License" in project["classifiers"]
+    assert "## License\n\nMIT. See `LICENSE`." in readme
+    assert license_text.startswith("MIT License\n\nCopyright (c) 2026 David Giles")
