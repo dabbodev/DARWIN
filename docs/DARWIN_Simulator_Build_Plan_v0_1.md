@@ -193,7 +193,6 @@ darwin_sim/
     002_name_conflict.yaml
     003_lane_open_and_send.yaml
     004_relocation_pause_resume.yaml
-    005_relocation_timeout.yaml
     006_mac_spoof_symbolic_failure.yaml
     007_congestion_bridge_recommendation.yaml
   tests/
@@ -1423,4 +1422,3 @@ In the travel metaphor:
 ```text
 The simulator is a tabletop railway map. The trains are not real yet, but the stations, tickets, detours, passports, delays, and dispatch rules should already make sense.
 ```
-

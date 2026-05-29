@@ -273,12 +273,17 @@ DARWIN/
   README.md
   pyproject.toml
   docs/
+    ARCHITECTURE_v0_1.md
     DARWIN_Design_Dossier_v0_1.md
     DARWIN_Identity_Trust_Authentication_v0_1.md
     DARWIN_Packet_Checkpoint_Lane_Protocol_v0_1.md
     DARWIN_Registry_Hub_Data_Model_v0_1.md
     DARWIN_Traffic_Hub_Routing_Model_v0_1.md
     DARWIN_Simulator_Build_Plan_v0_1.md
+    DEMO_GUIDE_v0_1.md
+    DEVELOPMENT.md
+    RELEASE_NOTES_v0_1.md
+    V0_2_ROADMAP.md
   darwin/
     __init__.py
     ids.py
@@ -326,12 +331,22 @@ DARWIN/
     006_mac_spoof_symbolic_failure.yaml
     007_congestion_bridge_recommendation.yaml
   tests/
-    test_registration.py
-    test_conflicts.py
-    test_lanes.py
-    test_relocation.py
-    test_routing.py
     test_auth_symbolic.py
+    test_checkpoints.py
+    test_growth_recommendations.py
+    test_logical_lanes.py
+    test_metrics.py
+    test_quarantine.py
+    test_registry_operations.py
+    test_registry_summaries.py
+    test_release_readiness.py
+    test_relocation.py
+    test_scenario_runner.py
+    test_scenario_suite.py
+    test_smoke.py
+    test_symbolic_trust.py
+    test_traffic_routing.py
+    test_v01_polish.py
 ```
 
 ## Quick Start
@@ -595,17 +610,22 @@ Repeated traffic between home and office branches produces a create_traffic_brid
 
 The following design documents should live in `docs/` and remain the source of truth until superseded:
 
-1. `DARWIN_Design_Dossier_v0_1.md`
-2. `DARWIN_Identity_Trust_Authentication_v0_1.md`
-3. `DARWIN_Packet_Checkpoint_Lane_Protocol_v0_1.md`
-4. `DARWIN_Registry_Hub_Data_Model_v0_1.md`
-5. `DARWIN_Traffic_Hub_Routing_Model_v0_1.md`
-6. `DARWIN_Simulator_Build_Plan_v0_1.md`
+1. `docs/ARCHITECTURE_v0_1.md`
+2. `docs/DARWIN_Design_Dossier_v0_1.md`
+3. `docs/DARWIN_Identity_Trust_Authentication_v0_1.md`
+4. `docs/DARWIN_Packet_Checkpoint_Lane_Protocol_v0_1.md`
+5. `docs/DARWIN_Registry_Hub_Data_Model_v0_1.md`
+6. `docs/DARWIN_Traffic_Hub_Routing_Model_v0_1.md`
+7. `docs/DARWIN_Simulator_Build_Plan_v0_1.md`
 
 For a concise command-by-command demo path, see `docs/DEMO_GUIDE_v0_1.md`.
 
 For development setup, local validation commands, and v0.1 contribution
 constraints, see `docs/DEVELOPMENT.md`.
+
+For v0.1 release notes, see `docs/RELEASE_NOTES_v0_1.md`.
+
+For the planned v0.2 direction, see `docs/V0_2_ROADMAP.md`.
 
 ## What v0.1 Is Not
 
@@ -691,7 +711,7 @@ Model behavior first. Add real cryptography and real networking later.
 
 ## License
 
-TBD.
+MIT. See `LICENSE`.
 
 ## Project Note
 

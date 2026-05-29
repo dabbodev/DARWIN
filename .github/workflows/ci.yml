@@ -37,5 +37,8 @@ jobs:
       - name: List and validate scenarios
         run: python -m darwin.cli.main list-scenarios
 
+      - name: Validate basic scenario
+        run: python -m darwin.cli.main validate-scenario scenarios/001_basic_registration.yaml
+
       - name: Run all scenarios
         run: python scripts/run_all_scenarios.py
