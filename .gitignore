@@ -1,23 +1,54 @@
-# Python
+# Python bytecode and caches
 __pycache__/
 *.py[cod]
+*$py.class
 *.egg-info/
+.eggs/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.pyre/
+.hypothesis/
 .coverage
+.coverage.*
 htmlcov/
+coverage.xml
+junit.xml
 
 # Environments
+.env
+.env.*
+!.env.example
 .venv/
 venv/
 env/
 
-# Build artifacts
+# Build and packaging artifacts
 build/
 dist/
+wheelhouse/
+pip-wheel-metadata/
+*.egg
+*.whl
+
+# Tooling
+.nox/
+.tox/
 
 # Simulator output
 out/
 snapshots/
 event_logs/
+
+# Local archives and exports
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
