@@ -8,6 +8,7 @@ from darwin.models.move import (
     FlowControlRecord,
     LanePauseResult,
     LaneResumeResult,
+    RelocationExpiryResult,
     RelocationRecord,
 )
 from darwin.traffic.metrics import record_lane_pause, record_lane_resume
@@ -135,6 +136,34 @@ def resume_lanes_after_relocation(
         device_id=device_id,
         resumed_lanes=resumed_lanes,
         routes=routes,
+    )
+
+
+def expire_relocation_hold(
+    traffic_hub: TrafficHub,
+    device_id: str,
+    current_time: int | None = None,
+) -> RelocationExpiryResult:
+    """Mark an unresolved relocation hold failed without resuming affected lanes."""
+    relocation = traffic_hub.relocations.get(device_id)
+    if relocation is None:
+        return RelocationExpiryResult(
+            action="no_active_relocation",
+            device_id=device_id,
+            reason="unknown_relocation",
+        )
+
+    failed_lanes = _affected_lane_ids(traffic_hub, device_id)
+    relocation.state = "failed"
+    relocation.updated_at = current_time
+    relocation.affected_lanes = list(failed_lanes)
+
+    return RelocationExpiryResult(
+        action="relocation_failed",
+        device_id=device_id,
+        failed_lanes=failed_lanes,
+        relocation=relocation,
+        reason="relocation_timeout",
     )
 
 

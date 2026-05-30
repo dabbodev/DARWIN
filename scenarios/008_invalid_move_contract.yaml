@@ -1,0 +1,65 @@
+scenario_id: 008_invalid_move_contract
+name: Invalid move contract keeps relocation paused
+setup:
+  registry_hubs:
+    - hub_id: registry_home
+      scope_path: global.family.home
+    - hub_id: registry_office
+      scope_path: global.family.office
+  traffic_hubs:
+    - hub_id: hub_1
+    - hub_id: hub_2
+    - hub_id: hub_3
+  links:
+    - from: hub_1
+      to: hub_2
+    - from: hub_2
+      to: hub_3
+  devices:
+    - device_id: dev_A9F3
+      label: source
+      traffic_hub: hub_1
+    - device_id: dev_B2C8
+      label: target
+      registry_hub: registry_home
+      traffic_hub: hub_3
+steps:
+  - action: open_lane
+    source: dev_A9F3
+    target: dev_B2C8
+    traffic_hub: hub_1
+    lane_id: lane_001
+  - action: send_lane_data
+    traffic_hub: hub_1
+    lane: lane_001
+    payload:
+      message: first
+  - action: mark_in_transit
+    device: dev_B2C8
+    registry_hub: registry_home
+  - action: pause_lanes_for_relocation
+    traffic_hub: hub_1
+    device: dev_B2C8
+  - action: create_invalid_move_contract
+    device: dev_B2C8
+    old_registry_hub: registry_home
+    new_registry_hub: registry_office
+    old_traffic_hub: hub_3
+    new_traffic_hub: hub_2
+assertions:
+  - type: latest_step_status
+    expected: move_contract_rejected
+  - type: lane_state
+    traffic_hub: hub_1
+    lane: lane_001
+    expected: paused_relocation
+  - type: flow_control_exists
+    traffic_hub: hub_1
+    lane: lane_001
+  - type: move_not_recorded
+    registry_hub: registry_home
+    device: dev_B2C8
+  - type: attachment_is
+    registry_hub: registry_home
+    device: dev_B2C8
+    expected_attachment: registry_home

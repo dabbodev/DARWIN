@@ -25,6 +25,9 @@ from darwin.registry.relocation import (
 from darwin.registry.relocation import (
     mark_in_transit as mark_in_transit_op,
 )
+from darwin.registry.security import (
+    detect_duplicate_device_claim as detect_duplicate_device_claim_op,
+)
 from darwin.registry.security import verify_rolling_proof as verify_rolling_proof_op
 from darwin.sim.assertions import AssertionResult, evaluate_assertions
 from darwin.sim.scenarios import Scenario, load_scenario
@@ -36,6 +39,9 @@ from darwin.traffic.metrics import (
 )
 from darwin.traffic.metrics import (
     record_cross_tree_packet as record_cross_tree_packet_op,
+)
+from darwin.traffic.relocation import (
+    expire_relocation_hold as expire_relocation_hold_op,
 )
 from darwin.traffic.relocation import (
     pause_lanes_for_relocation as pause_lanes_for_relocation_op,
@@ -160,8 +166,12 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         "record_checkpoint": _step_record_checkpoint,
         "mark_in_transit": _step_mark_in_transit,
         "pause_lanes_for_relocation": _step_pause_lanes_for_relocation,
+        "expire_relocation_hold": _step_expire_relocation_hold,
         "move_device": _step_move_device,
+        "create_invalid_move_contract": _step_create_invalid_move_contract,
+        "simulate_duplicate_device_claim": _step_simulate_duplicate_device_claim,
         "resume_lanes_after_relocation": _step_resume_lanes_after_relocation,
+        "attempt_lane_send": _step_send_lane_data,
         "verify_rolling_proof": _step_verify_rolling_proof,
         "record_cross_tree_packet": _step_record_cross_tree_packet,
         "recommend_traffic_bridge": _step_recommend_traffic_bridge,
@@ -297,6 +307,21 @@ def _step_pause_lanes_for_relocation(world: World, fields: dict[str, Any]) -> No
     )
 
 
+def _step_expire_relocation_hold(world: World, fields: dict[str, Any]) -> None:
+    hub = world.traffic_hubs[str(fields["traffic_hub"])]
+    current_time = _optional_int(fields.get("current_time"))
+    result = expire_relocation_hold_op(
+        hub,
+        str(fields["device"]),
+        current_time=world.current_time if current_time is None else current_time,
+    )
+    world.action_results.append(result)
+    world.log(
+        f"{result.action} for {result.device_id}: {result.failed_lanes}",
+        event_type=result.action,
+    )
+
+
 def _step_move_device(world: World, fields: dict[str, Any]) -> None:
     device_id = str(fields["device"])
     device = world.devices[device_id]
@@ -348,6 +373,58 @@ def _step_move_device(world: World, fields: dict[str, Any]) -> None:
     world.log(
         f"moved {device_id} from {old_traffic_hub.hub_id} to {new_traffic_hub.hub_id}",
         event_type="device_moved",
+    )
+
+
+def _step_create_invalid_move_contract(world: World, fields: dict[str, Any]) -> None:
+    device_id = str(fields["device"])
+    device = world.devices[device_id]
+    old_registry_hub = world.registry_hubs[str(fields["old_registry_hub"])]
+    new_registry_hub = world.registry_hubs[str(fields["new_registry_hub"])]
+    new_scope = str(fields.get("new_scope", new_registry_hub.scope_path))
+
+    old_record = old_registry_hub.devices.get(device_id)
+    passport_id = (
+        old_record.passport_id
+        if old_record is not None
+        else device.passport_id or f"passport_{device_id}"
+    )
+    contract = create_move_contract(
+        device_id=device_id,
+        passport_id=passport_id,
+        from_scope=old_registry_hub.scope_path,
+        to_scope=new_scope,
+        old_attachment=old_registry_hub.hub_id,
+        new_attachment=new_registry_hub.hub_id,
+        valid=False,
+        timestamp=world.current_time,
+    )
+    result = update_attachment_after_move(
+        old_registry_hub,
+        device_id,
+        new_attachment=new_registry_hub.hub_id,
+        new_scope=new_scope,
+        move_contract=contract,
+    )
+    world.action_results.append(result)
+    world.log(
+        f"{result.action} for {device_id}: {result.reason}",
+        event_type=result.action,
+    )
+
+
+def _step_simulate_duplicate_device_claim(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    result = detect_duplicate_device_claim_op(
+        hub,
+        str(fields["device"]),
+        claiming_attachment_id=str(fields["claiming_attachment"]),
+        current_time=world.current_time,
+    )
+    world.action_results.append(result)
+    world.log(
+        f"{result.action} for {result.device_id}: {result.claiming_attachment}",
+        event_type=result.action,
     )
 
 

@@ -1,0 +1,53 @@
+scenario_id: 009_duplicate_device_claim
+name: Duplicate device claim during relocation
+setup:
+  registry_hubs:
+    - hub_id: registry_home
+      scope_path: global.family.home
+  traffic_hubs:
+    - hub_id: hub_1
+    - hub_id: hub_2
+  links:
+    - from: hub_1
+      to: hub_2
+  devices:
+    - device_id: dev_A9F3
+      label: source
+      traffic_hub: hub_1
+    - device_id: dev_B2C8
+      label: target
+      registry_hub: registry_home
+      traffic_hub: hub_2
+steps:
+  - action: open_lane
+    source: dev_A9F3
+    target: dev_B2C8
+    traffic_hub: hub_1
+    lane_id: lane_001
+  - action: mark_in_transit
+    device: dev_B2C8
+    registry_hub: registry_home
+  - action: pause_lanes_for_relocation
+    traffic_hub: hub_1
+    device: dev_B2C8
+  - action: simulate_duplicate_device_claim
+    registry_hub: registry_home
+    device: dev_B2C8
+    claiming_attachment: registry_office
+assertions:
+  - type: latest_step_status
+    expected: duplicate_device_id_conflict
+  - type: conflict_exists
+    registry_hub: registry_home
+    conflict_type: duplicate_device_id
+  - type: attachment_is
+    registry_hub: registry_home
+    device: dev_B2C8
+    expected_attachment: registry_home
+  - type: lane_state
+    traffic_hub: hub_1
+    lane: lane_001
+    expected: paused_relocation
+  - type: flow_control_exists
+    traffic_hub: hub_1
+    lane: lane_001

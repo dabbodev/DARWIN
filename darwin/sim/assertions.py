@@ -109,6 +109,25 @@ def _lane_state(
     )
 
 
+def _lane_not_active(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.traffic_hubs.get(str(assertion.get("traffic_hub")))
+    lane_id = str(assertion.get("lane"))
+    actual = None
+    if hub is not None and lane_id in hub.lanes:
+        actual = hub.lanes[lane_id].state
+    return _result(
+        assertion_type,
+        actual is not None and actual != "active",
+        "not active",
+        f"{lane_id} is not active",
+        actual,
+    )
+
+
 def _lane_sequence(
     world: World,
     assertion_type: str,
@@ -132,6 +151,105 @@ def _lane_sequence(
         actual == expected,
         expected,
         f"{lane_id} sequence matches",
+        actual,
+    )
+
+
+def _flow_control_exists(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.traffic_hubs.get(str(assertion.get("traffic_hub")))
+    lane_id = str(assertion.get("lane"))
+    actual = hub is not None and lane_id in hub.flow_controls
+    return _result(assertion_type, actual, True, f"flow control exists: {lane_id}")
+
+
+def _flow_control_absent(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.traffic_hubs.get(str(assertion.get("traffic_hub")))
+    lane_id = str(assertion.get("lane"))
+    actual = hub is not None and lane_id not in hub.flow_controls
+    return _result(assertion_type, actual, True, f"flow control absent: {lane_id}")
+
+
+def _latest_step_status(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    expected = str(assertion.get("expected"))
+    latest_result = world.action_results[-1] if world.action_results else None
+    actual = getattr(latest_result, "action", None)
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"latest step status is {expected}",
+        actual,
+    )
+
+
+def _relocation_failed(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.traffic_hubs.get(str(assertion.get("traffic_hub")))
+    device_id = str(assertion.get("device"))
+    actual = None
+    if hub is not None and device_id in hub.relocations:
+        actual = hub.relocations[device_id].state
+    return _result(
+        assertion_type,
+        actual == "failed",
+        "failed",
+        f"{device_id} relocation failed",
+        actual,
+    )
+
+
+def _move_not_recorded(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    device_id = str(assertion.get("device"))
+    actual = None if hub is None else len(hub.moves.get(device_id, []))
+    return _result(
+        assertion_type,
+        actual == 0,
+        0,
+        f"{device_id} has no recorded moves",
+        actual,
+    )
+
+
+def _attachment_is(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    device_id = str(assertion.get("device"))
+    expected = str(assertion.get("expected_attachment"))
+    actual = None
+    if hub is not None:
+        attachment = hub.attachments.get(device_id)
+        if attachment is not None:
+            actual = attachment.current_attachment
+        elif device_id in hub.devices:
+            actual = hub.devices[device_id].current_attachment
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"{device_id} attachment is {expected}",
         actual,
     )
 
@@ -247,7 +365,14 @@ _EVALUATORS = {
     "label_maps_to": _label_maps_to,
     "device_state": _device_state,
     "lane_state": _lane_state,
+    "lane_not_active": _lane_not_active,
     "lane_sequence": _lane_sequence,
+    "flow_control_exists": _flow_control_exists,
+    "flow_control_absent": _flow_control_absent,
+    "latest_step_status": _latest_step_status,
+    "relocation_failed": _relocation_failed,
+    "move_not_recorded": _move_not_recorded,
+    "attachment_is": _attachment_is,
     "route_for_lane": _route_for_lane,
     "event_seen": _event_seen,
     "conflict_exists": _conflict_exists,
