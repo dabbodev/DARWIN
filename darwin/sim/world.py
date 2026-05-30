@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from darwin.models.device import Device
 from darwin.models.hub import RegistryHub, TrafficHub
@@ -85,8 +86,31 @@ class World:
             raise ValueError("ticks must be non-negative")
         self.current_time += ticks
 
-    def log(self, message: str, event_type: str | None = None) -> None:
-        self.event_log.write(self.current_time, message, event_type=event_type)
+    def log(
+        self,
+        message: str,
+        event_type: str | None = None,
+        *,
+        actor: str | None = None,
+        target: str | None = None,
+        device_id: str | None = None,
+        hub_id: str | None = None,
+        lane_id: str | None = None,
+        status: str | None = None,
+        data: dict[str, Any] | None = None,
+    ) -> None:
+        self.event_log.write(
+            self.current_time,
+            message,
+            event_type=event_type,
+            actor=actor,
+            target=target,
+            device_id=device_id,
+            hub_id=hub_id,
+            lane_id=lane_id,
+            status=status,
+            data=data,
+        )
         self.events.append(self.event_log.lines[-1])
 
     def snapshot(self, detailed: bool = False) -> dict[str, object]:

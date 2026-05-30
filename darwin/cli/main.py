@@ -8,7 +8,14 @@ import sys
 from pathlib import Path
 
 import darwin
-from darwin.sim.export import export_events, export_mermaid, export_result, export_snapshot
+from darwin.sim.export import (
+    export_events,
+    export_mermaid,
+    export_result,
+    export_snapshot,
+    export_timeline_json,
+    export_timeline_markdown,
+)
 from darwin.sim.runner import ScenarioRunResult, run_scenario
 from darwin.sim.scenarios import (
     ScenarioLoadError,
@@ -58,6 +65,36 @@ def build_parser() -> argparse.ArgumentParser:
         help="write a Mermaid topology diagram to PATH",
     )
     run_parser.add_argument(
+        "--export-timeline-json",
+        metavar="PATH",
+        help="write the structured event timeline JSON to PATH",
+    )
+    run_parser.add_argument(
+        "--export-timeline-md",
+        metavar="PATH",
+        help="write the structured event timeline Markdown to PATH",
+    )
+    run_parser.add_argument(
+        "--trace-event-type",
+        metavar="EVENT_TYPE",
+        help="include only timeline events with EVENT_TYPE",
+    )
+    run_parser.add_argument(
+        "--trace-device",
+        metavar="DEVICE_ID",
+        help="include only timeline events for DEVICE_ID",
+    )
+    run_parser.add_argument(
+        "--trace-lane",
+        metavar="LANE_ID",
+        help="include only timeline events for LANE_ID",
+    )
+    run_parser.add_argument(
+        "--trace-hub",
+        metavar="HUB_ID",
+        help="include only timeline events for HUB_ID",
+    )
+    run_parser.add_argument(
         "--no-mermaid-devices",
         action="store_true",
         help="omit attached device nodes from Mermaid export",
@@ -99,6 +136,12 @@ def main(argv: list[str] | None = None) -> int:
             export_events_path=args.export_events,
             export_result_path=args.export_result,
             export_mermaid_path=args.export_mermaid,
+            export_timeline_json_path=args.export_timeline_json,
+            export_timeline_markdown_path=args.export_timeline_md,
+            trace_event_type=args.trace_event_type,
+            trace_device=args.trace_device,
+            trace_lane=args.trace_lane,
+            trace_hub=args.trace_hub,
             include_mermaid_devices=not args.no_mermaid_devices,
             include_mermaid_lanes=not args.no_mermaid_lanes,
         )
@@ -161,6 +204,12 @@ def _run_command(
     export_events_path: str | None = None,
     export_result_path: str | None = None,
     export_mermaid_path: str | None = None,
+    export_timeline_json_path: str | None = None,
+    export_timeline_markdown_path: str | None = None,
+    trace_event_type: str | None = None,
+    trace_device: str | None = None,
+    trace_lane: str | None = None,
+    trace_hub: str | None = None,
     include_mermaid_devices: bool = True,
     include_mermaid_lanes: bool = True,
 ) -> int:
@@ -180,6 +229,12 @@ def _run_command(
             export_events_path=export_events_path,
             export_result_path=export_result_path,
             export_mermaid_path=export_mermaid_path,
+            export_timeline_json_path=export_timeline_json_path,
+            export_timeline_markdown_path=export_timeline_markdown_path,
+            trace_event_type=trace_event_type,
+            trace_device=trace_device,
+            trace_lane=trace_lane,
+            trace_hub=trace_hub,
             include_mermaid_devices=include_mermaid_devices,
             include_mermaid_lanes=include_mermaid_lanes,
         )
@@ -199,6 +254,12 @@ def _write_exports(
     export_events_path: str | None,
     export_result_path: str | None,
     export_mermaid_path: str | None,
+    export_timeline_json_path: str | None,
+    export_timeline_markdown_path: str | None,
+    trace_event_type: str | None,
+    trace_device: str | None,
+    trace_lane: str | None,
+    trace_hub: str | None,
     include_mermaid_devices: bool,
     include_mermaid_lanes: bool,
 ) -> None:
@@ -215,6 +276,16 @@ def _write_exports(
             include_devices=include_mermaid_devices,
             include_lanes=include_mermaid_lanes,
         )
+    timeline_filters = {
+        "event_type": trace_event_type,
+        "device_id": trace_device,
+        "lane_id": trace_lane,
+        "hub_id": trace_hub,
+    }
+    if export_timeline_json_path is not None:
+        export_timeline_json(result, export_timeline_json_path, **timeline_filters)
+    if export_timeline_markdown_path is not None:
+        export_timeline_markdown(result, export_timeline_markdown_path, **timeline_filters)
 
 
 def _render_run_result(

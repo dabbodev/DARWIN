@@ -8,20 +8,41 @@ from pathlib import Path
 from typing import Any
 
 from darwin.sim.runner import ScenarioRunResult
+from darwin.sim.timeline import (
+    export_timeline_json,
+    export_timeline_markdown,
+    filter_timeline,
+    scenario_result_to_timeline,
+    timeline_to_jsonable,
+    timeline_to_markdown,
+)
 from darwin.sim.visualize import scenario_result_to_mermaid, write_mermaid
+
+__all__ = [
+    "event_log_to_jsonable",
+    "snapshot_to_jsonable",
+    "result_to_jsonable",
+    "export_events",
+    "export_snapshot",
+    "export_result",
+    "export_mermaid",
+    "write_json",
+    "scenario_result_to_timeline",
+    "timeline_to_jsonable",
+    "timeline_to_markdown",
+    "filter_timeline",
+    "export_timeline_json",
+    "export_timeline_markdown",
+]
 
 
 def event_log_to_jsonable(result: ScenarioRunResult) -> list[dict[str, object]]:
     """Return structured event log entries in deterministic order."""
-    return [
-        {
-            "time": entry.time,
-            "event_type": entry.event_type,
-            "message": entry.message,
-            "line": entry.render(),
-        }
-        for entry in result.world.event_log.entries
-    ]
+    entries = result.world.event_log.entries
+    records = timeline_to_jsonable(scenario_result_to_timeline(result))
+    for record, entry in zip(records, entries, strict=True):
+        record["line"] = entry.render()
+    return records
 
 
 def snapshot_to_jsonable(result: ScenarioRunResult) -> dict[str, object]:
