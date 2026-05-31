@@ -1,5 +1,15 @@
 scenario_id: 002_name_conflict
 name: Name conflict
+category: registry
+description: Registers two devices with the same label and records the deterministic conflict handling.
+tags:
+  - registration
+  - label-conflict
+  - conflict
+demonstrates:
+  - Stable handling for duplicate label claims.
+  - Temporary label assignment for the second device.
+expected_result: The original label remains mapped to the first device and a label conflict is recorded.
 setup:
   registry_hubs:
     - hub_id: hub_home_001

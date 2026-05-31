@@ -1,5 +1,15 @@
 scenario_id: 009_duplicate_device_claim
 name: Duplicate device claim during relocation
+category: security
+description: Simulates a duplicate device claim while relocation is paused.
+tags:
+  - relocation
+  - duplicate-device
+  - conflict
+demonstrates:
+  - Duplicate device ID conflict detection.
+  - Attachment preservation during a disputed relocation.
+expected_result: A duplicate device conflict is recorded and the original attachment remains authoritative.
 setup:
   registry_hubs:
     - hub_id: registry_home

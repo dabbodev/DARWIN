@@ -80,3 +80,41 @@ setup:
 
 Unknown preset names fail validation at `use[n]`. Existing scenarios that do
 not use presets remain valid and run through the same setup path as before.
+
+## Library Metadata
+
+Scenarios can include optional top-level metadata for discovery and generated
+documentation:
+
+```yaml
+category: relocation
+description: Pauses a lane during relocation and resumes it on the new route.
+tags:
+  - relocation
+  - lane
+demonstrates:
+  - Lane pause and resume behavior during relocation.
+expected_result: The lane returns to active state.
+```
+
+Supported categories are `registry`, `traffic`, `lane`, `relocation`,
+`security`, `metrics`, `preset`, and `visualization`. Unknown categories warn
+during validation instead of failing.
+
+List scenario metadata from the CLI:
+
+```powershell
+python -m darwin.cli.main list-scenarios
+```
+
+Describe one scenario:
+
+```powershell
+python -m darwin.cli.main describe-scenario scenarios/004_relocation_pause_resume.yaml
+```
+
+Generate the Markdown index:
+
+```powershell
+python -m darwin.cli.main scenario-index
+```

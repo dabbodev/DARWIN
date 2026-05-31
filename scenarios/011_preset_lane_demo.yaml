@@ -1,5 +1,15 @@
 scenario_id: 011_preset_lane_demo
 name: Preset lane demo
+category: preset
+description: Uses a built-in two-branch setup preset to open a lane with minimal YAML.
+tags:
+  - preset
+  - lane
+  - two-branch-network
+demonstrates:
+  - Scenario setup expansion through use.
+  - Lane creation from preset-provided hubs and devices.
+expected_result: The preset expands successfully and the logical lane becomes active.
 use:
   - two_branch_network
 steps:

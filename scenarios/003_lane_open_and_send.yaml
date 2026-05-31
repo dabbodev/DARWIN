@@ -1,5 +1,15 @@
 scenario_id: 003_lane_open_and_send
 name: Lane open and send
+category: lane
+description: Opens a logical lane across traffic hubs and sends one payload.
+tags:
+  - lane
+  - traffic
+  - sequence
+demonstrates:
+  - Logical lane creation across a routed path.
+  - Sequence accounting after one send.
+expected_result: The lane is active and records one sent and acknowledged payload.
 setup:
   traffic_hubs:
     - hub_id: hub_1

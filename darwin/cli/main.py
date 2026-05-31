@@ -16,11 +16,16 @@ from darwin.sim.export import (
     export_timeline_json,
     export_timeline_markdown,
 )
+from darwin.sim.library import (
+    ScenarioDescription,
+    describe_scenario,
+    discover_scenario_metadata,
+    scenario_index_markdown,
+)
 from darwin.sim.presets import ScenarioPresetError, expand_scenario, list_builtin_presets
 from darwin.sim.runner import ScenarioRunResult, run_scenario
 from darwin.sim.scenarios import (
     ScenarioLoadError,
-    list_scenario_files,
     load_scenario,
     load_scenario_file,
     validate_scenario_file,
@@ -114,6 +119,22 @@ def build_parser() -> argparse.ArgumentParser:
         help="directory containing scenario files",
     )
 
+    describe_parser = subparsers.add_parser(
+        "describe-scenario",
+        help="describe a scenario file without running it",
+    )
+    describe_parser.add_argument("scenario", help="path to a YAML or JSON scenario file")
+
+    index_parser = subparsers.add_parser(
+        "scenario-index",
+        help="print a Markdown index of available scenarios",
+    )
+    index_parser.add_argument(
+        "--directory",
+        default=str(_default_scenarios_dir()),
+        help="directory containing scenario files",
+    )
+
     validate_parser = subparsers.add_parser(
         "validate-scenario",
         help="validate a scenario file without running it",
@@ -162,6 +183,12 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "validate-scenario":
         return _validate_scenario_command(args.scenario)
 
+    if args.command == "describe-scenario":
+        return _describe_scenario_command(args.scenario)
+
+    if args.command == "scenario-index":
+        return _scenario_index_command(Path(args.directory))
+
     if args.command == "list-presets":
         return _list_presets_command()
 
@@ -173,18 +200,16 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def _list_scenarios_command(directory: Path) -> int:
-    files = list_scenario_files(directory)
-    if not files:
+    metadata = discover_scenario_metadata(directory)
+    if not metadata:
         print(f"No scenarios found in {directory}")
         return 1
 
-    for path in files:
-        result = validate_scenario_file(path)
-        label = str(_display_path(path))
-        if result.scenario_id is not None:
-            label = f"{label}  {result.scenario_id}"
-            if result.name:
-                label = f"{label} - {result.name}"
+    for item in metadata:
+        path = _display_path(Path(item.path)) if item.path is not None else ""
+        label = f"{path}  {item.scenario_id}  {item.name}"
+        if item.category:
+            label = f"{label}  [{item.category}]"
         print(label)
     return 0
 
@@ -203,6 +228,27 @@ def _validate_scenario_command(scenario_path: str) -> int:
     for error in result.errors:
         print(f"error: {error.render()}", file=sys.stderr)
     return 1
+
+
+def _describe_scenario_command(scenario_path: str) -> int:
+    try:
+        description = describe_scenario(Path(scenario_path))
+    except (OSError, ScenarioLoadError) as exc:
+        print(f"DESCRIBE FAILED {scenario_path}", file=sys.stderr)
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    print(_render_scenario_description(description))
+    return 0 if description.validation_result.passed else 1
+
+
+def _scenario_index_command(directory: Path) -> int:
+    metadata = discover_scenario_metadata(directory)
+    if not metadata:
+        print(f"No scenarios found in {directory}", file=sys.stderr)
+        return 1
+    print(scenario_index_markdown(metadata), end="")
+    return 0
 
 
 def _list_presets_command() -> int:
@@ -235,6 +281,59 @@ def _render_expanded_scenario(expanded: dict[str, object]) -> str:
         return json.dumps(expanded, indent=2, sort_keys=True)
 
     return yaml.safe_dump(expanded, sort_keys=False)
+
+
+def _render_scenario_description(description: ScenarioDescription) -> str:
+    metadata = description.metadata
+    validation = description.validation_result
+    lines = [
+        f"Scenario: {metadata.scenario_id} - {metadata.name}",
+    ]
+    if metadata.path:
+        lines.append(f"Path: {_display_path(Path(metadata.path))}")
+    lines.extend(
+        [
+            f"Category: {metadata.category or '(none)'}",
+            f"Tags: {_format_list(metadata.tags)}",
+            f"Description: {metadata.description or '(none)'}",
+            "Demonstrates:",
+        ]
+    )
+    lines.extend(_format_bullets(metadata.demonstrates))
+    lines.extend(
+        [
+            f"Expected result: {metadata.expected_result or '(none)'}",
+            "Setup counts:",
+        ]
+    )
+    if description.setup_counts:
+        for section_name, count in description.setup_counts.items():
+            lines.append(f"- {section_name}: {count}")
+    else:
+        lines.append("- (none)")
+    lines.extend(
+        [
+            f"Steps: {description.step_count}",
+            f"Assertions: {description.assertion_count}",
+            f"Uses presets: {'yes' if description.uses_presets else 'no'}",
+            f"Validation: {'PASS' if validation.passed else 'FAIL'}",
+        ]
+    )
+    for warning in validation.warnings:
+        lines.append(f"warning: {warning.render()}")
+    for error in validation.errors:
+        lines.append(f"error: {error.render()}")
+    return "\n".join(lines)
+
+
+def _format_list(values: list[str]) -> str:
+    return ", ".join(values) if values else "(none)"
+
+
+def _format_bullets(values: list[str]) -> list[str]:
+    if not values:
+        return ["- (none)"]
+    return [f"- {value}" for value in values]
 
 
 def _display_path(path: Path) -> Path:

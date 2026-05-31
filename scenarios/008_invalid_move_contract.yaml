@@ -1,5 +1,15 @@
 scenario_id: 008_invalid_move_contract
 name: Invalid move contract keeps relocation paused
+category: relocation
+description: Rejects an invalid move contract and keeps relocation flow control active.
+tags:
+  - relocation
+  - move-contract
+  - validation
+demonstrates:
+  - Move contract validation.
+  - Relocation pause preservation after rejection.
+expected_result: The move contract is rejected and the lane remains paused with flow control retained.
 setup:
   registry_hubs:
     - hub_id: registry_home

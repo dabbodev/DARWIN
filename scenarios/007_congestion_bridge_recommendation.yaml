@@ -1,5 +1,15 @@
 scenario_id: 007_congestion_bridge_recommendation
 name: Congestion bridge recommendation
+category: metrics
+description: Records sustained cross-tree traffic and proposes a traffic bridge recommendation.
+tags:
+  - metrics
+  - recommendation
+  - cross-tree-traffic
+demonstrates:
+  - Traffic metric accumulation.
+  - Growth recommendation generation.
+expected_result: A create-traffic-bridge recommendation is proposed for the congested branch pair.
 setup:
   traffic_hubs:
     - hub_id: traffic_home_001

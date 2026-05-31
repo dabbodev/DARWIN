@@ -138,6 +138,18 @@ ASSERTION_REQUIRED_FIELDS = {
 }
 
 
+SUPPORTED_SCENARIO_CATEGORIES = {
+    "registry",
+    "traffic",
+    "lane",
+    "relocation",
+    "security",
+    "metrics",
+    "preset",
+    "visualization",
+}
+
+
 def validate_scenario_data(
     data: dict[str, Any],
     *,
@@ -184,6 +196,7 @@ def validate_scenario_data(
     else:
         name = None
 
+    _validate_metadata(data, errors, warnings)
     _validate_setup(data, errors)
     _validate_steps(data, errors)
     _validate_assertions(data, errors)
@@ -196,6 +209,64 @@ def validate_scenario_data(
         name=name,
         path=path,
     )
+
+
+def _validate_metadata(
+    data: dict[str, Any],
+    errors: list[ValidationIssue],
+    warnings: list[ValidationIssue],
+) -> None:
+    _validate_optional_text(data, "category", errors)
+    _validate_optional_text(data, "description", errors)
+    _validate_optional_text(data, "expected_result", errors)
+    _validate_optional_string_list(data, "tags", errors)
+    _validate_optional_string_list(data, "demonstrates", errors)
+
+    category = data.get("category")
+    if isinstance(category, str) and category.strip():
+        normalized = category.strip()
+        if normalized not in SUPPORTED_SCENARIO_CATEGORIES:
+            warnings.append(
+                _issue(
+                    "category",
+                    f"Unknown scenario category: {normalized}",
+                    suggestion=(
+                        "Use one of: "
+                        + ", ".join(sorted(SUPPORTED_SCENARIO_CATEGORIES))
+                    ),
+                )
+            )
+
+
+def _validate_optional_text(
+    data: dict[str, Any],
+    field_name: str,
+    errors: list[ValidationIssue],
+) -> None:
+    value = data.get(field_name)
+    if value is not None and not isinstance(value, str):
+        errors.append(_issue(field_name, f"Scenario {field_name} must be a string"))
+
+
+def _validate_optional_string_list(
+    data: dict[str, Any],
+    field_name: str,
+    errors: list[ValidationIssue],
+) -> None:
+    value = data.get(field_name)
+    if value is None:
+        return
+    if not isinstance(value, list):
+        errors.append(_issue(field_name, f"Scenario {field_name} must be a list"))
+        return
+    for index, item in enumerate(value):
+        if not isinstance(item, str):
+            errors.append(
+                _issue(
+                    f"{field_name}[{index}]",
+                    f"Scenario {field_name} entries must be strings",
+                )
+            )
 
 
 def _validate_setup(data: dict[str, Any], errors: list[ValidationIssue]) -> None:

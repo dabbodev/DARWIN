@@ -1,5 +1,15 @@
 scenario_id: 006_mac_spoof_symbolic_failure
 name: Symbolic spoof failure
+category: security
+description: Rejects an invalid symbolic rolling proof and quarantines the device.
+tags:
+  - symbolic-trust
+  - spoofing
+  - quarantine
+demonstrates:
+  - Symbolic proof failure handling.
+  - Security event recording for a quarantined device.
+expected_result: The failed proof creates a quarantine record and emits the rolling proof failure event.
 setup:
   registry_hubs:
     - hub_id: hub_home_001

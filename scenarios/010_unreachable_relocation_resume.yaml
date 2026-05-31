@@ -1,5 +1,15 @@
 scenario_id: 010_unreachable_relocation_resume
 name: Unreachable relocation resume keeps flow control
+category: relocation
+description: Attempts to resume relocation traffic when the moved target has no reachable route.
+tags:
+  - relocation
+  - routing
+  - flow-control
+demonstrates:
+  - Route availability checks during relocation resume.
+  - Flow control retention after an unreachable move target.
+expected_result: Resume reports route unavailable and keeps relocation flow control active.
 setup:
   registry_hubs:
     - hub_id: registry_home

@@ -1,5 +1,16 @@
 scenario_id: 004_relocation_pause_resume
 name: Relocation pause and resume
+category: relocation
+description: Pauses a lane during relocation, moves the target device, and resumes traffic on the new route.
+tags:
+  - relocation
+  - lane
+  - flow-control
+demonstrates:
+  - In-transit state before device movement.
+  - Lane pause and resume behavior during relocation.
+  - Route update after the target traffic hub changes.
+expected_result: The lane returns to active state on the new route with sequence counters preserved.
 setup:
   registry_hubs:
     - hub_id: registry_home

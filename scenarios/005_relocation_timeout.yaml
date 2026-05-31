@@ -1,5 +1,15 @@
 scenario_id: 005_relocation_timeout
 name: Relocation timeout keeps lane held
+category: relocation
+description: Expires a relocation hold and verifies that traffic remains paused after timeout.
+tags:
+  - relocation
+  - timeout
+  - flow-control
+demonstrates:
+  - Failed relocation timeout handling.
+  - Lane send blocking while relocation flow control is active.
+expected_result: Relocation fails, the lane stays paused, and the device remains at its original attachment.
 setup:
   registry_hubs:
     - hub_id: registry_home
