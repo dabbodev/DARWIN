@@ -8,11 +8,26 @@ import sys
 from pathlib import Path
 
 import darwin
+from darwin.sim.export import (
+    export_events,
+    export_mermaid,
+    export_result,
+    export_snapshot,
+    export_timeline_json,
+    export_timeline_markdown,
+)
+from darwin.sim.library import (
+    ScenarioDescription,
+    describe_scenario,
+    discover_scenario_metadata,
+    scenario_index_markdown,
+)
+from darwin.sim.presets import ScenarioPresetError, expand_scenario, list_builtin_presets
 from darwin.sim.runner import ScenarioRunResult, run_scenario
 from darwin.sim.scenarios import (
     ScenarioLoadError,
-    list_scenario_files,
     load_scenario,
+    load_scenario_file,
     validate_scenario_file,
 )
 
@@ -36,9 +51,85 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="print the final deterministic JSON snapshot",
     )
+    run_parser.add_argument(
+        "--export-snapshot",
+        metavar="PATH",
+        help="write the final deterministic JSON snapshot to PATH",
+    )
+    run_parser.add_argument(
+        "--export-events",
+        metavar="PATH",
+        help="write the structured event log JSON to PATH",
+    )
+    run_parser.add_argument(
+        "--export-result",
+        metavar="PATH",
+        help="write the full scenario result summary JSON to PATH",
+    )
+    run_parser.add_argument(
+        "--export-mermaid",
+        metavar="PATH",
+        help="write a Mermaid topology diagram to PATH",
+    )
+    run_parser.add_argument(
+        "--export-timeline-json",
+        metavar="PATH",
+        help="write the structured event timeline JSON to PATH",
+    )
+    run_parser.add_argument(
+        "--export-timeline-md",
+        metavar="PATH",
+        help="write the structured event timeline Markdown to PATH",
+    )
+    run_parser.add_argument(
+        "--trace-event-type",
+        metavar="EVENT_TYPE",
+        help="include only timeline events with EVENT_TYPE",
+    )
+    run_parser.add_argument(
+        "--trace-device",
+        metavar="DEVICE_ID",
+        help="include only timeline events for DEVICE_ID",
+    )
+    run_parser.add_argument(
+        "--trace-lane",
+        metavar="LANE_ID",
+        help="include only timeline events for LANE_ID",
+    )
+    run_parser.add_argument(
+        "--trace-hub",
+        metavar="HUB_ID",
+        help="include only timeline events for HUB_ID",
+    )
+    run_parser.add_argument(
+        "--no-mermaid-devices",
+        action="store_true",
+        help="omit attached device nodes from Mermaid export",
+    )
+    run_parser.add_argument(
+        "--no-mermaid-lanes",
+        action="store_true",
+        help="omit logical lane route comments from Mermaid export",
+    )
 
     list_parser = subparsers.add_parser("list-scenarios", help="list available scenarios")
     list_parser.add_argument(
+        "--directory",
+        default=str(_default_scenarios_dir()),
+        help="directory containing scenario files",
+    )
+
+    describe_parser = subparsers.add_parser(
+        "describe-scenario",
+        help="describe a scenario file without running it",
+    )
+    describe_parser.add_argument("scenario", help="path to a YAML or JSON scenario file")
+
+    index_parser = subparsers.add_parser(
+        "scenario-index",
+        help="print a Markdown index of available scenarios",
+    )
+    index_parser.add_argument(
         "--directory",
         default=str(_default_scenarios_dir()),
         help="directory containing scenario files",
@@ -49,6 +140,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="validate a scenario file without running it",
     )
     validate_parser.add_argument("scenario", help="path to a YAML or JSON scenario file")
+
+    subparsers.add_parser("list-presets", help="list built-in scenario setup presets")
+
+    expand_parser = subparsers.add_parser(
+        "expand-scenario",
+        help="print a scenario with built-in presets expanded",
+    )
+    expand_parser.add_argument("scenario", help="path to a YAML or JSON scenario file")
     return parser
 
 
@@ -61,7 +160,22 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.command == "run":
-        return _run_command(args.scenario, dump_snapshot=args.dump_snapshot)
+        return _run_command(
+            args.scenario,
+            dump_snapshot=args.dump_snapshot,
+            export_snapshot_path=args.export_snapshot,
+            export_events_path=args.export_events,
+            export_result_path=args.export_result,
+            export_mermaid_path=args.export_mermaid,
+            export_timeline_json_path=args.export_timeline_json,
+            export_timeline_markdown_path=args.export_timeline_md,
+            trace_event_type=args.trace_event_type,
+            trace_device=args.trace_device,
+            trace_lane=args.trace_lane,
+            trace_hub=args.trace_hub,
+            include_mermaid_devices=not args.no_mermaid_devices,
+            include_mermaid_lanes=not args.no_mermaid_lanes,
+        )
 
     if args.command == "list-scenarios":
         return _list_scenarios_command(Path(args.directory))
@@ -69,23 +183,33 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "validate-scenario":
         return _validate_scenario_command(args.scenario)
 
+    if args.command == "describe-scenario":
+        return _describe_scenario_command(args.scenario)
+
+    if args.command == "scenario-index":
+        return _scenario_index_command(Path(args.directory))
+
+    if args.command == "list-presets":
+        return _list_presets_command()
+
+    if args.command == "expand-scenario":
+        return _expand_scenario_command(args.scenario)
+
     parser.print_help()
     return 0
 
 
 def _list_scenarios_command(directory: Path) -> int:
-    files = list_scenario_files(directory)
-    if not files:
+    metadata = discover_scenario_metadata(directory)
+    if not metadata:
         print(f"No scenarios found in {directory}")
         return 1
 
-    for path in files:
-        result = validate_scenario_file(path)
-        label = str(_display_path(path))
-        if result.scenario_id is not None:
-            label = f"{label}  {result.scenario_id}"
-            if result.name:
-                label = f"{label} - {result.name}"
+    for item in metadata:
+        path = _display_path(Path(item.path)) if item.path is not None else ""
+        label = f"{path}  {item.scenario_id}  {item.name}"
+        if item.category:
+            label = f"{label}  [{item.category}]"
         print(label)
     return 0
 
@@ -97,13 +221,119 @@ def _validate_scenario_command(scenario_path: str) -> int:
         suffix = f" - {result.name}" if result.name else ""
         print(f"VALID {heading}{suffix}")
         for warning in result.warnings:
-            print(f"warning: {warning}")
+            print(f"warning: {warning.render()}")
         return 0
 
     print(f"INVALID {scenario_path}", file=sys.stderr)
     for error in result.errors:
-        print(f"error: {error}", file=sys.stderr)
+        print(f"error: {error.render()}", file=sys.stderr)
     return 1
+
+
+def _describe_scenario_command(scenario_path: str) -> int:
+    try:
+        description = describe_scenario(Path(scenario_path))
+    except (OSError, ScenarioLoadError) as exc:
+        print(f"DESCRIBE FAILED {scenario_path}", file=sys.stderr)
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    print(_render_scenario_description(description))
+    return 0 if description.validation_result.passed else 1
+
+
+def _scenario_index_command(directory: Path) -> int:
+    metadata = discover_scenario_metadata(directory)
+    if not metadata:
+        print(f"No scenarios found in {directory}", file=sys.stderr)
+        return 1
+    print(scenario_index_markdown(metadata), end="")
+    return 0
+
+
+def _list_presets_command() -> int:
+    for preset_name in list_builtin_presets():
+        print(preset_name)
+    return 0
+
+
+def _expand_scenario_command(scenario_path: str) -> int:
+    try:
+        scenario = load_scenario_file(scenario_path)
+        expanded = expand_scenario(scenario)
+    except (OSError, ScenarioLoadError, ScenarioPresetError) as exc:
+        print(f"EXPAND FAILED {scenario_path}", file=sys.stderr)
+        if isinstance(exc, ScenarioPresetError):
+            for error in exc.errors:
+                print(f"error: {error.render()}", file=sys.stderr)
+        else:
+            print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    print(_render_expanded_scenario(expanded))
+    return 0
+
+
+def _render_expanded_scenario(expanded: dict[str, object]) -> str:
+    try:
+        import yaml
+    except ImportError:
+        return json.dumps(expanded, indent=2, sort_keys=True)
+
+    return yaml.safe_dump(expanded, sort_keys=False)
+
+
+def _render_scenario_description(description: ScenarioDescription) -> str:
+    metadata = description.metadata
+    validation = description.validation_result
+    lines = [
+        f"Scenario: {metadata.scenario_id} - {metadata.name}",
+    ]
+    if metadata.path:
+        lines.append(f"Path: {_display_path(Path(metadata.path))}")
+    lines.extend(
+        [
+            f"Category: {metadata.category or '(none)'}",
+            f"Tags: {_format_list(metadata.tags)}",
+            f"Description: {metadata.description or '(none)'}",
+            "Demonstrates:",
+        ]
+    )
+    lines.extend(_format_bullets(metadata.demonstrates))
+    lines.extend(
+        [
+            f"Expected result: {metadata.expected_result or '(none)'}",
+            "Setup counts:",
+        ]
+    )
+    if description.setup_counts:
+        for section_name, count in description.setup_counts.items():
+            lines.append(f"- {section_name}: {count}")
+    else:
+        lines.append("- (none)")
+    lines.extend(
+        [
+            f"Steps: {description.step_count}",
+            f"Assertions: {description.assertion_count}",
+            f"Uses presets: {'yes' if description.uses_presets else 'no'}",
+            f"Validation: {'PASS' if validation.passed else 'FAIL'}",
+        ]
+    )
+    for warning in validation.warnings:
+        lines.append(f"warning: {warning.render()}")
+    for error in validation.errors:
+        lines.append(f"error: {error.render()}")
+    return "\n".join(lines)
+
+
+def _format_list(values: list[str]) -> str:
+    return ", ".join(values) if values else "(none)"
+
+
+def _format_bullets(values: list[str]) -> list[str]:
+    if not values:
+        return ["- (none)"]
+    return [f"- {value}" for value in values]
 
 
 def _display_path(path: Path) -> Path:
@@ -113,17 +343,48 @@ def _display_path(path: Path) -> Path:
         return path
 
 
-def _run_command(scenario_path: str, *, dump_snapshot: bool) -> int:
+def _run_command(
+    scenario_path: str,
+    *,
+    dump_snapshot: bool,
+    export_snapshot_path: str | None = None,
+    export_events_path: str | None = None,
+    export_result_path: str | None = None,
+    export_mermaid_path: str | None = None,
+    export_timeline_json_path: str | None = None,
+    export_timeline_markdown_path: str | None = None,
+    trace_event_type: str | None = None,
+    trace_device: str | None = None,
+    trace_lane: str | None = None,
+    trace_hub: str | None = None,
+    include_mermaid_devices: bool = True,
+    include_mermaid_lanes: bool = True,
+) -> int:
     validation = validate_scenario_file(scenario_path)
     if not validation.passed:
         print(f"INVALID {scenario_path}", file=sys.stderr)
         for error in validation.errors:
-            print(f"error: {error}", file=sys.stderr)
+            print(f"error: {error.render()}", file=sys.stderr)
         return 1
 
     try:
         scenario = load_scenario(scenario_path)
         result = run_scenario(scenario)
+        _write_exports(
+            result,
+            export_snapshot_path=export_snapshot_path,
+            export_events_path=export_events_path,
+            export_result_path=export_result_path,
+            export_mermaid_path=export_mermaid_path,
+            export_timeline_json_path=export_timeline_json_path,
+            export_timeline_markdown_path=export_timeline_markdown_path,
+            trace_event_type=trace_event_type,
+            trace_device=trace_device,
+            trace_lane=trace_lane,
+            trace_hub=trace_hub,
+            include_mermaid_devices=include_mermaid_devices,
+            include_mermaid_lanes=include_mermaid_lanes,
+        )
     except (OSError, ScenarioLoadError, KeyError, TypeError, ValueError) as exc:
         print(f"RUN FAILED {scenario_path}", file=sys.stderr)
         print(f"error: {exc}", file=sys.stderr)
@@ -131,6 +392,47 @@ def _run_command(scenario_path: str, *, dump_snapshot: bool) -> int:
 
     print(_render_run_result(result, scenario.name, dump_snapshot=dump_snapshot))
     return 0 if result.passed else 1
+
+
+def _write_exports(
+    result: ScenarioRunResult,
+    *,
+    export_snapshot_path: str | None,
+    export_events_path: str | None,
+    export_result_path: str | None,
+    export_mermaid_path: str | None,
+    export_timeline_json_path: str | None,
+    export_timeline_markdown_path: str | None,
+    trace_event_type: str | None,
+    trace_device: str | None,
+    trace_lane: str | None,
+    trace_hub: str | None,
+    include_mermaid_devices: bool,
+    include_mermaid_lanes: bool,
+) -> None:
+    if export_snapshot_path is not None:
+        export_snapshot(result, export_snapshot_path)
+    if export_events_path is not None:
+        export_events(result, export_events_path)
+    if export_result_path is not None:
+        export_result(result, export_result_path)
+    if export_mermaid_path is not None:
+        export_mermaid(
+            result,
+            export_mermaid_path,
+            include_devices=include_mermaid_devices,
+            include_lanes=include_mermaid_lanes,
+        )
+    timeline_filters = {
+        "event_type": trace_event_type,
+        "device_id": trace_device,
+        "lane_id": trace_lane,
+        "hub_id": trace_hub,
+    }
+    if export_timeline_json_path is not None:
+        export_timeline_json(result, export_timeline_json_path, **timeline_filters)
+    if export_timeline_markdown_path is not None:
+        export_timeline_markdown(result, export_timeline_markdown_path, **timeline_filters)
 
 
 def _render_run_result(

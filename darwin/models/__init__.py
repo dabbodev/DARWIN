@@ -6,7 +6,14 @@ from darwin.models.hub import LocalDeviceRecord, RegistryHub, TrafficHub
 from darwin.models.lane import LogicalLane
 from darwin.models.packet import DarwinPacket
 from darwin.models.passport import PassportRecord
-from darwin.models.route import ForwardingResult, RouteRecord
+from darwin.models.route import (
+    ForwardingResult,
+    LinkMetrics,
+    RouteCostBreakdown,
+    RouteDecision,
+    RouteRecord,
+    RoutingPolicy,
+)
 
 __all__ = [
     "CheckpointPacket",
@@ -14,10 +21,14 @@ __all__ = [
     "DarwinPacket",
     "Device",
     "ForwardingResult",
+    "LinkMetrics",
     "LocalDeviceRecord",
     "LogicalLane",
     "PassportRecord",
     "RegistryHub",
+    "RouteCostBreakdown",
+    "RouteDecision",
     "RouteRecord",
+    "RoutingPolicy",
     "TrafficHub",
 ]

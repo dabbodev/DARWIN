@@ -78,6 +78,8 @@ def open_lane(
         source_device_id=source_device_id,
         target_device_id=target_device_id,
         current_route=list(route_record.route),
+        route_total_cost=route_record.total_cost,
+        route_cost_breakdown=route_record.cost_breakdown,
     )
     lane.activate()
     start_hub.lanes[selected_lane_id] = lane
@@ -92,6 +94,9 @@ def open_lane(
         route=list(route_record.route),
         next_hop=route_record.next_hop,
         final_hub_id=route_record.final_hub_id,
+        route_status=route_record.route_status,
+        total_cost=route_record.total_cost,
+        cost_breakdown=route_record.cost_breakdown,
     )
 
 
@@ -148,6 +153,9 @@ def send_lane_data(
             route=list(result.route),
             next_hop=result.next_hop,
             final_hub_id=result.final_hub_id,
+            route_status=result.route_status,
+            total_cost=result.total_cost,
+            cost_breakdown=result.cost_breakdown,
             last_sent_sequence=lane.last_sent_sequence,
             last_acknowledged_sequence=lane.last_acknowledged_sequence,
             payload=payload,
@@ -166,6 +174,9 @@ def send_lane_data(
         route=list(result.route),
         next_hop=result.next_hop,
         final_hub_id=result.final_hub_id,
+        route_status=result.route_status,
+        total_cost=result.total_cost,
+        cost_breakdown=result.cost_breakdown,
         last_sent_sequence=lane.last_sent_sequence,
         last_acknowledged_sequence=ack_result.last_acknowledged_sequence,
         payload=payload,

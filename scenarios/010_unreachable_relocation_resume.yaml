@@ -1,16 +1,15 @@
-scenario_id: 004_relocation_pause_resume
-name: Relocation pause and resume
+scenario_id: 010_unreachable_relocation_resume
+name: Unreachable relocation resume keeps flow control
 category: relocation
-description: Pauses a lane during relocation, moves the target device, and resumes traffic on the new route.
+description: Attempts to resume relocation traffic when the moved target has no reachable route.
 tags:
   - relocation
-  - lane
+  - routing
   - flow-control
 demonstrates:
-  - In-transit state before device movement.
-  - Lane pause and resume behavior during relocation.
-  - Route update after the target traffic hub changes.
-expected_result: The lane returns to active state on the new route with sequence counters preserved.
+  - Route availability checks during relocation resume.
+  - Flow control retention after an unreachable move target.
+expected_result: Resume reports route unavailable and keeps relocation flow control active.
 setup:
   registry_hubs:
     - hub_id: registry_home
@@ -20,15 +19,10 @@ setup:
   traffic_hubs:
     - hub_id: hub_1
     - hub_id: hub_2
-    - hub_id: hub_3
-    - hub_id: hub_4
+    - hub_id: hub_9
   links:
     - from: hub_1
       to: hub_2
-    - from: hub_2
-      to: hub_3
-    - from: hub_2
-      to: hub_4
   devices:
     - device_id: dev_A9F3
       label: source
@@ -36,7 +30,7 @@ setup:
     - device_id: dev_B2C8
       label: target
       registry_hub: registry_home
-      traffic_hub: hub_3
+      traffic_hub: hub_2
 steps:
   - action: open_lane
     source: dev_A9F3
@@ -58,16 +52,21 @@ steps:
     device: dev_B2C8
     old_registry_hub: registry_home
     new_registry_hub: registry_office
-    old_traffic_hub: hub_3
-    new_traffic_hub: hub_4
+    old_traffic_hub: hub_2
+    new_traffic_hub: hub_9
   - action: resume_lanes_after_relocation
     traffic_hub: hub_1
     device: dev_B2C8
 assertions:
+  - type: latest_step_status
+    expected: route_unavailable
   - type: lane_state
     traffic_hub: hub_1
     lane: lane_001
-    expected: active
+    expected: awaiting_verification
+  - type: flow_control_exists
+    traffic_hub: hub_1
+    lane: lane_001
   - type: lane_sequence
     traffic_hub: hub_1
     lane: lane_001

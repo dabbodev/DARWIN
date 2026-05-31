@@ -1,5 +1,15 @@
 scenario_id: 001_basic_registration
 name: Basic registration
+category: registry
+description: Registers one device, resolves its label, and confirms the registry event.
+tags:
+  - registration
+  - label
+  - checkpoint
+demonstrates:
+  - Device registration at a registry hub.
+  - Label resolution for a registered device.
+expected_result: The device is registered, the label resolves, and the registration event is recorded.
 setup:
   registry_hubs:
     - hub_id: hub_home_001

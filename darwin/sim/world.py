@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from darwin.models.device import Device
 from darwin.models.hub import RegistryHub, TrafficHub
 from darwin.models.lane import LogicalLane
+from darwin.models.route import LinkMetrics
 from darwin.sim.event_log import EventLog
 from darwin.traffic.routing import attach_device, connect_neighbor
 
@@ -64,8 +66,17 @@ class World:
         traffic_hub = self.create_traffic_hub(hub_id)
         return registry_hub, traffic_hub
 
-    def connect_traffic_hubs(self, from_hub_id: str, to_hub_id: str) -> None:
-        connect_neighbor(self.traffic_hubs[from_hub_id], self.traffic_hubs[to_hub_id])
+    def connect_traffic_hubs(
+        self,
+        from_hub_id: str,
+        to_hub_id: str,
+        metrics: LinkMetrics | None = None,
+    ) -> None:
+        connect_neighbor(
+            self.traffic_hubs[from_hub_id],
+            self.traffic_hubs[to_hub_id],
+            metrics,
+        )
 
     def attach_device_to_traffic(self, device_id: str, traffic_hub_id: str) -> None:
         attach_device(self.traffic_hubs[traffic_hub_id], self.devices[device_id])
@@ -75,8 +86,31 @@ class World:
             raise ValueError("ticks must be non-negative")
         self.current_time += ticks
 
-    def log(self, message: str, event_type: str | None = None) -> None:
-        self.event_log.write(self.current_time, message, event_type=event_type)
+    def log(
+        self,
+        message: str,
+        event_type: str | None = None,
+        *,
+        actor: str | None = None,
+        target: str | None = None,
+        device_id: str | None = None,
+        hub_id: str | None = None,
+        lane_id: str | None = None,
+        status: str | None = None,
+        data: dict[str, Any] | None = None,
+    ) -> None:
+        self.event_log.write(
+            self.current_time,
+            message,
+            event_type=event_type,
+            actor=actor,
+            target=target,
+            device_id=device_id,
+            hub_id=hub_id,
+            lane_id=lane_id,
+            status=status,
+            data=data,
+        )
         self.events.append(self.event_log.lines[-1])
 
     def snapshot(self, detailed: bool = False) -> dict[str, object]:
@@ -145,6 +179,16 @@ class World:
             "traffic_hubs": {
                 hub_id: {
                     "neighbors": sorted(hub.neighbors),
+                    "neighbor_details": {
+                        neighbor_id: {
+                            "status": neighbor.status,
+                            "latency_ms": neighbor.metrics.latency_ms,
+                            "congestion": neighbor.metrics.congestion,
+                            "trust": neighbor.metrics.trust,
+                            "stability": neighbor.metrics.stability,
+                        }
+                        for neighbor_id, neighbor in sorted(hub.neighbors.items())
+                    },
                     "direct_attachments": {
                         device_id: {
                             "hub_id": record.hub_id,
@@ -154,6 +198,10 @@ class World:
                         for device_id, record in sorted(hub.direct_attachments.items())
                     },
                     "lanes": sorted(hub.lanes),
+                    "routes": {
+                        target_id: route.to_decision().to_dict()
+                        for target_id, route in sorted(hub.routes.items())
+                    },
                     "recommendations": [
                         recommendation.recommendation_type
                         for recommendation in hub.growth_recommendations
@@ -167,6 +215,12 @@ class World:
                     "target": lane.target_device_id,
                     "state": lane.state,
                     "route": list(lane.current_route),
+                    "route_total_cost": lane.route_total_cost,
+                    "route_cost_breakdown": (
+                        None
+                        if lane.route_cost_breakdown is None
+                        else lane.route_cost_breakdown.to_dict()
+                    ),
                     "last_sent_sequence": lane.last_sent_sequence,
                     "last_acknowledged_sequence": lane.last_acknowledged_sequence,
                 }

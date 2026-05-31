@@ -10,6 +10,7 @@ from typing import Any
 from darwin.models.checkpoint import make_checkpoint_packet
 from darwin.models.device import Device
 from darwin.models.hub import LocalDeviceRecord
+from darwin.models.route import LinkMetrics
 from darwin.registry.checkpoints import record_checkpoint as record_checkpoint_op
 from darwin.registry.operations import (
     register_device as register_device_op,
@@ -24,6 +25,9 @@ from darwin.registry.relocation import (
 from darwin.registry.relocation import (
     mark_in_transit as mark_in_transit_op,
 )
+from darwin.registry.security import (
+    detect_duplicate_device_claim as detect_duplicate_device_claim_op,
+)
 from darwin.registry.security import verify_rolling_proof as verify_rolling_proof_op
 from darwin.sim.assertions import AssertionResult, evaluate_assertions
 from darwin.sim.scenarios import Scenario, load_scenario
@@ -35,6 +39,9 @@ from darwin.traffic.metrics import (
 )
 from darwin.traffic.metrics import (
     record_cross_tree_packet as record_cross_tree_packet_op,
+)
+from darwin.traffic.relocation import (
+    expire_relocation_hold as expire_relocation_hold_op,
 )
 from darwin.traffic.relocation import (
     pause_lanes_for_relocation as pause_lanes_for_relocation_op,
@@ -121,7 +128,11 @@ def _apply_setup(world: World, setup: dict[str, Any]) -> None:
         )
 
     for link_config in _configs(setup.get("links", []), "from"):
-        world.connect_traffic_hubs(str(link_config["from"]), str(link_config["to"]))
+        world.connect_traffic_hubs(
+            str(link_config["from"]),
+            str(link_config["to"]),
+            _link_metrics(link_config),
+        )
 
     for device_config in _configs(setup.get("devices", []), "device_id"):
         device = Device(
@@ -155,8 +166,12 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         "record_checkpoint": _step_record_checkpoint,
         "mark_in_transit": _step_mark_in_transit,
         "pause_lanes_for_relocation": _step_pause_lanes_for_relocation,
+        "expire_relocation_hold": _step_expire_relocation_hold,
         "move_device": _step_move_device,
+        "create_invalid_move_contract": _step_create_invalid_move_contract,
+        "simulate_duplicate_device_claim": _step_simulate_duplicate_device_claim,
         "resume_lanes_after_relocation": _step_resume_lanes_after_relocation,
+        "attempt_lane_send": _step_send_lane_data,
         "verify_rolling_proof": _step_verify_rolling_proof,
         "record_cross_tree_packet": _step_record_cross_tree_packet,
         "recommend_traffic_bridge": _step_recommend_traffic_bridge,
@@ -193,12 +208,28 @@ def _step_register_device(world: World, fields: dict[str, Any]) -> None:
         world.log(
             f"registered {device_id} at {hub.hub_id} as {result.current_label}{suffix}",
             event_type=event_type,
+            actor=device_id,
+            target=hub.hub_id,
+            device_id=device_id,
+            hub_id=hub.hub_id,
+            status=result.current_state,
+            data={
+                "requested_label": label,
+                "assigned_label": result.current_label,
+                "passport_id": result.passport_id,
+            },
         )
         return
 
     world.log(
         f"registration failed for {device_id} at {hub.hub_id}: {result.reason}",
         event_type=result.action,
+        actor=device_id,
+        target=hub.hub_id,
+        device_id=device_id,
+        hub_id=hub.hub_id,
+        status=result.action,
+        data={"reason": result.reason},
     )
 
 
@@ -208,11 +239,24 @@ def _step_resolve_label(world: World, fields: dict[str, Any]) -> None:
     result = resolve_label_op(hub, label)
     world.action_results.append(result)
     if result is None:
-        world.log(f"resolved {label} at {hub.hub_id}: not found", event_type="label_not_found")
+        world.log(
+            f"resolved {label} at {hub.hub_id}: not found",
+            event_type="label_not_found",
+            target=hub.hub_id,
+            hub_id=hub.hub_id,
+            status="not_found",
+            data={"label": label},
+        )
     else:
         world.log(
             f"resolved {label} at {hub.hub_id} to {result.device_id}",
             event_type="label_resolved",
+            actor=hub.hub_id,
+            target=result.device_id,
+            device_id=result.device_id,
+            hub_id=hub.hub_id,
+            status="resolved",
+            data={"label": label},
         )
 
 
@@ -232,6 +276,20 @@ def _step_open_lane(world: World, fields: dict[str, Any]) -> None:
         f"{result.action} {result.lane_id} from {result.source_device_id} "
         f"to {result.target_device_id} via {result.route}",
         event_type=result.action,
+        actor=result.source_device_id,
+        target=result.target_device_id,
+        device_id=result.source_device_id,
+        hub_id=hub.hub_id,
+        lane_id=result.lane_id,
+        status=result.action,
+        data={
+            "route": list(result.route),
+            "next_hop": result.next_hop,
+            "final_hub_id": result.final_hub_id,
+            "route_status": result.route_status,
+            "total_cost": result.total_cost,
+            "cost_breakdown": result.cost_breakdown,
+        },
     )
 
 
@@ -249,6 +307,24 @@ def _step_send_lane_data(world: World, fields: dict[str, Any]) -> None:
         f"{result.action} on {result.lane_id} seq={result.sequence_number} "
         f"sent={result.last_sent_sequence} ack={result.last_acknowledged_sequence}",
         event_type=result.action,
+        actor=result.source_device_id,
+        target=result.target_device_id,
+        device_id=result.source_device_id,
+        hub_id=hub.hub_id,
+        lane_id=result.lane_id,
+        status=result.action,
+        data={
+            "packet_id": result.packet_id,
+            "sequence_number": result.sequence_number,
+            "last_sent_sequence": result.last_sent_sequence,
+            "last_acknowledged_sequence": result.last_acknowledged_sequence,
+            "route": list(result.route),
+            "next_hop": result.next_hop,
+            "final_hub_id": result.final_hub_id,
+            "route_status": result.route_status,
+            "total_cost": result.total_cost,
+            "cost_breakdown": result.cost_breakdown,
+        },
     )
 
 
@@ -269,6 +345,16 @@ def _step_record_checkpoint(world: World, fields: dict[str, Any]) -> None:
     world.log(
         f"{result.action} for {result.device_id} at {hub.hub_id} state={fields['state']}",
         event_type=result.action,
+        actor=result.device_id,
+        target=hub.hub_id,
+        device_id=result.device_id,
+        hub_id=hub.hub_id,
+        status=result.action,
+        data={
+            "state": fields["state"],
+            "checkpoint_tier": device.checkpoint_tier,
+            "reason": result.reason,
+        },
     )
 
 
@@ -279,7 +365,16 @@ def _step_mark_in_transit(world: World, fields: dict[str, Any]) -> None:
     if device_id in world.devices and result.success:
         world.devices[device_id].mark_in_transit()
     world.action_results.append(result)
-    world.log(f"{result.action} {device_id} at {hub.hub_id}", event_type=result.action)
+    world.log(
+        f"{result.action} {device_id} at {hub.hub_id}",
+        event_type=result.action,
+        actor=device_id,
+        target=hub.hub_id,
+        device_id=device_id,
+        hub_id=hub.hub_id,
+        status="in_transit" if result.success else result.action,
+        data={"reason": result.reason},
+    )
 
 
 def _step_pause_lanes_for_relocation(world: World, fields: dict[str, Any]) -> None:
@@ -289,6 +384,48 @@ def _step_pause_lanes_for_relocation(world: World, fields: dict[str, Any]) -> No
     world.log(
         f"{result.action} for {result.device_id}: {result.affected_lanes}",
         event_type=result.action,
+        actor=result.device_id,
+        target=hub.hub_id,
+        device_id=result.device_id,
+        hub_id=hub.hub_id,
+        status=result.action,
+        data={
+            "affected_lanes": list(result.affected_lanes),
+            "flow_control_lanes": [
+                flow_control.lane_id for flow_control in result.flow_controls
+            ],
+            "relocation_state": (
+                None if result.relocation is None else result.relocation.state
+            ),
+            "reason": result.reason,
+        },
+    )
+
+
+def _step_expire_relocation_hold(world: World, fields: dict[str, Any]) -> None:
+    hub = world.traffic_hubs[str(fields["traffic_hub"])]
+    current_time = _optional_int(fields.get("current_time"))
+    result = expire_relocation_hold_op(
+        hub,
+        str(fields["device"]),
+        current_time=world.current_time if current_time is None else current_time,
+    )
+    world.action_results.append(result)
+    world.log(
+        f"{result.action} for {result.device_id}: {result.failed_lanes}",
+        event_type=result.action,
+        actor=result.device_id,
+        target=hub.hub_id,
+        device_id=result.device_id,
+        hub_id=hub.hub_id,
+        status=result.action,
+        data={
+            "failed_lanes": list(result.failed_lanes),
+            "relocation_state": (
+                None if result.relocation is None else result.relocation.state
+            ),
+            "reason": result.reason,
+        },
     )
 
 
@@ -343,6 +480,93 @@ def _step_move_device(world: World, fields: dict[str, Any]) -> None:
     world.log(
         f"moved {device_id} from {old_traffic_hub.hub_id} to {new_traffic_hub.hub_id}",
         event_type="device_moved",
+        actor=device_id,
+        target=new_traffic_hub.hub_id,
+        device_id=device_id,
+        hub_id=new_traffic_hub.hub_id,
+        status="online",
+        data={
+            "old_registry_hub": old_registry_hub.hub_id,
+            "new_registry_hub": new_registry_hub.hub_id,
+            "old_traffic_hub": old_traffic_hub.hub_id,
+            "new_traffic_hub": new_traffic_hub.hub_id,
+            "new_scope": new_scope,
+            "move_action": result.action,
+        },
+    )
+
+
+def _step_create_invalid_move_contract(world: World, fields: dict[str, Any]) -> None:
+    device_id = str(fields["device"])
+    device = world.devices[device_id]
+    old_registry_hub = world.registry_hubs[str(fields["old_registry_hub"])]
+    new_registry_hub = world.registry_hubs[str(fields["new_registry_hub"])]
+    new_scope = str(fields.get("new_scope", new_registry_hub.scope_path))
+
+    old_record = old_registry_hub.devices.get(device_id)
+    passport_id = (
+        old_record.passport_id
+        if old_record is not None
+        else device.passport_id or f"passport_{device_id}"
+    )
+    contract = create_move_contract(
+        device_id=device_id,
+        passport_id=passport_id,
+        from_scope=old_registry_hub.scope_path,
+        to_scope=new_scope,
+        old_attachment=old_registry_hub.hub_id,
+        new_attachment=new_registry_hub.hub_id,
+        valid=False,
+        timestamp=world.current_time,
+    )
+    result = update_attachment_after_move(
+        old_registry_hub,
+        device_id,
+        new_attachment=new_registry_hub.hub_id,
+        new_scope=new_scope,
+        move_contract=contract,
+    )
+    world.action_results.append(result)
+    world.log(
+        f"{result.action} for {device_id}: {result.reason}",
+        event_type=result.action,
+        actor=device_id,
+        target=new_registry_hub.hub_id,
+        device_id=device_id,
+        hub_id=old_registry_hub.hub_id,
+        status=result.action,
+        data={
+            "old_registry_hub": old_registry_hub.hub_id,
+            "new_registry_hub": new_registry_hub.hub_id,
+            "new_scope": new_scope,
+            "reason": result.reason,
+        },
+    )
+
+
+def _step_simulate_duplicate_device_claim(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    result = detect_duplicate_device_claim_op(
+        hub,
+        str(fields["device"]),
+        claiming_attachment_id=str(fields["claiming_attachment"]),
+        current_time=world.current_time,
+    )
+    world.action_results.append(result)
+    world.log(
+        f"{result.action} for {result.device_id}: {result.claiming_attachment}",
+        event_type=result.action,
+        actor=result.claiming_attachment,
+        target=result.device_id,
+        device_id=result.device_id,
+        hub_id=hub.hub_id,
+        status=result.action,
+        data={
+            "existing_attachment": result.existing_attachment,
+            "claiming_attachment": result.claiming_attachment,
+            "conflict_id": result.conflict_id,
+            "reason": result.reason,
+        },
     )
 
 
@@ -357,6 +581,17 @@ def _step_resume_lanes_after_relocation(world: World, fields: dict[str, Any]) ->
     world.log(
         f"{result.action} for {result.device_id}: {result.routes}",
         event_type=result.action,
+        actor=result.device_id,
+        target=hub.hub_id,
+        device_id=result.device_id,
+        hub_id=hub.hub_id,
+        status=result.action,
+        data={
+            "resumed_lanes": list(result.resumed_lanes),
+            "failed_lanes": list(result.failed_lanes),
+            "routes": dict(result.routes),
+            "reason": result.reason,
+        },
     )
 
 
@@ -372,6 +607,18 @@ def _step_verify_rolling_proof(world: World, fields: dict[str, Any]) -> None:
     world.log(
         f"{result.action} rolling proof for {result.device_id}",
         event_type=result.security_event.event_type if result.security_event else result.action,
+        actor=result.device_id,
+        target=hub.hub_id,
+        device_id=result.device_id,
+        hub_id=hub.hub_id,
+        status=result.action,
+        data={
+            "success": result.success,
+            "reason": result.reason,
+            "security_event_type": (
+                None if result.security_event is None else result.security_event.event_type
+            ),
+        },
     )
 
 
@@ -387,6 +634,14 @@ def _step_record_cross_tree_packet(world: World, fields: dict[str, Any]) -> None
     world.log(
         f"recorded {count} cross-tree packet(s) at {hub.hub_id}",
         event_type="cross_tree_packet_recorded",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="recorded",
+        data={
+            "count": count,
+            "from_branch": fields["from_branch"],
+            "to_branch": fields["to_branch"],
+        },
     )
 
 
@@ -398,18 +653,37 @@ def _step_recommend_traffic_bridge(world: World, fields: dict[str, Any]) -> None
         world.log(
             f"no traffic bridge recommendation for {hub.hub_id}",
             event_type="no_recommendation",
+            target=hub.hub_id,
+            hub_id=hub.hub_id,
+            status="not_recommended",
         )
         return
     world.log(
         f"recommended {recommendation.recommendation_type} for {hub.hub_id}",
         event_type=recommendation.recommendation_type,
+        actor=hub.hub_id,
+        target=recommendation.recommendation_type,
+        hub_id=hub.hub_id,
+        status=recommendation.status,
+        data={
+            "recommendation_id": recommendation.recommendation_id,
+            "affected_hubs": list(recommendation.affected_hubs),
+            "affected_branches": list(recommendation.affected_branches),
+            "reason": recommendation.reason,
+            "confidence": recommendation.confidence,
+        },
     )
 
 
 def _step_advance_time(world: World, fields: dict[str, Any]) -> None:
     ticks = int(fields.get("ticks", 1))
     world.advance_time(ticks)
-    world.log(f"advanced time by {ticks}", event_type="time_advanced")
+    world.log(
+        f"advanced time by {ticks}",
+        event_type="time_advanced",
+        status="advanced",
+        data={"ticks": ticks},
+    )
 
 
 def _configs(value: Any, key_name: str) -> list[dict[str, Any]]:
@@ -433,3 +707,12 @@ def _optional_str(value: Any) -> str | None:
 
 def _optional_int(value: Any) -> int | None:
     return None if value is None else int(value)
+
+
+def _link_metrics(link_config: dict[str, Any]) -> LinkMetrics:
+    return LinkMetrics(
+        latency_ms=int(link_config.get("latency_ms", 1)),
+        congestion=str(link_config.get("congestion", "low")),
+        trust=str(link_config.get("trust", "verified")),
+        stability=str(link_config.get("stability", "stable")),
+    )

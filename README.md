@@ -8,7 +8,9 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently at **simulator v0.1**.
+This project is currently released at **simulator v0.1**. The active v0.2
+development branch is consolidating scenario validation, exports, route-cost
+routing, visualization, trace output, presets, and scenario library indexing.
 
 The v0.1 simulator answers questions like:
 
@@ -22,6 +24,19 @@ The v0.1 simulator answers questions like:
 - Can repeated traffic pressure produce an advisory bridge recommendation?
 
 The simulator makes those behaviors visible through deterministic logs, snapshots, YAML scenario files, and tests.
+
+## v0.2 Development Branch
+
+The v0.2 branch remains simulator-only. It does not add real networking,
+production cryptography, DNS integration, an async runtime, or a web UI.
+
+Useful v0.2 docs:
+
+- `docs/SCENARIO_DSL_v0_2.md`
+- `docs/SCENARIO_INDEX.md`
+- `docs/VISUALIZATION_v0_2.md`
+- `docs/TRACE_EXPORT_v0_2.md`
+- `docs/RELEASE_NOTES_v0_2.md`
 
 ## What v0.1 Supports
 
@@ -283,7 +298,12 @@ DARWIN/
     DEMO_GUIDE_v0_1.md
     DEVELOPMENT.md
     RELEASE_NOTES_v0_1.md
+    RELEASE_NOTES_v0_2.md
+    SCENARIO_DSL_v0_2.md
+    SCENARIO_INDEX.md
+    TRACE_EXPORT_v0_2.md
     V0_2_ROADMAP.md
+    VISUALIZATION_v0_2.md
   darwin/
     __init__.py
     ids.py
@@ -300,11 +320,17 @@ DARWIN/
       policies.py
     sim/
       __init__.py
-      world.py
+      assertions.py
+      event_log.py
+      export.py
+      library.py
+      presets.py
       runner.py
       scenarios.py
-      event_log.py
-      assertions.py
+      timeline.py
+      validation.py
+      visualize.py
+      world.py
     registry/
       __init__.py
       operations.py
@@ -328,8 +354,13 @@ DARWIN/
     002_name_conflict.yaml
     003_lane_open_and_send.yaml
     004_relocation_pause_resume.yaml
+    005_relocation_timeout.yaml
     006_mac_spoof_symbolic_failure.yaml
     007_congestion_bridge_recommendation.yaml
+    008_invalid_move_contract.yaml
+    009_duplicate_device_claim.yaml
+    010_unreachable_relocation_resume.yaml
+    011_preset_lane_demo.yaml
   tests/
     test_auth_symbolic.py
     test_checkpoints.py
@@ -340,11 +371,20 @@ DARWIN/
     test_registry_operations.py
     test_registry_summaries.py
     test_release_readiness.py
+    test_relocation_edge_cases.py
     test_relocation.py
+    test_route_costs.py
+    test_scenario_export.py
+    test_scenario_library.py
+    test_scenario_presets.py
+    test_scenario_route_costs.py
     test_scenario_runner.py
     test_scenario_suite.py
+    test_scenario_validation.py
     test_smoke.py
     test_symbolic_trust.py
+    test_timeline_export.py
+    test_mermaid_export.py
     test_traffic_routing.py
     test_v01_polish.py
 ```
@@ -625,7 +665,14 @@ constraints, see `docs/DEVELOPMENT.md`.
 
 For v0.1 release notes, see `docs/RELEASE_NOTES_v0_1.md`.
 
-For the planned v0.2 direction, see `docs/V0_2_ROADMAP.md`.
+For v0.2 development docs, see:
+
+- `docs/V0_2_ROADMAP.md`
+- `docs/SCENARIO_DSL_v0_2.md`
+- `docs/SCENARIO_INDEX.md`
+- `docs/VISUALIZATION_v0_2.md`
+- `docs/TRACE_EXPORT_v0_2.md`
+- `docs/RELEASE_NOTES_v0_2.md`
 
 ## What v0.1 Is Not
 

@@ -1,16 +1,15 @@
-scenario_id: 004_relocation_pause_resume
-name: Relocation pause and resume
+scenario_id: 008_invalid_move_contract
+name: Invalid move contract keeps relocation paused
 category: relocation
-description: Pauses a lane during relocation, moves the target device, and resumes traffic on the new route.
+description: Rejects an invalid move contract and keeps relocation flow control active.
 tags:
   - relocation
-  - lane
-  - flow-control
+  - move-contract
+  - validation
 demonstrates:
-  - In-transit state before device movement.
-  - Lane pause and resume behavior during relocation.
-  - Route update after the target traffic hub changes.
-expected_result: The lane returns to active state on the new route with sequence counters preserved.
+  - Move contract validation.
+  - Relocation pause preservation after rejection.
+expected_result: The move contract is rejected and the lane remains paused with flow control retained.
 setup:
   registry_hubs:
     - hub_id: registry_home
@@ -21,14 +20,11 @@ setup:
     - hub_id: hub_1
     - hub_id: hub_2
     - hub_id: hub_3
-    - hub_id: hub_4
   links:
     - from: hub_1
       to: hub_2
     - from: hub_2
       to: hub_3
-    - from: hub_2
-      to: hub_4
   devices:
     - device_id: dev_A9F3
       label: source
@@ -54,22 +50,26 @@ steps:
   - action: pause_lanes_for_relocation
     traffic_hub: hub_1
     device: dev_B2C8
-  - action: move_device
+  - action: create_invalid_move_contract
     device: dev_B2C8
     old_registry_hub: registry_home
     new_registry_hub: registry_office
     old_traffic_hub: hub_3
-    new_traffic_hub: hub_4
-  - action: resume_lanes_after_relocation
-    traffic_hub: hub_1
-    device: dev_B2C8
+    new_traffic_hub: hub_2
 assertions:
+  - type: latest_step_status
+    expected: move_contract_rejected
   - type: lane_state
     traffic_hub: hub_1
     lane: lane_001
-    expected: active
-  - type: lane_sequence
+    expected: paused_relocation
+  - type: flow_control_exists
     traffic_hub: hub_1
     lane: lane_001
-    last_sent: 1
-    last_acknowledged: 1
+  - type: move_not_recorded
+    registry_hub: registry_home
+    device: dev_B2C8
+  - type: attachment_is
+    registry_hub: registry_home
+    device: dev_B2C8
+    expected_attachment: registry_home

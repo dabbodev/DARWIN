@@ -4,38 +4,63 @@
 
 DARWIN v0.2 should make the simulator easier to inspect, extend, and trust as a behavioral model. The release should improve scenario expressiveness, export quality, route-cost modeling, relocation coverage, visualization, and testing depth while preserving deterministic in-memory execution.
 
-## Recommended Workstreams
+## Completed Workstreams
 
-1. Better scenario DSL and validation
-   - Add stricter validation for supported actions, required fields, unknown fields, and assertion types.
-   - Keep YAML readable and avoid a heavy schema tool unless the DSL grows enough to justify it.
+1. Scenario validation and export polish
+   - Structured validation now reports precise locations and suggestions for common scenario issues.
+   - Snapshot, event, and result JSON exports are available from scenario runs.
+   - Existing v0.1 scenarios remain compatible.
 
-2. Event log and snapshot export polish
-   - Stabilize event names and payloads.
-   - Add optional JSON export for event logs and snapshots.
-   - Keep CLI output compact for demos and regression runs.
+2. Route-cost modeling
+   - Route-cost fields and deterministic routing policy behavior are modeled without real networking.
+   - Scenario and unit coverage exercise cost-aware route selection.
 
-3. More route-cost modeling
-   - Expand symbolic route costs beyond hop count.
-   - Model congestion, hub preference, and explicit route penalties without real networking.
-   - Keep route selection deterministic.
+3. Visualization output: Mermaid
+   - Scenario runs can export deterministic Mermaid topology text.
+   - The export is plain text only; it does not render images, mutate topology, or add a UI.
 
-4. Optional actual HMAC-style symbolic-to-real auth bridge
+4. Relocation edge cases
+   - Additional scenarios cover relocation timeout, invalid move contracts, duplicate device claims, and unreachable relocation resume paths.
+   - These scenarios harden existing relocation behavior without changing the simulator into a distributed runtime.
+
+5. Trace and timeline export
+   - Scenario timelines can be exported as JSON or Markdown.
+   - Filters can narrow traces by event type, device, hub, or lane.
+
+6. Scenario DSL presets
+   - Built-in setup presets reduce repeated YAML for common topology shapes.
+   - Presets expand to ordinary setup data before validation and execution.
+
+7. Scenario library indexing
+   - Scenario metadata supports generated Markdown indexing and CLI description output.
+   - The checked-in scenario index documents all current simulator scenarios.
+
+## Remaining Candidates
+
+1. DOT export, if still wanted
+   - Mermaid is implemented; DOT can remain optional if Graphviz-oriented workflows become useful.
+   - Keep any future graph export deterministic and text-based.
+
+2. Optional actual HMAC-style experimental auth bridge
    - Add an optional, clearly labeled bridge that maps symbolic auth checks to standard library HMAC-style verification.
    - Treat it as simulator instrumentation, not a production crypto system.
-   - Avoid custom cryptography and avoid key-management claims.
+   - Avoid custom cryptography, production key-management claims, and security guarantees.
 
-5. More relocation edge cases
-   - Cover route unavailable after move, multiple lanes, source relocation, target relocation, repeated moves, failed move contracts, and timeout-like flows.
-   - Keep state transitions explicit and inspectable.
-
-6. Visualization outputs such as Mermaid or DOT
-   - Export hub graphs, registry paths, lane routes, and relocation flows.
-   - Prefer text outputs that are easy to diff in tests.
-
-7. Property-based or randomized scenario tests, if kept simple
+3. Property-based or randomized scenario tests, if kept simple
    - Use small deterministic seeds if randomized tests are added.
    - Focus on invariants such as unique scoped labels, stable device IDs, and lane sequence monotonicity.
+
+4. Richer route policies
+   - Expand symbolic route policies only where they clarify deterministic routing behavior.
+   - Avoid modeling real network performance or adaptive distributed routing in v0.2.
+
+5. Visualization refinements
+   - Improve Mermaid readability if current output becomes hard to inspect.
+   - Consider DOT only as a text export, not a rendering pipeline or UI.
+
+6. v0.2 release cleanup
+   - Refresh release notes, changelog, checklist, and README links.
+   - Re-run tests, Ruff, scenario regression, and representative CLI export checks.
 
 ## Non-Goals
 
@@ -47,14 +72,17 @@ DARWIN v0.2 should make the simulator easier to inspect, extend, and trust as a 
 
 ## Suggested Milestone Order
 
-1. Freeze v0.1 release notes and architecture docs.
-2. Tighten scenario validation and add focused invalid-scenario tests.
-3. Stabilize event names and add optional machine-readable exports.
-4. Add route-cost policy hooks and deterministic cost tests.
-5. Expand relocation edge-case scenarios and tests.
-6. Add Mermaid or DOT graph export for scenarios and final snapshots.
-7. Evaluate whether a minimal HMAC-style auth bridge belongs in v0.2 or should wait.
-8. Add simple invariant/property tests only after the core scenario DSL is stable.
+1. Completed: freeze v0.1 release notes and architecture docs.
+2. Completed: tighten scenario validation and add focused invalid-scenario tests.
+3. Completed: stabilize machine-readable snapshot, event, and result exports.
+4. Completed: add route-cost policy hooks and deterministic cost tests.
+5. Completed: expand relocation edge-case scenarios and tests.
+6. Completed: add Mermaid graph export for scenarios and final snapshots.
+7. Completed: add timeline trace export in JSON and Markdown.
+8. Completed: add scenario presets and scenario library indexing.
+9. Remaining: evaluate whether a minimal HMAC-style auth bridge belongs in v0.2 or should wait.
+10. Remaining: add simple invariant/property tests only after the core scenario DSL is stable.
+11. Remaining: perform v0.2 release cleanup and final validation.
 
 ## Risks
 

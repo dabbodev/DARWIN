@@ -7,6 +7,7 @@ and production cryptography later.
 
 from darwin.models.device import Device
 from darwin.models.hub import RegistryHub, TrafficHub
+from darwin.sim.presets import expand_scenario, list_builtin_presets
 from darwin.sim.runner import ScenarioRunResult, run_scenario
 from darwin.sim.scenarios import (
     Scenario,
@@ -28,10 +29,12 @@ __all__ = [
     "TrafficHub",
     "World",
     "__version__",
+    "expand_scenario",
+    "list_builtin_presets",
     "load_scenario",
     "run_scenario",
     "validate_scenario_dict",
     "validate_scenario_file",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

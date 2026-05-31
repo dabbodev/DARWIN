@@ -9,6 +9,7 @@ from darwin.models.metrics import RegistryMetrics, TrafficMetrics
 from darwin.models.move import FlowControlRecord, MoveContract, RelocationRecord
 from darwin.models.passport import PassportRecord
 from darwin.models.recommendation import GrowthRecommendation
+from darwin.models.route import LinkMetrics
 
 if TYPE_CHECKING:
     from darwin.models.checkpoint import CheckpointState
@@ -113,14 +114,36 @@ class TrafficHub:
     growth_recommendations: list[GrowthRecommendation] = field(default_factory=list)
     _cross_tree_branches: set[str] = field(default_factory=set)
 
-    def connect_neighbor(self, other_hub: TrafficHub | str) -> None:
+    def connect_neighbor(
+        self,
+        other_hub: TrafficHub | str,
+        metrics: LinkMetrics | None = None,
+        *,
+        latency_ms: int | None = None,
+        congestion: str | None = None,
+        trust: str | None = None,
+        stability: str | None = None,
+    ) -> None:
         """Connect this hub to another hub or neighbor hub ID."""
+        link_metrics = _link_metrics_from_args(
+            metrics,
+            latency_ms=latency_ms,
+            congestion=congestion,
+            trust=trust,
+            stability=stability,
+        )
         if isinstance(other_hub, TrafficHub):
-            self.neighbors[other_hub.hub_id] = NeighborRecord(hub_id=other_hub.hub_id)
-            other_hub.neighbors[self.hub_id] = NeighborRecord(hub_id=self.hub_id)
+            self.neighbors[other_hub.hub_id] = NeighborRecord(
+                hub_id=other_hub.hub_id,
+                metrics=link_metrics,
+            )
+            other_hub.neighbors[self.hub_id] = NeighborRecord(
+                hub_id=self.hub_id,
+                metrics=link_metrics,
+            )
             return
 
-        self.neighbors[other_hub] = NeighborRecord(hub_id=other_hub)
+        self.neighbors[other_hub] = NeighborRecord(hub_id=other_hub, metrics=link_metrics)
 
     def attach_device(self, device: Device | str) -> DirectAttachmentRecord:
         """Attach a device object or device ID to this traffic hub."""
@@ -146,6 +169,7 @@ class NeighborRecord:
 
     hub_id: str
     status: str = "connected"
+    metrics: LinkMetrics = field(default_factory=LinkMetrics)
 
 
 @dataclass(slots=True)
@@ -156,3 +180,25 @@ class DirectAttachmentRecord:
     hub_id: str
     attachment_type: str = "direct"
     status: str = "attached"
+
+
+def _link_metrics_from_args(
+    metrics: LinkMetrics | None,
+    *,
+    latency_ms: int | None,
+    congestion: str | None,
+    trust: str | None,
+    stability: str | None,
+) -> LinkMetrics:
+    if metrics is not None and all(
+        value is None for value in (latency_ms, congestion, trust, stability)
+    ):
+        return metrics
+
+    base = metrics or LinkMetrics()
+    return LinkMetrics(
+        latency_ms=base.latency_ms if latency_ms is None else int(latency_ms),
+        congestion=base.congestion if congestion is None else str(congestion),
+        trust=base.trust if trust is None else str(trust),
+        stability=base.stability if stability is None else str(stability),
+    )

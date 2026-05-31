@@ -114,3 +114,17 @@ class LaneResumeResult:
     def success(self) -> bool:
         return self.action == "lanes_resumed"
 
+
+@dataclass(slots=True)
+class RelocationExpiryResult:
+    """Outcome of expiring a relocation flow-control hold."""
+
+    action: str
+    device_id: str
+    failed_lanes: list[str] = field(default_factory=list)
+    relocation: RelocationRecord | None = None
+    reason: str | None = None
+
+    @property
+    def success(self) -> bool:
+        return self.action == "relocation_failed"
