@@ -16,11 +16,13 @@ from darwin.sim.export import (
     export_timeline_json,
     export_timeline_markdown,
 )
+from darwin.sim.presets import ScenarioPresetError, expand_scenario, list_builtin_presets
 from darwin.sim.runner import ScenarioRunResult, run_scenario
 from darwin.sim.scenarios import (
     ScenarioLoadError,
     list_scenario_files,
     load_scenario,
+    load_scenario_file,
     validate_scenario_file,
 )
 
@@ -117,6 +119,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="validate a scenario file without running it",
     )
     validate_parser.add_argument("scenario", help="path to a YAML or JSON scenario file")
+
+    subparsers.add_parser("list-presets", help="list built-in scenario setup presets")
+
+    expand_parser = subparsers.add_parser(
+        "expand-scenario",
+        help="print a scenario with built-in presets expanded",
+    )
+    expand_parser.add_argument("scenario", help="path to a YAML or JSON scenario file")
     return parser
 
 
@@ -151,6 +161,12 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "validate-scenario":
         return _validate_scenario_command(args.scenario)
+
+    if args.command == "list-presets":
+        return _list_presets_command()
+
+    if args.command == "expand-scenario":
+        return _expand_scenario_command(args.scenario)
 
     parser.print_help()
     return 0
@@ -187,6 +203,38 @@ def _validate_scenario_command(scenario_path: str) -> int:
     for error in result.errors:
         print(f"error: {error.render()}", file=sys.stderr)
     return 1
+
+
+def _list_presets_command() -> int:
+    for preset_name in list_builtin_presets():
+        print(preset_name)
+    return 0
+
+
+def _expand_scenario_command(scenario_path: str) -> int:
+    try:
+        scenario = load_scenario_file(scenario_path)
+        expanded = expand_scenario(scenario)
+    except (OSError, ScenarioLoadError, ScenarioPresetError) as exc:
+        print(f"EXPAND FAILED {scenario_path}", file=sys.stderr)
+        if isinstance(exc, ScenarioPresetError):
+            for error in exc.errors:
+                print(f"error: {error.render()}", file=sys.stderr)
+        else:
+            print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    print(_render_expanded_scenario(expanded))
+    return 0
+
+
+def _render_expanded_scenario(expanded: dict[str, object]) -> str:
+    try:
+        import yaml
+    except ImportError:
+        return json.dumps(expanded, indent=2, sort_keys=True)
+
+    return yaml.safe_dump(expanded, sort_keys=False)
 
 
 def _display_path(path: Path) -> Path:

@@ -1,0 +1,23 @@
+scenario_id: 011_preset_lane_demo
+name: Preset lane demo
+use:
+  - two_branch_network
+steps:
+  - action: register_device
+    device: dev_A9F3
+    registry_hub: registry_home
+    label: phone
+  - action: register_device
+    device: dev_B2C8
+    registry_hub: registry_office
+    label: laptop
+  - action: open_lane
+    source: dev_A9F3
+    target: dev_B2C8
+    traffic_hub: hub_1
+    lane_id: lane_001
+assertions:
+  - type: lane_state
+    traffic_hub: hub_1
+    lane: lane_001
+    expected: active

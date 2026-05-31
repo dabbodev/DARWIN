@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from darwin.sim.presets import ScenarioPresetError, expand_scenario
 from darwin.sim.validation import (
     ScenarioValidationResult,
     ValidationIssue,
@@ -42,11 +43,11 @@ def load_scenario(source: Scenario | dict[str, Any] | str | Path) -> Scenario:
     if isinstance(source, Scenario):
         return source
     if isinstance(source, dict):
-        return scenario_from_dict(source)
+        return scenario_from_dict(expand_scenario(source))
 
     path = Path(source)
     data = load_scenario_file(path)
-    return scenario_from_dict(data)
+    return scenario_from_dict(expand_scenario(data))
 
 
 def load_scenario_file(path: str | Path) -> dict[str, Any]:
@@ -95,8 +96,23 @@ def validate_scenario_dict(
     *,
     path: str | None = None,
 ) -> ScenarioValidationResult:
-    """Validate the v0.1 scenario shape without running scenario steps."""
-    return validate_scenario_data(data, path=path)
+    """Validate the scenario shape without running scenario steps."""
+    try:
+        expanded = expand_scenario(data)
+    except ScenarioPresetError as exc:
+        scenario_id = data.get("scenario_id") or data.get("id")
+        scenario_id = scenario_id.strip() or None if isinstance(scenario_id, str) else None
+        raw_name = data.get("name")
+        name = raw_name.strip() if isinstance(raw_name, str) and raw_name.strip() else None
+        return ScenarioValidationResult(
+            valid=False,
+            errors=exc.errors,
+            scenario_id=scenario_id,
+            name=name,
+            path=path,
+        )
+
+    return validate_scenario_data(expanded, path=path)
 
 
 def list_scenario_files(directory: str | Path) -> list[Path]:
