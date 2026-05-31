@@ -8,7 +8,9 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently at **simulator v0.1**.
+This project is currently released at **simulator v0.1**. The active v0.2
+development branch is consolidating scenario validation, exports, route-cost
+routing, visualization, trace output, presets, and scenario library indexing.
 
 The v0.1 simulator answers questions like:
 
@@ -22,6 +24,19 @@ The v0.1 simulator answers questions like:
 - Can repeated traffic pressure produce an advisory bridge recommendation?
 
 The simulator makes those behaviors visible through deterministic logs, snapshots, YAML scenario files, and tests.
+
+## v0.2 Development Branch
+
+The v0.2 branch remains simulator-only. It does not add real networking,
+production cryptography, DNS integration, an async runtime, or a web UI.
+
+Useful v0.2 docs:
+
+- `docs/SCENARIO_DSL_v0_2.md`
+- `docs/SCENARIO_INDEX.md`
+- `docs/VISUALIZATION_v0_2.md`
+- `docs/TRACE_EXPORT_v0_2.md`
+- `docs/RELEASE_NOTES_v0_2_DRAFT.md`
 
 ## What v0.1 Supports
 
@@ -283,7 +298,12 @@ DARWIN/
     DEMO_GUIDE_v0_1.md
     DEVELOPMENT.md
     RELEASE_NOTES_v0_1.md
+    RELEASE_NOTES_v0_2_DRAFT.md
+    SCENARIO_DSL_v0_2.md
+    SCENARIO_INDEX.md
+    TRACE_EXPORT_v0_2.md
     V0_2_ROADMAP.md
+    VISUALIZATION_v0_2.md
   darwin/
     __init__.py
     ids.py
@@ -625,7 +645,14 @@ constraints, see `docs/DEVELOPMENT.md`.
 
 For v0.1 release notes, see `docs/RELEASE_NOTES_v0_1.md`.
 
-For the planned v0.2 direction, see `docs/V0_2_ROADMAP.md`.
+For v0.2 development docs, see:
+
+- `docs/V0_2_ROADMAP.md`
+- `docs/SCENARIO_DSL_v0_2.md`
+- `docs/SCENARIO_INDEX.md`
+- `docs/VISUALIZATION_v0_2.md`
+- `docs/TRACE_EXPORT_v0_2.md`
+- `docs/RELEASE_NOTES_v0_2_DRAFT.md`
 
 ## What v0.1 Is Not
 
