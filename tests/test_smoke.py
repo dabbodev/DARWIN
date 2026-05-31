@@ -1,11 +1,20 @@
 from darwin import __version__
+from darwin.cli.main import main
 from darwin.models.device import Device
 from darwin.models.hub import RegistryHub, TrafficHub
 from darwin.sim.world import World
 
 
 def test_package_imports():
-    assert __version__ == "0.1.0"
+    assert __version__ == "0.2.0"
+
+
+def test_cli_version_reports_package_version(capsys):
+    exit_code = main(["--version"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert captured.out.strip() == "darwin-sim 0.2.0"
 
 
 def test_world_can_hold_device_and_hubs():

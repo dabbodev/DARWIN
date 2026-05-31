@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.2.0] - Unreleased
+## [0.2.0] - 2026-05-31
 
 DARWIN v0.2.0 is the active simulator consolidation release for improving
 scenario authoring, inspection, and export readiness while preserving

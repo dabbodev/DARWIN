@@ -1,6 +1,6 @@
-# DARWIN Simulator v0.2.0 Draft Release Notes
+# DARWIN Simulator v0.2.0 Release Notes
 
-DARWIN simulator v0.2.0 is the active development release for the
+DARWIN simulator v0.2.0 is the release for the
 Direct-Access Registration Window Interface Network model. It builds on v0.1 by
 making scenarios easier to validate, reuse, inspect, and export while keeping
 the simulator deterministic, in-memory, and simulator-only.

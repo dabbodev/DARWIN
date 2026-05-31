@@ -22,6 +22,7 @@ def test_documentation_links_exist():
         PROJECT_ROOT / "docs" / "DEMO_GUIDE_v0_1.md",
         PROJECT_ROOT / "docs" / "DEVELOPMENT.md",
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_1.md",
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_2.md",
     ]
 
     referenced_paths = {
@@ -47,10 +48,14 @@ def test_version_consistency():
     release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_1.md").read_text(
         encoding="utf-8"
     )
+    current_release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_2.md").read_text(
+        encoding="utf-8"
+    )
 
     assert darwin.__version__ == project_version
-    assert f"## v{project_version}" in changelog
-    assert f"v{project_version}" in release_notes
+    assert f"[{project_version}]" in changelog or f"## v{project_version}" in changelog
+    assert f"v{project_version}" in current_release_notes
+    assert "v0.1.0" in release_notes
 
 
 def test_license_consistency():
