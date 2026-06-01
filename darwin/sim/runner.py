@@ -7,6 +7,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+from darwin.auth.hmac_bridge import (
+    checkpoint_auth_material,
+    compute_hmac_tag,
+)
+from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
 from darwin.models.checkpoint import make_checkpoint_packet
 from darwin.models.device import Device
 from darwin.models.hub import LocalDeviceRecord
@@ -301,6 +306,9 @@ def _step_send_lane_data(world: World, fields: dict[str, Any]) -> None:
         payload=fields.get("payload"),
         all_hubs=world.traffic_hubs,
         auth_tag_valid=bool(fields.get("auth_tag_valid", True)),
+        auth_mode=str(fields.get("auth_mode", AUTH_MODE_SYMBOLIC)),
+        auth_secret=_optional_str(fields.get("auth_secret")),
+        tamper_auth_tag=bool(fields.get("tamper_auth_tag", False)),
     )
     world.action_results.append(result)
     world.log(
@@ -337,10 +345,17 @@ def _step_record_checkpoint(world: World, fields: dict[str, Any]) -> None:
         state=str(fields["state"]),
         current_time=world.current_time,
         auth_tag_valid=bool(fields.get("auth_tag_valid", True)),
+        auth_mode=str(fields.get("auth_mode", AUTH_MODE_SYMBOLIC)),
         battery_level=_optional_int(fields.get("battery_level")),
         active_lane_count=_optional_int(fields.get("active_lane_count")),
     )
-    result = record_checkpoint_op(hub, packet)
+    auth_secret = _optional_str(fields.get("auth_secret"))
+    if packet.auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL and auth_secret is not None:
+        packet.auth_tag = compute_hmac_tag(auth_secret, checkpoint_auth_material(packet))
+        if bool(fields.get("tamper_auth_tag", False)) or not packet.auth_tag_valid:
+            packet.auth_tag = _tampered_tag(packet.auth_tag)
+
+    result = record_checkpoint_op(hub, packet, auth_secret=auth_secret)
     world.action_results.append(result)
     world.log(
         f"{result.action} for {result.device_id} at {hub.hub_id} state={fields['state']}",
@@ -602,6 +617,13 @@ def _step_verify_rolling_proof(world: World, fields: dict[str, Any]) -> None:
         str(fields["device"]),
         proof_valid=bool(fields["proof_valid"]),
         current_time=world.current_time,
+        auth_mode=str(fields.get("auth_mode", AUTH_MODE_SYMBOLIC)),
+        auth_secret=_optional_str(fields.get("auth_secret")),
+        auth_tag=_optional_str(fields.get("auth_tag")),
+        session_id=_optional_str(fields.get("session_id")),
+        counter=_optional_int(fields.get("counter")),
+        nonce=_optional_str(fields.get("nonce")),
+        capability=_optional_str(fields.get("capability")),
     )
     world.action_results.append(result)
     world.log(
@@ -716,3 +738,7 @@ def _link_metrics(link_config: dict[str, Any]) -> LinkMetrics:
         trust=str(link_config.get("trust", "verified")),
         stability=str(link_config.get("stability", "stable")),
     )
+
+
+def _tampered_tag(tag: str) -> str:
+    return ("0" if tag[:1] != "0" else "1") + tag[1:]

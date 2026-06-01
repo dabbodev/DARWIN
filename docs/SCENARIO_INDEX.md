@@ -1,6 +1,6 @@
 # DARWIN Scenario Index
 
-Scenarios are deterministic, v0.2 supports presets through `use`, and scenarios are simulator-only.
+Scenarios are deterministic, support presets through `use`, and are simulator-only.
 
 | Scenario | Category | Description | Tags |
 | --- | --- | --- | --- |
@@ -15,3 +15,5 @@ Scenarios are deterministic, v0.2 supports presets through `use`, and scenarios 
 | `009_duplicate_device_claim` - Duplicate device claim during relocation | security | Simulates a duplicate device claim while relocation is paused. | `relocation`, `duplicate-device`, `conflict` |
 | `010_unreachable_relocation_resume` - Unreachable relocation resume keeps flow control | relocation | Attempts to resume relocation traffic when the moved target has no reachable route. | `relocation`, `routing`, `flow-control` |
 | `011_preset_lane_demo` - Preset lane demo | preset | Uses a built-in two-branch setup preset to open a lane with minimal YAML. | `preset`, `lane`, `two-branch-network` |
+| `012_hmac_checkpoint_success` - HMAC checkpoint success | security | Records a test-only HMAC-authenticated checkpoint. | `hmac`, `checkpoint`, `simulator-only` |
+| `013_hmac_packet_auth_failure` - HMAC packet auth failure | security | Rejects a lane packet with a tampered test-only HMAC tag. | `hmac`, `packet-auth`, `simulator-only` |

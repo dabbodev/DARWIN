@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from darwin.auth.hmac_bridge import (
+    verify_rolling_proof_tag,
+)
+from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
 from darwin.models.hub import ConflictRecord, RegistryHub
 from darwin.models.security import (
     DuplicateIdentityConflict,
@@ -90,8 +94,27 @@ def verify_rolling_proof(
     proof_valid: bool,
     source_hub_id: str | None = None,
     current_time: int | None = None,
+    auth_mode: str = AUTH_MODE_SYMBOLIC,
+    auth_secret: str | bytes | None = None,
+    auth_tag: str | None = None,
+    session_id: str | None = None,
+    counter: int | None = None,
+    nonce: str | None = None,
+    capability: str | None = None,
 ) -> RollingProofResult:
-    """Check symbolic same-network continuity and quarantine on failure."""
+    """Check same-network continuity and quarantine on failure."""
+    if auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL:
+        proof_valid = _hmac_rolling_proof_valid(
+            registry_hub=registry_hub,
+            device_id=device_id,
+            auth_secret=auth_secret,
+            auth_tag=auth_tag,
+            session_id=session_id,
+            counter=counter,
+            nonce=nonce,
+            capability=capability,
+        )
+
     if proof_valid:
         return RollingProofResult(
             action="rolling_proof_verified",
@@ -115,6 +138,39 @@ def verify_rolling_proof(
         security_event=quarantine.security_event,
         reason="rolling_proof_failed",
     )
+
+
+def _hmac_rolling_proof_valid(
+    *,
+    registry_hub: RegistryHub,
+    device_id: str,
+    auth_secret: str | bytes | None,
+    auth_tag: str | None,
+    session_id: str | None,
+    counter: int | None,
+    nonce: str | None,
+    capability: str | None,
+) -> bool:
+    if (
+        auth_secret is None
+        or auth_tag is None
+        or session_id is None
+        or counter is None
+        or nonce is None
+        or capability is None
+    ):
+        return False
+    result = verify_rolling_proof_tag(
+        auth_secret,
+        device_id=device_id,
+        hub_id=registry_hub.hub_id,
+        session_id=session_id,
+        counter=counter,
+        nonce=nonce,
+        capability=capability,
+        expected_tag=auth_tag,
+    )
+    return result.success
 
 
 def detect_duplicate_device_claim(

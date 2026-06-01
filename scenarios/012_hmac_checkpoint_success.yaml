@@ -1,0 +1,37 @@
+scenario_id: 012_hmac_checkpoint_success
+name: HMAC checkpoint success
+category: security
+description: Records a test-only HMAC-authenticated checkpoint.
+tags:
+  - hmac
+  - checkpoint
+  - simulator-only
+demonstrates:
+  - Experimental HMAC-SHA256 checkpoint verification.
+  - Explicit opt-in auth mode while symbolic auth remains the default.
+expected_result: The valid HMAC checkpoint updates the device state to online.
+setup:
+  registry_hubs:
+    - hub_id: hub_home_001
+      scope_path: global.family.david.home
+  devices:
+    - device_id: dev_A9F3
+      label: phone
+steps:
+  - action: register_device
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    label: phone
+  - action: record_checkpoint
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    state: online
+    auth_mode: hmac_sha256_experimental
+    auth_secret: test_secret_simulator_only
+assertions:
+  - type: latest_step_status
+    expected: checkpoint_recorded
+  - type: device_state
+    registry_hub: hub_home_001
+    device: dev_A9F3
+    expected: online

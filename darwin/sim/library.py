@@ -99,8 +99,8 @@ def scenario_index_markdown(metadata: list[ScenarioMetadata]) -> str:
     lines = [
         "# DARWIN Scenario Index",
         "",
-        "Scenarios are deterministic, v0.2 supports presets through `use`, "
-        "and scenarios are simulator-only.",
+        "Scenarios are deterministic, support presets through `use`, and are "
+        "simulator-only.",
         "",
         "| Scenario | Category | Description | Tags |",
         "| --- | --- | --- | --- |",

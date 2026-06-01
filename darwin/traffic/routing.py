@@ -149,9 +149,10 @@ def forward_packet(
     packet: DarwinPacket,
     all_hubs: dict[str, TrafficHub] | None = None,
     policy: RoutingPolicy | None = None,
+    auth_secret: str | bytes | None = None,
 ) -> ForwardingResult:
     """Forward a simulated DARWIN packet through traffic hubs, if a route exists."""
-    auth_result = verify_packet_auth(start_hub, packet)
+    auth_result = verify_packet_auth(start_hub, packet, auth_secret=auth_secret)
     if not auth_result.success:
         result = ForwardingResult(
             packet_id=packet.packet_id,
