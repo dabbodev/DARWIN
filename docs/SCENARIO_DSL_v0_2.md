@@ -118,3 +118,14 @@ Generate the Markdown index:
 ```powershell
 python -m darwin.cli.main scenario-index
 ```
+
+## v0.3 Auth Bridge Scenarios
+
+The v0.3 auth bridge adds simulator-only HMAC scenarios without changing v0.2
+scenario semantics. Symbolic auth remains the default; HMAC checks require
+explicit `auth_mode: hmac_sha256_experimental` in the scenario step.
+
+Checked-in auth bridge scenarios:
+
+- `scenarios/012_hmac_checkpoint_success.yaml`
+- `scenarios/013_hmac_packet_auth_failure.yaml`

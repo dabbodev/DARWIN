@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.3.0] - Unreleased
+
+DARWIN v0.3.0 is planned as a simulator-only auth bridge release. It keeps
+symbolic authentication as the default while adding an explicit experimental
+path for HMAC-style verification in selected scenarios.
+
+Added:
+
+- Experimental HMAC-SHA256 auth bridge helpers using Python standard-library
+  `hmac`, `hashlib`, and deterministic JSON canonicalization.
+- Opt-in `hmac_sha256_experimental` mode for packet, checkpoint, and
+  rolling-proof simulator checks.
+- HMAC-authenticated checkpoint scenario:
+  `scenarios/012_hmac_checkpoint_success.yaml`.
+- HMAC packet auth failure scenario:
+  `scenarios/013_hmac_packet_auth_failure.yaml`.
+- Centralized auth mode constants in `darwin/auth/modes.py`.
+- Documentation warning that the auth bridge is simulator-only and is not
+  production cryptography.
+
+Compatibility and limits:
+
+- Symbolic auth remains the default.
+- v0.2 scenarios are expected to keep validating and running unchanged.
+- v0.3 does not add real networking, key exchange, secure storage,
+  certificate chains, production cryptography, or production auth claims.
+
 ## [0.2.0] - 2026-05-31
 
 DARWIN v0.2.0 is the active simulator consolidation release for improving

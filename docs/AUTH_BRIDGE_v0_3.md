@@ -8,6 +8,11 @@ booleans toward deterministic HMAC-style verification.
 This is not production cryptography. It is only a DARWIN simulator experiment
 for packets, checkpoints, and rolling proof scenarios.
 
+Planning docs:
+
+- `docs/V0_3_ROADMAP.md`
+- `docs/RELEASE_NOTES_v0_3_DRAFT.md`
+
 ## What It Does
 
 - Keeps `symbolic` auth as the default mode.
@@ -62,6 +67,11 @@ auth_tag_valid: false
 
 Secrets in scenarios are deterministic test fixtures only. Do not store real
 secrets in DARWIN scenarios or documentation.
+
+Checked-in HMAC scenarios:
+
+- `scenarios/012_hmac_checkpoint_success.yaml`
+- `scenarios/013_hmac_packet_auth_failure.yaml`
 
 ## Future Work
 

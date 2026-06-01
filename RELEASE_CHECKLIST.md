@@ -57,3 +57,33 @@ python -m darwin.cli.main describe-scenario scenarios/011_preset_lane_demo.yaml
 python -m darwin.cli.main expand-scenario scenarios/011_preset_lane_demo.yaml
 python -m darwin.cli.main run scenarios/004_relocation_pause_resume.yaml --export-snapshot tmp_v02_snapshot.json --export-events tmp_v02_events.json --export-result tmp_v02_result.json --export-mermaid tmp_v02.mmd --export-timeline-md tmp_v02_timeline.md --export-timeline-json tmp_v02_timeline.json
 ```
+
+# DARWIN v0.3 Auth Bridge Release Checklist
+
+- [ ] Ruff passes with `python -m ruff check .`.
+- [ ] Tests pass with `python -m pytest`.
+- [ ] All checked-in scenarios pass with `python scripts/run_all_scenarios.py`.
+- [ ] Scenario index is generated with `python -m darwin.cli.main scenario-index`.
+- [ ] HMAC checkpoint scenario validates and runs:
+  `scenarios/012_hmac_checkpoint_success.yaml`.
+- [ ] HMAC packet auth failure scenario validates and runs:
+  `scenarios/013_hmac_packet_auth_failure.yaml`.
+- [ ] Auth bridge docs are checked in `docs/AUTH_BRIDGE_v0_3.md`.
+- [ ] Release notes draft is checked in `docs/RELEASE_NOTES_v0_3_DRAFT.md`.
+- [ ] Symbolic auth default is confirmed.
+- [ ] Package version bump to `0.3.0` is deferred until final release cleanup.
+- [ ] Documentation avoids production cryptography, key exchange, secure
+  storage, certificate chain, or real networking claims.
+
+## v0.3 Auth Bridge Manual Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main describe-scenario scenarios/012_hmac_checkpoint_success.yaml
+python -m darwin.cli.main describe-scenario scenarios/013_hmac_packet_auth_failure.yaml
+python -m darwin.cli.main run scenarios/012_hmac_checkpoint_success.yaml
+python -m darwin.cli.main run scenarios/013_hmac_packet_auth_failure.yaml
+```
