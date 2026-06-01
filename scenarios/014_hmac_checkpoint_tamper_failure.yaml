@@ -1,0 +1,47 @@
+scenario_id: 014_hmac_checkpoint_tamper_failure
+name: HMAC checkpoint tamper failure
+category: security
+description: Rejects a checkpoint whose payload is changed after a test-only HMAC tag is created.
+tags:
+  - hmac
+  - checkpoint
+  - tamper
+  - simulator-only
+demonstrates:
+  - Experimental HMAC-SHA256 checkpoint payload binding.
+  - Failed HMAC checkpoint verification does not overwrite trusted registry state.
+expected_result: The tampered checkpoint is rejected and the device remains online from the last valid checkpoint.
+setup:
+  registry_hubs:
+    - hub_id: hub_home_001
+      scope_path: global.family.david.home
+  devices:
+    - device_id: dev_A9F3
+      label: phone
+steps:
+  - action: register_device
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    label: phone
+  - action: record_checkpoint
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    state: online
+    auth_mode: hmac_sha256_experimental
+    auth_secret: test_secret_simulator_only
+  - action: record_checkpoint
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    state: active
+    auth_mode: hmac_sha256_experimental
+    auth_secret: test_secret_simulator_only
+    tamper_payload_after_tag: true
+assertions:
+  - type: latest_step_status
+    expected: checkpoint_rejected
+  - type: device_state
+    registry_hub: hub_home_001
+    device: dev_A9F3
+    expected: online
+  - type: event_seen
+    event_type: checkpoint_rejected

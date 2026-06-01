@@ -482,6 +482,9 @@ def _validate_step_auth_fields(
 
     _validate_optional_bool(step, "auth_tag_valid", location, errors)
     _validate_optional_bool(step, "tamper_auth_tag", location, errors)
+    _validate_optional_bool(step, "tamper_payload_after_tag", location, errors)
+    _validate_optional_bool(step, "tamper_counter", location, errors)
+    _validate_optional_bool(step, "tamper_nonce", location, errors)
 
 
 def _validate_optional_bool(

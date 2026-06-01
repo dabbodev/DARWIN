@@ -59,10 +59,24 @@ Packet scenarios can intentionally tamper the generated tag:
 tamper_auth_tag: true
 ```
 
-Checkpoint scenarios can also force invalid auth with:
+Checkpoint scenarios can force invalid auth with:
 
 ```yaml
 auth_tag_valid: false
+```
+
+They can also model material tampering after tag creation:
+
+```yaml
+tamper_payload_after_tag: true
+```
+
+Rolling-proof scenarios can generate a test tag from step fields and then
+tamper the verified material:
+
+```yaml
+tamper_nonce: true
+tamper_counter: true
 ```
 
 Secrets in scenarios are deterministic test fixtures only. Do not store real
@@ -72,6 +86,25 @@ Checked-in HMAC scenarios:
 
 - `scenarios/012_hmac_checkpoint_success.yaml`
 - `scenarios/013_hmac_packet_auth_failure.yaml`
+- `scenarios/014_hmac_checkpoint_tamper_failure.yaml`
+- `scenarios/015_hmac_missing_secret_failure.yaml`
+- `scenarios/016_hmac_rolling_proof_failure.yaml`
+
+## Edge-Case Coverage
+
+The v0.3 simulator tests and scenarios cover these failure boundaries:
+
+- Wrong HMAC secret.
+- Checkpoint or packet material changed after tag creation.
+- Missing HMAC secret/configuration.
+- Rolling-proof nonce mismatch.
+- Rolling-proof counter mismatch.
+- Quarantined source devices remain blocked even when packet HMAC verifies.
+- Default packet and checkpoint construction still uses symbolic auth.
+
+Failed packet auth reuses `invalid_auth_tag` and prevents delivery. Failed
+checkpoint auth rejects the update and leaves the previous trusted checkpoint
+state in place. Failed rolling proofs reuse the existing quarantine path.
 
 ## Future Work
 

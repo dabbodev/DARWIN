@@ -10,6 +10,7 @@ from typing import Any
 from darwin.auth.hmac_bridge import (
     checkpoint_auth_material,
     compute_hmac_tag,
+    rolling_proof_material,
 )
 from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
 from darwin.models.checkpoint import make_checkpoint_packet
@@ -352,6 +353,8 @@ def _step_record_checkpoint(world: World, fields: dict[str, Any]) -> None:
     auth_secret = _optional_str(fields.get("auth_secret"))
     if packet.auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL and auth_secret is not None:
         packet.auth_tag = compute_hmac_tag(auth_secret, checkpoint_auth_material(packet))
+        if bool(fields.get("tamper_payload_after_tag", False)):
+            packet.payload["device_state"] = f"tampered_{packet.state}"
         if bool(fields.get("tamper_auth_tag", False)) or not packet.auth_tag_valid:
             packet.auth_tag = _tampered_tag(packet.auth_tag)
 
@@ -612,18 +615,51 @@ def _step_resume_lanes_after_relocation(world: World, fields: dict[str, Any]) ->
 
 def _step_verify_rolling_proof(world: World, fields: dict[str, Any]) -> None:
     hub = world.registry_hubs[str(fields["registry_hub"])]
+    auth_mode = str(fields.get("auth_mode", AUTH_MODE_SYMBOLIC))
+    auth_secret = _optional_str(fields.get("auth_secret"))
+    session_id = _optional_str(fields.get("session_id"))
+    counter = _optional_int(fields.get("counter"))
+    nonce = _optional_str(fields.get("nonce"))
+    capability = _optional_str(fields.get("capability", fields.get("requested_capability")))
+    auth_tag = _optional_str(fields.get("auth_tag"))
+
+    if (
+        auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL
+        and auth_secret is not None
+        and auth_tag is None
+        and session_id is not None
+        and counter is not None
+        and nonce is not None
+        and capability is not None
+    ):
+        auth_tag = compute_hmac_tag(
+            auth_secret,
+            rolling_proof_material(
+                device_id=str(fields["device"]),
+                hub_id=hub.hub_id,
+                session_id=session_id,
+                counter=counter,
+                nonce=nonce,
+                capability=capability,
+            ),
+        )
+        if bool(fields.get("tamper_counter", False)):
+            counter += 1
+        if bool(fields.get("tamper_nonce", False)):
+            nonce = f"{nonce}_tampered"
+
     result = verify_rolling_proof_op(
         hub,
         str(fields["device"]),
         proof_valid=bool(fields["proof_valid"]),
         current_time=world.current_time,
-        auth_mode=str(fields.get("auth_mode", AUTH_MODE_SYMBOLIC)),
-        auth_secret=_optional_str(fields.get("auth_secret")),
-        auth_tag=_optional_str(fields.get("auth_tag")),
-        session_id=_optional_str(fields.get("session_id")),
-        counter=_optional_int(fields.get("counter")),
-        nonce=_optional_str(fields.get("nonce")),
-        capability=_optional_str(fields.get("capability")),
+        auth_mode=auth_mode,
+        auth_secret=auth_secret,
+        auth_tag=auth_tag,
+        session_id=session_id,
+        counter=counter,
+        nonce=nonce,
+        capability=capability,
     )
     world.action_results.append(result)
     world.log(

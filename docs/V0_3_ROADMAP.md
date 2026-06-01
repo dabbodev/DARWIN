@@ -13,12 +13,16 @@ scenario or focused test opts in.
 - Rolling proof HMAC helper for deterministic simulator tests.
 - Scenario `012_hmac_checkpoint_success`.
 - Scenario `013_hmac_packet_auth_failure`.
+- Scenario `014_hmac_checkpoint_tamper_failure`.
+- Scenario `015_hmac_missing_secret_failure`.
+- Scenario `016_hmac_rolling_proof_failure`.
 - Auth bridge documentation and audit pass.
+- HMAC edge-case tests for wrong secrets, tampered material, missing
+  configuration, rolling-proof nonce/counter mismatch, and quarantine boundary
+  behavior.
 
 ## Remaining Candidates
 
-- More HMAC edge-case scenarios, including missing secrets, missing tags,
-  mismatched payload material, and checkpoint rejection paths.
 - Session-secret lifecycle modeling.
 - Key rotation simulation.
 - Revocation interaction with HMAC mode.

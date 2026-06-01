@@ -17,3 +17,6 @@ Scenarios are deterministic, support presets through `use`, and are simulator-on
 | `011_preset_lane_demo` - Preset lane demo | preset | Uses a built-in two-branch setup preset to open a lane with minimal YAML. | `preset`, `lane`, `two-branch-network` |
 | `012_hmac_checkpoint_success` - HMAC checkpoint success | security | Records a test-only HMAC-authenticated checkpoint. | `hmac`, `checkpoint`, `simulator-only` |
 | `013_hmac_packet_auth_failure` - HMAC packet auth failure | security | Rejects a lane packet with a tampered test-only HMAC tag. | `hmac`, `packet-auth`, `simulator-only` |
+| `014_hmac_checkpoint_tamper_failure` - HMAC checkpoint tamper failure | security | Rejects a checkpoint whose payload is changed after a test-only HMAC tag is created. | `hmac`, `checkpoint`, `tamper`, `simulator-only` |
+| `015_hmac_missing_secret_failure` - HMAC missing secret failure | security | Rejects an HMAC-mode lane packet when no simulator test secret is supplied. | `hmac`, `packet-auth`, `missing-secret`, `simulator-only` |
+| `016_hmac_rolling_proof_failure` - HMAC rolling proof failure | security | Rejects test-only HMAC rolling proofs when nonce or counter material changes after tag creation. | `hmac`, `rolling-proof`, `quarantine`, `simulator-only` |
