@@ -336,6 +336,46 @@ def _recommendation_exists(
     )
 
 
+def _session_state(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    session_id = str(assertion.get("session_id"))
+    expected = str(assertion.get("expected"))
+    actual = None
+    if hub is not None and session_id in hub.local_sessions:
+        actual = hub.local_sessions[session_id].state
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"{session_id} session state is {expected}",
+        actual,
+    )
+
+
+def _session_counter(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    session_id = str(assertion.get("session_id"))
+    expected = int(assertion.get("expected", 0))
+    actual = None
+    if hub is not None and session_id in hub.local_sessions:
+        actual = hub.local_sessions[session_id].current_counter
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"{session_id} session counter is {expected}",
+        actual,
+    )
+
+
 def _result(
     assertion_type: str,
     passed: bool,
@@ -378,4 +418,6 @@ _EVALUATORS = {
     "conflict_exists": _conflict_exists,
     "quarantine_exists": _quarantine_exists,
     "recommendation_exists": _recommendation_exists,
+    "session_state": _session_state,
+    "session_counter": _session_counter,
 }

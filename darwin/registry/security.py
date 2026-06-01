@@ -16,6 +16,10 @@ from darwin.models.security import (
 )
 from darwin.registry.metrics import record_duplicate_device_conflict, refresh_registry_counts
 from darwin.registry.relocation import get_latest_move
+from darwin.registry.sessions import (
+    get_local_session,
+    verify_hmac_rolling_proof_for_session,
+)
 
 
 def log_security_event(
@@ -113,6 +117,7 @@ def verify_rolling_proof(
             counter=counter,
             nonce=nonce,
             capability=capability,
+            current_time=current_time,
         )
 
     if proof_valid:
@@ -150,16 +155,31 @@ def _hmac_rolling_proof_valid(
     counter: int | None,
     nonce: str | None,
     capability: str | None,
+    current_time: int | None,
 ) -> bool:
     if (
-        auth_secret is None
-        or auth_tag is None
+        auth_tag is None
         or session_id is None
         or counter is None
         or nonce is None
         or capability is None
     ):
         return False
+    session = get_local_session(registry_hub, session_id)
+    if session is not None:
+        return verify_hmac_rolling_proof_for_session(
+            registry_hub,
+            session_id,
+            counter,
+            nonce,
+            capability,
+            auth_tag,
+            current_time=current_time,
+        ).success
+
+    if auth_secret is None:
+        return False
+
     result = verify_rolling_proof_tag(
         auth_secret,
         device_id=device_id,

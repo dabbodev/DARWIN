@@ -1,0 +1,67 @@
+scenario_id: 017_hmac_session_rotation
+name: HMAC session rotation
+category: security
+description: Rotates a simulator-local HMAC session secret and rejects proof material signed with the old secret.
+tags:
+  - hmac
+  - session
+  - rotation
+  - simulator-only
+demonstrates:
+  - RegistryHub-owned local session records can verify rolling proof material.
+  - Rotation replaces the test secret, increments the rotation index, and resets the counter.
+  - Old proof material fails after rotation while the new secret succeeds.
+expected_result: Old-secret proof is rejected after rotation and new-secret proof is accepted.
+setup:
+  registry_hubs:
+    - hub_id: hub_home_001
+      scope_path: global.family.david.home
+  devices:
+    - device_id: dev_A9F3
+      label: phone
+steps:
+  - action: register_device
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    label: phone
+  - action: create_local_session
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    session_id: session_rotation_001
+    auth_secret: old_test_secret_simulator_only
+  - action: verify_hmac_session_proof
+    registry_hub: hub_home_001
+    session_id: session_rotation_001
+    counter: 1
+    nonce: nonce_before_rotation
+    requested_capability: send_normal_traffic
+  - action: rotate_local_session
+    registry_hub: hub_home_001
+    session_id: session_rotation_001
+    new_auth_secret: new_test_secret_simulator_only
+  - action: verify_hmac_session_proof
+    registry_hub: hub_home_001
+    session_id: session_rotation_001
+    counter: 1
+    nonce: nonce_old_secret
+    requested_capability: send_normal_traffic
+    auth_secret: old_test_secret_simulator_only
+  - action: verify_hmac_session_proof
+    registry_hub: hub_home_001
+    session_id: session_rotation_001
+    counter: 2
+    nonce: nonce_new_secret
+    requested_capability: send_normal_traffic
+assertions:
+  - type: latest_step_status
+    expected: rolling_proof_verified
+  - type: session_state
+    registry_hub: hub_home_001
+    session_id: session_rotation_001
+    expected: active
+  - type: session_counter
+    registry_hub: hub_home_001
+    session_id: session_rotation_001
+    expected: 2
+  - type: event_seen
+    event_type: rolling_proof_rejected

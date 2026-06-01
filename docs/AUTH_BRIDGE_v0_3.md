@@ -82,6 +82,60 @@ tamper_counter: true
 Secrets in scenarios are deterministic test fixtures only. Do not store real
 secrets in DARWIN scenarios or documentation.
 
+## Session Lifecycle Modeling
+
+v0.3 also includes simulator-local session secret records owned by a
+`RegistryHub`. These records are deterministic test/demo fixtures. They do not
+perform key exchange, secure storage, production key management, networking, or
+public-key signing.
+
+A local session records:
+
+- The session ID, device ID, owning hub ID, and scope.
+- The opt-in auth mode, currently `hmac_sha256_experimental`.
+- A deterministic test secret supplied by the scenario or test.
+- The current rolling-proof counter.
+- Optional integer simulated-time `created_at` and `expires_at` values.
+- Session state and rotation index.
+
+Session creation only succeeds for devices already registered with the owning
+`RegistryHub`. Expiration uses integer simulated time: when
+`current_time >= expires_at`, the session becomes `expired` and cannot verify
+rolling proof material. Rotation replaces the test secret, increments
+`rotation_index`, and resets `current_counter` to `0`.
+
+Session-bound rolling proof verification requires a counter strictly greater
+than the stored session counter. Successful verification advances the stored
+counter. Reusing a counter, lowering a counter, using an expired session, or
+using a tag generated with an old secret fails cleanly.
+
+Scenario actions:
+
+```yaml
+- action: create_local_session
+  registry_hub: hub_home_001
+  device: dev_A9F3
+  session_id: session_001
+  auth_secret: test_secret_simulator_only
+  ttl: 10
+
+- action: rotate_local_session
+  registry_hub: hub_home_001
+  session_id: session_001
+  new_auth_secret: new_test_secret_simulator_only
+
+- action: expire_local_sessions
+  registry_hub: hub_home_001
+  current_time: 12
+
+- action: verify_hmac_session_proof
+  registry_hub: hub_home_001
+  session_id: session_001
+  counter: 1
+  nonce: nonce_001
+  requested_capability: send_normal_traffic
+```
+
 Checked-in HMAC scenarios:
 
 - `scenarios/012_hmac_checkpoint_success.yaml`
@@ -89,6 +143,8 @@ Checked-in HMAC scenarios:
 - `scenarios/014_hmac_checkpoint_tamper_failure.yaml`
 - `scenarios/015_hmac_missing_secret_failure.yaml`
 - `scenarios/016_hmac_rolling_proof_failure.yaml`
+- `scenarios/017_hmac_session_rotation.yaml`
+- `scenarios/018_hmac_session_expiration.yaml`
 
 ## Edge-Case Coverage
 
@@ -99,6 +155,9 @@ The v0.3 simulator tests and scenarios cover these failure boundaries:
 - Missing HMAC secret/configuration.
 - Rolling-proof nonce mismatch.
 - Rolling-proof counter mismatch.
+- Session expiration blocks rolling-proof verification.
+- Session rotation invalidates proof tags generated with the old secret.
+- Session counters reject same-counter and lower-counter reuse.
 - Quarantined source devices remain blocked even when packet HMAC verifies.
 - Default packet and checkpoint construction still uses symbolic auth.
 
@@ -110,5 +169,4 @@ state in place. Failed rolling proofs reuse the existing quarantine path.
 
 - Add explicit auth configuration objects to scenario setup if the simulator
   grows beyond per-step test fixtures.
-- Model rolling proof sessions without adding key exchange or production claims.
 - Expand trace exports to show auth mode and verification outcome.

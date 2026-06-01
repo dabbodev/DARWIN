@@ -16,6 +16,12 @@ scenario or focused test opts in.
 - Scenario `014_hmac_checkpoint_tamper_failure`.
 - Scenario `015_hmac_missing_secret_failure`.
 - Scenario `016_hmac_rolling_proof_failure`.
+- Simulator-local session secret records owned by `RegistryHub`.
+- Session expiration using integer simulated time.
+- Session rotation with deterministic test secrets and counter reset.
+- Session-bound rolling proof verification with stale-counter rejection.
+- Scenario `017_hmac_session_rotation`.
+- Scenario `018_hmac_session_expiration`.
 - Auth bridge documentation and audit pass.
 - HMAC edge-case tests for wrong secrets, tampered material, missing
   configuration, rolling-proof nonce/counter mismatch, and quarantine boundary
@@ -23,8 +29,6 @@ scenario or focused test opts in.
 
 ## Remaining Candidates
 
-- Session-secret lifecycle modeling.
-- Key rotation simulation.
 - Revocation interaction with HMAC mode.
 - HMAC move-contract proof modeling, still simulator-only.
 - v0.3 release cleanup, including final checklist pass, release notes, version

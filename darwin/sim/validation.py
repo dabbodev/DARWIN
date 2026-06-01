@@ -112,6 +112,16 @@ STEP_REQUIRED_FIELDS = {
     "resume_lanes_after_relocation": ("traffic_hub", "device"),
     "attempt_lane_send": ("traffic_hub", "lane", "payload"),
     "verify_rolling_proof": ("registry_hub", "device", "proof_valid"),
+    "create_local_session": ("registry_hub", "device", "session_id", "auth_secret"),
+    "rotate_local_session": ("registry_hub", "session_id", "new_auth_secret"),
+    "expire_local_sessions": ("registry_hub", "current_time"),
+    "verify_hmac_session_proof": (
+        "registry_hub",
+        "session_id",
+        "counter",
+        "nonce",
+        "requested_capability",
+    ),
     "record_cross_tree_packet": ("traffic_hub", "from_branch", "to_branch"),
     "recommend_traffic_bridge": ("traffic_hub",),
     "advance_time": (),
@@ -136,6 +146,8 @@ ASSERTION_REQUIRED_FIELDS = {
     "quarantine_exists": ("registry_hub", "device"),
     "recommendation_exists": ("traffic_hub", "recommendation_type"),
     "route_for_lane": ("traffic_hub", "lane", "expected_route"),
+    "session_state": ("registry_hub", "session_id", "expected"),
+    "session_counter": ("registry_hub", "session_id", "expected"),
 }
 
 
@@ -485,6 +497,7 @@ def _validate_step_auth_fields(
     _validate_optional_bool(step, "tamper_payload_after_tag", location, errors)
     _validate_optional_bool(step, "tamper_counter", location, errors)
     _validate_optional_bool(step, "tamper_nonce", location, errors)
+    _validate_optional_bool(step, "tamper_secret", location, errors)
 
 
 def _validate_optional_bool(
