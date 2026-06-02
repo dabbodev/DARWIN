@@ -8,9 +8,15 @@ of the v0.3 HMAC bridge. Symbolic move contracts remain the default behavior.
 
 ## Status
 
-Planning plus first helper slice. The simulator now has deterministic
-move-contract HMAC helper functions in `darwin/auth/move_contract.py`, but the
-helpers are not wired into relocation behavior yet.
+Planning plus unit-level policy helper slices. The simulator now has
+deterministic move-contract HMAC helper functions and a
+`verify_move_contract_auth(registry_hub, move_contract)` policy helper in
+`darwin/auth/move_contract.py`.
+
+The policy helper verifies symbolic or experimental HMAC move-contract auth and
+advances the local session counter only after successful HMAC verification. It
+is not wired into `update_attachment_after_move()` yet, so relocation behavior
+and scenario semantics remain unchanged in this slice.
 
 Related documents:
 
@@ -138,23 +144,58 @@ including `timestamp` only when present. `compute_move_auth_tag(...)` and
 does not affect the tag. Missing required fields raise `ValueError` on compute
 and return `False` on verify.
 
-## Proposed HMAC Validation Flow
+## Verification Policy
 
-For `auth_mode: hmac_sha256_experimental`:
+`verify_move_contract_auth(registry_hub, move_contract)` returns
+`MoveAuthVerificationResult`:
 
-1. Locate `session_id` in the owning `RegistryHub.local_sessions`.
-2. Reject with `missing_move_session` if it does not exist.
-3. Reject with `expired_move_session` if simulated time expires it.
-4. Reject with `revoked_device` if the device is revoked.
-5. Reject with `quarantined_device` if the device is quarantined.
-6. Reject with `stale_move_counter` if the counter is not newer.
-7. Build move proof material from the contract fields being applied.
-8. Verify `move_auth_tag` using the session secret.
-9. Reject with `invalid_move_auth_tag` if verification fails.
-10. Apply the existing attachment update flow.
-11. Advance the session counter after success.
+- `success`
+- `status`
+- `reason`
+- `auth_mode`
+- `session_id`
+- `move_counter`
 
-The move layer should not advance the session counter on failure.
+For missing `auth_mode` or `auth_mode: symbolic`, the helper preserves the
+existing symbolic contract meaning:
+
+- `valid: true` succeeds.
+- `valid: false` fails with `symbolic_move_invalid`.
+- No session fields are required.
+
+For `auth_mode: hmac_sha256_experimental`, the helper:
+
+1. Requires `session_id`, `move_nonce`, `move_counter`, and `move_auth_tag`.
+2. Locates `session_id` in `RegistryHub.local_sessions`.
+3. Requires the session state to be `active`.
+4. Requires the session device ID to match `move_contract.device_id`.
+5. Rejects registered local devices whose state is `quarantined` or `revoked`.
+6. Requires `move_counter` to be strictly greater than
+   `session.current_counter`.
+7. Builds deterministic move proof material from the contract fields.
+8. Verifies `move_auth_tag` using the session secret.
+9. Advances `session.current_counter` to `move_counter` only after success.
+
+The helper does not apply attachment updates, record moves, resume relocation,
+or alter relocation flow controls.
+
+## Failure Reasons
+
+Stable failure reasons for this slice:
+
+- `missing_move_session`
+- `missing_move_auth_fields`
+- `move_session_not_found`
+- `move_session_inactive`
+- `move_session_device_mismatch`
+- `device_quarantined`
+- `device_revoked`
+- `stale_move_counter`
+- `invalid_move_auth_tag`
+- `symbolic_move_invalid`
+
+Unknown non-symbolic auth modes are rejected with
+`unsupported_move_auth_mode`.
 
 ## Field-Binding Requirements
 
@@ -174,25 +215,26 @@ when any of these fields change:
 This is protocol-behavior modeling only. It is meant to expose whether DARWIN's
 relocation state machine reacts correctly to proof success and failure.
 
-## Expected Failure Behavior
+## Session and Counter Behavior
 
-Failures should be clean and observable:
+Session states:
 
-- The attachment must not update.
-- The move should not be recorded as successful.
-- Paused relocation flow controls should remain paused where the existing
-  relocation behavior already does that.
-- Scenario assertions should be able to inspect a stable reason string.
+- `active` can succeed if all other checks pass.
+- `expired`, `revoked`, `quarantined`, `rotated`, or any other non-active state
+  fails with `move_session_inactive`.
+- If the registered local device is already `quarantined` or `revoked`, the
+  helper returns the device-specific reason before evaluating counter freshness
+  or the HMAC tag.
 
-Recommended failure reasons:
+Counter freshness:
 
-- `invalid_move_auth_tag`
-- `missing_move_session`
-- `expired_move_session`
-- `revoked_device`
-- `quarantined_device`
-- `stale_move_counter`
-- `move_contract_rejected`
+- If `session.current_counter == 5`, `move_counter == 6` succeeds and advances
+  the session counter to `6`.
+- `move_counter == 5` fails with `stale_move_counter`.
+- `move_counter == 4` fails with `stale_move_counter`.
+- Failed verification never advances the counter.
+- Re-verifying the same successful HMAC contract fails as stale because the
+  first verification already advanced the counter.
 
 ## Proposed Objects
 
@@ -202,20 +244,23 @@ Recommended failure reasons:
 - Should be plain data.
 - Should avoid production cryptography language.
 
-`MoveAuthResult`:
+`MoveAuthVerificationResult`:
 
-- `auth_mode`
 - `success`
+- `status`
 - `reason`
-- Optional `session_id`
-- Optional `move_counter`
+- `auth_mode`
+- `session_id`
+- `move_counter`
 
 `MoveContract`:
 
 - May grow optional auth fields.
 - Should preserve existing constructor behavior for symbolic tests.
 
-## Scenario Plan
+## Future Scenario Plan
+
+These are deferred until relocation integration is wired:
 
 `021_hmac_move_contract_success.yaml`:
 
@@ -236,34 +281,44 @@ Recommended failure reasons:
 
 - Create a local session with TTL.
 - Advance simulated time past expiration.
-- Confirm `expired_move_session`.
+- Confirm `move_session_inactive`.
 
 `024_hmac_move_contract_revoked_device.yaml`:
 
 - Create a local session.
 - Revoke the device or its sessions.
-- Confirm `revoked_device` and unchanged attachment.
+- Confirm `device_revoked` or `move_session_inactive`, depending on whether the
+  future integration checks registered device state before session state.
 
 `025_symbolic_move_contract_still_works.yaml`:
 
 - Exercise the existing symbolic move contract path.
 - Confirm no HMAC fields are required.
 
-## Test Plan
+## Current Policy Test Plan
 
 - `move_auth_material` canonical output is deterministic.
-- Valid HMAC move contract updates the registry attachment.
+- Symbolic move contracts with `valid: true` pass without session fields.
+- Symbolic move contracts with `valid: false` fail with `symbolic_move_invalid`.
+- Valid HMAC move auth succeeds for an active matching session.
 - Tampered destination fails.
 - Tampered old attachment fails.
 - Wrong nonce fails.
 - Wrong session ID fails.
 - Stale counter fails.
 - Counter advances only after success.
-- Expired session fails.
-- Revoked device fails.
-- Quarantined device fails.
-- Existing symbolic `valid=True` move contract still succeeds.
-- Existing symbolic `valid=False` move contract still fails.
+- Expired or otherwise inactive session fails with `move_session_inactive`.
+- Revoked registered device fails with `device_revoked`.
+- Quarantined registered device fails with `device_quarantined`.
+- Failed verification does not update attachments, record moves, or advance
+  counters.
+
+## Future Integration Test Plan
+
+After relocation integration is wired, add tests that prove a verified HMAC move
+contract can update registry attachment state and that failed HMAC verification
+keeps attachments, recorded moves, paused lanes, and relocation flow controls in
+their existing failure-safe states.
 
 ## Non-Goals
 

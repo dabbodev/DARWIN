@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from darwin.auth.modes import AUTH_MODE_SYMBOLIC
+
 if TYPE_CHECKING:
     from darwin.models.checkpoint import CheckpointState
     from darwin.models.hub import AttachmentRecord, LocalDeviceRecord
@@ -86,6 +88,18 @@ class MoveVerificationResult:
     @property
     def success(self) -> bool:
         return self.action == "attachment_updated"
+
+
+@dataclass(slots=True)
+class MoveAuthVerificationResult:
+    """Outcome of simulator-only move-contract auth policy verification."""
+
+    success: bool
+    status: str
+    reason: str | None = None
+    auth_mode: str = AUTH_MODE_SYMBOLIC
+    session_id: str | None = None
+    move_counter: int | None = None
 
 
 @dataclass(slots=True)
