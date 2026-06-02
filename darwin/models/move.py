@@ -23,6 +23,11 @@ class MoveContract:
     new_attachment: str
     valid: bool = True
     timestamp: int | None = None
+    auth_mode: str | None = None
+    move_auth_tag: str | None = None
+    move_nonce: str | None = None
+    session_id: str | None = None
+    move_counter: int | None = None
 
 
 @dataclass(slots=True)

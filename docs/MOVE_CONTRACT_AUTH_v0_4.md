@@ -8,7 +8,9 @@ of the v0.3 HMAC bridge. Symbolic move contracts remain the default behavior.
 
 ## Status
 
-Planning only. No simulator behavior is implemented by this document.
+Planning plus first helper slice. The simulator now has deterministic
+move-contract HMAC helper functions in `darwin/auth/move_contract.py`, but the
+helpers are not wired into relocation behavior yet.
 
 Related documents:
 
@@ -97,6 +99,10 @@ move_contract:
 
 `move_auth_tag` is a deterministic simulator tag, not a production signature.
 
+As of the first v0.4 helper slice, `MoveContract` includes these optional auth
+fields for tests and future integration. Existing symbolic constructors and
+relocation behavior remain supported.
+
 ## Proposed Move Proof Material
 
 The proof helper should produce deterministic canonical JSON over:
@@ -118,6 +124,19 @@ proof_context when present
 The timestamp rule should be conservative: include the value when it is already
 part of the simulated move contract or scenario step, but do not introduce wall
 clock time.
+
+The first helper slice uses the existing v0.3 HMAC bridge:
+
+- `canonical_json`
+- `compute_hmac_tag`
+- `verify_hmac_tag`
+
+`build_move_auth_material(...)` and
+`move_auth_material_from_contract(...)` produce the fixed proof field set above,
+including `timestamp` only when present. `compute_move_auth_tag(...)` and
+`verify_move_auth_tag(...)` normalize material before tagging so dict field order
+does not affect the tag. Missing required fields raise `ValueError` on compute
+and return `False` on verify.
 
 ## Proposed HMAC Validation Flow
 
