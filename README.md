@@ -48,6 +48,17 @@ signatures, certificate chains, or real networking.
 - `docs/V0_3_ROADMAP.md`
 - `docs/RELEASE_NOTES_v0_3.md`
 
+## v0.4 Move-Contract Auth Planning
+
+v0.4 planning explores simulator-only move-contract auth modeling. The planned
+direction is to keep symbolic move validation as the default while allowing
+opt-in `hmac_sha256_experimental` move proofs that reuse v0.3 local session
+lifecycle concepts.
+
+- `docs/V0_4_ROADMAP.md`
+- `docs/MOVE_CONTRACT_AUTH_v0_4.md`
+- `docs/RELEASE_NOTES_v0_4_DRAFT.md`
+
 ## What v0.1 Supports
 
 - Scoped Registry Hub registration and label conflict handling.
@@ -703,6 +714,12 @@ For the v0.3 auth bridge, see:
 - `docs/AUTH_BRIDGE_v0_3.md`
 - `docs/V0_3_ROADMAP.md`
 - `docs/RELEASE_NOTES_v0_3.md`
+
+For v0.4 move-contract auth planning, see:
+
+- `docs/V0_4_ROADMAP.md`
+- `docs/MOVE_CONTRACT_AUTH_v0_4.md`
+- `docs/RELEASE_NOTES_v0_4_DRAFT.md`
 
 ## What v0.1 Is Not
 

@@ -115,3 +115,40 @@ python -m darwin.cli.main run scenarios/019_hmac_revoked_session_failure.yaml
 python -m darwin.cli.main run scenarios/020_hmac_quarantine_blocks_checkpoint.yaml
 python -m darwin.cli.main run scenarios/020_hmac_quarantine_blocks_checkpoint.yaml --export-snapshot tmp_v03_snapshot.json --export-events tmp_v03_events.json --export-result tmp_v03_result.json --export-mermaid tmp_v03.mmd --export-timeline-md tmp_v03_timeline.md --export-timeline-json tmp_v03_timeline.json
 ```
+
+# DARWIN v0.4 Move-Contract Auth Planning Checklist
+
+Planning only. Do not bump the package version, tag, merge, push, or release as
+part of this checklist.
+
+- [ ] `docs/V0_4_ROADMAP.md` exists.
+- [ ] `docs/MOVE_CONTRACT_AUTH_v0_4.md` exists.
+- [ ] `docs/RELEASE_NOTES_v0_4_DRAFT.md` exists.
+- [ ] CHANGELOG contains a draft v0.4 planning section.
+- [ ] README links to the v0.4 planning docs.
+- [ ] Symbolic move validation remains documented as the default.
+- [ ] HMAC move proof is documented as opt-in through
+  `hmac_sha256_experimental`.
+- [ ] Proposed failure reasons are documented.
+- [ ] Proposed scenarios `021` through `025` are documented as planned, not
+  implemented.
+- [ ] Proposed tests are documented.
+- [ ] Documentation avoids production secure mobility, real signature,
+  certificate-chain, key-exchange, secure-storage, encrypted-transport, and
+  real-networking claims.
+- [ ] CLI version still reports `darwin-sim 0.3.0`.
+
+## v0.4 Planning Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+```
+
+Expected version during planning:
+
+```text
+darwin-sim 0.3.0
+```
