@@ -7,6 +7,12 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+from darwin.auth.hmac_bridge import (
+    checkpoint_auth_material,
+    compute_hmac_tag,
+    rolling_proof_material,
+)
+from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
 from darwin.models.checkpoint import make_checkpoint_packet
 from darwin.models.device import Device
 from darwin.models.hub import LocalDeviceRecord
@@ -28,7 +34,29 @@ from darwin.registry.relocation import (
 from darwin.registry.security import (
     detect_duplicate_device_claim as detect_duplicate_device_claim_op,
 )
+from darwin.registry.security import revoke_device as revoke_device_op
 from darwin.registry.security import verify_rolling_proof as verify_rolling_proof_op
+from darwin.registry.sessions import (
+    create_local_session as create_local_session_op,
+)
+from darwin.registry.sessions import (
+    expire_local_sessions as expire_local_sessions_op,
+)
+from darwin.registry.sessions import (
+    get_local_session,
+)
+from darwin.registry.sessions import (
+    revoke_device_sessions as revoke_device_sessions_op,
+)
+from darwin.registry.sessions import (
+    revoke_local_session as revoke_local_session_op,
+)
+from darwin.registry.sessions import (
+    rotate_local_session as rotate_local_session_op,
+)
+from darwin.registry.sessions import (
+    verify_hmac_rolling_proof_for_session as verify_hmac_session_proof_op,
+)
 from darwin.sim.assertions import AssertionResult, evaluate_assertions
 from darwin.sim.scenarios import Scenario, load_scenario
 from darwin.sim.world import World
@@ -173,6 +201,13 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         "resume_lanes_after_relocation": _step_resume_lanes_after_relocation,
         "attempt_lane_send": _step_send_lane_data,
         "verify_rolling_proof": _step_verify_rolling_proof,
+        "create_local_session": _step_create_local_session,
+        "rotate_local_session": _step_rotate_local_session,
+        "revoke_local_session": _step_revoke_local_session,
+        "revoke_device_sessions": _step_revoke_device_sessions,
+        "revoke_device": _step_revoke_device,
+        "expire_local_sessions": _step_expire_local_sessions,
+        "verify_hmac_session_proof": _step_verify_hmac_session_proof,
         "record_cross_tree_packet": _step_record_cross_tree_packet,
         "recommend_traffic_bridge": _step_recommend_traffic_bridge,
         "advance_time": _step_advance_time,
@@ -301,6 +336,9 @@ def _step_send_lane_data(world: World, fields: dict[str, Any]) -> None:
         payload=fields.get("payload"),
         all_hubs=world.traffic_hubs,
         auth_tag_valid=bool(fields.get("auth_tag_valid", True)),
+        auth_mode=str(fields.get("auth_mode", AUTH_MODE_SYMBOLIC)),
+        auth_secret=_optional_str(fields.get("auth_secret")),
+        tamper_auth_tag=bool(fields.get("tamper_auth_tag", False)),
     )
     world.action_results.append(result)
     world.log(
@@ -337,10 +375,19 @@ def _step_record_checkpoint(world: World, fields: dict[str, Any]) -> None:
         state=str(fields["state"]),
         current_time=world.current_time,
         auth_tag_valid=bool(fields.get("auth_tag_valid", True)),
+        auth_mode=str(fields.get("auth_mode", AUTH_MODE_SYMBOLIC)),
         battery_level=_optional_int(fields.get("battery_level")),
         active_lane_count=_optional_int(fields.get("active_lane_count")),
     )
-    result = record_checkpoint_op(hub, packet)
+    auth_secret = _optional_str(fields.get("auth_secret"))
+    if packet.auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL and auth_secret is not None:
+        packet.auth_tag = compute_hmac_tag(auth_secret, checkpoint_auth_material(packet))
+        if bool(fields.get("tamper_payload_after_tag", False)):
+            packet.payload["device_state"] = f"tampered_{packet.state}"
+        if bool(fields.get("tamper_auth_tag", False)) or not packet.auth_tag_valid:
+            packet.auth_tag = _tampered_tag(packet.auth_tag)
+
+    result = record_checkpoint_op(hub, packet, auth_secret=auth_secret)
     world.action_results.append(result)
     world.log(
         f"{result.action} for {result.device_id} at {hub.hub_id} state={fields['state']}",
@@ -597,11 +644,51 @@ def _step_resume_lanes_after_relocation(world: World, fields: dict[str, Any]) ->
 
 def _step_verify_rolling_proof(world: World, fields: dict[str, Any]) -> None:
     hub = world.registry_hubs[str(fields["registry_hub"])]
+    auth_mode = str(fields.get("auth_mode", AUTH_MODE_SYMBOLIC))
+    auth_secret = _optional_str(fields.get("auth_secret"))
+    session_id = _optional_str(fields.get("session_id"))
+    counter = _optional_int(fields.get("counter"))
+    nonce = _optional_str(fields.get("nonce"))
+    capability = _optional_str(fields.get("capability", fields.get("requested_capability")))
+    auth_tag = _optional_str(fields.get("auth_tag"))
+
+    if (
+        auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL
+        and auth_secret is not None
+        and auth_tag is None
+        and session_id is not None
+        and counter is not None
+        and nonce is not None
+        and capability is not None
+    ):
+        auth_tag = compute_hmac_tag(
+            auth_secret,
+            rolling_proof_material(
+                device_id=str(fields["device"]),
+                hub_id=hub.hub_id,
+                session_id=session_id,
+                counter=counter,
+                nonce=nonce,
+                capability=capability,
+            ),
+        )
+        if bool(fields.get("tamper_counter", False)):
+            counter += 1
+        if bool(fields.get("tamper_nonce", False)):
+            nonce = f"{nonce}_tampered"
+
     result = verify_rolling_proof_op(
         hub,
         str(fields["device"]),
         proof_valid=bool(fields["proof_valid"]),
         current_time=world.current_time,
+        auth_mode=auth_mode,
+        auth_secret=auth_secret,
+        auth_tag=auth_tag,
+        session_id=session_id,
+        counter=counter,
+        nonce=nonce,
+        capability=capability,
     )
     world.action_results.append(result)
     world.log(
@@ -618,6 +705,231 @@ def _step_verify_rolling_proof(world: World, fields: dict[str, Any]) -> None:
             "security_event_type": (
                 None if result.security_event is None else result.security_event.event_type
             ),
+        },
+    )
+
+
+def _step_create_local_session(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    current_time = _optional_int(fields.get("current_time"))
+    result = create_local_session_op(
+        hub,
+        device_id=str(fields["device"]),
+        secret=str(fields["auth_secret"]),
+        session_id=_optional_str(fields.get("session_id")),
+        current_time=world.current_time if current_time is None else current_time,
+        ttl=_optional_int(fields.get("ttl")),
+        auth_mode=str(fields.get("auth_mode", AUTH_MODE_HMAC_SHA256_EXPERIMENTAL)),
+    )
+    world.action_results.append(result)
+    session_id = None if result.session is None else result.session.session_id
+    world.log(
+        f"{result.status} for {fields['device']} at {hub.hub_id}",
+        event_type=result.status,
+        actor=str(fields["device"]),
+        target=hub.hub_id,
+        device_id=str(fields["device"]),
+        hub_id=hub.hub_id,
+        status=result.status,
+        data={
+            "session_id": session_id,
+            "success": result.success,
+            "reason": result.reason,
+        },
+    )
+
+
+def _step_rotate_local_session(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    current_time = _optional_int(fields.get("current_time"))
+    result = rotate_local_session_op(
+        hub,
+        session_id=str(fields["session_id"]),
+        new_secret=str(fields["new_auth_secret"]),
+        current_time=world.current_time if current_time is None else current_time,
+        ttl=_optional_int(fields.get("ttl")),
+    )
+    world.action_results.append(result)
+    device_id = None if result.session is None else result.session.device_id
+    world.log(
+        f"{result.status} {fields['session_id']} at {hub.hub_id}",
+        event_type=result.status,
+        actor=device_id,
+        target=hub.hub_id,
+        device_id=device_id,
+        hub_id=hub.hub_id,
+        status=result.status,
+        data={
+            "session_id": fields["session_id"],
+            "success": result.success,
+            "reason": result.reason,
+            "rotation_index": (
+                None if result.session is None else result.session.rotation_index
+            ),
+        },
+    )
+
+
+def _step_revoke_local_session(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    result = revoke_local_session_op(
+        hub,
+        session_id=str(fields["session_id"]),
+        reason=_optional_str(fields.get("reason")),
+    )
+    world.action_results.append(result)
+    device_id = None if result.session is None else result.session.device_id
+    world.log(
+        f"{result.status} {fields['session_id']} at {hub.hub_id}",
+        event_type=result.status,
+        actor=device_id,
+        target=hub.hub_id,
+        device_id=device_id,
+        hub_id=hub.hub_id,
+        status=result.status,
+        data={
+            "session_id": fields["session_id"],
+            "success": result.success,
+            "reason": result.reason,
+        },
+    )
+
+
+def _step_revoke_device_sessions(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    device_id = str(fields["device"])
+    results = revoke_device_sessions_op(
+        hub,
+        device_id=device_id,
+        reason=_optional_str(fields.get("reason")),
+    )
+    world.action_results.append(results[-1] if results else [])
+    world.log(
+        f"revoked {len(results)} session(s) for {device_id} at {hub.hub_id}",
+        event_type="device_sessions_revoked",
+        actor=device_id,
+        target=hub.hub_id,
+        device_id=device_id,
+        hub_id=hub.hub_id,
+        status="device_sessions_revoked",
+        data={
+            "session_ids": [
+                result.session.session_id
+                for result in results
+                if result.session is not None
+            ],
+            "reason": fields.get("reason"),
+        },
+    )
+
+
+def _step_revoke_device(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    device_id = str(fields["device"])
+    current_time = _optional_int(fields.get("current_time"))
+    result = revoke_device_op(
+        hub,
+        device_id=device_id,
+        reason=_optional_str(fields.get("reason")),
+        current_time=world.current_time if current_time is None else current_time,
+    )
+    world.action_results.append(result)
+    world.log(
+        f"{result.action} for {device_id} at {hub.hub_id}",
+        event_type=(
+            result.security_event.event_type
+            if result.security_event is not None
+            else result.action
+        ),
+        actor=device_id,
+        target=hub.hub_id,
+        device_id=device_id,
+        hub_id=hub.hub_id,
+        status=result.action,
+        data={
+            "success": result.success,
+            "reason": result.reason,
+        },
+    )
+
+
+def _step_expire_local_sessions(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    current_time = _optional_int(fields.get("current_time"))
+    expired = expire_local_sessions_op(
+        hub,
+        current_time=world.current_time if current_time is None else current_time,
+    )
+    world.action_results.append(expired)
+    world.log(
+        f"expired {len(expired)} session(s) at {hub.hub_id}",
+        event_type="sessions_expired",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="sessions_expired",
+        data={"expired_session_ids": [session.session_id for session in expired]},
+    )
+
+
+def _step_verify_hmac_session_proof(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    session_id = str(fields["session_id"])
+    session = get_local_session(hub, session_id)
+    counter = int(fields["counter"])
+    nonce = str(fields["nonce"])
+    capability = str(fields["requested_capability"])
+    auth_tag = _optional_str(fields.get("auth_tag"))
+
+    if auth_tag is None and session is not None:
+        proof_counter = counter
+        proof_nonce = nonce
+        proof_secret = str(fields.get("auth_secret", session.secret))
+        tamper_secret = fields.get("tamper_secret")
+        if isinstance(tamper_secret, str):
+            proof_secret = tamper_secret
+        elif bool(tamper_secret):
+            proof_secret = f"{proof_secret}_tampered"
+
+        auth_tag = compute_hmac_tag(
+            proof_secret,
+            rolling_proof_material(
+                device_id=session.device_id,
+                hub_id=hub.hub_id,
+                session_id=session.session_id,
+                counter=proof_counter,
+                nonce=proof_nonce,
+                capability=capability,
+            ),
+        )
+        if bool(fields.get("tamper_counter", False)):
+            counter += 1
+        if bool(fields.get("tamper_nonce", False)):
+            nonce = f"{nonce}_tampered"
+
+    current_time = _optional_int(fields.get("current_time"))
+    result = verify_hmac_session_proof_op(
+        hub,
+        session_id=session_id,
+        counter=counter,
+        nonce=nonce,
+        requested_capability=capability,
+        proof=auth_tag or "",
+        current_time=world.current_time if current_time is None else current_time,
+    )
+    world.action_results.append(result)
+    world.log(
+        f"{result.status} for {session_id}",
+        event_type=result.status,
+        actor=None if result.session is None else result.session.device_id,
+        target=hub.hub_id,
+        device_id=None if result.session is None else result.session.device_id,
+        hub_id=hub.hub_id,
+        status=result.status,
+        data={
+            "session_id": session_id,
+            "counter": counter,
+            "success": result.success,
+            "reason": result.reason,
         },
     )
 
@@ -716,3 +1028,7 @@ def _link_metrics(link_config: dict[str, Any]) -> LinkMetrics:
         trust=str(link_config.get("trust", "verified")),
         stability=str(link_config.get("stability", "stable")),
     )
+
+
+def _tampered_tag(tag: str) -> str:
+    return ("0" if tag[:1] != "0" else "1") + tag[1:]

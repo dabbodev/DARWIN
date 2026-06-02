@@ -1,0 +1,65 @@
+scenario_id: 020_hmac_quarantine_blocks_checkpoint
+name: HMAC quarantine blocks checkpoint
+category: security
+description: Quarantines a registered device and rejects a later valid HMAC checkpoint that tries to restore online state.
+tags:
+  - hmac
+  - checkpoint
+  - quarantine
+  - simulator-only
+demonstrates:
+  - Quarantine propagates to local HMAC sessions for the device.
+  - Valid HMAC checkpoint tags do not override explicit quarantine state.
+  - Blocked checkpoint updates fail cleanly without mutating trusted state.
+expected_result: The post-quarantine HMAC checkpoint is rejected and the device remains quarantined.
+setup:
+  registry_hubs:
+    - hub_id: hub_home_001
+      scope_path: global.family.david.home
+  devices:
+    - device_id: dev_A9F3
+      label: phone
+      checkpoint_tier: 2
+steps:
+  - action: register_device
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    label: phone
+  - action: create_local_session
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    session_id: session_quarantine_001
+    auth_secret: test_secret_simulator_only
+  - action: record_checkpoint
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    state: active
+    auth_mode: hmac_sha256_experimental
+    auth_secret: test_secret_simulator_only
+  - action: verify_rolling_proof
+    registry_hub: hub_home_001
+    device: dev_A9F3
+    proof_valid: false
+  - action: record_checkpoint
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    state: online
+    auth_mode: hmac_sha256_experimental
+    auth_secret: test_secret_simulator_only
+assertions:
+  - type: latest_step_status
+    expected: checkpoint_rejected
+  - type: device_state
+    registry_hub: hub_home_001
+    device: dev_A9F3
+    expected: quarantined
+  - type: checkpoint_state
+    registry_hub: hub_home_001
+    device: dev_A9F3
+    expected: quarantined
+  - type: session_state
+    registry_hub: hub_home_001
+    session_id: session_quarantine_001
+    expected: quarantined
+  - type: event_seen
+    event_type: rolling_proof_failed

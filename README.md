@@ -8,9 +8,8 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently released at **simulator v0.1**. The active v0.2
-development branch is consolidating scenario validation, exports, route-cost
-routing, visualization, trace output, presets, and scenario library indexing.
+This project is currently released at **simulator v0.3.0**. The v0.3 release
+adds a simulator-only auth bridge while keeping symbolic auth as the default.
 
 The v0.1 simulator answers questions like:
 
@@ -27,7 +26,7 @@ The simulator makes those behaviors visible through deterministic logs, snapshot
 
 ## v0.2 Development Branch
 
-The v0.2 branch remains simulator-only. It does not add real networking,
+The v0.2 release remains simulator-only. It does not add real networking,
 production cryptography, DNS integration, an async runtime, or a web UI.
 
 Useful v0.2 docs:
@@ -37,6 +36,17 @@ Useful v0.2 docs:
 - `docs/VISUALIZATION_v0_2.md`
 - `docs/TRACE_EXPORT_v0_2.md`
 - `docs/RELEASE_NOTES_v0_2.md`
+
+## v0.3 Auth Bridge
+
+The v0.3 auth bridge remains simulator-only. It adds opt-in
+`hmac_sha256_experimental` scenarios for deterministic HMAC-style checks, but
+does not add production cryptography, key exchange, secure storage, public-key
+signatures, certificate chains, or real networking.
+
+- `docs/AUTH_BRIDGE_v0_3.md`
+- `docs/V0_3_ROADMAP.md`
+- `docs/RELEASE_NOTES_v0_3.md`
 
 ## What v0.1 Supports
 
@@ -299,11 +309,14 @@ DARWIN/
     DEVELOPMENT.md
     RELEASE_NOTES_v0_1.md
     RELEASE_NOTES_v0_2.md
+    RELEASE_NOTES_v0_3.md
     SCENARIO_DSL_v0_2.md
     SCENARIO_INDEX.md
     TRACE_EXPORT_v0_2.md
     V0_2_ROADMAP.md
+    V0_3_ROADMAP.md
     VISUALIZATION_v0_2.md
+    AUTH_BRIDGE_v0_3.md
   darwin/
     __init__.py
     ids.py
@@ -344,6 +357,8 @@ DARWIN/
       metrics.py
     auth/
       __init__.py
+      hmac_bridge.py
+      modes.py
       symbolic.py
       trust.py
     cli/
@@ -361,6 +376,15 @@ DARWIN/
     009_duplicate_device_claim.yaml
     010_unreachable_relocation_resume.yaml
     011_preset_lane_demo.yaml
+    012_hmac_checkpoint_success.yaml
+    013_hmac_packet_auth_failure.yaml
+    014_hmac_checkpoint_tamper_failure.yaml
+    015_hmac_missing_secret_failure.yaml
+    016_hmac_rolling_proof_failure.yaml
+    017_hmac_session_rotation.yaml
+    018_hmac_session_expiration.yaml
+    019_hmac_revoked_session_failure.yaml
+    020_hmac_quarantine_blocks_checkpoint.yaml
   tests/
     test_auth_symbolic.py
     test_checkpoints.py
@@ -673,6 +697,12 @@ For v0.2 development docs, see:
 - `docs/VISUALIZATION_v0_2.md`
 - `docs/TRACE_EXPORT_v0_2.md`
 - `docs/RELEASE_NOTES_v0_2.md`
+
+For the v0.3 auth bridge, see:
+
+- `docs/AUTH_BRIDGE_v0_3.md`
+- `docs/V0_3_ROADMAP.md`
+- `docs/RELEASE_NOTES_v0_3.md`
 
 ## What v0.1 Is Not
 

@@ -10,6 +10,7 @@ from darwin.models.move import FlowControlRecord, MoveContract, RelocationRecord
 from darwin.models.passport import PassportRecord
 from darwin.models.recommendation import GrowthRecommendation
 from darwin.models.route import LinkMetrics
+from darwin.models.session import LocalAuthSession
 
 if TYPE_CHECKING:
     from darwin.models.checkpoint import CheckpointState
@@ -86,6 +87,7 @@ class RegistryHub:
     relocations: dict[str, RelocationRecord] = field(default_factory=dict)
     security_events: list[SecurityEvent] = field(default_factory=list)
     quarantines: dict[str, QuarantineRecord] = field(default_factory=dict)
+    local_sessions: dict[str, LocalAuthSession] = field(default_factory=dict)
     metrics: RegistryMetrics = field(default_factory=RegistryMetrics)
     summary_version: int = 0
     child_summaries: dict[str, UpwardSummary] = field(default_factory=dict)

@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from darwin.auth.hmac_bridge import (
+    compute_hmac_tag,
+    packet_auth_material,
+)
+from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
 from darwin.models.hub import TrafficHub
 from darwin.models.lane import (
     LaneAckResult,
@@ -55,10 +60,18 @@ def open_lane(
             target_device_id=target_device_id,
         )
 
-    if start_hub.direct_attachments[source_device_id].status == "quarantined":
+    source_status = start_hub.direct_attachments[source_device_id].status
+    if source_status == "quarantined":
         return LaneOpenResult(
             lane_id=selected_lane_id,
             action="source_quarantined",
+            source_device_id=source_device_id,
+            target_device_id=target_device_id,
+        )
+    if source_status == "revoked":
+        return LaneOpenResult(
+            lane_id=selected_lane_id,
+            action="source_revoked",
             source_device_id=source_device_id,
             target_device_id=target_device_id,
         )
@@ -106,6 +119,10 @@ def send_lane_data(
     payload: Any,
     all_hubs: dict[str, TrafficHub] | None = None,
     auth_tag_valid: bool = True,
+    auth_mode: str = AUTH_MODE_SYMBOLIC,
+    auth_secret: str | bytes | None = None,
+    auth_tag: str | None = None,
+    tamper_auth_tag: bool = False,
 ) -> LaneSendResult:
     """Send symbolic data over an active lane and acknowledge delivery."""
     lane = start_hub.lanes.get(lane_id)
@@ -139,8 +156,15 @@ def send_lane_data(
         sequence_number=sequence_number,
         payload=payload,
         auth_tag_valid=auth_tag_valid,
+        auth_mode=auth_mode,
+        auth_tag=auth_tag,
     )
-    result = forward_packet(start_hub, packet, all_hubs)
+    if auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL and auth_secret is not None:
+        packet.auth_tag = compute_hmac_tag(auth_secret, packet_auth_material(packet))
+        if tamper_auth_tag or not auth_tag_valid:
+            packet.auth_tag = _tampered_tag(packet.auth_tag)
+
+    result = forward_packet(start_hub, packet, all_hubs, auth_secret=auth_secret)
 
     if result.action != "delivered":
         return LaneSendResult(
@@ -181,6 +205,10 @@ def send_lane_data(
         last_acknowledged_sequence=ack_result.last_acknowledged_sequence,
         payload=payload,
     )
+
+
+def _tampered_tag(tag: str) -> str:
+    return ("0" if tag[:1] != "0" else "1") + tag[1:]
 
 
 def acknowledge_lane_packet(

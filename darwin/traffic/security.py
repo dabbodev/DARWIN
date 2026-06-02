@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+from darwin.auth.hmac_bridge import (
+    packet_auth_material,
+    verify_hmac_tag,
+)
+from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
 from darwin.models.hub import TrafficHub
 from darwin.models.packet import DarwinPacket
 from darwin.models.security import PacketAuthResult, QuarantineRecord, SecurityEvent
@@ -35,16 +40,46 @@ def verify_packet_auth(
     traffic_hub: TrafficHub,
     packet: DarwinPacket,
     current_time: int | None = None,
+    auth_secret: str | bytes | None = None,
 ) -> PacketAuthResult:
-    """Validate a packet's symbolic auth tag before delivery."""
+    """Validate a packet's auth tag before delivery."""
     claimed_device_id = packet.source_device_id
-    if packet.auth_tag_valid:
+    auth_mode = packet.auth_mode or AUTH_MODE_SYMBOLIC
+    if auth_mode == AUTH_MODE_SYMBOLIC and packet.auth_tag_valid:
         return PacketAuthResult(
             action="packet_auth_verified",
             packet_id=packet.packet_id,
             success=True,
             claimed_device_id=claimed_device_id,
         )
+    if auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL and _verify_packet_hmac(
+        packet,
+        auth_secret,
+    ):
+        return PacketAuthResult(
+            action="packet_auth_verified",
+            packet_id=packet.packet_id,
+            success=True,
+            claimed_device_id=claimed_device_id,
+        )
+    return _reject_invalid_packet_auth(traffic_hub, packet, current_time)
+
+
+def _verify_packet_hmac(
+    packet: DarwinPacket,
+    auth_secret: str | bytes | None,
+) -> bool:
+    if auth_secret is None or packet.auth_tag is None:
+        return False
+    return verify_hmac_tag(auth_secret, packet_auth_material(packet), packet.auth_tag)
+
+
+def _reject_invalid_packet_auth(
+    traffic_hub: TrafficHub,
+    packet: DarwinPacket,
+    current_time: int | None = None,
+) -> PacketAuthResult:
+    claimed_device_id = packet.source_device_id
     record_invalid_packet_auth(traffic_hub)
 
     quarantine: QuarantineRecord | None = None
@@ -82,7 +117,18 @@ def verify_packet_auth(
 
 def is_quarantined_for_normal_traffic(traffic_hub: TrafficHub, device_id: str | None) -> bool:
     """Return whether a local direct attachment is blocked for normal traffic."""
+    return traffic_source_block_reason(traffic_hub, device_id) == "source_quarantined"
+
+
+def traffic_source_block_reason(traffic_hub: TrafficHub, device_id: str | None) -> str | None:
+    """Return the local traffic-layer block reason for a source device."""
     if device_id is None:
-        return False
+        return None
     attachment = traffic_hub.direct_attachments.get(device_id)
-    return attachment is not None and attachment.status == "quarantined"
+    if attachment is None:
+        return None
+    if attachment.status == "quarantined":
+        return "source_quarantined"
+    if attachment.status == "revoked":
+        return "source_revoked"
+    return None

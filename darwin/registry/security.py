@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from darwin.auth.hmac_bridge import (
+    verify_rolling_proof_tag,
+)
+from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
 from darwin.models.hub import ConflictRecord, RegistryHub
 from darwin.models.security import (
     DuplicateIdentityConflict,
@@ -9,9 +13,16 @@ from darwin.models.security import (
     QuarantineResult,
     RollingProofResult,
     SecurityEvent,
+    TrustCheckResult,
 )
 from darwin.registry.metrics import record_duplicate_device_conflict, refresh_registry_counts
 from darwin.registry.relocation import get_latest_move
+from darwin.registry.sessions import (
+    get_local_session,
+    quarantine_device_sessions,
+    revoke_device_sessions,
+    verify_hmac_rolling_proof_for_session,
+)
 
 
 def log_security_event(
@@ -65,6 +76,11 @@ def quarantine_device(
     attachment = registry_hub.attachments.get(claimed_device_id)
     if attachment is not None:
         attachment.state = "quarantined"
+    quarantine_device_sessions(
+        registry_hub,
+        claimed_device_id,
+        reason=reason,
+    )
     refresh_registry_counts(registry_hub)
 
     event = log_security_event(
@@ -84,14 +100,90 @@ def quarantine_device(
     )
 
 
+def revoke_device(
+    registry_hub: RegistryHub,
+    device_id: str,
+    reason: str | None = None,
+    current_time: int | None = None,
+) -> TrustCheckResult:
+    """Mark a registered device revoked and revoke its simulator-local sessions."""
+    device = registry_hub.devices.get(device_id)
+    if device is None:
+        return TrustCheckResult(
+            action="device_revocation_rejected",
+            success=False,
+            claimed_device_id=device_id,
+            reason="unknown_device",
+        )
+
+    device.current_state = "revoked"
+    checkpoint = registry_hub.checkpoints.get(device_id)
+    if checkpoint is not None:
+        checkpoint.state = "revoked"
+    attachment = registry_hub.attachments.get(device_id)
+    if attachment is not None:
+        attachment.state = "revoked"
+    passport = registry_hub.passports.get(device.passport_id)
+    if passport is not None:
+        passport.revoked = True
+    revoke_device_sessions(registry_hub, device_id, reason=reason)
+    refresh_registry_counts(registry_hub)
+
+    event = log_security_event(
+        registry_hub=registry_hub,
+        event_type="device_revoked",
+        claimed_device_id=device_id,
+        severity="high",
+        action_taken="revoked",
+        reason=reason,
+        timestamp=current_time,
+    )
+    return TrustCheckResult(
+        action="device_revoked",
+        success=True,
+        claimed_device_id=device_id,
+        reason=reason,
+        security_event=event,
+    )
+
+
 def verify_rolling_proof(
     registry_hub: RegistryHub,
     device_id: str,
     proof_valid: bool,
     source_hub_id: str | None = None,
     current_time: int | None = None,
+    auth_mode: str = AUTH_MODE_SYMBOLIC,
+    auth_secret: str | bytes | None = None,
+    auth_tag: str | None = None,
+    session_id: str | None = None,
+    counter: int | None = None,
+    nonce: str | None = None,
+    capability: str | None = None,
 ) -> RollingProofResult:
-    """Check symbolic same-network continuity and quarantine on failure."""
+    """Check same-network continuity and quarantine on failure."""
+    local_record = registry_hub.devices.get(device_id)
+    if local_record is not None and local_record.current_state in {"quarantined", "revoked"}:
+        return RollingProofResult(
+            action="rolling_proof_rejected",
+            device_id=device_id,
+            success=False,
+            reason=f"device_{local_record.current_state}",
+        )
+
+    if auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL:
+        proof_valid = _hmac_rolling_proof_valid(
+            registry_hub=registry_hub,
+            device_id=device_id,
+            auth_secret=auth_secret,
+            auth_tag=auth_tag,
+            session_id=session_id,
+            counter=counter,
+            nonce=nonce,
+            capability=capability,
+            current_time=current_time,
+        )
+
     if proof_valid:
         return RollingProofResult(
             action="rolling_proof_verified",
@@ -115,6 +207,54 @@ def verify_rolling_proof(
         security_event=quarantine.security_event,
         reason="rolling_proof_failed",
     )
+
+
+def _hmac_rolling_proof_valid(
+    *,
+    registry_hub: RegistryHub,
+    device_id: str,
+    auth_secret: str | bytes | None,
+    auth_tag: str | None,
+    session_id: str | None,
+    counter: int | None,
+    nonce: str | None,
+    capability: str | None,
+    current_time: int | None,
+) -> bool:
+    if (
+        auth_tag is None
+        or session_id is None
+        or counter is None
+        or nonce is None
+        or capability is None
+    ):
+        return False
+    session = get_local_session(registry_hub, session_id)
+    if session is not None:
+        return verify_hmac_rolling_proof_for_session(
+            registry_hub,
+            session_id,
+            counter,
+            nonce,
+            capability,
+            auth_tag,
+            current_time=current_time,
+        ).success
+
+    if auth_secret is None:
+        return False
+
+    result = verify_rolling_proof_tag(
+        auth_secret,
+        device_id=device_id,
+        hub_id=registry_hub.hub_id,
+        session_id=session_id,
+        counter=counter,
+        nonce=nonce,
+        capability=capability,
+        expected_tag=auth_tag,
+    )
+    return result.success
 
 
 def detect_duplicate_device_claim(

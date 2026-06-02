@@ -1,6 +1,6 @@
-# DARWIN v0.2 Development
+# DARWIN v0.3 Development
 
-DARWIN v0.2 is the active simulator development branch. Development should keep
+DARWIN v0.3 is the active simulator development line. Development should keep
 the repo self-checking with tests, Ruff, scenario validation, export sanity
 checks, and all-scenario regression runs.
 
@@ -74,7 +74,7 @@ python -m darwin.cli.main validate-scenario scenarios/001_basic_registration.yam
 Describe a scenario without running it:
 
 ```bash
-python -m darwin.cli.main describe-scenario scenarios/011_preset_lane_demo.yaml
+python -m darwin.cli.main describe-scenario scenarios/017_hmac_session_rotation.yaml
 ```
 
 Expand a preset-backed scenario:
@@ -124,8 +124,9 @@ The GitHub Actions workflow runs these same checks on push and pull request.
 
 - No real networking, sockets, DNS integration, kernel routing, or packet
   capture.
-- No production cryptography, key management, signatures, HMACs, CMACs,
-  counters, replay protection, or security claims.
-- Symbolic authentication and trust behavior only.
+- No production cryptography, key management, public-key signatures, CMACs,
+  replay protection, or security claims.
+- Symbolic authentication remains the default. Experimental
+  `hmac_sha256_experimental` behavior is simulator-only and test-fixture based.
 - Simulator-only behavior; no production runtime claims.
 - Deterministic simulated time only; no async behavior or wall-clock scheduling.

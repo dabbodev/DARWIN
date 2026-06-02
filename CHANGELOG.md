@@ -1,5 +1,46 @@
 # Changelog
 
+## [0.3.0] - 2026-05-31
+
+DARWIN v0.3.0 is a simulator-only auth bridge release. It keeps symbolic
+authentication as the default while adding an explicit experimental path for
+HMAC-style verification in selected scenarios.
+
+Added:
+
+- Experimental HMAC-SHA256 auth bridge helpers using Python standard-library
+  `hmac`, `hashlib`, and deterministic JSON canonicalization.
+- Opt-in `hmac_sha256_experimental` mode for packet, checkpoint, and
+  rolling-proof simulator checks.
+- HMAC-authenticated checkpoint scenario:
+  `scenarios/012_hmac_checkpoint_success.yaml`.
+- HMAC packet auth failure scenario:
+  `scenarios/013_hmac_packet_auth_failure.yaml`.
+- HMAC edge-case scenarios covering checkpoint material tampering, missing
+  secrets, and rolling-proof nonce/counter failures:
+  `scenarios/014_hmac_checkpoint_tamper_failure.yaml`,
+  `scenarios/015_hmac_missing_secret_failure.yaml`, and
+  `scenarios/016_hmac_rolling_proof_failure.yaml`.
+- Simulator-local HMAC session lifecycle scenarios for rotation, expiration,
+  stale counter rejection, and revoked session behavior:
+  `scenarios/017_hmac_session_rotation.yaml`,
+  `scenarios/018_hmac_session_expiration.yaml`, and
+  `scenarios/019_hmac_revoked_session_failure.yaml`.
+- Revocation/quarantine interaction scenario that keeps blocked devices from
+  restoring trusted checkpoint state with a valid HMAC checkpoint:
+  `scenarios/020_hmac_quarantine_blocks_checkpoint.yaml`.
+- Centralized auth mode constants in `darwin/auth/modes.py`.
+- Documentation warning that the auth bridge is simulator-only and is not
+  production cryptography.
+
+Compatibility and limits:
+
+- Symbolic auth remains the default.
+- v0.2 scenarios are expected to keep validating and running unchanged.
+- v0.3 does not add real networking, key exchange, secure storage,
+  public-key signatures, certificate chains, production cryptography, or
+  production auth claims.
+
 ## [0.2.0] - 2026-05-31
 
 DARWIN v0.2.0 is the active simulator consolidation release for improving

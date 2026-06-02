@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
+
 DEFAULT_QUARANTINE_ALLOWED_ACTIONS = [
     "present_passport",
     "request_recovery",
@@ -15,6 +17,39 @@ DEFAULT_QUARANTINE_DENIED_ACTIONS = [
     "host_services",
     "open_new_lane",
 ]
+
+
+@dataclass(frozen=True, slots=True)
+class AuthMode:
+    """Supported simulator auth mode names."""
+
+    symbolic: str = AUTH_MODE_SYMBOLIC
+    hmac_sha256_experimental: str = AUTH_MODE_HMAC_SHA256_EXPERIMENTAL
+
+
+@dataclass(frozen=True, slots=True)
+class HmacAuthConfig:
+    """Test-only HMAC configuration for simulator scenarios."""
+
+    auth_mode: str = AUTH_MODE_HMAC_SHA256_EXPERIMENTAL
+    secret: str | bytes | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class HmacProof:
+    """Experimental simulator HMAC proof container."""
+
+    auth_mode: str
+    tag: str
+
+
+@dataclass(frozen=True, slots=True)
+class HmacVerificationResult:
+    """Outcome of an experimental HMAC verification."""
+
+    auth_mode: str
+    success: bool
+    reason: str | None = None
 
 
 @dataclass(slots=True)

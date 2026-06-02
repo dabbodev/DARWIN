@@ -1,0 +1,72 @@
+scenario_id: 016_hmac_rolling_proof_failure
+name: HMAC rolling proof failure
+category: security
+description: Rejects test-only HMAC rolling proofs when nonce or counter material changes after tag creation.
+tags:
+  - hmac
+  - rolling-proof
+  - quarantine
+  - simulator-only
+demonstrates:
+  - Experimental rolling-proof HMAC material includes nonce and counter.
+  - Failed rolling-proof verification follows the existing quarantine path.
+expected_result: Devices with mismatched rolling-proof nonce or counter are quarantined.
+setup:
+  registry_hubs:
+    - hub_id: hub_home_001
+      scope_path: global.family.david.home
+  devices:
+    - device_id: dev_A9F3
+      label: phone
+    - device_id: dev_B2C8
+      label: tablet
+steps:
+  - action: register_device
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    label: phone
+  - action: register_device
+    device: dev_B2C8
+    registry_hub: hub_home_001
+    label: tablet
+  - action: verify_rolling_proof
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    proof_valid: true
+    auth_mode: hmac_sha256_experimental
+    auth_secret: test_secret_simulator_only
+    session_id: session_001
+    counter: 1
+    nonce: nonce_a
+    requested_capability: send_normal_traffic
+    tamper_nonce: true
+  - action: verify_rolling_proof
+    device: dev_B2C8
+    registry_hub: hub_home_001
+    proof_valid: true
+    auth_mode: hmac_sha256_experimental
+    auth_secret: test_secret_simulator_only
+    session_id: session_002
+    counter: 1
+    nonce: nonce_b
+    requested_capability: send_normal_traffic
+    tamper_counter: true
+assertions:
+  - type: latest_step_status
+    expected: quarantined
+  - type: device_state
+    registry_hub: hub_home_001
+    device: dev_A9F3
+    expected: quarantined
+  - type: device_state
+    registry_hub: hub_home_001
+    device: dev_B2C8
+    expected: quarantined
+  - type: quarantine_exists
+    registry_hub: hub_home_001
+    device: dev_A9F3
+  - type: quarantine_exists
+    registry_hub: hub_home_001
+    device: dev_B2C8
+  - type: event_seen
+    event_type: rolling_proof_failed

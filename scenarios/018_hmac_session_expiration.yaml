@@ -1,0 +1,54 @@
+scenario_id: 018_hmac_session_expiration
+name: HMAC session expiration
+category: security
+description: Expires a simulator-local HMAC session using integer simulated time and blocks proof verification.
+tags:
+  - hmac
+  - session
+  - expiration
+  - simulator-only
+demonstrates:
+  - Local session TTLs use deterministic simulated time.
+  - Expired sessions cannot verify rolling proof material.
+expected_result: Proof verification is rejected after the session expires.
+setup:
+  registry_hubs:
+    - hub_id: hub_home_001
+      scope_path: global.family.david.home
+  devices:
+    - device_id: dev_A9F3
+      label: phone
+steps:
+  - action: register_device
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    label: phone
+  - action: create_local_session
+    device: dev_A9F3
+    registry_hub: hub_home_001
+    session_id: session_expiration_001
+    auth_secret: test_secret_simulator_only
+    ttl: 2
+  - action: expire_local_sessions
+    registry_hub: hub_home_001
+    current_time: 5
+  - action: verify_hmac_session_proof
+    registry_hub: hub_home_001
+    session_id: session_expiration_001
+    counter: 1
+    nonce: nonce_after_expiration
+    requested_capability: send_normal_traffic
+    current_time: 5
+assertions:
+  - type: latest_step_status
+    expected: rolling_proof_rejected
+  - type: session_state
+    registry_hub: hub_home_001
+    session_id: session_expiration_001
+    expected: expired
+  - type: session_counter
+    registry_hub: hub_home_001
+    session_id: session_expiration_001
+    expected: 0
+  - type: event_seen
+    event_type: rolling_proof_rejected

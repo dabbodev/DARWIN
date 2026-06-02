@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
 from darwin.models.route import (
     CONGESTION_PENALTIES,
     STABILITY_PENALTIES,
@@ -111,6 +112,19 @@ STEP_REQUIRED_FIELDS = {
     "resume_lanes_after_relocation": ("traffic_hub", "device"),
     "attempt_lane_send": ("traffic_hub", "lane", "payload"),
     "verify_rolling_proof": ("registry_hub", "device", "proof_valid"),
+    "create_local_session": ("registry_hub", "device", "session_id", "auth_secret"),
+    "rotate_local_session": ("registry_hub", "session_id", "new_auth_secret"),
+    "revoke_local_session": ("registry_hub", "session_id"),
+    "revoke_device_sessions": ("registry_hub", "device"),
+    "revoke_device": ("registry_hub", "device"),
+    "expire_local_sessions": ("registry_hub", "current_time"),
+    "verify_hmac_session_proof": (
+        "registry_hub",
+        "session_id",
+        "counter",
+        "nonce",
+        "requested_capability",
+    ),
     "record_cross_tree_packet": ("traffic_hub", "from_branch", "to_branch"),
     "recommend_traffic_bridge": ("traffic_hub",),
     "advance_time": (),
@@ -135,6 +149,9 @@ ASSERTION_REQUIRED_FIELDS = {
     "quarantine_exists": ("registry_hub", "device"),
     "recommendation_exists": ("traffic_hub", "recommendation_type"),
     "route_for_lane": ("traffic_hub", "lane", "expected_route"),
+    "session_state": ("registry_hub", "session_id", "expected"),
+    "session_counter": ("registry_hub", "session_id", "expected"),
+    "checkpoint_state": ("registry_hub", "device", "expected"),
 }
 
 
@@ -147,6 +164,11 @@ SUPPORTED_SCENARIO_CATEGORIES = {
     "metrics",
     "preset",
     "visualization",
+}
+
+SUPPORTED_AUTH_MODES = {
+    AUTH_MODE_SYMBOLIC,
+    AUTH_MODE_HMAC_SHA256_EXPERIMENTAL,
 }
 
 
@@ -383,6 +405,7 @@ def _validate_steps(data: dict[str, Any], errors: list[ValidationIssue]) -> None
             continue
 
         _validate_required_fields(step, required_fields, location, "step", errors)
+        _validate_step_auth_fields(step, location, errors)
 
 
 def _validate_assertions(data: dict[str, Any], errors: list[ValidationIssue]) -> None:
@@ -448,6 +471,48 @@ def _validate_required_fields(
                     suggestion=f"Add {field_name} to {location}.",
                 )
             )
+
+
+def _validate_step_auth_fields(
+    step: dict[str, Any],
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    auth_mode = step.get("auth_mode")
+    if auth_mode is not None and str(auth_mode) not in SUPPORTED_AUTH_MODES:
+        errors.append(
+            _issue(
+                f"{location}.auth_mode",
+                f"Unsupported auth_mode: {auth_mode}",
+                suggestion="Use one of: " + ", ".join(sorted(SUPPORTED_AUTH_MODES)),
+            )
+        )
+
+    auth_secret = step.get("auth_secret")
+    if auth_secret is not None and not isinstance(auth_secret, str):
+        errors.append(_issue(f"{location}.auth_secret", "auth_secret must be a string"))
+
+    auth_tag = step.get("auth_tag")
+    if auth_tag is not None and not isinstance(auth_tag, str):
+        errors.append(_issue(f"{location}.auth_tag", "auth_tag must be a string"))
+
+    _validate_optional_bool(step, "auth_tag_valid", location, errors)
+    _validate_optional_bool(step, "tamper_auth_tag", location, errors)
+    _validate_optional_bool(step, "tamper_payload_after_tag", location, errors)
+    _validate_optional_bool(step, "tamper_counter", location, errors)
+    _validate_optional_bool(step, "tamper_nonce", location, errors)
+    _validate_optional_bool(step, "tamper_secret", location, errors)
+
+
+def _validate_optional_bool(
+    item: dict[str, Any],
+    field_name: str,
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    value = item.get(field_name)
+    if value is not None and not isinstance(value, bool):
+        errors.append(_issue(f"{location}.{field_name}", f"{field_name} must be a boolean"))
 
 
 def _validate_link_metrics(

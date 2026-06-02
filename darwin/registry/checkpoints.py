@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+from darwin.auth.hmac_bridge import (
+    checkpoint_auth_material,
+    verify_hmac_tag,
+)
+from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
 from darwin.models.checkpoint import (
     CHECKPOINT_STATES,
     CheckpointPacket,
@@ -17,6 +22,7 @@ from darwin.registry.metrics import record_checkpoint_update
 def record_checkpoint(
     registry_hub: RegistryHub,
     checkpoint_packet: CheckpointPacket,
+    auth_secret: str | bytes | None = None,
 ) -> CheckpointRecordResult:
     """Record a symbolic device checkpoint on a RegistryHub."""
     device_id = checkpoint_packet.source_device_id
@@ -30,7 +36,15 @@ def record_checkpoint(
         )
 
     previous_checkpoint = registry_hub.checkpoints.get(device_id)
-    if not checkpoint_packet.auth_tag_valid:
+    if local_record.current_state in {"quarantined", "revoked"}:
+        return CheckpointRecordResult(
+            action="checkpoint_rejected",
+            device_id=device_id,
+            checkpoint=previous_checkpoint,
+            reason=f"device_{local_record.current_state}",
+        )
+
+    if not _checkpoint_auth_valid(checkpoint_packet, auth_secret):
         return CheckpointRecordResult(
             action="checkpoint_rejected",
             device_id=device_id,
@@ -71,6 +85,24 @@ def record_checkpoint(
         device_id=device_id,
         checkpoint=checkpoint,
     )
+
+
+def _checkpoint_auth_valid(
+    checkpoint_packet: CheckpointPacket,
+    auth_secret: str | bytes | None,
+) -> bool:
+    auth_mode = checkpoint_packet.auth_mode or AUTH_MODE_SYMBOLIC
+    if auth_mode == AUTH_MODE_SYMBOLIC:
+        return checkpoint_packet.auth_tag_valid
+    if auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL:
+        if auth_secret is None or checkpoint_packet.auth_tag is None:
+            return False
+        return verify_hmac_tag(
+            auth_secret,
+            checkpoint_auth_material(checkpoint_packet),
+            checkpoint_packet.auth_tag,
+        )
+    return False
 
 
 def get_checkpoint_state(registry_hub: RegistryHub, device_id: str) -> CheckpointState | None:

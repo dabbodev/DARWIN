@@ -173,6 +173,19 @@ class World:
                         }
                         for device_id, quarantine in sorted(hub.quarantines.items())
                     },
+                    "local_sessions": {
+                        session_id: {
+                            "device_id": session.device_id,
+                            "scope": session.scope,
+                            "auth_mode": session.auth_mode,
+                            "current_counter": session.current_counter,
+                            "created_at": session.created_at,
+                            "expires_at": session.expires_at,
+                            "state": session.state,
+                            "rotation_index": session.rotation_index,
+                        }
+                        for session_id, session in sorted(hub.local_sessions.items())
+                    },
                 }
                 for hub_id, hub in sorted(self.registry_hubs.items())
             },

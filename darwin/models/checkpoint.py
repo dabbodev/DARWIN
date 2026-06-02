@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from darwin.auth.modes import AUTH_MODE_SYMBOLIC
+
 CHECKPOINT_INTERVALS_BY_TIER = {
     0: 1800,
     1: 30,
@@ -56,6 +58,8 @@ class CheckpointPacket:
     active_lane_count: int | None = None
     battery_level: int | None = None
     auth_tag_valid: bool = True
+    auth_mode: str = AUTH_MODE_SYMBOLIC
+    auth_tag: str | None = None
     payload: dict[str, object] = field(default_factory=dict)
 
 
@@ -115,6 +119,8 @@ def make_checkpoint_packet(
     state: str,
     current_time: int,
     auth_tag_valid: bool = True,
+    auth_mode: str = AUTH_MODE_SYMBOLIC,
+    auth_tag: str | None = None,
     active_lane_count: int | None = None,
     battery_level: int | None = None,
 ) -> CheckpointPacket:
@@ -132,6 +138,8 @@ def make_checkpoint_packet(
         active_lane_count=active_lane_count,
         battery_level=battery_level,
         auth_tag_valid=auth_tag_valid,
+        auth_mode=auth_mode,
+        auth_tag=auth_tag,
         payload={
             "device_state": state,
             "checkpoint_tier": checkpoint_tier,
