@@ -60,10 +60,18 @@ def open_lane(
             target_device_id=target_device_id,
         )
 
-    if start_hub.direct_attachments[source_device_id].status == "quarantined":
+    source_status = start_hub.direct_attachments[source_device_id].status
+    if source_status == "quarantined":
         return LaneOpenResult(
             lane_id=selected_lane_id,
             action="source_quarantined",
+            source_device_id=source_device_id,
+            target_device_id=target_device_id,
+        )
+    if source_status == "revoked":
+        return LaneOpenResult(
+            lane_id=selected_lane_id,
+            action="source_revoked",
             source_device_id=source_device_id,
             target_device_id=target_device_id,
         )

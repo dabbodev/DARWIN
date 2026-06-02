@@ -34,6 +34,7 @@ from darwin.registry.relocation import (
 from darwin.registry.security import (
     detect_duplicate_device_claim as detect_duplicate_device_claim_op,
 )
+from darwin.registry.security import revoke_device as revoke_device_op
 from darwin.registry.security import verify_rolling_proof as verify_rolling_proof_op
 from darwin.registry.sessions import (
     create_local_session as create_local_session_op,
@@ -43,6 +44,12 @@ from darwin.registry.sessions import (
 )
 from darwin.registry.sessions import (
     get_local_session,
+)
+from darwin.registry.sessions import (
+    revoke_device_sessions as revoke_device_sessions_op,
+)
+from darwin.registry.sessions import (
+    revoke_local_session as revoke_local_session_op,
 )
 from darwin.registry.sessions import (
     rotate_local_session as rotate_local_session_op,
@@ -196,6 +203,9 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         "verify_rolling_proof": _step_verify_rolling_proof,
         "create_local_session": _step_create_local_session,
         "rotate_local_session": _step_rotate_local_session,
+        "revoke_local_session": _step_revoke_local_session,
+        "revoke_device_sessions": _step_revoke_device_sessions,
+        "revoke_device": _step_revoke_device,
         "expire_local_sessions": _step_expire_local_sessions,
         "verify_hmac_session_proof": _step_verify_hmac_session_proof,
         "record_cross_tree_packet": _step_record_cross_tree_packet,
@@ -756,6 +766,89 @@ def _step_rotate_local_session(world: World, fields: dict[str, Any]) -> None:
             "rotation_index": (
                 None if result.session is None else result.session.rotation_index
             ),
+        },
+    )
+
+
+def _step_revoke_local_session(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    result = revoke_local_session_op(
+        hub,
+        session_id=str(fields["session_id"]),
+        reason=_optional_str(fields.get("reason")),
+    )
+    world.action_results.append(result)
+    device_id = None if result.session is None else result.session.device_id
+    world.log(
+        f"{result.status} {fields['session_id']} at {hub.hub_id}",
+        event_type=result.status,
+        actor=device_id,
+        target=hub.hub_id,
+        device_id=device_id,
+        hub_id=hub.hub_id,
+        status=result.status,
+        data={
+            "session_id": fields["session_id"],
+            "success": result.success,
+            "reason": result.reason,
+        },
+    )
+
+
+def _step_revoke_device_sessions(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    device_id = str(fields["device"])
+    results = revoke_device_sessions_op(
+        hub,
+        device_id=device_id,
+        reason=_optional_str(fields.get("reason")),
+    )
+    world.action_results.append(results[-1] if results else [])
+    world.log(
+        f"revoked {len(results)} session(s) for {device_id} at {hub.hub_id}",
+        event_type="device_sessions_revoked",
+        actor=device_id,
+        target=hub.hub_id,
+        device_id=device_id,
+        hub_id=hub.hub_id,
+        status="device_sessions_revoked",
+        data={
+            "session_ids": [
+                result.session.session_id
+                for result in results
+                if result.session is not None
+            ],
+            "reason": fields.get("reason"),
+        },
+    )
+
+
+def _step_revoke_device(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    device_id = str(fields["device"])
+    current_time = _optional_int(fields.get("current_time"))
+    result = revoke_device_op(
+        hub,
+        device_id=device_id,
+        reason=_optional_str(fields.get("reason")),
+        current_time=world.current_time if current_time is None else current_time,
+    )
+    world.action_results.append(result)
+    world.log(
+        f"{result.action} for {device_id} at {hub.hub_id}",
+        event_type=(
+            result.security_event.event_type
+            if result.security_event is not None
+            else result.action
+        ),
+        actor=device_id,
+        target=hub.hub_id,
+        device_id=device_id,
+        hub_id=hub.hub_id,
+        status=result.action,
+        data={
+            "success": result.success,
+            "reason": result.reason,
         },
     )
 

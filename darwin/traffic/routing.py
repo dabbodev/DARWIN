@@ -20,8 +20,8 @@ from darwin.traffic.metrics import (
     record_route_unavailable,
 )
 from darwin.traffic.security import (
-    is_quarantined_for_normal_traffic,
     log_security_event,
+    traffic_source_block_reason,
     verify_packet_auth,
 )
 
@@ -162,18 +162,23 @@ def forward_packet(
         start_hub.forwarding_log.append(result)
         return result
 
-    if is_quarantined_for_normal_traffic(start_hub, packet.source_device_id):
+    source_block_reason = traffic_source_block_reason(start_hub, packet.source_device_id)
+    if source_block_reason is not None:
         log_security_event(
             traffic_hub=start_hub,
-            event_type="quarantined_device_blocked",
+            event_type=(
+                "revoked_device_blocked"
+                if source_block_reason == "source_revoked"
+                else "quarantined_device_blocked"
+            ),
             claimed_device_id=packet.source_device_id,
             severity="medium",
             action_taken="packet_rejected",
-            reason="source_quarantined",
+            reason=source_block_reason,
         )
         result = ForwardingResult(
             packet_id=packet.packet_id,
-            action="source_quarantined",
+            action=source_block_reason,
             target_device_id=packet.target_device_id,
         )
         record_packet_dropped(start_hub)

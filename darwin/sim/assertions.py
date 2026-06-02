@@ -376,6 +376,26 @@ def _session_counter(
     )
 
 
+def _checkpoint_state(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    device_id = str(assertion.get("device"))
+    expected = str(assertion.get("expected"))
+    actual = None
+    if hub is not None and device_id in hub.checkpoints:
+        actual = hub.checkpoints[device_id].state
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"{device_id} checkpoint state is {expected}",
+        actual,
+    )
+
+
 def _result(
     assertion_type: str,
     passed: bool,
@@ -420,4 +440,5 @@ _EVALUATORS = {
     "recommendation_exists": _recommendation_exists,
     "session_state": _session_state,
     "session_counter": _session_counter,
+    "checkpoint_state": _checkpoint_state,
 }

@@ -114,6 +114,9 @@ STEP_REQUIRED_FIELDS = {
     "verify_rolling_proof": ("registry_hub", "device", "proof_valid"),
     "create_local_session": ("registry_hub", "device", "session_id", "auth_secret"),
     "rotate_local_session": ("registry_hub", "session_id", "new_auth_secret"),
+    "revoke_local_session": ("registry_hub", "session_id"),
+    "revoke_device_sessions": ("registry_hub", "device"),
+    "revoke_device": ("registry_hub", "device"),
     "expire_local_sessions": ("registry_hub", "current_time"),
     "verify_hmac_session_proof": (
         "registry_hub",
@@ -148,6 +151,7 @@ ASSERTION_REQUIRED_FIELDS = {
     "route_for_lane": ("traffic_hub", "lane", "expected_route"),
     "session_state": ("registry_hub", "session_id", "expected"),
     "session_counter": ("registry_hub", "session_id", "expected"),
+    "checkpoint_state": ("registry_hub", "device", "expected"),
 }
 
 

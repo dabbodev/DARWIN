@@ -13,11 +13,14 @@ from darwin.models.security import (
     QuarantineResult,
     RollingProofResult,
     SecurityEvent,
+    TrustCheckResult,
 )
 from darwin.registry.metrics import record_duplicate_device_conflict, refresh_registry_counts
 from darwin.registry.relocation import get_latest_move
 from darwin.registry.sessions import (
     get_local_session,
+    quarantine_device_sessions,
+    revoke_device_sessions,
     verify_hmac_rolling_proof_for_session,
 )
 
@@ -73,6 +76,11 @@ def quarantine_device(
     attachment = registry_hub.attachments.get(claimed_device_id)
     if attachment is not None:
         attachment.state = "quarantined"
+    quarantine_device_sessions(
+        registry_hub,
+        claimed_device_id,
+        reason=reason,
+    )
     refresh_registry_counts(registry_hub)
 
     event = log_security_event(
@@ -92,6 +100,53 @@ def quarantine_device(
     )
 
 
+def revoke_device(
+    registry_hub: RegistryHub,
+    device_id: str,
+    reason: str | None = None,
+    current_time: int | None = None,
+) -> TrustCheckResult:
+    """Mark a registered device revoked and revoke its simulator-local sessions."""
+    device = registry_hub.devices.get(device_id)
+    if device is None:
+        return TrustCheckResult(
+            action="device_revocation_rejected",
+            success=False,
+            claimed_device_id=device_id,
+            reason="unknown_device",
+        )
+
+    device.current_state = "revoked"
+    checkpoint = registry_hub.checkpoints.get(device_id)
+    if checkpoint is not None:
+        checkpoint.state = "revoked"
+    attachment = registry_hub.attachments.get(device_id)
+    if attachment is not None:
+        attachment.state = "revoked"
+    passport = registry_hub.passports.get(device.passport_id)
+    if passport is not None:
+        passport.revoked = True
+    revoke_device_sessions(registry_hub, device_id, reason=reason)
+    refresh_registry_counts(registry_hub)
+
+    event = log_security_event(
+        registry_hub=registry_hub,
+        event_type="device_revoked",
+        claimed_device_id=device_id,
+        severity="high",
+        action_taken="revoked",
+        reason=reason,
+        timestamp=current_time,
+    )
+    return TrustCheckResult(
+        action="device_revoked",
+        success=True,
+        claimed_device_id=device_id,
+        reason=reason,
+        security_event=event,
+    )
+
+
 def verify_rolling_proof(
     registry_hub: RegistryHub,
     device_id: str,
@@ -107,6 +162,15 @@ def verify_rolling_proof(
     capability: str | None = None,
 ) -> RollingProofResult:
     """Check same-network continuity and quarantine on failure."""
+    local_record = registry_hub.devices.get(device_id)
+    if local_record is not None and local_record.current_state in {"quarantined", "revoked"}:
+        return RollingProofResult(
+            action="rolling_proof_rejected",
+            device_id=device_id,
+            success=False,
+            reason=f"device_{local_record.current_state}",
+        )
+
     if auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL:
         proof_valid = _hmac_rolling_proof_valid(
             registry_hub=registry_hub,

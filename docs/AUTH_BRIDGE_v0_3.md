@@ -109,6 +109,18 @@ than the stored session counter. Successful verification advances the stored
 counter. Reusing a counter, lowering a counter, using an expired session, or
 using a tag generated with an old secret fails cleanly.
 
+Revocation and quarantine are simulator trust states, not cryptographic
+protocols. A local session can be explicitly revoked, and every local session
+for a device can be revoked together. When a registered device is quarantined,
+active local sessions for that device become `quarantined`. HMAC session proof
+verification only succeeds for `active` sessions whose device is not currently
+`quarantined` or `revoked`.
+
+Checkpoint updates also respect explicit device trust state. If a registered
+device is already `quarantined` or `revoked`, a valid HMAC checkpoint is
+rejected with `device_quarantined` or `device_revoked` and does not update the
+trusted checkpoint, attachment, or device state back to online/active.
+
 Scenario actions:
 
 ```yaml
@@ -123,6 +135,11 @@ Scenario actions:
   registry_hub: hub_home_001
   session_id: session_001
   new_auth_secret: new_test_secret_simulator_only
+
+- action: revoke_local_session
+  registry_hub: hub_home_001
+  session_id: session_001
+  reason: operator_revocation
 
 - action: expire_local_sessions
   registry_hub: hub_home_001
@@ -145,6 +162,8 @@ Checked-in HMAC scenarios:
 - `scenarios/016_hmac_rolling_proof_failure.yaml`
 - `scenarios/017_hmac_session_rotation.yaml`
 - `scenarios/018_hmac_session_expiration.yaml`
+- `scenarios/019_hmac_revoked_session_failure.yaml`
+- `scenarios/020_hmac_quarantine_blocks_checkpoint.yaml`
 
 ## Edge-Case Coverage
 
@@ -158,6 +177,10 @@ The v0.3 simulator tests and scenarios cover these failure boundaries:
 - Session expiration blocks rolling-proof verification.
 - Session rotation invalidates proof tags generated with the old secret.
 - Session counters reject same-counter and lower-counter reuse.
+- Revoked sessions reject rolling-proof verification.
+- Device quarantine marks active local sessions quarantined.
+- Valid HMAC checkpoints from quarantined or revoked devices are rejected
+  without reviving trusted device state.
 - Quarantined source devices remain blocked even when packet HMAC verifies.
 - Default packet and checkpoint construction still uses symbolic auth.
 

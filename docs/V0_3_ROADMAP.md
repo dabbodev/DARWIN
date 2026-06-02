@@ -22,6 +22,12 @@ scenario or focused test opts in.
 - Session-bound rolling proof verification with stale-counter rejection.
 - Scenario `017_hmac_session_rotation`.
 - Scenario `018_hmac_session_expiration`.
+- Revocation and quarantine interaction for HMAC sessions.
+- Explicit local session and device-session revocation helpers.
+- HMAC checkpoints from quarantined or revoked devices are rejected without
+  reviving trusted state.
+- Scenario `019_hmac_revoked_session_failure`.
+- Scenario `020_hmac_quarantine_blocks_checkpoint`.
 - Auth bridge documentation and audit pass.
 - HMAC edge-case tests for wrong secrets, tampered material, missing
   configuration, rolling-proof nonce/counter mismatch, and quarantine boundary
@@ -29,7 +35,6 @@ scenario or focused test opts in.
 
 ## Remaining Candidates
 
-- Revocation interaction with HMAC mode.
 - HMAC move-contract proof modeling, still simulator-only.
 - v0.3 release cleanup, including final checklist pass, release notes, version
   bump decision, tag decision, and merge planning.

@@ -36,6 +36,14 @@ def record_checkpoint(
         )
 
     previous_checkpoint = registry_hub.checkpoints.get(device_id)
+    if local_record.current_state in {"quarantined", "revoked"}:
+        return CheckpointRecordResult(
+            action="checkpoint_rejected",
+            device_id=device_id,
+            checkpoint=previous_checkpoint,
+            reason=f"device_{local_record.current_state}",
+        )
+
     if not _checkpoint_auth_valid(checkpoint_packet, auth_secret):
         return CheckpointRecordResult(
             action="checkpoint_rejected",

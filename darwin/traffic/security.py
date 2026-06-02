@@ -117,7 +117,18 @@ def _reject_invalid_packet_auth(
 
 def is_quarantined_for_normal_traffic(traffic_hub: TrafficHub, device_id: str | None) -> bool:
     """Return whether a local direct attachment is blocked for normal traffic."""
+    return traffic_source_block_reason(traffic_hub, device_id) == "source_quarantined"
+
+
+def traffic_source_block_reason(traffic_hub: TrafficHub, device_id: str | None) -> str | None:
+    """Return the local traffic-layer block reason for a source device."""
     if device_id is None:
-        return False
+        return None
     attachment = traffic_hub.direct_attachments.get(device_id)
-    return attachment is not None and attachment.status == "quarantined"
+    if attachment is None:
+        return None
+    if attachment.status == "quarantined":
+        return "source_quarantined"
+    if attachment.status == "revoked":
+        return "source_revoked"
+    return None
