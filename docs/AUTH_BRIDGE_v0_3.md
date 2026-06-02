@@ -11,7 +11,7 @@ for packets, checkpoints, and rolling proof scenarios.
 Planning docs:
 
 - `docs/V0_3_ROADMAP.md`
-- `docs/RELEASE_NOTES_v0_3_DRAFT.md`
+- `docs/RELEASE_NOTES_v0_3.md`
 
 ## What It Does
 

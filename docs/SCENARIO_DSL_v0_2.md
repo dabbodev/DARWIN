@@ -129,3 +129,15 @@ Checked-in auth bridge scenarios:
 
 - `scenarios/012_hmac_checkpoint_success.yaml`
 - `scenarios/013_hmac_packet_auth_failure.yaml`
+- `scenarios/014_hmac_checkpoint_tamper_failure.yaml`
+- `scenarios/015_hmac_missing_secret_failure.yaml`
+- `scenarios/016_hmac_rolling_proof_failure.yaml`
+- `scenarios/017_hmac_session_rotation.yaml`
+- `scenarios/018_hmac_session_expiration.yaml`
+- `scenarios/019_hmac_revoked_session_failure.yaml`
+- `scenarios/020_hmac_quarantine_blocks_checkpoint.yaml`
+
+Together, scenarios `012` through `020` cover packet and checkpoint HMAC
+success/failure paths, HMAC edge cases, session-secret lifecycle behavior,
+rotation, expiration, stale counter rejection, and revocation/quarantine
+interaction.

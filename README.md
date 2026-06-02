@@ -8,9 +8,8 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently released at **simulator v0.2.0**. The active v0.3
-development branch is consolidating a simulator-only auth bridge while keeping
-symbolic auth as the default.
+This project is currently released at **simulator v0.3.0**. The v0.3 release
+adds a simulator-only auth bridge while keeping symbolic auth as the default.
 
 The v0.1 simulator answers questions like:
 
@@ -38,16 +37,16 @@ Useful v0.2 docs:
 - `docs/TRACE_EXPORT_v0_2.md`
 - `docs/RELEASE_NOTES_v0_2.md`
 
-## v0.3 Auth Bridge Draft
+## v0.3 Auth Bridge
 
 The v0.3 auth bridge remains simulator-only. It adds opt-in
 `hmac_sha256_experimental` scenarios for deterministic HMAC-style checks, but
-does not add production cryptography, key exchange, secure storage, certificate
-chains, or real networking.
+does not add production cryptography, key exchange, secure storage, public-key
+signatures, certificate chains, or real networking.
 
 - `docs/AUTH_BRIDGE_v0_3.md`
 - `docs/V0_3_ROADMAP.md`
-- `docs/RELEASE_NOTES_v0_3_DRAFT.md`
+- `docs/RELEASE_NOTES_v0_3.md`
 
 ## What v0.1 Supports
 
@@ -310,7 +309,7 @@ DARWIN/
     DEVELOPMENT.md
     RELEASE_NOTES_v0_1.md
     RELEASE_NOTES_v0_2.md
-    RELEASE_NOTES_v0_3_DRAFT.md
+    RELEASE_NOTES_v0_3.md
     SCENARIO_DSL_v0_2.md
     SCENARIO_INDEX.md
     TRACE_EXPORT_v0_2.md
@@ -379,6 +378,13 @@ DARWIN/
     011_preset_lane_demo.yaml
     012_hmac_checkpoint_success.yaml
     013_hmac_packet_auth_failure.yaml
+    014_hmac_checkpoint_tamper_failure.yaml
+    015_hmac_missing_secret_failure.yaml
+    016_hmac_rolling_proof_failure.yaml
+    017_hmac_session_rotation.yaml
+    018_hmac_session_expiration.yaml
+    019_hmac_revoked_session_failure.yaml
+    020_hmac_quarantine_blocks_checkpoint.yaml
   tests/
     test_auth_symbolic.py
     test_checkpoints.py
@@ -692,11 +698,11 @@ For v0.2 development docs, see:
 - `docs/TRACE_EXPORT_v0_2.md`
 - `docs/RELEASE_NOTES_v0_2.md`
 
-For the v0.3 auth bridge draft, see:
+For the v0.3 auth bridge, see:
 
 - `docs/AUTH_BRIDGE_v0_3.md`
 - `docs/V0_3_ROADMAP.md`
-- `docs/RELEASE_NOTES_v0_3_DRAFT.md`
+- `docs/RELEASE_NOTES_v0_3.md`
 
 ## What v0.1 Is Not
 
