@@ -243,6 +243,15 @@ def verify_move_contract_auth(
             move_counter=move_counter,
         )
 
+    local_record = registry_hub.devices.get(move_contract.device_id)
+    if local_record is not None and local_record.current_state in {"quarantined", "revoked"}:
+        return _move_auth_rejected(
+            reason=f"device_{local_record.current_state}",
+            auth_mode=auth_mode,
+            session_id=session_id,
+            move_counter=move_counter,
+        )
+
     if session.state != "active":
         return _move_auth_rejected(
             reason="move_session_inactive",
@@ -254,15 +263,6 @@ def verify_move_contract_auth(
     if session.device_id != move_contract.device_id:
         return _move_auth_rejected(
             reason="move_session_device_mismatch",
-            auth_mode=auth_mode,
-            session_id=session_id,
-            move_counter=move_counter,
-        )
-
-    local_record = registry_hub.devices.get(move_contract.device_id)
-    if local_record is not None and local_record.current_state in {"quarantined", "revoked"}:
-        return _move_auth_rejected(
-            reason=f"device_{local_record.current_state}",
             auth_mode=auth_mode,
             session_id=session_id,
             move_counter=move_counter,

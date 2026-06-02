@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
+from darwin.auth.move_contract import verify_move_contract_auth
 from darwin.models.hub import AttachmentRecord, RegistryHub
 from darwin.models.move import (
     MarkInTransitResult,
@@ -89,7 +91,7 @@ def update_attachment_after_move(
     new_scope: str,
     move_contract: MoveContract,
 ) -> MoveVerificationResult:
-    """Apply a valid symbolic move contract to registry attachment state."""
+    """Apply a valid move contract to registry attachment state."""
     device_record = registry_hub.devices.get(device_id)
     if device_record is None:
         return MoveVerificationResult(
@@ -112,6 +114,34 @@ def update_attachment_after_move(
             attachment=registry_hub.attachments.get(device_id),
             reason=validation_failure,
         )
+
+    auth_mode = move_contract.auth_mode or AUTH_MODE_SYMBOLIC
+    if auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL:
+        hmac_target_failure = _hmac_move_target_failure_reason(
+            registry_hub,
+            device_record.current_attachment,
+            new_attachment,
+            new_scope,
+            move_contract,
+        )
+        if hmac_target_failure is not None:
+            return MoveVerificationResult(
+                action="move_contract_rejected",
+                device_id=device_id,
+                move_contract=move_contract,
+                attachment=registry_hub.attachments.get(device_id),
+                reason=hmac_target_failure,
+            )
+
+        auth_result = verify_move_contract_auth(registry_hub, move_contract)
+        if not auth_result.success:
+            return MoveVerificationResult(
+                action="move_contract_rejected",
+                device_id=device_id,
+                move_contract=move_contract,
+                attachment=registry_hub.attachments.get(device_id),
+                reason=auth_result.reason,
+            )
 
     device_record.current_attachment = new_attachment
     device_record.current_state = "online"
@@ -176,4 +206,22 @@ def _move_contract_failure_reason(
         return "device_id_mismatch"
     if move_contract.passport_id != passport_id:
         return "passport_id_mismatch"
+    return None
+
+
+def _hmac_move_target_failure_reason(
+    registry_hub: RegistryHub,
+    current_attachment: str,
+    new_attachment: str,
+    new_scope: str,
+    move_contract: MoveContract,
+) -> str | None:
+    if move_contract.from_scope != registry_hub.scope_path:
+        return "invalid_move_auth_tag"
+    if move_contract.old_attachment != current_attachment:
+        return "invalid_move_auth_tag"
+    if move_contract.to_scope != new_scope:
+        return "invalid_move_auth_tag"
+    if move_contract.new_attachment != new_attachment:
+        return "invalid_move_auth_tag"
     return None

@@ -194,6 +194,23 @@ def _latest_step_status(
     )
 
 
+def _latest_step_reason(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    expected = str(assertion.get("expected"))
+    latest_result = world.action_results[-1] if world.action_results else None
+    actual = getattr(latest_result, "reason", None)
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"latest step reason is {expected}",
+        actual,
+    )
+
+
 def _relocation_failed(
     world: World,
     assertion_type: str,
@@ -209,6 +226,23 @@ def _relocation_failed(
         actual == "failed",
         "failed",
         f"{device_id} relocation failed",
+        actual,
+    )
+
+
+def _move_recorded(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    device_id = str(assertion.get("device"))
+    actual = None if hub is None else len(hub.moves.get(device_id, []))
+    return _result(
+        assertion_type,
+        actual is not None and actual > 0,
+        "> 0",
+        f"{device_id} has recorded moves",
         actual,
     )
 
@@ -430,7 +464,9 @@ _EVALUATORS = {
     "flow_control_exists": _flow_control_exists,
     "flow_control_absent": _flow_control_absent,
     "latest_step_status": _latest_step_status,
+    "latest_step_reason": _latest_step_reason,
     "relocation_failed": _relocation_failed,
+    "move_recorded": _move_recorded,
     "move_not_recorded": _move_not_recorded,
     "attachment_is": _attachment_is,
     "route_for_lane": _route_for_lane,

@@ -1,0 +1,66 @@
+scenario_id: 021_hmac_move_contract_success
+name: HMAC move contract success
+category: relocation
+description: Applies an opt-in simulator-only HMAC-authenticated move contract and updates attachment state.
+tags:
+  - relocation
+  - move-contract
+  - hmac
+  - simulator-only
+demonstrates:
+  - HMAC move contracts are opt-in through auth_mode.
+  - Valid move auth updates registry attachment state.
+  - Successful move auth advances the local session counter.
+expected_result: The attachment updates, the move is recorded, and the session counter advances.
+setup:
+  registry_hubs:
+    - hub_id: registry_home
+      scope_path: global.family.home
+    - hub_id: registry_office
+      scope_path: global.family.office
+  traffic_hubs:
+    - hub_id: hub_home
+    - hub_id: hub_office
+  devices:
+    - device_id: dev_A9F3
+      label: phone
+      registry_hub: registry_home
+      traffic_hub: hub_home
+steps:
+  - action: create_local_session
+    device: dev_A9F3
+    registry_hub: registry_home
+    session_id: session_move_021
+    auth_secret: test_move_secret_simulator_only
+  - action: mark_in_transit
+    device: dev_A9F3
+    registry_hub: registry_home
+  - action: move_device
+    device: dev_A9F3
+    old_registry_hub: registry_home
+    new_registry_hub: registry_office
+    old_traffic_hub: hub_home
+    new_traffic_hub: hub_office
+    auth_mode: hmac_sha256_experimental
+    session_id: session_move_021
+    auth_secret: test_move_secret_simulator_only
+    move_nonce: nonce_move_021
+    move_counter: 1
+assertions:
+  - type: latest_step_status
+    expected: attachment_updated
+  - type: attachment_is
+    registry_hub: registry_home
+    device: dev_A9F3
+    expected_attachment: registry_office
+  - type: move_recorded
+    registry_hub: registry_home
+    device: dev_A9F3
+  - type: device_state
+    registry_hub: registry_home
+    device: dev_A9F3
+    expected: online
+  - type: session_counter
+    registry_hub: registry_home
+    session_id: session_move_021
+    expected: 1

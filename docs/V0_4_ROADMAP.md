@@ -33,10 +33,10 @@ DARWIN v0.3 already provides the pieces needed for a careful v0.4 extension:
 
 ## Proposed v0.4 Scope
 
-v0.4 should add an optional HMAC-backed proof model for move contracts while
-leaving existing symbolic behavior untouched.
+v0.4 adds an optional HMAC-backed proof model for move contracts while leaving
+existing symbolic behavior untouched.
 
-The recommended direction is:
+The implemented direction is:
 
 - Keep `MoveContract.valid` as the default symbolic validation path.
 - Allow move contracts to opt in to `hmac_sha256_experimental`.
@@ -90,18 +90,19 @@ nonce, or counter from being reused for another simulated move.
 
 ### HMAC Mode
 
-For `auth_mode: hmac_sha256_experimental`, validation should require:
+For `auth_mode: hmac_sha256_experimental`, validation requires:
 
 - The referenced local session exists.
-- The session is active.
 - The device is not revoked.
 - The device is not quarantined.
+- The session is active.
 - The move counter is strictly newer than the session counter.
 - The move HMAC tag verifies against deterministic move proof material.
 - The move fields being applied match the fields covered by proof material.
 
-On success, the simulator should update the attachment using the existing move
-flow and then advance the session counter to the move counter.
+On success, the simulator verifies move auth, advances the local session
+counter, updates attachment state using the existing move flow, and records the
+move.
 
 ## Proposed Failure Reasons
 
@@ -109,16 +110,15 @@ Clean failure reasons should remain scenario-friendly and deterministic:
 
 - `invalid_move_auth_tag`
 - `missing_move_session`
-- `expired_move_session`
-- `revoked_device`
-- `quarantined_device`
+- `move_session_inactive`
+- `device_revoked`
+- `device_quarantined`
 - `stale_move_counter`
 - `move_contract_rejected`
 
-Where existing v0.3 session helpers return lower-level names such as
-`unknown_session`, `session_expired`, `device_revoked`, or `device_quarantined`,
-the v0.4 move-contract layer can map them to move-specific failure reasons for
-scenario clarity.
+Move-contract integration preserves the existing clean result shape:
+`update_attachment_after_move()` returns `move_contract_rejected` with the auth
+failure reason when HMAC verification fails.
 
 ## Proposed Simulator Objects
 
@@ -132,7 +132,7 @@ The implementation pass should consider:
 Avoid production signature terminology. This is not a passport signature, a CA
 model, a handoff certificate, or device-held secure-key proof.
 
-## Proposed Scenarios
+## Scenarios
 
 - `021_hmac_move_contract_success.yaml`
 - `022_hmac_move_contract_tamper_failure.yaml`
@@ -140,7 +140,7 @@ model, a handoff certificate, or device-held secure-key proof.
 - `024_hmac_move_contract_revoked_device.yaml`
 - `025_symbolic_move_contract_still_works.yaml`
 
-## Proposed Tests
+## Tests
 
 - HMAC move proof material is deterministic.
 - Valid HMAC move contract updates attachment.

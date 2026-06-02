@@ -13,6 +13,7 @@ from darwin.auth.hmac_bridge import (
     rolling_proof_material,
 )
 from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
+from darwin.auth.move_contract import attach_move_auth
 from darwin.models.checkpoint import make_checkpoint_packet
 from darwin.models.device import Device
 from darwin.models.hub import LocalDeviceRecord
@@ -500,38 +501,49 @@ def _step_move_device(world: World, fields: dict[str, Any]) -> None:
         new_attachment=new_registry_hub.hub_id,
         timestamp=world.current_time,
     )
+    auth_mode = str(fields.get("auth_mode", AUTH_MODE_SYMBOLIC))
+    if auth_mode != AUTH_MODE_SYMBOLIC:
+        contract.auth_mode = auth_mode
+
+    if auth_mode == AUTH_MODE_HMAC_SHA256_EXPERIMENTAL:
+        _attach_hmac_move_auth_from_step(contract, fields)
+        _tamper_move_contract_from_step(contract, fields)
+
     result = update_attachment_after_move(
         old_registry_hub,
         device_id,
-        new_attachment=new_registry_hub.hub_id,
-        new_scope=new_scope,
+        new_attachment=contract.new_attachment,
+        new_scope=contract.to_scope,
         move_contract=contract,
     )
 
-    old_traffic_hub.detach_device(device_id)
-    new_traffic_hub.attach_device(device)
-    device.current_registry_hub = new_registry_hub.hub_id
-    device.current_traffic_hub = new_traffic_hub.hub_id
-    device.state = "online"
+    if result.success:
+        old_traffic_hub.detach_device(device_id)
+        new_traffic_hub.attach_device(device)
+        device.current_registry_hub = new_registry_hub.hub_id
+        device.current_traffic_hub = new_traffic_hub.hub_id
+        device.state = "online"
 
-    if new_registry_hub.hub_id != old_registry_hub.hub_id:
-        register_device_op(
-            new_registry_hub,
-            device,
-            requested_label=device.label,
-            checkpoint_tier=device.checkpoint_tier,
-            current_time=world.current_time,
-        )
+        if new_registry_hub.hub_id != old_registry_hub.hub_id:
+            register_device_op(
+                new_registry_hub,
+                device,
+                requested_label=device.label,
+                checkpoint_tier=device.checkpoint_tier,
+                current_time=world.current_time,
+            )
 
     world.action_results.append(result)
+    event_type = "device_moved" if result.success else result.action
+    status = "online" if result.success else result.action
     world.log(
-        f"moved {device_id} from {old_traffic_hub.hub_id} to {new_traffic_hub.hub_id}",
-        event_type="device_moved",
+        f"{event_type} {device_id} from {old_traffic_hub.hub_id} to {new_traffic_hub.hub_id}",
+        event_type=event_type,
         actor=device_id,
         target=new_traffic_hub.hub_id,
         device_id=device_id,
         hub_id=new_traffic_hub.hub_id,
-        status="online",
+        status=status,
         data={
             "old_registry_hub": old_registry_hub.hub_id,
             "new_registry_hub": new_registry_hub.hub_id,
@@ -539,8 +551,56 @@ def _step_move_device(world: World, fields: dict[str, Any]) -> None:
             "new_traffic_hub": new_traffic_hub.hub_id,
             "new_scope": new_scope,
             "move_action": result.action,
+            "reason": result.reason,
         },
     )
+
+
+def _attach_hmac_move_auth_from_step(
+    contract: object,
+    fields: dict[str, Any],
+) -> None:
+    session_id = _optional_str(fields.get("session_id"))
+    move_nonce = _optional_str(fields.get("move_nonce"))
+    move_counter = _optional_int(fields.get("move_counter"))
+    auth_secret = _optional_str(fields.get("auth_secret"))
+    move_auth_tag = _optional_str(fields.get("move_auth_tag"))
+
+    if (
+        auth_secret is not None
+        and session_id is not None
+        and move_nonce is not None
+        and move_counter is not None
+        and move_auth_tag is None
+    ):
+        attach_move_auth(
+            contract,
+            auth_secret,
+            session_id=session_id,
+            move_nonce=move_nonce,
+            move_counter=move_counter,
+        )
+    else:
+        contract.auth_mode = AUTH_MODE_HMAC_SHA256_EXPERIMENTAL
+        contract.session_id = session_id
+        contract.move_nonce = move_nonce
+        contract.move_counter = move_counter
+        contract.move_auth_tag = move_auth_tag
+
+    if bool(fields.get("tamper_move_auth_tag", False)) and contract.move_auth_tag is not None:
+        contract.move_auth_tag = _tampered_tag(contract.move_auth_tag)
+
+
+def _tamper_move_contract_from_step(
+    contract: object,
+    fields: dict[str, Any],
+) -> None:
+    if bool(fields.get("tamper_to_scope", False)):
+        contract.to_scope = f"{contract.to_scope}.tampered"
+    if bool(fields.get("tamper_new_attachment", False)):
+        contract.new_attachment = f"{contract.new_attachment}_tampered"
+    if bool(fields.get("tamper_old_attachment", False)):
+        contract.old_attachment = f"{contract.old_attachment}_tampered"
 
 
 def _step_create_invalid_move_contract(world: World, fields: dict[str, Any]) -> None:

@@ -8,15 +8,15 @@ of the v0.3 HMAC bridge. Symbolic move contracts remain the default behavior.
 
 ## Status
 
-Planning plus unit-level policy helper slices. The simulator now has
-deterministic move-contract HMAC helper functions and a
+Planning, unit-level policy helpers, and relocation integration slices. The
+simulator now has deterministic move-contract HMAC helper functions and a
 `verify_move_contract_auth(registry_hub, move_contract)` policy helper in
 `darwin/auth/move_contract.py`.
 
-The policy helper verifies symbolic or experimental HMAC move-contract auth and
-advances the local session counter only after successful HMAC verification. It
-is not wired into `update_attachment_after_move()` yet, so relocation behavior
-and scenario semantics remain unchanged in this slice.
+`update_attachment_after_move()` keeps missing `auth_mode` and
+`auth_mode: symbolic` on the existing `MoveContract.valid` path. When
+`auth_mode: hmac_sha256_experimental` is present, relocation verifies the
+HMAC move auth before updating attachment state or recording the move.
 
 Related documents:
 
@@ -167,9 +167,9 @@ For `auth_mode: hmac_sha256_experimental`, the helper:
 
 1. Requires `session_id`, `move_nonce`, `move_counter`, and `move_auth_tag`.
 2. Locates `session_id` in `RegistryHub.local_sessions`.
-3. Requires the session state to be `active`.
-4. Requires the session device ID to match `move_contract.device_id`.
-5. Rejects registered local devices whose state is `quarantined` or `revoked`.
+3. Rejects registered local devices whose state is `quarantined` or `revoked`.
+4. Requires the session state to be `active`.
+5. Requires the session device ID to match `move_contract.device_id`.
 6. Requires `move_counter` to be strictly greater than
    `session.current_counter`.
 7. Builds deterministic move proof material from the contract fields.
@@ -178,6 +178,12 @@ For `auth_mode: hmac_sha256_experimental`, the helper:
 
 The helper does not apply attachment updates, record moves, resume relocation,
 or alter relocation flow controls.
+
+`update_attachment_after_move()` additionally checks that the HMAC contract's
+`from_scope`, `old_attachment`, `to_scope`, and `new_attachment` match the
+registry state and the attachment update being applied before calling the
+helper. This prevents a successful tag for one simulated move from advancing a
+session counter while a different move is applied.
 
 ## Failure Reasons
 
@@ -258,18 +264,17 @@ Counter freshness:
 - May grow optional auth fields.
 - Should preserve existing constructor behavior for symbolic tests.
 
-## Future Scenario Plan
+## Scenario Coverage
 
-These are deferred until relocation integration is wired:
+These scenarios are checked in for the relocation integration slice:
 
 `021_hmac_move_contract_success.yaml`:
 
 - Register a device.
 - Create a local HMAC session.
 - Mark the device in transit.
-- Pause lanes.
 - Apply an HMAC-authenticated move contract.
-- Confirm attachment updates and lanes can resume.
+- Confirm attachment update, move recording, online state, and counter advance.
 
 `022_hmac_move_contract_tamper_failure.yaml`:
 
@@ -286,16 +291,15 @@ These are deferred until relocation integration is wired:
 `024_hmac_move_contract_revoked_device.yaml`:
 
 - Create a local session.
-- Revoke the device or its sessions.
-- Confirm `device_revoked` or `move_session_inactive`, depending on whether the
-  future integration checks registered device state before session state.
+- Revoke the device.
+- Confirm `device_revoked` and unchanged attachment state.
 
 `025_symbolic_move_contract_still_works.yaml`:
 
 - Exercise the existing symbolic move contract path.
 - Confirm no HMAC fields are required.
 
-## Current Policy Test Plan
+## Current Test Plan
 
 - `move_auth_material` canonical output is deterministic.
 - Symbolic move contracts with `valid: true` pass without session fields.
@@ -312,13 +316,12 @@ These are deferred until relocation integration is wired:
 - Quarantined registered device fails with `device_quarantined`.
 - Failed verification does not update attachments, record moves, or advance
   counters.
-
-## Future Integration Test Plan
-
-After relocation integration is wired, add tests that prove a verified HMAC move
-contract can update registry attachment state and that failed HMAC verification
-keeps attachments, recorded moves, paused lanes, and relocation flow controls in
-their existing failure-safe states.
+- Integration tests prove a verified HMAC move contract updates registry
+  attachment state.
+- Integration tests prove failed HMAC verification keeps attachments and
+  recorded moves unchanged.
+- Scenario tests cover HMAC success, tamper failure, expired session failure,
+  revoked-device failure, and unchanged symbolic relocation behavior.
 
 ## Non-Goals
 
