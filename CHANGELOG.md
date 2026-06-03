@@ -1,29 +1,39 @@
 # Changelog
 
-## [0.4.0] - Draft planning
+## [0.4.0] - 2026-05-31
 
-Planning only. v0.4 is proposed as move-contract auth modeling that connects
-the existing relocation layer to the v0.3 experimental HMAC bridge while
-preserving symbolic move validation as the default.
+DARWIN v0.4.0 is a simulator-only move-contract auth modeling release. It
+connects the existing relocation layer to the v0.3 experimental HMAC bridge
+while preserving symbolic move validation as the default.
 
-Planned:
+Added:
 
-- Optional `hmac_sha256_experimental` move-contract proof fields for
+- Optional `hmac_sha256_experimental` move-contract auth helpers for
   `MoveContract`.
 - Deterministic move proof material binding device, passport, source and
   destination scopes, old and new attachments, nonce, session, counter, and
   simulated time when present.
-- Reuse of simulator-local session lifecycle rules for active sessions,
-  expiration, stale counters, revocation, and quarantine.
-- Clean move-specific failure reasons such as `invalid_move_auth_tag`,
-  `missing_move_session`, `expired_move_session`, `revoked_device`,
-  `quarantined_device`, and `stale_move_counter`.
-- Proposed scenarios `021` through `025` for HMAC move success, tamper failure,
-  expired session, revoked device, and symbolic compatibility.
+- HMAC verification policy for move contracts, including session lookup, active
+  session checks, device matching, stale-counter rejection, quarantined-device
+  rejection, revoked-device rejection, and auth-tag verification before counter
+  advancement.
+- Relocation attachment update integration that verifies opt-in HMAC move
+  contracts before updating attachment state or recording the move.
+- HMAC move-contract success, tamper failure, expired-session, and
+  revoked-device scenarios:
+  `scenarios/021_hmac_move_contract_success.yaml`,
+  `scenarios/022_hmac_move_contract_tamper_failure.yaml`,
+  `scenarios/023_hmac_move_contract_expired_session.yaml`, and
+  `scenarios/024_hmac_move_contract_revoked_device.yaml`.
+- Symbolic move contract preservation scenario:
+  `scenarios/025_symbolic_move_contract_still_works.yaml`.
 
-Non-goals remain production cryptography, real signatures, CA modeling, key
-exchange, secure storage, encrypted transport, real network handoff,
-production key lifecycle, and distributed consensus.
+Compatibility and limits:
+
+- Symbolic move contracts remain the default.
+- v0.4 does not add production cryptography, public-key signatures,
+  certificate chains, key exchange, secure storage, encrypted transport, real
+  networking, production key lifecycle, or distributed consensus.
 
 ## [0.3.0] - 2026-05-31
 

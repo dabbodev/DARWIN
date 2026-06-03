@@ -1,11 +1,10 @@
 # DARWIN v0.4 Roadmap: Move-Contract Auth Modeling
 
-DARWIN v0.4 is planned as a simulator-only move-contract auth modeling
-release. The goal is to connect the existing relocation layer to the v0.3
-experimental auth bridge without replacing symbolic move validation as the
-default.
+DARWIN v0.4 is a simulator-only move-contract auth modeling release. It
+connects the existing relocation layer to the v0.3 experimental auth bridge
+without replacing symbolic move validation as the default.
 
-v0.4 should answer this planning question:
+v0.4 answers this simulator question:
 
 ```text
 How can a Move Contract prove, in simulator-only form, that a device authorized
@@ -31,7 +30,7 @@ DARWIN v0.3 already provides the pieces needed for a careful v0.4 extension:
 - Relocation, in-transit state, lane pause/resume, and symbolic
   `MoveContract.valid` validation already exist.
 
-## Proposed v0.4 Scope
+## Implemented v0.4 Scope
 
 v0.4 adds an optional HMAC-backed proof model for move contracts while leaving
 existing symbolic behavior untouched.
@@ -45,9 +44,9 @@ The implemented direction is:
   primitive.
 - Report clean simulator failure reasons that scenario assertions can inspect.
 
-## Proposed Move Contract Fields
+## Move Contract Fields
 
-`MoveContract` may optionally include:
+`MoveContract` can optionally include:
 
 - `auth_mode`
 - `move_auth_tag`
@@ -56,13 +55,13 @@ The implemented direction is:
 - `move_counter`
 - `proof_context`
 
-`proof_context` should be small, deterministic simulator metadata. It can
+`proof_context` is small, deterministic simulator metadata. It can
 describe why the proof was generated, such as `relocation_resume`, without
 claiming real device-held secret storage or production authorization.
 
-## Proposed HMAC Move Proof Material
+## HMAC Move Proof Material
 
-The v0.4 proof material should bind all fields that define the move:
+The v0.4 proof material binds the fields that define the move:
 
 - `device_id`
 - `passport_id`
@@ -78,7 +77,7 @@ The v0.4 proof material should bind all fields that define the move:
 This prevents a proof generated for one destination, old attachment, session,
 nonce, or counter from being reused for another simulated move.
 
-## Proposed Validation Rules
+## Validation Rules
 
 ### Symbolic Mode
 
@@ -104,9 +103,9 @@ On success, the simulator verifies move auth, advances the local session
 counter, updates attachment state using the existing move flow, and records the
 move.
 
-## Proposed Failure Reasons
+## Failure Reasons
 
-Clean failure reasons should remain scenario-friendly and deterministic:
+Clean failure reasons remain scenario-friendly and deterministic:
 
 - `invalid_move_auth_tag`
 - `missing_move_session`
@@ -120,13 +119,13 @@ Move-contract integration preserves the existing clean result shape:
 `update_attachment_after_move()` returns `move_contract_rejected` with the auth
 failure reason when HMAC verification fails.
 
-## Proposed Simulator Objects
+## Simulator Objects
 
-The implementation pass should consider:
+The implementation includes:
 
-- Extending `MoveContract` with optional auth fields.
-- Adding `MoveAuthMaterial` for deterministic proof material construction.
-- Adding `MoveAuthResult` for move-specific verification outcomes.
+- `MoveContract` optional auth fields.
+- `MoveAuthMaterial` for deterministic proof material construction.
+- `MoveAuthVerificationResult` for move-specific verification outcomes.
 - Keeping HMAC helper names explicitly experimental.
 
 Avoid production signature terminology. This is not a passport signature, a CA
@@ -155,7 +154,7 @@ model, a handoff certificate, or device-held secure-key proof.
 
 ## Non-Goals
 
-v0.4 must not add:
+v0.4 does not add:
 
 - Real signatures.
 - CA or certificate-chain modeling.
@@ -170,15 +169,15 @@ v0.4 must not add:
 
 ## Release Framing
 
-v0.4 should be described as move-contract auth modeling, not production secure
+v0.4 is described as move-contract auth modeling, not production secure
 mobility.
 
 It remains a deterministic simulator layer for testing DARWIN protocol behavior
 around relocation, session state, revocation, quarantine, and proof freshness.
 
-## Planning Validation
+## Release Validation
 
-During this planning branch, the package version should remain `0.3.0`.
+For v0.4 release cleanup, the package version is `0.4.0`.
 
 Expected validation commands:
 
@@ -192,5 +191,5 @@ python -m darwin.cli.main --version
 Expected CLI version:
 
 ```text
-darwin-sim 0.3.0
+darwin-sim 0.4.0
 ```

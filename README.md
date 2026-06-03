@@ -8,8 +8,9 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently released at **simulator v0.3.0**. The v0.3 release
-adds a simulator-only auth bridge while keeping symbolic auth as the default.
+This project is currently released at **simulator v0.4.0**. The v0.4 release
+adds simulator-only move-contract HMAC auth modeling while keeping symbolic
+move contracts as the default.
 
 The v0.1 simulator answers questions like:
 
@@ -48,16 +49,16 @@ signatures, certificate chains, or real networking.
 - `docs/V0_3_ROADMAP.md`
 - `docs/RELEASE_NOTES_v0_3.md`
 
-## v0.4 Move-Contract Auth Planning
+## v0.4 Move-Contract Auth
 
-v0.4 planning explores simulator-only move-contract auth modeling. The planned
-direction is to keep symbolic move validation as the default while allowing
-opt-in `hmac_sha256_experimental` move proofs that reuse v0.3 local session
-lifecycle concepts.
+The v0.4 move-contract auth release keeps symbolic move validation as the
+default while allowing opt-in `hmac_sha256_experimental` move proofs that reuse
+v0.3 local session lifecycle concepts. This is deterministic simulator behavior
+only, not production cryptography.
 
 - `docs/V0_4_ROADMAP.md`
 - `docs/MOVE_CONTRACT_AUTH_v0_4.md`
-- `docs/RELEASE_NOTES_v0_4_DRAFT.md`
+- `docs/RELEASE_NOTES_v0_4.md`
 
 ## What v0.1 Supports
 
@@ -321,13 +322,16 @@ DARWIN/
     RELEASE_NOTES_v0_1.md
     RELEASE_NOTES_v0_2.md
     RELEASE_NOTES_v0_3.md
+    RELEASE_NOTES_v0_4.md
     SCENARIO_DSL_v0_2.md
     SCENARIO_INDEX.md
     TRACE_EXPORT_v0_2.md
     V0_2_ROADMAP.md
     V0_3_ROADMAP.md
+    V0_4_ROADMAP.md
     VISUALIZATION_v0_2.md
     AUTH_BRIDGE_v0_3.md
+    MOVE_CONTRACT_AUTH_v0_4.md
   darwin/
     __init__.py
     ids.py
@@ -369,6 +373,7 @@ DARWIN/
     auth/
       __init__.py
       hmac_bridge.py
+      move_contract.py
       modes.py
       symbolic.py
       trust.py
@@ -396,6 +401,11 @@ DARWIN/
     018_hmac_session_expiration.yaml
     019_hmac_revoked_session_failure.yaml
     020_hmac_quarantine_blocks_checkpoint.yaml
+    021_hmac_move_contract_success.yaml
+    022_hmac_move_contract_tamper_failure.yaml
+    023_hmac_move_contract_expired_session.yaml
+    024_hmac_move_contract_revoked_device.yaml
+    025_symbolic_move_contract_still_works.yaml
   tests/
     test_auth_symbolic.py
     test_checkpoints.py
@@ -715,11 +725,11 @@ For the v0.3 auth bridge, see:
 - `docs/V0_3_ROADMAP.md`
 - `docs/RELEASE_NOTES_v0_3.md`
 
-For v0.4 move-contract auth planning, see:
+For v0.4 move-contract auth, see:
 
 - `docs/V0_4_ROADMAP.md`
 - `docs/MOVE_CONTRACT_AUTH_v0_4.md`
-- `docs/RELEASE_NOTES_v0_4_DRAFT.md`
+- `docs/RELEASE_NOTES_v0_4.md`
 
 ## What v0.1 Is Not
 

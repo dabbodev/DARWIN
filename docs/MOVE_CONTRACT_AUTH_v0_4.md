@@ -1,15 +1,15 @@
-# DARWIN v0.4 Move-Contract Auth Planning
+# DARWIN v0.4 Move-Contract Auth
 
-This document proposes how DARWIN can model authenticated move contracts in
-v0.4 while staying simulator-only and non-production.
+This document describes how DARWIN models authenticated move contracts in v0.4
+while staying simulator-only and non-production.
 
-The key recommendation is to treat move-contract auth as an opt-in extension
-of the v0.3 HMAC bridge. Symbolic move contracts remain the default behavior.
+Move-contract auth is an opt-in extension of the v0.3 HMAC bridge. Symbolic
+move contracts remain the default behavior.
 
 ## Status
 
-Planning, unit-level policy helpers, and relocation integration slices. The
-simulator now has deterministic move-contract HMAC helper functions and a
+Implemented unit-level policy helpers and relocation integration. The
+simulator has deterministic move-contract HMAC helper functions and a
 `verify_move_contract_auth(registry_hub, move_contract)` policy helper in
 `darwin/auth/move_contract.py`.
 
@@ -22,7 +22,7 @@ Related documents:
 
 - `docs/AUTH_BRIDGE_v0_3.md`
 - `docs/V0_4_ROADMAP.md`
-- `docs/RELEASE_NOTES_v0_4_DRAFT.md`
+- `docs/RELEASE_NOTES_v0_4.md`
 
 ## Design Question
 
@@ -32,7 +32,7 @@ A move contract currently records a symbolic claim:
 This device moved from old attachment/scope to new attachment/scope.
 ```
 
-v0.4 should model this stronger simulator-only question:
+v0.4 models this stronger simulator-only question:
 
 ```text
 Did the same simulated device session authorize this exact move?
@@ -59,7 +59,7 @@ valid: false
 If no explicit HMAC auth mode is present, relocation should continue to use the
 existing symbolic contract path.
 
-## Proposed MoveContract Shape
+## MoveContract Shape
 
 The current contract fields remain:
 
@@ -73,7 +73,7 @@ The current contract fields remain:
 - `valid`
 - `timestamp`
 
-The v0.4 implementation may add optional fields:
+The v0.4 implementation adds optional fields:
 
 - `auth_mode`
 - `move_auth_tag`
@@ -82,7 +82,7 @@ The v0.4 implementation may add optional fields:
 - `move_counter`
 - `proof_context`
 
-Example planning shape:
+Example shape:
 
 ```yaml
 move_contract:
@@ -109,7 +109,7 @@ As of the first v0.4 helper slice, `MoveContract` includes these optional auth
 fields for tests and future integration. Existing symbolic constructors and
 relocation behavior remain supported.
 
-## Proposed Move Proof Material
+## Move Proof Material
 
 The proof helper should produce deterministic canonical JSON over:
 
@@ -242,7 +242,7 @@ Counter freshness:
 - Re-verifying the same successful HMAC contract fails as stale because the
   first verification already advanced the counter.
 
-## Proposed Objects
+## Implemented Objects
 
 `MoveAuthMaterial`:
 
@@ -299,7 +299,7 @@ These scenarios are checked in for the relocation integration slice:
 - Exercise the existing symbolic move contract path.
 - Confirm no HMAC fields are required.
 
-## Current Test Plan
+## Test Coverage
 
 - `move_auth_material` canonical output is deterministic.
 - Symbolic move contracts with `valid: true` pass without session fields.
@@ -325,7 +325,7 @@ These scenarios are checked in for the relocation integration slice:
 
 ## Non-Goals
 
-This planning track does not add:
+This v0.4 release does not add:
 
 - Production secure mobility.
 - Real signatures.

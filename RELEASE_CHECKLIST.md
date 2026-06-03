@@ -116,39 +116,62 @@ python -m darwin.cli.main run scenarios/020_hmac_quarantine_blocks_checkpoint.ya
 python -m darwin.cli.main run scenarios/020_hmac_quarantine_blocks_checkpoint.yaml --export-snapshot tmp_v03_snapshot.json --export-events tmp_v03_events.json --export-result tmp_v03_result.json --export-mermaid tmp_v03.mmd --export-timeline-md tmp_v03_timeline.md --export-timeline-json tmp_v03_timeline.json
 ```
 
-# DARWIN v0.4 Move-Contract Auth Planning Checklist
+# DARWIN v0.4 Move-Contract Auth Release Checklist
 
-Planning only. Do not bump the package version, tag, merge, push, or release as
+Do not merge, tag, create a GitHub release, rebase, force push, or publish as
 part of this checklist.
 
-- [ ] `docs/V0_4_ROADMAP.md` exists.
-- [ ] `docs/MOVE_CONTRACT_AUTH_v0_4.md` exists.
-- [ ] `docs/RELEASE_NOTES_v0_4_DRAFT.md` exists.
-- [ ] CHANGELOG contains a draft v0.4 planning section.
-- [ ] README links to the v0.4 planning docs.
+- [ ] Ruff passes with `python -m ruff check .`.
+- [ ] Tests pass with `python -m pytest`.
+- [ ] All checked-in scenarios pass with `python scripts/run_all_scenarios.py`.
+- [ ] CLI version reports `darwin-sim 0.4.0`.
+- [ ] Scenario index is generated with `python -m darwin.cli.main scenario-index`.
+- [ ] Scenario listing works with `python -m darwin.cli.main list-scenarios`.
+- [ ] Preset listing works with `python -m darwin.cli.main list-presets`.
+- [ ] HMAC move-contract scenarios validate and run individually:
+  `scenarios/021_hmac_move_contract_success.yaml`,
+  `scenarios/022_hmac_move_contract_tamper_failure.yaml`,
+  `scenarios/023_hmac_move_contract_expired_session.yaml`, and
+  `scenarios/024_hmac_move_contract_revoked_device.yaml`.
+- [ ] Symbolic move-contract preservation scenario validates and runs:
+  `scenarios/025_symbolic_move_contract_still_works.yaml`.
+- [ ] Representative export sanity is checked for snapshot, events, result,
+  Mermaid, timeline Markdown, and timeline JSON outputs.
+- [ ] JSON export files parse.
+- [ ] Mermaid export contains `flowchart LR`.
+- [ ] Timeline Markdown export contains a table.
+- [ ] Package version is confirmed as `0.4.0`.
+- [ ] Final release notes are checked in `docs/RELEASE_NOTES_v0_4.md`.
+- [ ] CHANGELOG contains a dated `0.4.0` release section.
+- [ ] README links to `docs/RELEASE_NOTES_v0_4.md`.
 - [ ] Symbolic move validation remains documented as the default.
 - [ ] HMAC move proof is documented as opt-in through
   `hmac_sha256_experimental`.
-- [ ] Proposed failure reasons are documented.
-- [ ] Proposed scenarios `021` through `025` are documented as planned, not
-  implemented.
-- [ ] Proposed tests are documented.
+- [ ] Simulator-only and non-production crypto language is checked in
+  release-facing documentation.
 - [ ] Documentation avoids production secure mobility, real signature,
   certificate-chain, key-exchange, secure-storage, encrypted-transport, and
   real-networking claims.
-- [ ] CLI version still reports `darwin-sim 0.3.0`.
 
-## v0.4 Planning Validation Commands
+## v0.4 Release Validation Commands
 
 ```bash
 python -m ruff check .
 python -m pytest
 python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
-```
-
-Expected version during planning:
-
-```text
-darwin-sim 0.3.0
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main list-scenarios
+python -m darwin.cli.main list-presets
+python -m darwin.cli.main validate-scenario scenarios/021_hmac_move_contract_success.yaml
+python -m darwin.cli.main run scenarios/021_hmac_move_contract_success.yaml
+python -m darwin.cli.main validate-scenario scenarios/022_hmac_move_contract_tamper_failure.yaml
+python -m darwin.cli.main run scenarios/022_hmac_move_contract_tamper_failure.yaml
+python -m darwin.cli.main validate-scenario scenarios/023_hmac_move_contract_expired_session.yaml
+python -m darwin.cli.main run scenarios/023_hmac_move_contract_expired_session.yaml
+python -m darwin.cli.main validate-scenario scenarios/024_hmac_move_contract_revoked_device.yaml
+python -m darwin.cli.main run scenarios/024_hmac_move_contract_revoked_device.yaml
+python -m darwin.cli.main validate-scenario scenarios/025_symbolic_move_contract_still_works.yaml
+python -m darwin.cli.main run scenarios/025_symbolic_move_contract_still_works.yaml
+python -m darwin.cli.main run scenarios/021_hmac_move_contract_success.yaml --export-snapshot tmp_v04_snapshot.json --export-events tmp_v04_events.json --export-result tmp_v04_result.json --export-mermaid tmp_v04.mmd --export-timeline-md tmp_v04_timeline.md --export-timeline-json tmp_v04_timeline.json
 ```

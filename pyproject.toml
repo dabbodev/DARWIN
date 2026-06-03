@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "darwin-sim"
-version = "0.3.0"
+version = "0.4.0"
 description = "Simulator-first prototype for DARWIN: Direct-Access Registration Window Interface Network."
 readme = "README.md"
 license = "MIT"
