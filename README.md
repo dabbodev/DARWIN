@@ -60,6 +60,17 @@ only, not production cryptography.
 - `docs/MOVE_CONTRACT_AUTH_v0_4.md`
 - `docs/RELEASE_NOTES_v0_4.md`
 
+## v0.5 Alias Registry Planning
+
+v0.5 is currently a planning track for simulator-only Registry Hub aliases,
+short handles, progressive alias fallback, and delegated alias bundles or
+zones. It does not add real DNS, public domain registration, production
+identity proof, real networking, or external registry integration.
+
+- `docs/V0_5_ROADMAP.md`
+- `docs/ALIAS_REGISTRY_v0_5.md`
+- `docs/RELEASE_NOTES_v0_5_DRAFT.md`
+
 ## What v0.1 Supports
 
 - Scoped Registry Hub registration and label conflict handling.
@@ -323,14 +334,17 @@ DARWIN/
     RELEASE_NOTES_v0_2.md
     RELEASE_NOTES_v0_3.md
     RELEASE_NOTES_v0_4.md
+    RELEASE_NOTES_v0_5_DRAFT.md
     SCENARIO_DSL_v0_2.md
     SCENARIO_INDEX.md
     TRACE_EXPORT_v0_2.md
     V0_2_ROADMAP.md
     V0_3_ROADMAP.md
     V0_4_ROADMAP.md
+    V0_5_ROADMAP.md
     VISUALIZATION_v0_2.md
     AUTH_BRIDGE_v0_3.md
+    ALIAS_REGISTRY_v0_5.md
     MOVE_CONTRACT_AUTH_v0_4.md
   darwin/
     __init__.py
@@ -730,6 +744,12 @@ For v0.4 move-contract auth, see:
 - `docs/V0_4_ROADMAP.md`
 - `docs/MOVE_CONTRACT_AUTH_v0_4.md`
 - `docs/RELEASE_NOTES_v0_4.md`
+
+For v0.5 alias registry planning, see:
+
+- `docs/V0_5_ROADMAP.md`
+- `docs/ALIAS_REGISTRY_v0_5.md`
+- `docs/RELEASE_NOTES_v0_5_DRAFT.md`
 
 ## What v0.1 Is Not
 

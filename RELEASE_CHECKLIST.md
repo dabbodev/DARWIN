@@ -175,3 +175,48 @@ python -m darwin.cli.main validate-scenario scenarios/025_symbolic_move_contract
 python -m darwin.cli.main run scenarios/025_symbolic_move_contract_still_works.yaml
 python -m darwin.cli.main run scenarios/021_hmac_move_contract_success.yaml --export-snapshot tmp_v04_snapshot.json --export-events tmp_v04_events.json --export-result tmp_v04_result.json --export-mermaid tmp_v04.mmd --export-timeline-md tmp_v04_timeline.md --export-timeline-json tmp_v04_timeline.json
 ```
+
+# DARWIN v0.5 Alias Registry Planning Checklist
+
+This is a planning checklist only. Do not merge, tag, release, push, or bump
+the package version as part of this checklist.
+
+- [ ] v0.5 roadmap is present in `docs/V0_5_ROADMAP.md`.
+- [ ] Alias registry planning doc is present in
+  `docs/ALIAS_REGISTRY_v0_5.md`.
+- [ ] Draft v0.5 release notes are present in
+  `docs/RELEASE_NOTES_v0_5_DRAFT.md`.
+- [ ] CHANGELOG has an unreleased planning entry for v0.5.
+- [ ] README links to the v0.5 planning docs.
+- [ ] Alias taxonomy covers canonical identity chains, device aliases, service
+  aliases, progressive aliases, alias bundles or zones, and DNS-style public
+  alias bundles.
+- [ ] Alias records include planned fields for target identity, requesting and
+  approving hubs, authority scope/path, visibility, TTL, conflict status, and
+  symbolic auth/proof mode.
+- [ ] Progressive alias fallback is documented with requested alias, granted
+  fallback alias, status, reason, and authority ceiling behavior.
+- [ ] Authority rules document parent approval, upward requests, conflict
+  detection, revoked devices, and quarantined devices.
+- [ ] Alias bundles and DNS-style alias bundles are framed as simulator-only.
+- [ ] Proposed models, helpers, scenarios, and tests are listed.
+- [ ] Documentation avoids real DNS, public domain registration, production
+  identity proof, public CA, production crypto, real networking, or external
+  registry claims.
+- [ ] Package version remains `0.4.0`.
+- [ ] CLI version reports `darwin-sim 0.4.0`.
+
+## v0.5 Planning Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+```
+
+Expected version:
+
+```text
+darwin-sim 0.4.0
+```

@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+Planning:
+
+- Added v0.5 planning docs for simulator-only Registry Hub alias modeling,
+  short handles, progressive alias fallback, and delegated alias bundles.
+- Added draft release framing for v0.5 as delegated naming simulation rather
+  than real DNS, public domain registration, production identity proof, or
+  external registry integration.
+- Documented proposed v0.5 scenarios `026` through `031` and the corresponding
+  unit and integration test plan.
+
 ## [0.4.0] - 2026-05-31
 
 DARWIN v0.4.0 is a simulator-only move-contract auth modeling release. It
