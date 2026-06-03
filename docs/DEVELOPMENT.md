@@ -1,6 +1,6 @@
-# DARWIN v0.3 Development
+# DARWIN v0.4 Development
 
-DARWIN v0.3 is the active simulator development line. Development should keep
+DARWIN v0.4 is the active simulator development line. Development should keep
 the repo self-checking with tests, Ruff, scenario validation, export sanity
 checks, and all-scenario regression runs.
 

@@ -1,0 +1,70 @@
+scenario_id: 024_hmac_move_contract_revoked_device
+name: HMAC move contract revoked device
+category: security
+description: Revokes a registered device before applying an otherwise valid HMAC move contract.
+tags:
+  - relocation
+  - move-contract
+  - hmac
+  - revocation
+  - simulator-only
+demonstrates:
+  - Revoked devices cannot move with HMAC auth.
+  - Device revocation is reported before generic session inactivity.
+  - Failed move auth keeps attachment state unchanged.
+expected_result: The move is rejected with device_revoked and no move is recorded.
+setup:
+  registry_hubs:
+    - hub_id: registry_home
+      scope_path: global.family.home
+    - hub_id: registry_office
+      scope_path: global.family.office
+  traffic_hubs:
+    - hub_id: hub_home
+    - hub_id: hub_office
+  devices:
+    - device_id: dev_A9F3
+      label: phone
+      registry_hub: registry_home
+      traffic_hub: hub_home
+steps:
+  - action: create_local_session
+    device: dev_A9F3
+    registry_hub: registry_home
+    session_id: session_move_024
+    auth_secret: test_move_secret_simulator_only
+  - action: revoke_device
+    device: dev_A9F3
+    registry_hub: registry_home
+    reason: scenario_revocation
+  - action: move_device
+    device: dev_A9F3
+    old_registry_hub: registry_home
+    new_registry_hub: registry_office
+    old_traffic_hub: hub_home
+    new_traffic_hub: hub_office
+    auth_mode: hmac_sha256_experimental
+    session_id: session_move_024
+    auth_secret: test_move_secret_simulator_only
+    move_nonce: nonce_move_024
+    move_counter: 1
+assertions:
+  - type: latest_step_status
+    expected: move_contract_rejected
+  - type: latest_step_reason
+    expected: device_revoked
+  - type: attachment_is
+    registry_hub: registry_home
+    device: dev_A9F3
+    expected_attachment: registry_home
+  - type: move_not_recorded
+    registry_hub: registry_home
+    device: dev_A9F3
+  - type: device_state
+    registry_hub: registry_home
+    device: dev_A9F3
+    expected: revoked
+  - type: session_counter
+    registry_hub: registry_home
+    session_id: session_move_024
+    expected: 0

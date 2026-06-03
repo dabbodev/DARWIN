@@ -141,7 +141,9 @@ ASSERTION_REQUIRED_FIELDS = {
     "flow_control_exists": ("traffic_hub", "lane"),
     "flow_control_absent": ("traffic_hub", "lane"),
     "latest_step_status": ("expected",),
+    "latest_step_reason": ("expected",),
     "relocation_failed": ("traffic_hub", "device"),
+    "move_recorded": ("registry_hub", "device"),
     "move_not_recorded": ("registry_hub", "device"),
     "attachment_is": ("registry_hub", "device", "expected_attachment"),
     "event_seen": ("event_type",),
@@ -499,6 +501,10 @@ def _validate_step_auth_fields(
     _validate_optional_bool(step, "auth_tag_valid", location, errors)
     _validate_optional_bool(step, "tamper_auth_tag", location, errors)
     _validate_optional_bool(step, "tamper_payload_after_tag", location, errors)
+    _validate_optional_bool(step, "tamper_move_auth_tag", location, errors)
+    _validate_optional_bool(step, "tamper_to_scope", location, errors)
+    _validate_optional_bool(step, "tamper_new_attachment", location, errors)
+    _validate_optional_bool(step, "tamper_old_attachment", location, errors)
     _validate_optional_bool(step, "tamper_counter", location, errors)
     _validate_optional_bool(step, "tamper_nonce", location, errors)
     _validate_optional_bool(step, "tamper_secret", location, errors)

@@ -141,3 +141,34 @@ Together, scenarios `012` through `020` cover packet and checkpoint HMAC
 success/failure paths, HMAC edge cases, session-secret lifecycle behavior,
 rotation, expiration, stale counter rejection, and revocation/quarantine
 interaction.
+
+## v0.4 Move-Contract Auth Scenarios
+
+The v0.4 move-contract auth slice extends `move_device` with explicit,
+simulator-only HMAC fields. Missing `auth_mode` remains symbolic.
+
+Supported HMAC `move_device` fields:
+
+- `auth_mode: hmac_sha256_experimental`
+- `session_id`
+- `auth_secret`
+- `move_nonce`
+- `move_counter`
+- `move_auth_tag`
+- `tamper_move_auth_tag`
+- `tamper_to_scope`
+- `tamper_new_attachment`
+- `tamper_old_attachment`
+
+Additional assertions for move-contract scenarios:
+
+- `move_recorded`
+- `latest_step_reason`
+
+Checked-in move-contract auth scenarios:
+
+- `scenarios/021_hmac_move_contract_success.yaml`
+- `scenarios/022_hmac_move_contract_tamper_failure.yaml`
+- `scenarios/023_hmac_move_contract_expired_session.yaml`
+- `scenarios/024_hmac_move_contract_revoked_device.yaml`
+- `scenarios/025_symbolic_move_contract_still_works.yaml`

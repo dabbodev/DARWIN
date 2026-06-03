@@ -1,5 +1,40 @@
 # Changelog
 
+## [0.4.0] - 2026-05-31
+
+DARWIN v0.4.0 is a simulator-only move-contract auth modeling release. It
+connects the existing relocation layer to the v0.3 experimental HMAC bridge
+while preserving symbolic move validation as the default.
+
+Added:
+
+- Optional `hmac_sha256_experimental` move-contract auth helpers for
+  `MoveContract`.
+- Deterministic move proof material binding device, passport, source and
+  destination scopes, old and new attachments, nonce, session, counter, and
+  simulated time when present.
+- HMAC verification policy for move contracts, including session lookup, active
+  session checks, device matching, stale-counter rejection, quarantined-device
+  rejection, revoked-device rejection, and auth-tag verification before counter
+  advancement.
+- Relocation attachment update integration that verifies opt-in HMAC move
+  contracts before updating attachment state or recording the move.
+- HMAC move-contract success, tamper failure, expired-session, and
+  revoked-device scenarios:
+  `scenarios/021_hmac_move_contract_success.yaml`,
+  `scenarios/022_hmac_move_contract_tamper_failure.yaml`,
+  `scenarios/023_hmac_move_contract_expired_session.yaml`, and
+  `scenarios/024_hmac_move_contract_revoked_device.yaml`.
+- Symbolic move contract preservation scenario:
+  `scenarios/025_symbolic_move_contract_still_works.yaml`.
+
+Compatibility and limits:
+
+- Symbolic move contracts remain the default.
+- v0.4 does not add production cryptography, public-key signatures,
+  certificate chains, key exchange, secure storage, encrypted transport, real
+  networking, production key lifecycle, or distributed consensus.
+
 ## [0.3.0] - 2026-05-31
 
 DARWIN v0.3.0 is a simulator-only auth bridge release. It keeps symbolic
