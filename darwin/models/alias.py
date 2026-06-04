@@ -1,4 +1,4 @@
-"""Alias registry models for DARWIN v0.5 planning slices."""
+"""Alias registry models for DARWIN v0.5."""
 
 from __future__ import annotations
 

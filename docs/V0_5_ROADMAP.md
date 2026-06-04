@@ -1,9 +1,8 @@
 # DARWIN v0.5 Roadmap: Alias Registry Modeling
 
-DARWIN v0.5 is planned as a simulator-only delegated naming release. It should
-add Registry Hub alias behavior for short handles, progressive alias fallback,
-and delegated alias bundles or zones without replacing canonical identity
-chains.
+DARWIN v0.5 is a simulator-only delegated naming release. It adds Registry Hub
+alias behavior for short handles, progressive alias fallback, and delegated
+alias bundles or zones without replacing canonical identity chains.
 
 v0.5 answers this simulator question:
 
@@ -15,14 +14,13 @@ short alias granted by the highest registry scope policy allows?
 ## Status
 
 Direct alias helper, scenario-runner, basic progressive fallback, minimal alias
-bundle, and DNS-style public alias bundle scenario slices are implemented on
-the v0.5 planning branch. This roadmap does not bump the package version,
-define real DNS behavior, integrate an external registry, or claim production
-identity proof.
+bundle, and DNS-style public alias bundle scenario slices are implemented in
+v0.5. This roadmap does not define real DNS behavior, integrate an external
+registry, or claim production identity proof.
 
-The current stable package remains `darwin-sim 0.4.0`.
+The current stable package is `darwin-sim 0.5.0`.
 
-Completed v0.5 planning slices:
+Completed v0.5 slices:
 
 - Direct alias record/result models and in-memory Registry Hub alias storage.
 - Direct `claim_alias(...)`, `resolve_alias(...)`, and `release_alias(...)`
@@ -61,9 +59,9 @@ reuse:
 - Scenario runner, scenario presets, scenario index, Mermaid export, and
   timeline export.
 
-## Planned v0.5 Scope
+## v0.5 Scope
 
-v0.5 should model:
+v0.5 models:
 
 - Canonical identity chains as the truthful identity source.
 - Device aliases that point to devices.
@@ -146,13 +144,11 @@ DNS-style public alias bundle:
   lookup inside the simulator.
 - Not real DNS, not domain registrar integration, and not a public CA model.
 
-## Proposed Alias Record Fields
+## Alias Record Fields
 
-`AliasRecord` should remain plain simulator data. Proposed fields:
+`AliasRecord` remains plain simulator data. Implemented fields:
 
 - `alias`
-- `requested_alias`
-- `granted_alias`
 - `alias_type`
 - `target_device_id`
 - `target_service_id`
@@ -161,13 +157,19 @@ DNS-style public alias bundle:
 - `requested_through_hub`
 - `approved_by_registry_hub`
 - `authority_scope`
-- `authority_ceiling`
-- `authority_path`
-- `fallback_reason`
-- `fallback_from`
 - `status`
 - `visibility`
 - `ttl`
+- `conflict_id`
+- `requested_alias`
+- `granted_alias`
+- `fallback_reason`
+- `authority_ceiling`
+- `fallback_from`
+
+Future or reserved fields that are not implemented in v0.5:
+
+- `authority_path`
 - `conflict_status`
 - `auth_mode`
 - `proof_mode`
@@ -205,8 +207,8 @@ does not ask upward yet and never grants an alias above its own approved scope.
 - Revoked or quarantined devices cannot create active aliases.
 - Alias conflict detection must be explicit.
 - Alias release should not delete or mutate canonical device identity.
-- Expired aliases should resolve as inactive or expired, not missing, when the
-  record is still retained for audit.
+- TTL expiration is recorded as data only in v0.5; active expiration behavior
+  remains future work.
 
 ## Alias Bundles and Zones
 
@@ -262,20 +264,24 @@ Non-goals:
 - No real network lookup.
 - No external registry dependency.
 
-## Proposed Simulator Models
+## Simulator Models
 
 - `AliasRecord`
-- `AliasClaimRequest`
 - `AliasClaimResult`
 - `AliasBundle`
-- `AliasBundleClaim`
+- `AliasBundleClaimResult`
+- `BundleAliasClaimResult`
+- `ProgressiveAliasClaimResult`
 - `AliasResolutionResult`
+- `AliasReleaseResult`
+
+`AliasClaimRequest` is future/planned only and is not implemented in v0.5.
 
 Recommended result fields should include `success`, `status`, `reason`,
 `requested_alias`, `granted_alias`, `authority_scope`, and conflict details
 where relevant.
 
-## Proposed Registry Helpers
+## Registry Helpers
 
 - `claim_alias(...)`
 - `resolve_alias(...)`
@@ -288,7 +294,7 @@ where relevant.
 Helper naming should avoid DNS server, registrar, certificate, or production
 verification terms.
 
-## Proposed Scenarios
+## Scenarios
 
 - `026_alias_claim_success.yaml` - completed for direct alias claim and
   resolution.
@@ -304,7 +310,7 @@ verification terms.
   alias bundle naming without DNS, registrar, public CA, production identity
   proof, or real network lookup.
 
-## Proposed Tests
+## Tests
 
 - Alias record creation.
 - Alias resolution to device identity.
@@ -339,10 +345,10 @@ production identity proof
 certificate-backed public naming
 ```
 
-## Planning Validation
+## Release Validation
 
-During the planning branch, validation should confirm the existing simulator
-remains stable and the version is not bumped:
+Release validation confirms the simulator remains stable and the version is
+`0.5.0`:
 
 ```bash
 python -m ruff check .
@@ -354,5 +360,5 @@ python -m darwin.cli.main --version
 Expected CLI version:
 
 ```text
-darwin-sim 0.4.0
+darwin-sim 0.5.0
 ```

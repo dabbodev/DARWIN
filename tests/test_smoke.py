@@ -6,7 +6,7 @@ from darwin.sim.world import World
 
 
 def test_package_imports():
-    assert __version__ == "0.4.0"
+    assert __version__ == "0.5.0"
 
 
 def test_cli_version_reports_package_version(capsys):
@@ -14,7 +14,7 @@ def test_cli_version_reports_package_version(capsys):
 
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert captured.out.strip() == "darwin-sim 0.4.0"
+    assert captured.out.strip() == "darwin-sim 0.5.0"
 
 
 def test_world_can_hold_device_and_hubs():

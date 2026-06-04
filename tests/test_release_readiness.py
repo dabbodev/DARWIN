@@ -25,6 +25,7 @@ def test_documentation_links_exist():
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_2.md",
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_3.md",
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_4.md",
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_5.md",
     ]
 
     referenced_paths = {
@@ -50,7 +51,7 @@ def test_version_consistency():
     release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_1.md").read_text(
         encoding="utf-8"
     )
-    current_release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_4.md").read_text(
+    current_release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_5.md").read_text(
         encoding="utf-8"
     )
 

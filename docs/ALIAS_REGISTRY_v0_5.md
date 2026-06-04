@@ -1,17 +1,16 @@
-# DARWIN v0.5 Alias Registry Planning
+# DARWIN v0.5 Alias Registry
 
-This document sketches the planned v0.5 Registry Hub alias model. The direct
-alias helper slice, the basic progressive alias fallback slice, the minimal
-alias bundle slice, and a DNS-style public alias bundle scenario are
-implemented. DNS-style naming remains simulator-only; real DNS integration is
-not implemented.
+This document describes the implemented v0.5 Registry Hub alias model. Direct
+alias helpers, basic progressive alias fallback, minimal alias bundles, and a
+DNS-style public alias bundle scenario are implemented. DNS-style naming
+remains simulator-only; real DNS integration is not implemented.
 
 Aliases are authorized shortcuts. They do not replace canonical identity
 chains, alter traffic paths, or integrate with real DNS.
 
 ## Helper Slice Status
 
-Implemented in the current v0.5 planning branch:
+Implemented in v0.5:
 
 - Basic `AliasRecord` and direct alias result models.
 - Registry Hub in-memory alias storage.
@@ -145,13 +144,11 @@ DNS-style public alias bundle:
 - Intended to model public lookup policy without real DNS, registrars, public
   CA checks, production verification, or real network lookup.
 
-## Proposed AliasRecord
+## AliasRecord
 
-Proposed fields:
+Implemented fields:
 
 - `alias`
-- `requested_alias`
-- `granted_alias`
 - `alias_type`
 - `target_device_id` optional
 - `target_service_id` optional
@@ -160,13 +157,19 @@ Proposed fields:
 - `requested_through_hub`
 - `approved_by_registry_hub`
 - `authority_scope`
-- `authority_ceiling`
-- `authority_path`
-- `fallback_reason`
-- `fallback_from`
 - `status`
 - `visibility`
 - `ttl` optional
+- `conflict_id`
+- `requested_alias`
+- `granted_alias`
+- `fallback_reason`
+- `authority_ceiling`
+- `fallback_from`
+
+Future or reserved fields that are not implemented in v0.5:
+
+- `authority_path`
 - `conflict_status`
 - `auth_mode`
 - `proof_mode`
@@ -197,36 +200,26 @@ Suggested visibility values:
 - `delegated_bundle`
 - `public_simulated`
 
-The default proof posture should be symbolic. Alias proof data should model
+The default proof posture is symbolic. Any future alias proof data should model
 simulator authorization behavior only.
 
-## Proposed Claim Request and Result
+## Claim Results
 
-`AliasClaimRequest` should capture:
-
-- Requested alias.
-- Alias type.
-- Requesting device ID.
-- Requesting hub.
-- Target identity chain.
-- Optional target service ID.
-- Requested visibility.
-- Requested TTL.
-- Requested proof mode.
-
-`AliasClaimResult` should capture:
+`AliasClaimResult` captures:
 
 - `success`
 - `status`
 - `reason`
-- `requested_alias`
-- `granted_alias`
 - `alias_record`
-- `authority_scope`
-- `authority_path`
-- `fallback_candidates`
-- `conflict_alias`
-- `conflict_status`
+- `conflict_id`
+
+`ProgressiveAliasClaimResult` captures requested alias, granted alias,
+fallback reason, authority ceiling, and conflict details. Bundle helpers return
+`AliasBundleClaimResult` and `BundleAliasClaimResult`.
+
+`AliasClaimRequest` is not implemented in v0.5. If introduced later, it should
+remain a simulator-local request DTO and should not imply registrar, DNS,
+public CA, or production identity-proof behavior.
 
 ## Progressive Alias Fallback
 
@@ -333,29 +326,26 @@ change the target devices' canonical identity chains.
 
 ## Resolution
 
-`AliasResolutionResult` should report:
+`AliasResolutionResult` reports:
 
 - `success`
 - `status`
 - `reason`
-- `alias`
-- `alias_type`
 - `target_device_id`
-- `target_service_id`
 - `target_identity_chain`
-- `resolved_record`
-- `visibility`
-- `authority_scope`
 
-Resolution should distinguish:
+Implemented resolution distinguishes:
 
 - Alias not found.
 - Alias exists but is inactive.
+
+Future resolution slices may distinguish:
+
 - Alias exists but is expired.
 - Alias exists but the target device is revoked or quarantined.
 - Alias target is a service with no device target.
 
-## Proposed Helpers
+## Helpers
 
 - `claim_alias(...)`
 - `resolve_alias(...)`
@@ -369,7 +359,7 @@ These helpers should return structured results instead of raising for normal
 policy failures, matching the scenario-friendly style used elsewhere in the
 simulator.
 
-## Scenario Plan
+## Scenarios
 
 - `026_alias_claim_success.yaml`: device claims an authorized scoped alias.
   Implemented as direct alias scenario-runner support.
@@ -384,7 +374,7 @@ simulator.
   simulator policy without real DNS, registrar integration, public CA modeling,
   production identity proof, or real network lookup.
 
-## Test Plan
+## Test Coverage
 
 - Alias record creation.
 - Alias resolution to device identity.
@@ -401,7 +391,7 @@ simulator.
 
 ## Non-Goals
 
-v0.5 alias planning does not add:
+v0.5 alias registry behavior does not add:
 
 - Real DNS integration.
 - Domain registrar integration.

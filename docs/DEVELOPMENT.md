@@ -1,6 +1,6 @@
-# DARWIN v0.4 Development
+# DARWIN v0.5 Development
 
-DARWIN v0.4 is the active simulator development line. Development should keep
+DARWIN v0.5 is the active simulator development line. Development should keep
 the repo self-checking with tests, Ruff, scenario validation, export sanity
 checks, and all-scenario regression runs.
 
@@ -126,6 +126,9 @@ The GitHub Actions workflow runs these same checks on push and pull request.
   capture.
 - No production cryptography, key management, public-key signatures, CMACs,
   replay protection, or security claims.
+- Alias and DNS-style alias bundle behavior is simulator-only and must not be
+  described as real DNS, registrar integration, public CA behavior, production
+  identity proof, TrafficHub routing, or canonical identity replacement.
 - Symbolic authentication remains the default. Experimental
   `hmac_sha256_experimental` behavior is simulator-only and test-fixture based.
 - Simulator-only behavior; no production runtime claims.
