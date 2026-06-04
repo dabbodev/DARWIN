@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from darwin.models.alias import AliasBundle, AliasRecord
 from darwin.models.metrics import RegistryMetrics, TrafficMetrics
 from darwin.models.move import FlowControlRecord, MoveContract, RelocationRecord
 from darwin.models.passport import PassportRecord
@@ -81,6 +82,8 @@ class RegistryHub:
     devices: dict[str, LocalDeviceRecord] = field(default_factory=dict)
     passports: dict[str, PassportRecord] = field(default_factory=dict)
     attachments: dict[str, AttachmentRecord] = field(default_factory=dict)
+    aliases: dict[str, AliasRecord] = field(default_factory=dict)
+    alias_bundles: dict[str, AliasBundle] = field(default_factory=dict)
     conflicts: dict[str, ConflictRecord] = field(default_factory=dict)
     checkpoints: dict[str, CheckpointState] = field(default_factory=dict)
     moves: dict[str, list[MoveContract]] = field(default_factory=dict)

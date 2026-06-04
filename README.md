@@ -8,9 +8,10 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently released at **simulator v0.4.0**. The v0.4 release
-adds simulator-only move-contract HMAC auth modeling while keeping symbolic
-move contracts as the default.
+This project is currently released at **simulator v0.5.0**. The v0.5 release
+adds simulator-only alias registry modeling for direct aliases, progressive
+fallback, and delegated alias bundles while keeping canonical identity and
+TrafficHub routing unchanged.
 
 The v0.1 simulator answers questions like:
 
@@ -59,6 +60,28 @@ only, not production cryptography.
 - `docs/V0_4_ROADMAP.md`
 - `docs/MOVE_CONTRACT_AUTH_v0_4.md`
 - `docs/RELEASE_NOTES_v0_4.md`
+
+## v0.5 Alias Registry
+
+v0.5 implements simulator-only Registry Hub aliases, short handles,
+progressive alias fallback, and delegated alias bundles or zones. DNS-style
+alias bundles are simulator records only; v0.5 does not add real DNS, public
+domain registration, production identity proof, public CA behavior, real
+networking, external registry integration, TrafficHub routing changes, or
+canonical identity replacement.
+
+- `docs/V0_5_ROADMAP.md`
+- `docs/ALIAS_REGISTRY_v0_5.md`
+- `docs/RELEASE_NOTES_v0_5.md`
+
+v0.5 alias scenarios:
+
+- `scenarios/026_alias_claim_success.yaml`
+- `scenarios/027_alias_claim_conflict.yaml`
+- `scenarios/028_alias_release_blocks_resolution.yaml`
+- `scenarios/029_progressive_alias_fallback.yaml`
+- `scenarios/030_alias_bundle_delegation.yaml`
+- `scenarios/031_dns_style_alias_bundle.yaml`
 
 ## What v0.1 Supports
 
@@ -323,14 +346,17 @@ DARWIN/
     RELEASE_NOTES_v0_2.md
     RELEASE_NOTES_v0_3.md
     RELEASE_NOTES_v0_4.md
+    RELEASE_NOTES_v0_5.md
     SCENARIO_DSL_v0_2.md
     SCENARIO_INDEX.md
     TRACE_EXPORT_v0_2.md
     V0_2_ROADMAP.md
     V0_3_ROADMAP.md
     V0_4_ROADMAP.md
+    V0_5_ROADMAP.md
     VISUALIZATION_v0_2.md
     AUTH_BRIDGE_v0_3.md
+    ALIAS_REGISTRY_v0_5.md
     MOVE_CONTRACT_AUTH_v0_4.md
   darwin/
     __init__.py
@@ -731,6 +757,12 @@ For v0.4 move-contract auth, see:
 - `docs/MOVE_CONTRACT_AUTH_v0_4.md`
 - `docs/RELEASE_NOTES_v0_4.md`
 
+For v0.5 alias registry behavior, see:
+
+- `docs/V0_5_ROADMAP.md`
+- `docs/ALIAS_REGISTRY_v0_5.md`
+- `docs/RELEASE_NOTES_v0_5.md`
+
 ## What v0.1 Is Not
 
 DARWIN simulator v0.1 is not:
@@ -784,7 +816,7 @@ route updates
 
 Use existing IP networking for physical delivery while DARWIN handles identity, registry behavior, movement, checkpoints, and logical lanes above it.
 
-### Future Phase: DNS / URL Bridge
+### Future Phase: DNS / URL Compatibility
 
 Explore aliases such as:
 
@@ -792,7 +824,9 @@ Explore aliases such as:
 example.com -> darwin://global.registry.us.hostingcluster7.webnode3.example_service
 ```
 
-This would remain a future compatibility experiment, not a v0.1 simulator requirement.
+This would remain a future compatibility experiment. v0.5 DNS-style alias
+bundles are simulator-local naming records only, not real DNS integration or a
+public DNS replacement.
 
 ## Design Rules
 

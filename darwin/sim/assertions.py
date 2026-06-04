@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from darwin.registry.aliases import resolve_alias
 from darwin.sim.world import World
 
 
@@ -185,6 +186,8 @@ def _latest_step_status(
     expected = str(assertion.get("expected"))
     latest_result = world.action_results[-1] if world.action_results else None
     actual = getattr(latest_result, "action", None)
+    if actual is None:
+        actual = getattr(latest_result, "status", None)
     return _result(
         assertion_type,
         actual == expected,
@@ -430,6 +433,195 @@ def _checkpoint_state(
     )
 
 
+def _alias_resolves_to(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    alias = str(assertion.get("alias"))
+    expected_device = str(assertion.get("device"))
+    expected_identity = assertion.get("identity_chain")
+    expected = {"device": expected_device}
+    if expected_identity is not None:
+        expected["identity_chain"] = str(expected_identity)
+
+    actual = None
+    if hub is not None:
+        result = resolve_alias(hub, alias)
+        actual = {
+            "device": result.target_device_id,
+            "identity_chain": result.target_identity_chain,
+            "status": result.status,
+        }
+
+    passed = (
+        actual is not None
+        and actual["device"] == expected_device
+        and (
+            expected_identity is None
+            or actual["identity_chain"] == str(expected_identity)
+        )
+    )
+    return _result(
+        assertion_type,
+        passed,
+        expected,
+        f"{alias} resolves to {expected_device}",
+        actual,
+    )
+
+
+def _alias_status(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    alias = str(assertion.get("alias"))
+    expected = str(assertion.get("expected"))
+    actual = None
+    if hub is not None:
+        alias_record = hub.aliases.get(alias)
+        actual = "not_found" if alias_record is None else alias_record.status
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"{alias} status is {expected}",
+        actual,
+    )
+
+
+def _alias_bundle_status(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    bundle_path = str(assertion.get("bundle_path"))
+    expected = str(assertion.get("expected"))
+    actual = None
+    if hub is not None:
+        bundle = hub.alias_bundles.get(bundle_path)
+        actual = "not_found" if bundle is None else bundle.status
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"{bundle_path} bundle status is {expected}",
+        actual,
+    )
+
+
+def _bundle_alias_resolves_to(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    assertion = dict(assertion)
+    assertion["alias"] = f"{assertion.get('bundle_path')}.{assertion.get('child_name')}"
+    return _alias_resolves_to(world, assertion_type, assertion)
+
+
+def _alias_granted_as(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    requested_alias = str(assertion.get("requested_alias"))
+    granted_alias = str(assertion.get("granted_alias"))
+    actual = None
+    if hub is not None:
+        alias_record = hub.aliases.get(granted_alias)
+        if alias_record is not None:
+            actual = {
+                "requested_alias": alias_record.requested_alias,
+                "granted_alias": alias_record.granted_alias or alias_record.alias,
+                "status": alias_record.status,
+            }
+    expected = {
+        "requested_alias": requested_alias,
+        "granted_alias": granted_alias,
+        "status": "active",
+    }
+    passed = actual == expected
+    return _result(
+        assertion_type,
+        passed,
+        expected,
+        f"{requested_alias} granted as {granted_alias}",
+        actual,
+    )
+
+
+def _alias_authority_ceiling(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    alias = str(assertion.get("alias"))
+    expected = str(assertion.get("expected"))
+    actual = None
+    if hub is not None:
+        alias_record = hub.aliases.get(alias)
+        if alias_record is not None:
+            actual = alias_record.authority_ceiling or alias_record.authority_scope
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"{alias} authority ceiling is {expected}",
+        actual,
+    )
+
+
+def _alias_not_resolved(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    alias = str(assertion.get("alias"))
+    actual = None
+    if hub is not None:
+        result = resolve_alias(hub, alias)
+        actual = {
+            "success": result.success,
+            "status": result.status,
+            "reason": result.reason,
+        }
+    return _result(
+        assertion_type,
+        actual is not None and not actual["success"],
+        "not resolved",
+        f"{alias} is not resolved",
+        actual,
+    )
+
+
+def _canonical_identity_unchanged(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    device_id = str(assertion.get("device"))
+    expected = str(assertion.get("expected_identity_chain"))
+    actual = None
+    if hub is not None and device_id in hub.devices:
+        actual = hub.devices[device_id].identity_chain
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"{device_id} canonical identity remains unchanged",
+        actual,
+    )
+
+
 def _result(
     assertion_type: str,
     passed: bool,
@@ -477,4 +669,12 @@ _EVALUATORS = {
     "session_state": _session_state,
     "session_counter": _session_counter,
     "checkpoint_state": _checkpoint_state,
+    "alias_resolves_to": _alias_resolves_to,
+    "alias_status": _alias_status,
+    "alias_bundle_status": _alias_bundle_status,
+    "bundle_alias_resolves_to": _bundle_alias_resolves_to,
+    "alias_granted_as": _alias_granted_as,
+    "alias_authority_ceiling": _alias_authority_ceiling,
+    "alias_not_resolved": _alias_not_resolved,
+    "canonical_identity_unchanged": _canonical_identity_unchanged,
 }

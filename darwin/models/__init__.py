@@ -1,5 +1,15 @@
 """Public data models for DARWIN v0.1."""
 
+from darwin.models.alias import (
+    AliasBundle,
+    AliasBundleClaimResult,
+    AliasClaimResult,
+    AliasRecord,
+    AliasReleaseResult,
+    AliasResolutionResult,
+    BundleAliasClaimResult,
+    ProgressiveAliasClaimResult,
+)
 from darwin.models.checkpoint import CheckpointPacket, CheckpointState
 from darwin.models.device import Device
 from darwin.models.hub import LocalDeviceRecord, RegistryHub, TrafficHub
@@ -16,6 +26,13 @@ from darwin.models.route import (
 )
 
 __all__ = [
+    "AliasClaimResult",
+    "AliasBundle",
+    "AliasBundleClaimResult",
+    "AliasRecord",
+    "AliasReleaseResult",
+    "AliasResolutionResult",
+    "BundleAliasClaimResult",
     "CheckpointPacket",
     "CheckpointState",
     "DarwinPacket",
@@ -25,6 +42,7 @@ __all__ = [
     "LocalDeviceRecord",
     "LogicalLane",
     "PassportRecord",
+    "ProgressiveAliasClaimResult",
     "RegistryHub",
     "RouteCostBreakdown",
     "RouteDecision",

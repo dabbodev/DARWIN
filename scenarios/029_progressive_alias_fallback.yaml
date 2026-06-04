@@ -1,0 +1,52 @@
+scenario_id: 029_progressive_alias_fallback
+name: Progressive alias fallback
+category: registry
+description: progressive alias request falls back to the highest locally authorized scope
+tags:
+  - alias
+  - progressive_alias
+  - fallback
+  - registry
+demonstrates:
+  - high-level alias request
+  - authority-limited fallback
+  - canonical identity preservation
+expected_result: requested global alias falls back to the hub-authorized alias and resolves to the device
+setup:
+  hybrid_hubs:
+    - hub_id: registry_xfinity_301
+      scope_path: global.us.west1.dist25.sf2.xfinity_301
+  devices:
+    - device_id: dev_A9F3
+      label: project_server
+      registry_hub: registry_xfinity_301
+      traffic_hub: registry_xfinity_301
+steps:
+  - action: claim_progressive_alias
+    registry_hub: registry_xfinity_301
+    requested_alias: global.david_server
+    local_name: david_server
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    fallback_allowed: true
+    visibility: scope_local
+assertions:
+  - type: latest_step_status
+    expected: fallback_granted
+  - type: alias_granted_as
+    registry_hub: registry_xfinity_301
+    requested_alias: global.david_server
+    granted_alias: global.us.west1.dist25.sf2.xfinity_301.david_server
+  - type: alias_resolves_to
+    registry_hub: registry_xfinity_301
+    alias: global.us.west1.dist25.sf2.xfinity_301.david_server
+    device: dev_A9F3
+    identity_chain: global.us.west1.dist25.sf2.xfinity_301.project_server
+  - type: alias_authority_ceiling
+    registry_hub: registry_xfinity_301
+    alias: global.us.west1.dist25.sf2.xfinity_301.david_server
+    expected: global.us.west1.dist25.sf2.xfinity_301
+  - type: canonical_identity_unchanged
+    registry_hub: registry_xfinity_301
+    device: dev_A9F3
+    expected_identity_chain: global.us.west1.dist25.sf2.xfinity_301.project_server

@@ -1,0 +1,64 @@
+scenario_id: 030_alias_bundle_delegation
+name: Alias bundle delegation
+category: registry
+description: delegated alias bundle creates a child alias for a registered device
+tags:
+  - alias
+  - bundle
+  - delegation
+  - registry
+demonstrates:
+  - alias bundle creation
+  - child alias claim
+  - alias resolution inside bundle
+  - canonical identity preservation
+expected_result: bundle and child alias are active and the child alias resolves to the target device
+setup:
+  hybrid_hubs:
+    - hub_id: hub_gov_001
+      scope_path: global.us.gov
+  devices:
+    - device_id: dev_CA_SITE
+      label: ca_website_server
+      registry_hub: hub_gov_001
+      traffic_hub: hub_gov_001
+steps:
+  - action: create_alias_bundle
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    delegated_to_registry_hub: hub_gov_001
+    visibility: local
+    allowed_record_types:
+      - device_alias
+    created_by_device: dev_CA_SITE
+  - action: claim_bundle_alias
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    child_name: website
+    target_device: dev_CA_SITE
+    requested_by_device: dev_CA_SITE
+    visibility: local
+  - action: resolve_alias
+    registry_hub: hub_gov_001
+    alias: global.us.gov.ca.website
+assertions:
+  - type: alias_bundle_status
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    expected: active
+  - type: bundle_alias_resolves_to
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    child_name: website
+    device: dev_CA_SITE
+    identity_chain: global.us.gov.ca_website_server
+  - type: alias_status
+    registry_hub: hub_gov_001
+    alias: global.us.gov.ca.website
+    expected: active
+  - type: canonical_identity_unchanged
+    registry_hub: hub_gov_001
+    device: dev_CA_SITE
+    expected_identity_chain: global.us.gov.ca_website_server
+  - type: latest_step_status
+    expected: active

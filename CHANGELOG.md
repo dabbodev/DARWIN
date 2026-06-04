@@ -1,5 +1,45 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.5.0] - 2026-06-04
+
+DARWIN v0.5.0 is a simulator-only alias registry modeling release. It adds
+Registry Hub aliases, local progressive fallback, and delegated alias bundles
+without changing canonical identity or TrafficHub routing behavior.
+
+Added:
+
+- Direct alias records and direct alias lookup for registered devices.
+- Alias claim, resolve, and release helpers.
+- Alias conflict behavior that rejects duplicate active aliases and preserves
+  the original active owner.
+- Alias release behavior that keeps retained released records from resolving.
+- Alias claim rejection for quarantined or revoked target devices.
+- Progressive alias fallback to the highest locally authorized RegistryHub
+  scope, including authority ceiling reporting.
+- Alias bundle records and child alias claims inside active bundles.
+- DNS-style alias bundle scenario support using simulator-local public-style
+  bundle metadata only.
+- Scenario runner alias actions and assertions for direct aliases, progressive
+  fallback, alias bundles, inactive aliases, authority ceilings, and canonical
+  identity preservation.
+- Alias scenarios `026` through `031`:
+  `scenarios/026_alias_claim_success.yaml`,
+  `scenarios/027_alias_claim_conflict.yaml`,
+  `scenarios/028_alias_release_blocks_resolution.yaml`,
+  `scenarios/029_progressive_alias_fallback.yaml`,
+  `scenarios/030_alias_bundle_delegation.yaml`, and
+  `scenarios/031_dns_style_alias_bundle.yaml`.
+
+Compatibility and limits:
+
+- Aliases remain simulator-only registry shortcuts.
+- DNS-style alias bundles are not real DNS, registrar integration, public CA
+  behavior, production identity proof, or real network lookup.
+- Aliases do not replace canonical identity and do not change TrafficHub
+  routing.
+
 ## [0.4.0] - 2026-05-31
 
 DARWIN v0.4.0 is a simulator-only move-contract auth modeling release. It

@@ -1,0 +1,54 @@
+scenario_id: 028_alias_release_blocks_resolution
+name: Alias release blocks resolution
+category: registry
+description: released aliases are retained but inactive and no longer resolve
+tags:
+  - alias
+  - release
+  - registry
+demonstrates:
+  - alias release
+  - inactive alias resolution behavior
+  - canonical identity preservation
+expected_result: alias becomes released and active resolution is blocked
+use:
+  - single_home_network
+setup:
+  devices:
+    - device_id: dev_A9F3
+      label: project_server
+      registry_hub: hub_home_001
+      traffic_hub: hub_home_001
+steps:
+  - action: claim_alias
+    registry_hub: hub_home_001
+    alias: global.family.david.release_alias
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    visibility: scope_local
+  - action: resolve_alias
+    registry_hub: hub_home_001
+    alias: global.family.david.release_alias
+  - action: release_alias
+    registry_hub: hub_home_001
+    alias: global.family.david.release_alias
+    requested_by_device: dev_A9F3
+  - action: resolve_alias
+    registry_hub: hub_home_001
+    alias: global.family.david.release_alias
+assertions:
+  - type: alias_status
+    registry_hub: hub_home_001
+    alias: global.family.david.release_alias
+    expected: released
+  - type: alias_not_resolved
+    registry_hub: hub_home_001
+    alias: global.family.david.release_alias
+  - type: latest_step_status
+    expected: released
+  - type: latest_step_reason
+    expected: alias_not_active
+  - type: canonical_identity_unchanged
+    registry_hub: hub_home_001
+    device: dev_A9F3
+    expected_identity_chain: global.family.home.project_server

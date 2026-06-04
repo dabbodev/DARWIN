@@ -175,3 +175,64 @@ python -m darwin.cli.main validate-scenario scenarios/025_symbolic_move_contract
 python -m darwin.cli.main run scenarios/025_symbolic_move_contract_still_works.yaml
 python -m darwin.cli.main run scenarios/021_hmac_move_contract_success.yaml --export-snapshot tmp_v04_snapshot.json --export-events tmp_v04_events.json --export-result tmp_v04_result.json --export-mermaid tmp_v04.mmd --export-timeline-md tmp_v04_timeline.md --export-timeline-json tmp_v04_timeline.json
 ```
+
+# DARWIN v0.5 Alias Registry Release Checklist
+
+Do not merge, tag, create a GitHub release, rebase, force push, or publish as
+part of this checklist.
+
+- [ ] Ruff passes with `python -m ruff check .`.
+- [ ] Tests pass with `python -m pytest`.
+- [ ] All checked-in scenarios pass with `python scripts/run_all_scenarios.py`.
+- [ ] CLI version reports `darwin-sim 0.5.0`.
+- [ ] Scenario index is generated with `python -m darwin.cli.main scenario-index`.
+- [ ] Scenario listing works with `python -m darwin.cli.main list-scenarios`.
+- [ ] Preset listing works with `python -m darwin.cli.main list-presets`.
+- [ ] Scenario `026_alias_claim_success` validates and runs.
+- [ ] Scenario `027_alias_claim_conflict` validates and runs.
+- [ ] Scenario `028_alias_release_blocks_resolution` validates and runs.
+- [ ] Scenario `029_progressive_alias_fallback` validates and runs.
+- [ ] Scenario `030_alias_bundle_delegation` validates and runs.
+- [ ] Scenario `031_dns_style_alias_bundle` validates and runs.
+- [ ] Representative export sanity is checked for snapshot, events, result,
+  Mermaid, timeline Markdown, and timeline JSON outputs.
+- [ ] JSON export files parse.
+- [ ] Mermaid export contains `flowchart LR`.
+- [ ] Timeline Markdown export contains a table.
+- [ ] Package version is confirmed as `0.5.0`.
+- [ ] Final release notes are checked in `docs/RELEASE_NOTES_v0_5.md`.
+- [ ] CHANGELOG contains a dated `0.5.0` release section.
+- [ ] README links to `docs/RELEASE_NOTES_v0_5.md`.
+- [ ] Direct aliases, conflict/release behavior, progressive fallback, alias
+  bundles, DNS-style alias bundles, and scenarios `026` through `031` are
+  documented as implemented.
+- [ ] Simulator-only alias and DNS-style wording is checked.
+- [ ] Documentation avoids real DNS, public domain registration, production
+  identity proof, public CA, production crypto, real networking, external
+  registry, TrafficHub routing change, or canonical identity replacement
+  claims.
+
+## v0.5 Release Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main list-scenarios
+python -m darwin.cli.main list-presets
+python -m darwin.cli.main validate-scenario scenarios/026_alias_claim_success.yaml
+python -m darwin.cli.main run scenarios/026_alias_claim_success.yaml
+python -m darwin.cli.main validate-scenario scenarios/027_alias_claim_conflict.yaml
+python -m darwin.cli.main run scenarios/027_alias_claim_conflict.yaml
+python -m darwin.cli.main validate-scenario scenarios/028_alias_release_blocks_resolution.yaml
+python -m darwin.cli.main run scenarios/028_alias_release_blocks_resolution.yaml
+python -m darwin.cli.main validate-scenario scenarios/029_progressive_alias_fallback.yaml
+python -m darwin.cli.main run scenarios/029_progressive_alias_fallback.yaml
+python -m darwin.cli.main validate-scenario scenarios/030_alias_bundle_delegation.yaml
+python -m darwin.cli.main run scenarios/030_alias_bundle_delegation.yaml
+python -m darwin.cli.main validate-scenario scenarios/031_dns_style_alias_bundle.yaml
+python -m darwin.cli.main run scenarios/031_dns_style_alias_bundle.yaml
+python -m darwin.cli.main run scenarios/031_dns_style_alias_bundle.yaml --export-snapshot tmp_v05_snapshot.json --export-events tmp_v05_events.json --export-result tmp_v05_result.json --export-mermaid tmp_v05.mmd --export-timeline-md tmp_v05_timeline.md --export-timeline-json tmp_v05_timeline.json
+```

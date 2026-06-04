@@ -1,0 +1,47 @@
+scenario_id: 026_alias_claim_success
+name: Alias claim success
+category: registry
+description: direct alias claim and resolution for a registered device
+tags:
+  - alias
+  - registry
+  - direct_alias
+demonstrates:
+  - alias claim
+  - alias resolution
+  - canonical identity preservation
+expected_result: alias resolves to the registered device without mutating canonical identity
+use:
+  - single_home_network
+setup:
+  devices:
+    - device_id: dev_A9F3
+      label: project_server
+      registry_hub: hub_home_001
+      traffic_hub: hub_home_001
+steps:
+  - action: claim_alias
+    registry_hub: hub_home_001
+    alias: global.family.david_server
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    visibility: scope_local
+  - action: resolve_alias
+    registry_hub: hub_home_001
+    alias: global.family.david_server
+assertions:
+  - type: alias_resolves_to
+    registry_hub: hub_home_001
+    alias: global.family.david_server
+    device: dev_A9F3
+    identity_chain: global.family.home.project_server
+  - type: alias_status
+    registry_hub: hub_home_001
+    alias: global.family.david_server
+    expected: active
+  - type: canonical_identity_unchanged
+    registry_hub: hub_home_001
+    device: dev_A9F3
+    expected_identity_chain: global.family.home.project_server
+  - type: latest_step_status
+    expected: active

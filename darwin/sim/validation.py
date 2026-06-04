@@ -88,6 +88,22 @@ SUPPORTED_SETUP_SECTIONS = {
 STEP_REQUIRED_FIELDS = {
     "register_device": ("device", "registry_hub"),
     "resolve_label": ("registry_hub", "label"),
+    "claim_alias": ("registry_hub", "alias", "target_device"),
+    "create_alias_bundle": ("registry_hub", "bundle_path"),
+    "claim_bundle_alias": (
+        "registry_hub",
+        "bundle_path",
+        "child_name",
+        "target_device",
+    ),
+    "claim_progressive_alias": (
+        "registry_hub",
+        "requested_alias",
+        "local_name",
+        "target_device",
+    ),
+    "resolve_alias": ("registry_hub", "alias"),
+    "release_alias": ("registry_hub", "alias"),
     "open_lane": ("source", "target", "traffic_hub"),
     "send_lane_data": ("traffic_hub", "lane", "payload"),
     "record_checkpoint": ("device", "registry_hub", "state"),
@@ -142,6 +158,23 @@ ASSERTION_REQUIRED_FIELDS = {
     "flow_control_absent": ("traffic_hub", "lane"),
     "latest_step_status": ("expected",),
     "latest_step_reason": ("expected",),
+    "alias_resolves_to": ("registry_hub", "alias", "device"),
+    "alias_status": ("registry_hub", "alias", "expected"),
+    "alias_bundle_status": ("registry_hub", "bundle_path", "expected"),
+    "bundle_alias_resolves_to": (
+        "registry_hub",
+        "bundle_path",
+        "child_name",
+        "device",
+    ),
+    "alias_granted_as": ("registry_hub", "requested_alias", "granted_alias"),
+    "alias_authority_ceiling": ("registry_hub", "alias", "expected"),
+    "alias_not_resolved": ("registry_hub", "alias"),
+    "canonical_identity_unchanged": (
+        "registry_hub",
+        "device",
+        "expected_identity_chain",
+    ),
     "relocation_failed": ("traffic_hub", "device"),
     "move_recorded": ("registry_hub", "device"),
     "move_not_recorded": ("registry_hub", "device"),
@@ -508,6 +541,7 @@ def _validate_step_auth_fields(
     _validate_optional_bool(step, "tamper_counter", location, errors)
     _validate_optional_bool(step, "tamper_nonce", location, errors)
     _validate_optional_bool(step, "tamper_secret", location, errors)
+    _validate_optional_bool(step, "fallback_allowed", location, errors)
 
 
 def _validate_optional_bool(

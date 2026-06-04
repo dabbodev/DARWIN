@@ -97,8 +97,10 @@ def test_valid_v01_scenarios_still_validate():
 def test_validation_tables_cover_expected_v02_minimums():
     assert "register_device" in STEP_REQUIRED_FIELDS
     assert "recommend_traffic_bridge" in STEP_REQUIRED_FIELDS
+    assert "claim_alias" in STEP_REQUIRED_FIELDS
     assert "device_registered" in ASSERTION_REQUIRED_FIELDS
     assert "recommendation_exists" in ASSERTION_REQUIRED_FIELDS
+    assert "alias_resolves_to" in ASSERTION_REQUIRED_FIELDS
 
 
 def _load_yaml(path: Path):

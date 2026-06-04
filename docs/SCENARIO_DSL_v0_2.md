@@ -172,3 +172,111 @@ Checked-in move-contract auth scenarios:
 - `scenarios/023_hmac_move_contract_expired_session.yaml`
 - `scenarios/024_hmac_move_contract_revoked_device.yaml`
 - `scenarios/025_symbolic_move_contract_still_works.yaml`
+
+## v0.5 Alias Scenarios
+
+The v0.5 alias registry slices add direct alias, basic progressive fallback,
+minimal alias bundle, and DNS-style public alias bundle scenario support. Alias
+steps call registry helpers and do not change canonical identity, TrafficHub
+routing, real DNS behavior, or service aliases.
+
+Supported alias actions:
+
+- `claim_alias`
+  - Required: `registry_hub`, `alias`, `target_device`
+  - Optional: `requested_by_device`, `alias_type`, `visibility`, `ttl`
+- `create_alias_bundle`
+  - Required: `registry_hub`, `bundle_path`
+  - Optional: `delegated_to_registry_hub`, `bundle_type`, `visibility`,
+    `allowed_record_types`, `created_by_device`
+- `claim_bundle_alias`
+  - Required: `registry_hub`, `bundle_path`, `child_name`, `target_device`
+  - Optional: `requested_by_device`, `alias_type`, `visibility`, `ttl`
+- `claim_progressive_alias`
+  - Required: `registry_hub`, `requested_alias`, `local_name`, `target_device`
+  - Optional: `requested_by_device`, `fallback_allowed`, `visibility`, `ttl`
+- `resolve_alias`
+  - Required: `registry_hub`, `alias`
+- `release_alias`
+  - Required: `registry_hub`, `alias`
+  - Optional: `requested_by_device`
+
+Supported alias assertions:
+
+- `alias_resolves_to`
+  - Required: `registry_hub`, `alias`, `device`
+  - Optional: `identity_chain`
+- `alias_status`
+  - Required: `registry_hub`, `alias`, `expected`
+- `alias_bundle_status`
+  - Required: `registry_hub`, `bundle_path`, `expected`
+- `bundle_alias_resolves_to`
+  - Required: `registry_hub`, `bundle_path`, `child_name`, `device`
+  - Optional: `identity_chain`
+- `alias_granted_as`
+  - Required: `registry_hub`, `requested_alias`, `granted_alias`
+- `alias_authority_ceiling`
+  - Required: `registry_hub`, `alias`, `expected`
+- `alias_not_resolved`
+  - Required: `registry_hub`, `alias`
+- `canonical_identity_unchanged`
+  - Required: `registry_hub`, `device`, `expected_identity_chain`
+
+Alias conflict checks use existing `latest_step_status`,
+`latest_step_reason`, and `conflict_exists` assertions. Released aliases remain
+in the RegistryHub alias table with `status: released`, but `resolve_alias`
+returns `alias_not_active` and no active target.
+
+Minimal alias bundle checks use `latest_step_status` and
+`latest_step_reason` for result validation. Duplicate active bundles fail with
+`bundle_conflict`; child claims under missing bundles fail with
+`bundle_not_found`; child claims under inactive bundles fail with
+`bundle_not_active`; child alias name conflicts fail with `alias_conflict`.
+Child bundle aliases are stored as normal `AliasRecord` entries and resolve
+through `resolve_alias`.
+
+DNS-style public alias bundles use the same simulator-local bundle and direct
+alias mechanics. They are not DNS, do not call a registrar, do not model a
+public CA, do not prove production identity, and do not perform real network
+lookup.
+
+```yaml
+steps:
+  - action: create_alias_bundle
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    bundle_type: dns_style_alias_zone
+    visibility: public
+    allowed_record_types:
+      - device_alias
+  - action: claim_bundle_alias
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    child_name: website
+    target_device: dev_CA_WEBSITE
+    visibility: public
+  - action: resolve_alias
+    registry_hub: hub_gov_001
+    alias: global.us.gov.ca.website
+```
+
+For the basic progressive fallback slice, a RegistryHub can grant aliases only
+inside its own `scope_path`. If a requested alias is above that scope and
+`fallback_allowed` is true, the granted alias is:
+
+```text
+registry_hub.scope_path + "." + local_name
+```
+
+The progressive result status is `fallback_granted`, the reason is
+`insufficient_authority`, and the granted active `AliasRecord` stores the
+requested alias, granted alias, fallback reason, and authority ceiling.
+
+Checked-in alias scenarios:
+
+- `scenarios/026_alias_claim_success.yaml`
+- `scenarios/027_alias_claim_conflict.yaml`
+- `scenarios/028_alias_release_blocks_resolution.yaml`
+- `scenarios/029_progressive_alias_fallback.yaml`
+- `scenarios/030_alias_bundle_delegation.yaml`
+- `scenarios/031_dns_style_alias_bundle.yaml`

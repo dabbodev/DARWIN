@@ -144,6 +144,42 @@ class World:
                     "scope_path": hub.scope_path,
                     "parent_hub_id": hub.parent_hub_id,
                     "labels": dict(sorted(hub.labels.items())),
+                    "aliases": {
+                        alias: {
+                            "alias_type": record.alias_type,
+                            "target_device_id": record.target_device_id,
+                            "target_service_id": record.target_service_id,
+                            "target_identity_chain": record.target_identity_chain,
+                            "requested_by_device_id": record.requested_by_device_id,
+                            "requested_through_hub": record.requested_through_hub,
+                            "approved_by_registry_hub": record.approved_by_registry_hub,
+                            "authority_scope": record.authority_scope,
+                            "status": record.status,
+                            "visibility": record.visibility,
+                            "ttl": record.ttl,
+                            "conflict_id": record.conflict_id,
+                            "requested_alias": record.requested_alias,
+                            "granted_alias": record.granted_alias,
+                            "fallback_reason": record.fallback_reason,
+                            "authority_ceiling": record.authority_ceiling,
+                            "fallback_from": record.fallback_from,
+                        }
+                        for alias, record in sorted(hub.aliases.items())
+                    },
+                    "alias_bundles": {
+                        bundle_path: {
+                            "bundle_type": bundle.bundle_type,
+                            "delegated_to_registry_hub": bundle.delegated_to_registry_hub,
+                            "authority_scope": bundle.authority_scope,
+                            "approved_by_registry_hub": bundle.approved_by_registry_hub,
+                            "status": bundle.status,
+                            "visibility": bundle.visibility,
+                            "allowed_record_types": list(bundle.allowed_record_types),
+                            "policy": dict(bundle.policy),
+                            "created_by_device_id": bundle.created_by_device_id,
+                        }
+                        for bundle_path, bundle in sorted(hub.alias_bundles.items())
+                    },
                     "devices": {
                         device_id: {
                             "label": record.current_label,

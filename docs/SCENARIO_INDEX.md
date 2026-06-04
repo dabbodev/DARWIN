@@ -29,3 +29,9 @@ Scenarios are deterministic, support presets through `use`, and are simulator-on
 | `023_hmac_move_contract_expired_session` - HMAC move contract expired session | security | Expires a simulator-local move auth session before applying an HMAC move contract. | `relocation`, `move-contract`, `hmac`, `session`, `expiration`, `simulator-only` |
 | `024_hmac_move_contract_revoked_device` - HMAC move contract revoked device | security | Revokes a registered device before applying an otherwise valid HMAC move contract. | `relocation`, `move-contract`, `hmac`, `revocation`, `simulator-only` |
 | `025_symbolic_move_contract_still_works` - Symbolic move contract still works | relocation | Applies the default symbolic move contract path without HMAC session fields. | `relocation`, `move-contract`, `symbolic` |
+| `026_alias_claim_success` - Alias claim success | registry | direct alias claim and resolution for a registered device | `alias`, `registry`, `direct_alias` |
+| `027_alias_claim_conflict` - Alias claim conflict | registry | direct alias conflict preserves the original alias owner | `alias`, `conflict`, `registry` |
+| `028_alias_release_blocks_resolution` - Alias release blocks resolution | registry | released aliases are retained but inactive and no longer resolve | `alias`, `release`, `registry` |
+| `029_progressive_alias_fallback` - Progressive alias fallback | registry | progressive alias request falls back to the highest locally authorized scope | `alias`, `progressive_alias`, `fallback`, `registry` |
+| `030_alias_bundle_delegation` - Alias bundle delegation | registry | delegated alias bundle creates a child alias for a registered device | `alias`, `bundle`, `delegation`, `registry` |
+| `031_dns_style_alias_bundle` - DNS-style alias bundle | registry | DNS-style public alias bundle modeled as a simulator-only delegated alias zone | `alias`, `bundle`, `dns_style`, `public_alias`, `registry` |
