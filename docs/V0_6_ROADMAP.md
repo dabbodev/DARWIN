@@ -1,0 +1,241 @@
+# DARWIN v0.6 Roadmap: Alias Authority Chain Planning
+
+DARWIN v0.6 is planned as a simulator-only alias authority negotiation
+release. It extends the v0.5 progressive alias model from local-only fallback
+to explicit parent-scope authority traversal between simulated Registry Hubs.
+
+v0.6 should answer this simulator question:
+
+```text
+When a device behind a low-level Registry Hub requests a high-level alias, how
+does the request climb upward, where does approval stop, and how is fallback
+documented?
+```
+
+This is a planning roadmap only. v0.6 behavior is not implemented yet, and the
+current stable package remains `darwin-sim 0.5.0`.
+
+## Status
+
+Planning target:
+
+- Define alias authority chain behavior.
+- Preserve v0.5 direct alias behavior.
+- Preserve canonical identity truth.
+- Preserve TrafficHub routing behavior.
+- Propose scenario and test coverage for implementation later.
+
+Not part of this planning pass:
+
+- Version bump.
+- Simulator behavior implementation.
+- Scenario implementation.
+- Release, tag, merge, or push.
+
+## Current v0.5 Foundation
+
+v0.5 provides the foundation v0.6 should build on:
+
+- Canonical identity chains remain the truthful identity source.
+- Direct aliases can be claimed, resolved, and released.
+- Duplicate active aliases are rejected through explicit conflict behavior.
+- Released aliases are retained but do not resolve as active aliases.
+- Quarantined and revoked devices cannot claim active aliases.
+- Progressive alias fallback grants the highest locally authorized alias when
+  the requesting RegistryHub lacks authority for the requested high-scope
+  alias.
+- Alias bundle records model delegated simulator namespaces.
+- DNS-style alias bundle scenarios remain simulator-only naming records.
+- Aliases do not affect TrafficHub routing, packet paths, attachments,
+  passports, or canonical identity chains.
+
+## Proposed v0.6 Scope
+
+v0.6 should extend progressive aliases so a RegistryHub can evaluate an alias
+claim through an explicit parent authority chain.
+
+Proposed behavior:
+
+- Alias claim requests can traverse parent Registry Hubs.
+- Each RegistryHub in the path decides whether to approve, reject, continue
+  upward, or offer fallback.
+- The highest approved alias is granted.
+- If the requested alias is unavailable or unauthorized, a fallback may be
+  granted at the highest allowed scope.
+- Every result records the authority path and the authority ceiling.
+
+Example canonical identity:
+
+```text
+global.us.west1.dist25.sf2.xfinity_301.node53.david_router.project_server
+```
+
+Requested alias:
+
+```text
+global.david_server
+```
+
+Possible authority path:
+
+```text
+david_router -> node53 -> xfinity_301 -> sf2 -> dist25 -> west1 -> us -> global
+```
+
+Possible granted alias:
+
+```text
+global.us.west1.dist25.sf2.xfinity_301.david_server
+```
+
+Result:
+
+```text
+status: fallback_granted
+authority_ceiling: global.us.west1.dist25.sf2.xfinity_301
+```
+
+## Proposed Models
+
+The following names are proposed for the implementation slice. They should
+remain simulator data models and should not imply DNS, registrar, public CA, or
+production identity-proof behavior.
+
+- `AliasAuthorityStep`
+- `AliasAuthorityPath`
+- `AliasDelegationPolicy`
+- `AliasAuthorityDecision`
+- `AliasChainClaimRequest`
+- `AliasChainClaimResult`
+
+## Proposed Fields
+
+`AliasChainClaimRequest` should carry:
+
+- `requested_alias`
+- `requested_local_name`
+- `target_device_id`
+- `requesting_hub_id`
+
+`AliasChainClaimResult` should carry:
+
+- `requested_alias`
+- `requested_local_name`
+- `target_device_id`
+- `requesting_hub_id`
+- `authority_path`
+- `approved_by_hub`
+- `authority_ceiling`
+- `fallback_alias`
+- `fallback_reason`
+- `decision_chain`
+- `final_status`
+
+The result should also expose the granted alias through the existing alias
+claim result pattern when an active alias is created.
+
+## Proposed Helpers
+
+- `claim_alias_through_authority_chain(...)`
+- `evaluate_alias_authority_step(...)`
+- `find_highest_authorized_alias_scope(...)`
+- `record_alias_authority_decision(...)`
+- `summarize_alias_authority_path(...)`
+
+Helper names should stay registry-oriented and avoid terms that suggest real
+DNS servers, domain registrars, certificate authorities, or production
+verification.
+
+## Authority Decisions
+
+Proposed decision/status vocabulary:
+
+- `approved_here`
+- `continue_upward`
+- `fallback_available`
+- `name_taken`
+- `insufficient_authority`
+- `policy_denied`
+- `device_blocked`
+- `authority_path_broken`
+
+The decision chain should record each evaluated hub and the decision reached
+there. Normal policy outcomes should be returned as structured results rather
+than raised as exceptions.
+
+## Simulator Policy Rules
+
+Proposed v0.6 rules:
+
+- Parent chain must be explicit in the simulated registry setup.
+- A hub can approve aliases inside its own scope.
+- A hub can pass requests upward only if it has a parent.
+- A hub can deny pass-up by policy.
+- A request can fall back to the highest hub that allows fallback.
+- Quarantined or revoked devices cannot claim aliases through the chain.
+- Existing direct v0.5 alias behavior must remain unchanged.
+
+## Proposed Scenarios
+
+- `032_alias_authority_chain_success.yaml`
+- `033_alias_authority_chain_fallback.yaml`
+- `034_alias_authority_chain_name_taken.yaml`
+- `035_alias_authority_chain_policy_denied.yaml`
+- `036_alias_authority_chain_broken_parent.yaml`
+
+## Proposed Tests
+
+- Parent chain construction.
+- Authority path recording.
+- High-level alias approval.
+- Fallback to intermediate scope.
+- Conflict at requested scope.
+- Conflict at fallback scope.
+- Policy denial.
+- Missing parent or broken authority path.
+- Quarantined or revoked device rejection.
+- Direct v0.5 alias behavior unchanged.
+
+## Compatibility
+
+v0.6 should not change:
+
+- Canonical identity chain truth.
+- Direct alias claim, resolve, release, conflict, and inactive-release
+  behavior.
+- v0.5 progressive local fallback behavior except where it is explicitly used
+  as the fallback case under the new chain workflow.
+- Alias bundle records.
+- TrafficHub routing and Logical Lane behavior.
+
+## Non-Goals
+
+v0.6 planning does not include:
+
+- Real DNS.
+- Registrar integration.
+- Public CA behavior.
+- Production identity proof.
+- Distributed consensus.
+- TrafficHub routing changes.
+- Canonical identity rewrite.
+- Real networking.
+- External registry integration.
+
+## Release Validation
+
+Planning validation should confirm the existing stable simulator remains
+unchanged:
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+```
+
+Expected CLI version during planning:
+
+```text
+darwin-sim 0.5.0
+```

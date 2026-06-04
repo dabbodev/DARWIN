@@ -236,3 +236,39 @@ python -m darwin.cli.main validate-scenario scenarios/031_dns_style_alias_bundle
 python -m darwin.cli.main run scenarios/031_dns_style_alias_bundle.yaml
 python -m darwin.cli.main run scenarios/031_dns_style_alias_bundle.yaml --export-snapshot tmp_v05_snapshot.json --export-events tmp_v05_events.json --export-result tmp_v05_result.json --export-mermaid tmp_v05.mmd --export-timeline-md tmp_v05_timeline.md --export-timeline-json tmp_v05_timeline.json
 ```
+
+# DARWIN v0.6 Alias Authority Chain Planning Checklist
+
+Do not merge, tag, create a GitHub release, rebase, force push, publish, or
+bump the package version as part of this planning checklist.
+
+- [ ] Ruff passes with `python -m ruff check .`.
+- [ ] Tests pass with `python -m pytest`.
+- [ ] All checked-in scenarios pass with `python scripts/run_all_scenarios.py`.
+- [ ] CLI version still reports `darwin-sim 0.5.0`.
+- [ ] v0.6 roadmap is checked in `docs/V0_6_ROADMAP.md`.
+- [ ] Alias authority chain design is checked in
+  `docs/ALIAS_AUTHORITY_CHAIN_v0_6.md`.
+- [ ] Draft v0.6 release notes are checked in
+  `docs/RELEASE_NOTES_v0_6_DRAFT.md`.
+- [ ] CHANGELOG documents v0.6 as planning under `[Unreleased]`.
+- [ ] README links to the v0.6 planning docs.
+- [ ] Proposed scenarios `032` through `036` are documented but not required
+  to exist during planning.
+- [ ] Proposed parent-chain models and helpers are documented but not
+  implemented during planning.
+- [ ] Documentation states that direct v0.5 alias behavior remains unchanged.
+- [ ] Documentation states that TrafficHub routing and canonical identity
+  chains remain unchanged.
+- [ ] Documentation avoids real DNS, registrar integration, public CA,
+  production identity proof, distributed consensus, external registry,
+  TrafficHub routing change, or canonical identity replacement claims.
+
+## v0.6 Planning Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+```

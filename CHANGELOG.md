@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+Planning:
+
+- Added v0.6 alias authority chain planning docs for parent-scope alias
+  negotiation, authority path recording, authority ceilings, fallback behavior,
+  proposed models, helper functions, scenarios, and tests.
+- Documented that v0.6 planning preserves v0.5 direct aliases, local
+  progressive fallback, alias bundles, canonical identity truth, and TrafficHub
+  routing behavior.
+- Reaffirmed v0.6 non-goals: no real DNS, registrar integration, public CA
+  behavior, production identity proof, distributed consensus, external registry
+  integration, TrafficHub routing changes, or canonical identity rewrite.
+
 ## [0.5.0] - 2026-06-04
 
 DARWIN v0.5.0 is a simulator-only alias registry modeling release. It adds

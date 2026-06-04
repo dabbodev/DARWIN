@@ -74,6 +74,17 @@ canonical identity replacement.
 - `docs/ALIAS_REGISTRY_v0_5.md`
 - `docs/RELEASE_NOTES_v0_5.md`
 
+## v0.6 Alias Authority Chain Planning
+
+v0.6 planning explores simulator-only parent-scope authority negotiation for
+alias claims. It does not implement behavior yet, bump the package version, add
+real DNS, integrate registrars, model public CA behavior, change TrafficHub
+routing, or rewrite canonical identity chains.
+
+- `docs/V0_6_ROADMAP.md`
+- `docs/ALIAS_AUTHORITY_CHAIN_v0_6.md`
+- `docs/RELEASE_NOTES_v0_6_DRAFT.md`
+
 v0.5 alias scenarios:
 
 - `scenarios/026_alias_claim_success.yaml`
@@ -762,6 +773,12 @@ For v0.5 alias registry behavior, see:
 - `docs/V0_5_ROADMAP.md`
 - `docs/ALIAS_REGISTRY_v0_5.md`
 - `docs/RELEASE_NOTES_v0_5.md`
+
+For v0.6 alias authority chain planning, see:
+
+- `docs/V0_6_ROADMAP.md`
+- `docs/ALIAS_AUTHORITY_CHAIN_v0_6.md`
+- `docs/RELEASE_NOTES_v0_6_DRAFT.md`
 
 ## What v0.1 Is Not
 
