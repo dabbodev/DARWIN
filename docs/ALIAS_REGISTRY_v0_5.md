@@ -23,6 +23,10 @@ Implemented in the current v0.5 planning branch:
   resolution, and canonical identity preservation.
 - `scenarios/026_alias_claim_success.yaml` covering direct device alias claim
   and resolution.
+- `scenarios/027_alias_claim_conflict.yaml` covering direct alias conflicts
+  while preserving the original active owner.
+- `scenarios/028_alias_release_blocks_resolution.yaml` covering release to an
+  inactive retained alias record that no longer resolves.
 
 Not implemented yet:
 
@@ -321,13 +325,15 @@ simulator.
 - `026_alias_claim_success.yaml`: device claims an authorized scoped alias.
   Implemented as direct alias scenario-runner support.
 - `027_alias_claim_conflict.yaml`: duplicate alias request returns conflict.
-- `028_progressive_alias_fallback.yaml`: high-scope request falls back to the
+- `028_alias_release_blocks_resolution.yaml`: released alias remains retained
+  but inactive and no longer resolves.
+- `029_progressive_alias_fallback.yaml`: high-scope request falls back to the
   highest authorized scope.
-- `029_alias_rejects_quarantined_device.yaml`: quarantined device cannot create
+- `030_alias_rejects_quarantined_device.yaml`: quarantined device cannot create
   an active alias.
-- `030_alias_bundle_delegation.yaml`: parent registry delegates a bundle and a
+- `031_alias_bundle_delegation.yaml`: parent registry delegates a bundle and a
   child alias is claimed inside it.
-- `031_dns_style_alias_bundle.yaml`: public-style alias bundle resolves inside
+- `032_dns_style_alias_bundle.yaml`: public-style alias bundle resolves inside
   simulator policy without real DNS.
 
 ## Test Plan

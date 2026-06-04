@@ -203,6 +203,13 @@ Supported alias assertions:
 - `canonical_identity_unchanged`
   - Required: `registry_hub`, `device`, `expected_identity_chain`
 
-Checked-in direct alias scenario:
+Alias conflict checks use existing `latest_step_status`,
+`latest_step_reason`, and `conflict_exists` assertions. Released aliases remain
+in the RegistryHub alias table with `status: released`, but `resolve_alias`
+returns `alias_not_active` and no active target.
+
+Checked-in direct alias scenarios:
 
 - `scenarios/026_alias_claim_success.yaml`
+- `scenarios/027_alias_claim_conflict.yaml`
+- `scenarios/028_alias_release_blocks_resolution.yaml`

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from darwin.registry.aliases import resolve_alias
 from darwin.sim.runner import run_scenario
 from darwin.sim.scenarios import validate_scenario_dict
 
@@ -10,6 +11,48 @@ def test_alias_claim_scenario_runs():
     result = run_scenario(PROJECT_ROOT / "scenarios" / "026_alias_claim_success.yaml")
 
     assert result.passed
+
+
+def test_alias_conflict_scenario_runs():
+    result = run_scenario(PROJECT_ROOT / "scenarios" / "027_alias_claim_conflict.yaml")
+
+    assert result.passed
+
+
+def test_alias_release_scenario_runs():
+    result = run_scenario(
+        PROJECT_ROOT / "scenarios" / "028_alias_release_blocks_resolution.yaml"
+    )
+
+    assert result.passed
+
+
+def test_alias_conflict_preserves_original_owner():
+    result = run_scenario(PROJECT_ROOT / "scenarios" / "027_alias_claim_conflict.yaml")
+
+    hub = result.world.registry_hubs["hub_home_001"]
+    resolution = resolve_alias(hub, "global.family.david.shared_alias")
+
+    assert result.passed
+    assert resolution.success
+    assert resolution.target_device_id == "dev_A9F3"
+    assert resolution.target_device_id != "dev_B2C8"
+    assert hub.aliases["global.family.david.shared_alias"].target_device_id == "dev_A9F3"
+
+
+def test_released_alias_does_not_resolve_in_scenario():
+    result = run_scenario(
+        PROJECT_ROOT / "scenarios" / "028_alias_release_blocks_resolution.yaml"
+    )
+
+    hub = result.world.registry_hubs["hub_home_001"]
+    resolution = resolve_alias(hub, "global.family.david.release_alias")
+
+    assert result.passed
+    assert not resolution.success
+    assert resolution.status == "released"
+    assert resolution.reason == "alias_not_active"
+    assert resolution.target_device_id is None
 
 
 def test_claim_alias_action():

@@ -30,6 +30,8 @@ Completed v0.5 planning slices:
 - Scenario assertions for alias resolution, alias status, inactive resolution,
   and canonical identity preservation.
 - `026_alias_claim_success.yaml`.
+- `027_alias_claim_conflict.yaml`.
+- `028_alias_release_blocks_resolution.yaml`.
 
 ## Current v0.4 Foundation
 
@@ -269,11 +271,14 @@ verification terms.
 
 - `026_alias_claim_success.yaml` - completed for direct alias claim and
   resolution.
-- `027_alias_claim_conflict.yaml`
-- `028_progressive_alias_fallback.yaml`
-- `029_alias_rejects_quarantined_device.yaml`
-- `030_alias_bundle_delegation.yaml`
-- `031_dns_style_alias_bundle.yaml`
+- `027_alias_claim_conflict.yaml` - completed for direct alias conflict
+  detection and original target preservation.
+- `028_alias_release_blocks_resolution.yaml` - completed for direct alias
+  release and inactive resolution behavior.
+- `029_progressive_alias_fallback.yaml`
+- `030_alias_rejects_quarantined_device.yaml`
+- `031_alias_bundle_delegation.yaml`
+- `032_dns_style_alias_bundle.yaml`
 
 ## Proposed Tests
 

@@ -66,10 +66,11 @@ The result should clearly report:
 
 - `scenarios/026_alias_claim_success.yaml`
 - `scenarios/027_alias_claim_conflict.yaml`
-- `scenarios/028_progressive_alias_fallback.yaml`
-- `scenarios/029_alias_rejects_quarantined_device.yaml`
-- `scenarios/030_alias_bundle_delegation.yaml`
-- `scenarios/031_dns_style_alias_bundle.yaml`
+- `scenarios/028_alias_release_blocks_resolution.yaml`
+- `scenarios/029_progressive_alias_fallback.yaml`
+- `scenarios/030_alias_rejects_quarantined_device.yaml`
+- `scenarios/031_alias_bundle_delegation.yaml`
+- `scenarios/032_dns_style_alias_bundle.yaml`
 
 ## Compatibility Goals
 
