@@ -1,5 +1,11 @@
 """Public data models for DARWIN v0.1."""
 
+from darwin.models.alias import (
+    AliasClaimResult,
+    AliasRecord,
+    AliasReleaseResult,
+    AliasResolutionResult,
+)
 from darwin.models.checkpoint import CheckpointPacket, CheckpointState
 from darwin.models.device import Device
 from darwin.models.hub import LocalDeviceRecord, RegistryHub, TrafficHub
@@ -16,6 +22,10 @@ from darwin.models.route import (
 )
 
 __all__ = [
+    "AliasClaimResult",
+    "AliasRecord",
+    "AliasReleaseResult",
+    "AliasResolutionResult",
     "CheckpointPacket",
     "CheckpointState",
     "DarwinPacket",

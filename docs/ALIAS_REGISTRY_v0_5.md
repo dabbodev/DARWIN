@@ -1,10 +1,34 @@
 # DARWIN v0.5 Alias Registry Planning
 
-This document sketches the planned v0.5 Registry Hub alias model. It is a
-planning document only and does not describe implemented behavior yet.
+This document sketches the planned v0.5 Registry Hub alias model. The first
+helper slice is implemented for basic direct aliases only; progressive
+fallback, bundles, zones, and DNS-style integration remain planning topics.
 
 Aliases are authorized shortcuts. They do not replace canonical identity
 chains, alter traffic paths, or integrate with real DNS.
+
+## Helper Slice Status
+
+Implemented in the current v0.5 planning branch:
+
+- Basic `AliasRecord` and direct alias result models.
+- Registry Hub in-memory alias storage.
+- `claim_alias(...)` for direct aliases targeting registered devices.
+- `resolve_alias(...)` for active direct aliases.
+- `release_alias(...)` preserving a released alias record.
+- Active alias conflict detection using the existing registry conflict table.
+- Alias claim rejection for quarantined or revoked target devices.
+
+Not implemented yet:
+
+- Progressive alias fallback.
+- Alias bundles or zones.
+- DNS-style public alias integration.
+- Service alias behavior beyond reserved model fields.
+- Production cryptography or external proof flows for alias claims.
+
+Alias helpers do not mutate device labels, passport IDs, attachments, canonical
+identity chains, or TrafficHub routing state.
 
 ## Design Goal
 
