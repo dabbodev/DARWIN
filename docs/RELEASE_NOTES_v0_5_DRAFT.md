@@ -1,6 +1,6 @@
 # DARWIN Simulator v0.5.0 Draft Release Notes
 
-Draft status: planning only. v0.5.0 has not been implemented, tagged, or
+Draft status: v0.5 planning branch work only. v0.5.0 has not been tagged or
 released. The current stable CLI version remains `darwin-sim 0.4.0`.
 
 DARWIN v0.5 is planned as a simulator-only alias registry modeling release. It
@@ -14,7 +14,7 @@ short-handles, progressive alias fallback, and delegated alias bundles or zones.
 - Keep canonical identity chains as the truthful scoped identity source.
 - Model device aliases and service aliases.
 - Model progressive alias claims that can fall back from a requested high-scope
-  alias to the highest authorized scope.
+  alias to the highest authorized local RegistryHub scope.
 - Model alias bundles or zones as delegated mini-namespaces.
 - Include DNS-style public alias bundles for simulator-only website or
   institution style lookup.
@@ -35,19 +35,23 @@ may grant the highest authorized fallback alias:
 global.us.west1.dist25.sf2.xfinity_301.david_server
 ```
 
-The result should clearly report:
+The basic implemented local fallback result reports:
 
 - Requested alias.
 - Granted alias.
 - Status, such as `fallback_granted`.
-- Reason, such as `insufficient_authority` or `name_taken`.
-- Authority scope and authority path.
+- Reason, such as `insufficient_authority`.
+- Authority ceiling.
+
+Parent registry negotiation and alias bundle policy are not implemented in this
+slice.
 
 ## Planned Models
 
 - `AliasRecord`
-- `AliasClaimRequest`
 - `AliasClaimResult`
+- `ProgressiveAliasClaimResult`
+- `AliasClaimRequest`
 - `AliasBundle`
 - `AliasBundleClaim`
 - `AliasResolutionResult`
@@ -80,6 +84,15 @@ The result should clearly report:
 - Symbolic behavior should remain the default proof posture.
 - Revoked or quarantined devices should not be allowed to create active
   aliases.
+
+## Implemented Planning Slices
+
+- Direct alias claim, resolve, release, conflict, and inactive-resolution
+  behavior.
+- Basic progressive alias fallback inside a RegistryHub's own `scope_path`.
+- Progressive alias scenario action and assertions for granted alias provenance
+  and authority ceiling.
+- Scenario `029_progressive_alias_fallback.yaml`.
 
 ## Safety Limits
 

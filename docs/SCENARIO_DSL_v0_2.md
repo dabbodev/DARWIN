@@ -173,18 +173,21 @@ Checked-in move-contract auth scenarios:
 - `scenarios/024_hmac_move_contract_revoked_device.yaml`
 - `scenarios/025_symbolic_move_contract_still_works.yaml`
 
-## v0.5 Direct Alias Scenarios
+## v0.5 Alias Scenarios
 
-The v0.5 alias registry slice adds direct alias scenario support. Alias steps
-call the direct registry helpers and do not change canonical identity,
-TrafficHub routing, progressive fallback, bundles/zones, DNS-style behavior, or
-service aliases.
+The v0.5 alias registry slices add direct alias and basic progressive fallback
+scenario support. Alias steps call registry helpers and do not change canonical
+identity, TrafficHub routing, bundles/zones, DNS-style behavior, or service
+aliases.
 
 Supported alias actions:
 
 - `claim_alias`
   - Required: `registry_hub`, `alias`, `target_device`
   - Optional: `requested_by_device`, `alias_type`, `visibility`, `ttl`
+- `claim_progressive_alias`
+  - Required: `registry_hub`, `requested_alias`, `local_name`, `target_device`
+  - Optional: `requested_by_device`, `fallback_allowed`, `visibility`, `ttl`
 - `resolve_alias`
   - Required: `registry_hub`, `alias`
 - `release_alias`
@@ -198,6 +201,10 @@ Supported alias assertions:
   - Optional: `identity_chain`
 - `alias_status`
   - Required: `registry_hub`, `alias`, `expected`
+- `alias_granted_as`
+  - Required: `registry_hub`, `requested_alias`, `granted_alias`
+- `alias_authority_ceiling`
+  - Required: `registry_hub`, `alias`, `expected`
 - `alias_not_resolved`
   - Required: `registry_hub`, `alias`
 - `canonical_identity_unchanged`
@@ -208,8 +215,21 @@ Alias conflict checks use existing `latest_step_status`,
 in the RegistryHub alias table with `status: released`, but `resolve_alias`
 returns `alias_not_active` and no active target.
 
-Checked-in direct alias scenarios:
+For the basic progressive fallback slice, a RegistryHub can grant aliases only
+inside its own `scope_path`. If a requested alias is above that scope and
+`fallback_allowed` is true, the granted alias is:
+
+```text
+registry_hub.scope_path + "." + local_name
+```
+
+The progressive result status is `fallback_granted`, the reason is
+`insufficient_authority`, and the granted active `AliasRecord` stores the
+requested alias, granted alias, fallback reason, and authority ceiling.
+
+Checked-in alias scenarios:
 
 - `scenarios/026_alias_claim_success.yaml`
 - `scenarios/027_alias_claim_conflict.yaml`
 - `scenarios/028_alias_release_blocks_resolution.yaml`
+- `scenarios/029_progressive_alias_fallback.yaml`

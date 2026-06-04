@@ -493,6 +493,60 @@ def _alias_status(
     )
 
 
+def _alias_granted_as(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    requested_alias = str(assertion.get("requested_alias"))
+    granted_alias = str(assertion.get("granted_alias"))
+    actual = None
+    if hub is not None:
+        alias_record = hub.aliases.get(granted_alias)
+        if alias_record is not None:
+            actual = {
+                "requested_alias": alias_record.requested_alias,
+                "granted_alias": alias_record.granted_alias or alias_record.alias,
+                "status": alias_record.status,
+            }
+    expected = {
+        "requested_alias": requested_alias,
+        "granted_alias": granted_alias,
+        "status": "active",
+    }
+    passed = actual == expected
+    return _result(
+        assertion_type,
+        passed,
+        expected,
+        f"{requested_alias} granted as {granted_alias}",
+        actual,
+    )
+
+
+def _alias_authority_ceiling(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    alias = str(assertion.get("alias"))
+    expected = str(assertion.get("expected"))
+    actual = None
+    if hub is not None:
+        alias_record = hub.aliases.get(alias)
+        if alias_record is not None:
+            actual = alias_record.authority_ceiling or alias_record.authority_scope
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"{alias} authority ceiling is {expected}",
+        actual,
+    )
+
+
 def _alias_not_resolved(
     world: World,
     assertion_type: str,
@@ -586,6 +640,8 @@ _EVALUATORS = {
     "checkpoint_state": _checkpoint_state,
     "alias_resolves_to": _alias_resolves_to,
     "alias_status": _alias_status,
+    "alias_granted_as": _alias_granted_as,
+    "alias_authority_ceiling": _alias_authority_ceiling,
     "alias_not_resolved": _alias_not_resolved,
     "canonical_identity_unchanged": _canonical_identity_unchanged,
 }

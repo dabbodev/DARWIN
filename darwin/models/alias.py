@@ -22,6 +22,11 @@ class AliasRecord:
     visibility: str = "local"
     ttl: int | None = None
     conflict_id: str | None = None
+    requested_alias: str | None = None
+    granted_alias: str | None = None
+    fallback_reason: str | None = None
+    authority_ceiling: str | None = None
+    fallback_from: str | None = None
 
 
 @dataclass(slots=True)
@@ -32,6 +37,21 @@ class AliasClaimResult:
     status: str
     reason: str | None
     alias_record: AliasRecord | None
+    conflict_id: str | None = None
+
+
+@dataclass(slots=True)
+class ProgressiveAliasClaimResult:
+    """Outcome of an alias claim that may fall back within hub authority."""
+
+    success: bool
+    status: str
+    reason: str | None
+    requested_alias: str
+    granted_alias: str | None
+    alias_record: AliasRecord | None
+    fallback_reason: str | None = None
+    authority_ceiling: str | None = None
     conflict_id: str | None = None
 
 

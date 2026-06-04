@@ -5,6 +5,7 @@ from darwin.models.alias import (
     AliasRecord,
     AliasReleaseResult,
     AliasResolutionResult,
+    ProgressiveAliasClaimResult,
 )
 from darwin.models.checkpoint import CheckpointPacket, CheckpointState
 from darwin.models.device import Device
@@ -35,6 +36,7 @@ __all__ = [
     "LocalDeviceRecord",
     "LogicalLane",
     "PassportRecord",
+    "ProgressiveAliasClaimResult",
     "RegistryHub",
     "RouteCostBreakdown",
     "RouteDecision",

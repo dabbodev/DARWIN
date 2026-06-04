@@ -14,10 +14,10 @@ short alias granted by the highest registry scope policy allows?
 
 ## Status
 
-Direct alias helper and scenario-runner slices are implemented on the v0.5
-planning branch. This roadmap does not bump the package version, define real
-DNS behavior, integrate an external registry, or claim production identity
-proof.
+Direct alias helper, scenario-runner, and basic progressive fallback slices are
+implemented on the v0.5 planning branch. This roadmap does not bump the package
+version, define real DNS behavior, integrate an external registry, or claim
+production identity proof.
 
 The current stable package remains `darwin-sim 0.4.0`.
 
@@ -28,10 +28,14 @@ Completed v0.5 planning slices:
   helpers for registered device aliases.
 - Scenario runner support for direct alias claim, resolve, and release.
 - Scenario assertions for alias resolution, alias status, inactive resolution,
-  and canonical identity preservation.
+  granted alias provenance, authority ceiling, and canonical identity
+  preservation.
 - `026_alias_claim_success.yaml`.
 - `027_alias_claim_conflict.yaml`.
 - `028_alias_release_blocks_resolution.yaml`.
+- Basic `claim_progressive_alias(...)`, `suggest_alias_fallbacks(...)`, and
+  `highest_authorized_alias(...)` helpers.
+- `029_progressive_alias_fallback.yaml`.
 
 ## Current v0.4 Foundation
 
@@ -57,7 +61,8 @@ v0.5 should model:
 - Device aliases that point to devices.
 - Service aliases that point to services exposed by devices or hubs.
 - Progressive alias claims that try a requested high-scope alias first and then
-  grant the highest authorized fallback alias.
+  grant the highest authorized fallback alias. The basic local-authority slice
+  is implemented; parent-chain negotiation remains future work.
 - Delegated alias bundles or alias zones.
 - DNS-style public alias bundles for website or institution style lookup,
   still simulator-only.
@@ -136,6 +141,8 @@ DNS-style public alias bundle:
 `AliasRecord` should remain plain simulator data. Proposed fields:
 
 - `alias`
+- `requested_alias`
+- `granted_alias`
 - `alias_type`
 - `target_device_id`
 - `target_service_id`
@@ -144,7 +151,10 @@ DNS-style public alias bundle:
 - `requested_through_hub`
 - `approved_by_registry_hub`
 - `authority_scope`
+- `authority_ceiling`
 - `authority_path`
+- `fallback_reason`
+- `fallback_from`
 - `status`
 - `visibility`
 - `ttl`
@@ -161,26 +171,26 @@ simulator mode and must not be described as production identity verification.
 
 ## Progressive Alias Claim
 
-A device may request a high-level alias. If the exact alias is unavailable or
-the requesting registry path lacks authority, the registry chain can grant the
-highest authorized fallback alias.
+A device may request a high-level alias. In the implemented basic slice, if the
+requesting RegistryHub lacks authority and fallback is allowed, the hub grants
+the highest alias inside its own `scope_path`.
 
 Example:
 
 - Requested: `global.david_server`
 - Granted: `global.us.west1.dist25.sf2.xfinity_301.david_server`
 - Status: `fallback_granted`
-- Reason: `insufficient_authority` or `name_taken`
+- Reason: `insufficient_authority`
 
-The key policy decision should be the authority ceiling. A lower hub can ask
-upward only when policy allows it. If upward approval fails, fallback must not
-grant an alias above the highest approved scope.
+The key policy decision is the authority ceiling. This slice stores the
+RegistryHub scope as the authority ceiling on the granted record. A lower hub
+does not ask upward yet and never grants an alias above its own approved scope.
 
 ## Alias Authority Rules
 
 - A Registry Hub can grant aliases only within its authority scope.
-- Parent registries may approve higher-scope aliases.
-- A lower hub can request upward alias registration only if policy allows.
+- Parent registries may approve higher-scope aliases in a future slice.
+- A lower hub can request upward alias registration only if future policy allows.
 - Alias records must not replace canonical identity truth.
 - Revoked or quarantined devices cannot create active aliases.
 - Alias conflict detection must be explicit.
@@ -275,7 +285,8 @@ verification terms.
   detection and original target preservation.
 - `028_alias_release_blocks_resolution.yaml` - completed for direct alias
   release and inactive resolution behavior.
-- `029_progressive_alias_fallback.yaml`
+- `029_progressive_alias_fallback.yaml` - completed for basic local-authority
+  progressive fallback.
 - `030_alias_rejects_quarantined_device.yaml`
 - `031_alias_bundle_delegation.yaml`
 - `032_dns_style_alias_bundle.yaml`

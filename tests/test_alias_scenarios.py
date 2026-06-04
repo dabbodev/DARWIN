@@ -27,6 +27,14 @@ def test_alias_release_scenario_runs():
     assert result.passed
 
 
+def test_progressive_alias_scenario_runs():
+    result = run_scenario(
+        PROJECT_ROOT / "scenarios" / "029_progressive_alias_fallback.yaml"
+    )
+
+    assert result.passed
+
+
 def test_alias_conflict_preserves_original_owner():
     result = run_scenario(PROJECT_ROOT / "scenarios" / "027_alias_claim_conflict.yaml")
 
@@ -73,6 +81,28 @@ def test_claim_alias_action():
     latest_result = result.world.action_results[-1]
     assert latest_result.success
     assert latest_result.status == "active"
+
+
+def test_claim_progressive_alias_action():
+    result = run_scenario({
+        "scenario_id": "claim_progressive_alias_action",
+        "setup": _alias_setup(),
+        "steps": [
+            {
+                "action": "claim_progressive_alias",
+                "registry_hub": "hub_home_001",
+                "requested_alias": "global.david_server",
+                "local_name": "david_server",
+                "target_device": "dev_A9F3",
+            }
+        ],
+        "assertions": [],
+    })
+
+    latest_result = result.world.action_results[-1]
+    assert latest_result.success
+    assert latest_result.status == "fallback_granted"
+    assert latest_result.granted_alias == "global.family.home.david_server"
 
 
 def test_resolve_alias_action():
@@ -136,6 +166,42 @@ def test_alias_status_assertion():
     assert result.passed
 
 
+def test_alias_granted_as_assertion():
+    result = run_scenario({
+        "scenario_id": "alias_granted_as_assertion",
+        "setup": _alias_setup(),
+        "steps": [_claim_progressive_alias_step()],
+        "assertions": [
+            {
+                "type": "alias_granted_as",
+                "registry_hub": "hub_home_001",
+                "requested_alias": "global.david_server",
+                "granted_alias": "global.family.home.david_server",
+            }
+        ],
+    })
+
+    assert result.passed
+
+
+def test_alias_authority_ceiling_assertion():
+    result = run_scenario({
+        "scenario_id": "alias_authority_ceiling_assertion",
+        "setup": _alias_setup(),
+        "steps": [_claim_progressive_alias_step()],
+        "assertions": [
+            {
+                "type": "alias_authority_ceiling",
+                "registry_hub": "hub_home_001",
+                "alias": "global.family.home.david_server",
+                "expected": "global.family.home",
+            }
+        ],
+    })
+
+    assert result.passed
+
+
 def test_alias_not_resolved_assertion_after_release():
     result = run_scenario({
         "scenario_id": "alias_not_resolved_assertion_after_release",
@@ -185,12 +251,15 @@ def test_alias_actions_validate_required_fields():
         "setup": {},
         "steps": [
             {"action": "claim_alias", "registry_hub": "hub_home_001"},
+            {"action": "claim_progressive_alias", "registry_hub": "hub_home_001"},
             {"action": "resolve_alias", "registry_hub": "hub_home_001"},
             {"action": "release_alias", "registry_hub": "hub_home_001"},
         ],
         "assertions": [
             {"type": "alias_resolves_to", "registry_hub": "hub_home_001"},
             {"type": "alias_status", "registry_hub": "hub_home_001"},
+            {"type": "alias_granted_as", "registry_hub": "hub_home_001"},
+            {"type": "alias_authority_ceiling", "registry_hub": "hub_home_001"},
             {"type": "alias_not_resolved", "registry_hub": "hub_home_001"},
             {
                 "type": "canonical_identity_unchanged",
@@ -203,15 +272,22 @@ def test_alias_actions_validate_required_fields():
     locations = {error.location for error in result.errors}
     assert "steps[0].alias" in locations
     assert "steps[0].target_device" in locations
-    assert "steps[1].alias" in locations
+    assert "steps[1].requested_alias" in locations
+    assert "steps[1].local_name" in locations
+    assert "steps[1].target_device" in locations
     assert "steps[2].alias" in locations
+    assert "steps[3].alias" in locations
     assert "assertions[0].alias" in locations
     assert "assertions[0].device" in locations
     assert "assertions[1].alias" in locations
     assert "assertions[1].expected" in locations
-    assert "assertions[2].alias" in locations
-    assert "assertions[3].device" in locations
-    assert "assertions[3].expected_identity_chain" in locations
+    assert "assertions[2].requested_alias" in locations
+    assert "assertions[2].granted_alias" in locations
+    assert "assertions[3].alias" in locations
+    assert "assertions[3].expected" in locations
+    assert "assertions[4].alias" in locations
+    assert "assertions[5].device" in locations
+    assert "assertions[5].expected_identity_chain" in locations
 
 
 def _alias_setup():
@@ -237,5 +313,15 @@ def _claim_alias_step():
         "action": "claim_alias",
         "registry_hub": "hub_home_001",
         "alias": "global.family.david_server",
+        "target_device": "dev_A9F3",
+    }
+
+
+def _claim_progressive_alias_step():
+    return {
+        "action": "claim_progressive_alias",
+        "registry_hub": "hub_home_001",
+        "requested_alias": "global.david_server",
+        "local_name": "david_server",
         "target_device": "dev_A9F3",
     }

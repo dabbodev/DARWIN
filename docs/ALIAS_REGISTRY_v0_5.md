@@ -1,8 +1,8 @@
 # DARWIN v0.5 Alias Registry Planning
 
-This document sketches the planned v0.5 Registry Hub alias model. The first
-helper slice is implemented for basic direct aliases only; progressive
-fallback, bundles, zones, and DNS-style integration remain planning topics.
+This document sketches the planned v0.5 Registry Hub alias model. The direct
+alias helper slice and the basic progressive alias fallback slice are
+implemented; bundles, zones, and DNS-style integration remain planning topics.
 
 Aliases are authorized shortcuts. They do not replace canonical identity
 chains, alter traffic paths, or integrate with real DNS.
@@ -16,21 +16,28 @@ Implemented in the current v0.5 planning branch:
 - `claim_alias(...)` for direct aliases targeting registered devices.
 - `resolve_alias(...)` for active direct aliases.
 - `release_alias(...)` preserving a released alias record.
+- `claim_progressive_alias(...)` for authority-limited fallback claims.
+- `suggest_alias_fallbacks(...)` and `highest_authorized_alias(...)` for the
+  current local-authority fallback model.
 - Active alias conflict detection using the existing registry conflict table.
 - Alias claim rejection for quarantined or revoked target devices.
-- Scenario runner support for direct alias claim, resolve, and release steps.
+- Scenario runner support for direct alias claim, progressive alias claim,
+  resolve, and release steps.
 - Scenario assertions for alias resolution, alias status, inactive alias
-  resolution, and canonical identity preservation.
+  resolution, granted alias provenance, authority ceiling, and canonical
+  identity preservation.
 - `scenarios/026_alias_claim_success.yaml` covering direct device alias claim
   and resolution.
 - `scenarios/027_alias_claim_conflict.yaml` covering direct alias conflicts
   while preserving the original active owner.
 - `scenarios/028_alias_release_blocks_resolution.yaml` covering release to an
   inactive retained alias record that no longer resolves.
+- `scenarios/029_progressive_alias_fallback.yaml` covering a high-level alias
+  request that falls back to the RegistryHub-authorized scope.
 
 Not implemented yet:
 
-- Progressive alias fallback.
+- Parent-chain progressive alias negotiation.
 - Alias bundles or zones.
 - DNS-style public alias integration.
 - Service alias behavior beyond reserved model fields.
@@ -39,11 +46,10 @@ Not implemented yet:
 Alias helpers do not mutate device labels, passport IDs, attachments, canonical
 identity chains, or TrafficHub routing state.
 
-Scenario runner alias support is intentionally direct-only. It calls the
-existing helper functions and records structured step results for scenario
-assertions, but it does not add progressive fallback, bundles, DNS-style lookup,
-service alias behavior, TrafficHub routing changes, or canonical identity
-rewrites.
+Scenario runner alias support calls the alias helper functions and records
+structured step results for scenario assertions, but it does not add alias
+bundles, DNS-style lookup, service alias behavior, TrafficHub routing changes,
+or canonical identity rewrites.
 
 ## Design Goal
 
@@ -126,6 +132,8 @@ DNS-style public alias bundle:
 Proposed fields:
 
 - `alias`
+- `requested_alias`
+- `granted_alias`
 - `alias_type`
 - `target_device_id` optional
 - `target_service_id` optional
@@ -134,7 +142,10 @@ Proposed fields:
 - `requested_through_hub`
 - `approved_by_registry_hub`
 - `authority_scope`
+- `authority_ceiling`
 - `authority_path`
+- `fallback_reason`
+- `fallback_from`
 - `status`
 - `visibility`
 - `ttl` optional
@@ -201,8 +212,8 @@ simulator authorization behavior only.
 
 ## Progressive Alias Fallback
 
-Progressive alias claim should evaluate the requested alias against authority
-and namespace policy before proposing fallbacks.
+The implemented basic progressive alias claim evaluates the requested alias
+against the approving RegistryHub authority before proposing local fallbacks.
 
 Example:
 
@@ -213,25 +224,30 @@ status: fallback_granted
 reason: insufficient_authority
 ```
 
-Another valid reason:
+Fallback also fails cleanly if the fallback alias is already active:
 
 ```text
-reason: name_taken
+reason: alias_conflict
 ```
 
-Recommended ordering:
+Current implemented ordering:
 
-1. Validate requesting device state.
-2. Validate requested alias syntax and target.
-3. Check whether requested alias is inside an authorized scope.
-4. Check conflicts at that scope.
-5. If blocked, compute fallback candidates from highest to lowest scope.
-6. Grant the first candidate allowed by authority and conflict policy.
-7. Return explicit reason and granted scope.
+1. Validate the target device exists.
+2. Reject quarantined or revoked target devices.
+3. If the requested alias is inside the RegistryHub authority scope, claim it
+   directly.
+4. If the requested alias is above the RegistryHub authority scope and fallback
+   is allowed, grant `registry_hub.scope_path + "." + local_name`.
+5. If fallback is disabled, reject with `insufficient_authority`.
+6. If the fallback alias is already active, fail with `alias_conflict`.
+7. Return explicit requested alias, granted alias, fallback reason, and
+   authority ceiling.
 
 Fallback must preserve the authority ceiling. A lower Registry Hub should not
 grant an alias above its approved scope just because the fallback flow was
 requested.
+
+Parent-chain negotiation is not implemented in this slice.
 
 ## Authority Rules
 
@@ -328,7 +344,7 @@ simulator.
 - `028_alias_release_blocks_resolution.yaml`: released alias remains retained
   but inactive and no longer resolves.
 - `029_progressive_alias_fallback.yaml`: high-scope request falls back to the
-  highest authorized scope.
+  highest authorized scope. Implemented for local RegistryHub authority.
 - `030_alias_rejects_quarantined_device.yaml`: quarantined device cannot create
   an active alias.
 - `031_alias_bundle_delegation.yaml`: parent registry delegates a bundle and a

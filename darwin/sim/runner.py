@@ -22,6 +22,9 @@ from darwin.registry.aliases import (
     claim_alias as claim_alias_op,
 )
 from darwin.registry.aliases import (
+    claim_progressive_alias as claim_progressive_alias_op,
+)
+from darwin.registry.aliases import (
     release_alias as release_alias_op,
 )
 from darwin.registry.aliases import (
@@ -200,6 +203,7 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         "register_device": _step_register_device,
         "resolve_label": _step_resolve_label,
         "claim_alias": _step_claim_alias,
+        "claim_progressive_alias": _step_claim_progressive_alias,
         "resolve_alias": _step_resolve_alias,
         "release_alias": _step_release_alias,
         "open_lane": _step_open_lane,
@@ -336,6 +340,45 @@ def _step_claim_alias(world: World, fields: dict[str, Any]) -> None:
             "target_device": target_device_id,
             "success": result.success,
             "reason": result.reason,
+            "conflict_id": result.conflict_id,
+        },
+    )
+
+
+def _step_claim_progressive_alias(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    requested_alias = str(fields["requested_alias"])
+    local_name = str(fields["local_name"])
+    target_device_id = str(fields["target_device"])
+    result = claim_progressive_alias_op(
+        hub,
+        requested_alias,
+        local_name,
+        target_device_id,
+        requested_by_device_id=_optional_str(fields.get("requested_by_device")),
+        fallback_allowed=bool(fields.get("fallback_allowed", True)),
+        visibility=str(fields.get("visibility", "local")),
+        ttl=_optional_int(fields.get("ttl")),
+    )
+    world.action_results.append(result)
+    event_type = "progressive_alias_claimed" if result.success else "progressive_alias_failed"
+    world.log(
+        f"{event_type} {requested_alias} at {hub.hub_id} for {target_device_id}",
+        event_type=event_type,
+        actor=_optional_str(fields.get("requested_by_device")) or target_device_id,
+        target=target_device_id,
+        device_id=target_device_id,
+        hub_id=hub.hub_id,
+        status=result.status,
+        data={
+            "requested_alias": requested_alias,
+            "granted_alias": result.granted_alias,
+            "local_name": local_name,
+            "target_device": target_device_id,
+            "success": result.success,
+            "reason": result.reason,
+            "fallback_reason": result.fallback_reason,
+            "authority_ceiling": result.authority_ceiling,
             "conflict_id": result.conflict_id,
         },
     )

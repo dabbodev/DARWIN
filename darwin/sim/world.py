@@ -158,6 +158,11 @@ class World:
                             "visibility": record.visibility,
                             "ttl": record.ttl,
                             "conflict_id": record.conflict_id,
+                            "requested_alias": record.requested_alias,
+                            "granted_alias": record.granted_alias,
+                            "fallback_reason": record.fallback_reason,
+                            "authority_ceiling": record.authority_ceiling,
+                            "fallback_from": record.fallback_from,
                         }
                         for alias, record in sorted(hub.aliases.items())
                     },
