@@ -89,6 +89,13 @@ STEP_REQUIRED_FIELDS = {
     "register_device": ("device", "registry_hub"),
     "resolve_label": ("registry_hub", "label"),
     "claim_alias": ("registry_hub", "alias", "target_device"),
+    "create_alias_bundle": ("registry_hub", "bundle_path"),
+    "claim_bundle_alias": (
+        "registry_hub",
+        "bundle_path",
+        "child_name",
+        "target_device",
+    ),
     "claim_progressive_alias": (
         "registry_hub",
         "requested_alias",
@@ -153,6 +160,13 @@ ASSERTION_REQUIRED_FIELDS = {
     "latest_step_reason": ("expected",),
     "alias_resolves_to": ("registry_hub", "alias", "device"),
     "alias_status": ("registry_hub", "alias", "expected"),
+    "alias_bundle_status": ("registry_hub", "bundle_path", "expected"),
+    "bundle_alias_resolves_to": (
+        "registry_hub",
+        "bundle_path",
+        "child_name",
+        "device",
+    ),
     "alias_granted_as": ("registry_hub", "requested_alias", "granted_alias"),
     "alias_authority_ceiling": ("registry_hub", "alias", "expected"),
     "alias_not_resolved": ("registry_hub", "alias"),

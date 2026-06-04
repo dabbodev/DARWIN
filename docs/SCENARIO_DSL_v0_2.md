@@ -175,15 +175,22 @@ Checked-in move-contract auth scenarios:
 
 ## v0.5 Alias Scenarios
 
-The v0.5 alias registry slices add direct alias and basic progressive fallback
-scenario support. Alias steps call registry helpers and do not change canonical
-identity, TrafficHub routing, bundles/zones, DNS-style behavior, or service
-aliases.
+The v0.5 alias registry slices add direct alias, basic progressive fallback,
+and minimal alias bundle scenario support. Alias steps call registry helpers
+and do not change canonical identity, TrafficHub routing, DNS-style behavior,
+or service aliases.
 
 Supported alias actions:
 
 - `claim_alias`
   - Required: `registry_hub`, `alias`, `target_device`
+  - Optional: `requested_by_device`, `alias_type`, `visibility`, `ttl`
+- `create_alias_bundle`
+  - Required: `registry_hub`, `bundle_path`
+  - Optional: `delegated_to_registry_hub`, `visibility`,
+    `allowed_record_types`, `created_by_device`
+- `claim_bundle_alias`
+  - Required: `registry_hub`, `bundle_path`, `child_name`, `target_device`
   - Optional: `requested_by_device`, `alias_type`, `visibility`, `ttl`
 - `claim_progressive_alias`
   - Required: `registry_hub`, `requested_alias`, `local_name`, `target_device`
@@ -201,6 +208,11 @@ Supported alias assertions:
   - Optional: `identity_chain`
 - `alias_status`
   - Required: `registry_hub`, `alias`, `expected`
+- `alias_bundle_status`
+  - Required: `registry_hub`, `bundle_path`, `expected`
+- `bundle_alias_resolves_to`
+  - Required: `registry_hub`, `bundle_path`, `child_name`, `device`
+  - Optional: `identity_chain`
 - `alias_granted_as`
   - Required: `registry_hub`, `requested_alias`, `granted_alias`
 - `alias_authority_ceiling`
@@ -214,6 +226,14 @@ Alias conflict checks use existing `latest_step_status`,
 `latest_step_reason`, and `conflict_exists` assertions. Released aliases remain
 in the RegistryHub alias table with `status: released`, but `resolve_alias`
 returns `alias_not_active` and no active target.
+
+Minimal alias bundle checks use `latest_step_status` and
+`latest_step_reason` for result validation. Duplicate active bundles fail with
+`bundle_conflict`; child claims under missing bundles fail with
+`bundle_not_found`; child claims under inactive bundles fail with
+`bundle_not_active`; child alias name conflicts fail with `alias_conflict`.
+Child bundle aliases are stored as normal `AliasRecord` entries and resolve
+through `resolve_alias`.
 
 For the basic progressive fallback slice, a RegistryHub can grant aliases only
 inside its own `scope_path`. If a requested alias is above that scope and
@@ -233,3 +253,4 @@ Checked-in alias scenarios:
 - `scenarios/027_alias_claim_conflict.yaml`
 - `scenarios/028_alias_release_blocks_resolution.yaml`
 - `scenarios/029_progressive_alias_fallback.yaml`
+- `scenarios/030_alias_bundle_delegation.yaml`

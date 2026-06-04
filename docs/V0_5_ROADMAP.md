@@ -14,10 +14,10 @@ short alias granted by the highest registry scope policy allows?
 
 ## Status
 
-Direct alias helper, scenario-runner, and basic progressive fallback slices are
-implemented on the v0.5 planning branch. This roadmap does not bump the package
-version, define real DNS behavior, integrate an external registry, or claim
-production identity proof.
+Direct alias helper, scenario-runner, basic progressive fallback, and minimal
+alias bundle slices are implemented on the v0.5 planning branch. This roadmap
+does not bump the package version, define real DNS behavior, integrate an
+external registry, or claim production identity proof.
 
 The current stable package remains `darwin-sim 0.4.0`.
 
@@ -36,6 +36,12 @@ Completed v0.5 planning slices:
 - Basic `claim_progressive_alias(...)`, `suggest_alias_fallbacks(...)`, and
   `highest_authorized_alias(...)` helpers.
 - `029_progressive_alias_fallback.yaml`.
+- Minimal `AliasBundle` model and in-memory Registry Hub bundle storage.
+- `create_alias_bundle(...)` and `claim_bundle_alias(...)` helpers for active
+  child device aliases inside a delegated simulator namespace.
+- Scenario runner support for bundle creation, child bundle alias claim,
+  bundle status, and child bundle alias resolution assertions.
+- `030_alias_bundle_delegation.yaml`.
 
 ## Current v0.4 Foundation
 
@@ -63,7 +69,9 @@ v0.5 should model:
 - Progressive alias claims that try a requested high-scope alias first and then
   grant the highest authorized fallback alias. The basic local-authority slice
   is implemented; parent-chain negotiation remains future work.
-- Delegated alias bundles or alias zones.
+- Delegated alias bundles or alias zones. The minimal local bundle record and
+  child device alias slice is implemented; parent-chain delegation policy and
+  DNS-style public zones remain future work.
 - DNS-style public alias bundles for website or institution style lookup,
   still simulator-only.
 - Explicit alias conflict detection.
@@ -287,8 +295,9 @@ verification terms.
   release and inactive resolution behavior.
 - `029_progressive_alias_fallback.yaml` - completed for basic local-authority
   progressive fallback.
-- `030_alias_rejects_quarantined_device.yaml`
-- `031_alias_bundle_delegation.yaml`
+- `030_alias_bundle_delegation.yaml` - completed for minimal local bundle
+  creation and child device alias resolution.
+- `031_alias_rejects_quarantined_device.yaml`
 - `032_dns_style_alias_bundle.yaml`
 
 ## Proposed Tests

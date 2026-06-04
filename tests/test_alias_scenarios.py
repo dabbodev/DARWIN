@@ -35,6 +35,14 @@ def test_progressive_alias_scenario_runs():
     assert result.passed
 
 
+def test_alias_bundle_scenario_runs():
+    result = run_scenario(
+        PROJECT_ROOT / "scenarios" / "030_alias_bundle_delegation.yaml"
+    )
+
+    assert result.passed
+
+
 def test_alias_conflict_preserves_original_owner():
     result = run_scenario(PROJECT_ROOT / "scenarios" / "027_alias_claim_conflict.yaml")
 
@@ -105,6 +113,52 @@ def test_claim_progressive_alias_action():
     assert latest_result.granted_alias == "global.family.home.david_server"
 
 
+def test_create_alias_bundle_action():
+    result = run_scenario({
+        "scenario_id": "create_alias_bundle_action",
+        "setup": _alias_setup(),
+        "steps": [
+            {
+                "action": "create_alias_bundle",
+                "registry_hub": "hub_home_001",
+                "bundle_path": "global.family.home.team",
+            }
+        ],
+        "assertions": [],
+    })
+
+    latest_result = result.world.action_results[-1]
+    assert latest_result.success
+    assert latest_result.status == "active"
+
+
+def test_claim_bundle_alias_action():
+    result = run_scenario({
+        "scenario_id": "claim_bundle_alias_action",
+        "setup": _alias_setup(),
+        "steps": [
+            {
+                "action": "create_alias_bundle",
+                "registry_hub": "hub_home_001",
+                "bundle_path": "global.family.home.team",
+            },
+            {
+                "action": "claim_bundle_alias",
+                "registry_hub": "hub_home_001",
+                "bundle_path": "global.family.home.team",
+                "child_name": "server",
+                "target_device": "dev_A9F3",
+            },
+        ],
+        "assertions": [],
+    })
+
+    latest_result = result.world.action_results[-1]
+    assert latest_result.success
+    assert latest_result.status == "active"
+    assert latest_result.bundle_path == "global.family.home.team"
+
+
 def test_resolve_alias_action():
     result = run_scenario({
         "scenario_id": "resolve_alias_action",
@@ -159,6 +213,62 @@ def test_alias_status_assertion():
                 "registry_hub": "hub_home_001",
                 "alias": "global.family.david_server",
                 "expected": "active",
+            }
+        ],
+    })
+
+    assert result.passed
+
+
+def test_alias_bundle_status_assertion():
+    result = run_scenario({
+        "scenario_id": "alias_bundle_status_assertion",
+        "setup": _alias_setup(),
+        "steps": [
+            {
+                "action": "create_alias_bundle",
+                "registry_hub": "hub_home_001",
+                "bundle_path": "global.family.home.team",
+            }
+        ],
+        "assertions": [
+            {
+                "type": "alias_bundle_status",
+                "registry_hub": "hub_home_001",
+                "bundle_path": "global.family.home.team",
+                "expected": "active",
+            }
+        ],
+    })
+
+    assert result.passed
+
+
+def test_bundle_alias_resolves_to_assertion():
+    result = run_scenario({
+        "scenario_id": "bundle_alias_resolves_to_assertion",
+        "setup": _alias_setup(),
+        "steps": [
+            {
+                "action": "create_alias_bundle",
+                "registry_hub": "hub_home_001",
+                "bundle_path": "global.family.home.team",
+            },
+            {
+                "action": "claim_bundle_alias",
+                "registry_hub": "hub_home_001",
+                "bundle_path": "global.family.home.team",
+                "child_name": "server",
+                "target_device": "dev_A9F3",
+            },
+        ],
+        "assertions": [
+            {
+                "type": "bundle_alias_resolves_to",
+                "registry_hub": "hub_home_001",
+                "bundle_path": "global.family.home.team",
+                "child_name": "server",
+                "device": "dev_A9F3",
             }
         ],
     })
@@ -251,6 +361,8 @@ def test_alias_actions_validate_required_fields():
         "setup": {},
         "steps": [
             {"action": "claim_alias", "registry_hub": "hub_home_001"},
+            {"action": "create_alias_bundle"},
+            {"action": "claim_bundle_alias", "registry_hub": "hub_home_001"},
             {"action": "claim_progressive_alias", "registry_hub": "hub_home_001"},
             {"action": "resolve_alias", "registry_hub": "hub_home_001"},
             {"action": "release_alias", "registry_hub": "hub_home_001"},
@@ -258,6 +370,8 @@ def test_alias_actions_validate_required_fields():
         "assertions": [
             {"type": "alias_resolves_to", "registry_hub": "hub_home_001"},
             {"type": "alias_status", "registry_hub": "hub_home_001"},
+            {"type": "alias_bundle_status", "registry_hub": "hub_home_001"},
+            {"type": "bundle_alias_resolves_to", "registry_hub": "hub_home_001"},
             {"type": "alias_granted_as", "registry_hub": "hub_home_001"},
             {"type": "alias_authority_ceiling", "registry_hub": "hub_home_001"},
             {"type": "alias_not_resolved", "registry_hub": "hub_home_001"},
@@ -272,22 +386,32 @@ def test_alias_actions_validate_required_fields():
     locations = {error.location for error in result.errors}
     assert "steps[0].alias" in locations
     assert "steps[0].target_device" in locations
-    assert "steps[1].requested_alias" in locations
-    assert "steps[1].local_name" in locations
-    assert "steps[1].target_device" in locations
-    assert "steps[2].alias" in locations
-    assert "steps[3].alias" in locations
+    assert "steps[1].registry_hub" in locations
+    assert "steps[1].bundle_path" in locations
+    assert "steps[2].bundle_path" in locations
+    assert "steps[2].child_name" in locations
+    assert "steps[2].target_device" in locations
+    assert "steps[3].requested_alias" in locations
+    assert "steps[3].local_name" in locations
+    assert "steps[3].target_device" in locations
+    assert "steps[4].alias" in locations
+    assert "steps[5].alias" in locations
     assert "assertions[0].alias" in locations
     assert "assertions[0].device" in locations
     assert "assertions[1].alias" in locations
     assert "assertions[1].expected" in locations
-    assert "assertions[2].requested_alias" in locations
-    assert "assertions[2].granted_alias" in locations
-    assert "assertions[3].alias" in locations
-    assert "assertions[3].expected" in locations
-    assert "assertions[4].alias" in locations
-    assert "assertions[5].device" in locations
-    assert "assertions[5].expected_identity_chain" in locations
+    assert "assertions[2].bundle_path" in locations
+    assert "assertions[2].expected" in locations
+    assert "assertions[3].bundle_path" in locations
+    assert "assertions[3].child_name" in locations
+    assert "assertions[3].device" in locations
+    assert "assertions[4].requested_alias" in locations
+    assert "assertions[4].granted_alias" in locations
+    assert "assertions[5].alias" in locations
+    assert "assertions[5].expected" in locations
+    assert "assertions[6].alias" in locations
+    assert "assertions[7].device" in locations
+    assert "assertions[7].expected_identity_chain" in locations
 
 
 def _alias_setup():

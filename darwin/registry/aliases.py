@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 from darwin.models.alias import (
+    AliasBundle,
+    AliasBundleClaimResult,
     AliasClaimResult,
     AliasRecord,
     AliasReleaseResult,
     AliasResolutionResult,
+    BundleAliasClaimResult,
     ProgressiveAliasClaimResult,
 )
 from darwin.models.hub import ConflictRecord, RegistryHub
@@ -195,6 +198,130 @@ def claim_progressive_alias(
         fallback_reason=fallback_reason,
         authority_ceiling=authority_ceiling,
     )
+
+
+def create_alias_bundle(
+    registry_hub: RegistryHub,
+    bundle_path: str,
+    delegated_to_registry_hub: str | None = None,
+    visibility: str = "local",
+    allowed_record_types: list[str] | None = None,
+    created_by_device_id: str | None = None,
+) -> AliasBundleClaimResult:
+    """Create a registry-local delegated alias namespace."""
+    if not _alias_in_scope(bundle_path, registry_hub.scope_path):
+        return AliasBundleClaimResult(
+            success=False,
+            status="rejected",
+            reason="insufficient_authority",
+            bundle=None,
+        )
+
+    existing_bundle = registry_hub.alias_bundles.get(bundle_path)
+    if existing_bundle is not None and existing_bundle.status == "active":
+        return AliasBundleClaimResult(
+            success=False,
+            status="conflict",
+            reason="bundle_conflict",
+            bundle=existing_bundle,
+        )
+
+    existing_alias = registry_hub.aliases.get(bundle_path)
+    if existing_alias is not None and existing_alias.status == "active":
+        return AliasBundleClaimResult(
+            success=False,
+            status="conflict",
+            reason="alias_conflict",
+            bundle=None,
+        )
+
+    bundle = AliasBundle(
+        bundle_path=bundle_path,
+        delegated_to_registry_hub=delegated_to_registry_hub or registry_hub.hub_id,
+        authority_scope=registry_hub.scope_path,
+        approved_by_registry_hub=registry_hub.hub_id,
+        visibility=visibility,
+        allowed_record_types=(
+            list(allowed_record_types)
+            if allowed_record_types is not None
+            else ["device_alias"]
+        ),
+        created_by_device_id=created_by_device_id,
+    )
+    registry_hub.alias_bundles[bundle_path] = bundle
+    return AliasBundleClaimResult(
+        success=True,
+        status="active",
+        reason=None,
+        bundle=bundle,
+    )
+
+
+def claim_bundle_alias(
+    registry_hub: RegistryHub,
+    bundle_path: str,
+    child_name: str,
+    target_device_id: str,
+    requested_by_device_id: str | None = None,
+    alias_type: str = "device_alias",
+    visibility: str = "local",
+    ttl: int | None = None,
+) -> BundleAliasClaimResult:
+    """Claim a child alias inside an active registry-local alias bundle."""
+    bundle = registry_hub.alias_bundles.get(bundle_path)
+    if bundle is None:
+        return BundleAliasClaimResult(
+            success=False,
+            status="not_found",
+            reason="bundle_not_found",
+            alias_record=None,
+            bundle_path=None,
+        )
+
+    if bundle.status != "active":
+        return BundleAliasClaimResult(
+            success=False,
+            status=bundle.status,
+            reason="bundle_not_active",
+            alias_record=None,
+            bundle_path=bundle_path,
+        )
+
+    if alias_type not in bundle.allowed_record_types:
+        return BundleAliasClaimResult(
+            success=False,
+            status="rejected",
+            reason="record_type_not_allowed",
+            alias_record=None,
+            bundle_path=bundle_path,
+        )
+
+    alias = f"{bundle_path}.{child_name}"
+    claim_result = claim_alias(
+        registry_hub,
+        alias,
+        target_device_id,
+        requested_by_device_id=requested_by_device_id,
+        alias_type=alias_type,
+        visibility=visibility,
+        ttl=ttl,
+    )
+    return BundleAliasClaimResult(
+        success=claim_result.success,
+        status=claim_result.status,
+        reason=claim_result.reason,
+        alias_record=claim_result.alias_record,
+        bundle_path=bundle_path,
+    )
+
+
+def resolve_bundle_alias(
+    registry_hub: RegistryHub,
+    bundle_path: str,
+    child_name: str,
+) -> AliasResolutionResult:
+    """Resolve a child alias by composing bundle path and child name."""
+    return resolve_alias(registry_hub, f"{bundle_path}.{child_name}")
 
 
 def suggest_alias_fallbacks(

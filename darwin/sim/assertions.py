@@ -493,6 +493,37 @@ def _alias_status(
     )
 
 
+def _alias_bundle_status(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    bundle_path = str(assertion.get("bundle_path"))
+    expected = str(assertion.get("expected"))
+    actual = None
+    if hub is not None:
+        bundle = hub.alias_bundles.get(bundle_path)
+        actual = "not_found" if bundle is None else bundle.status
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"{bundle_path} bundle status is {expected}",
+        actual,
+    )
+
+
+def _bundle_alias_resolves_to(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    assertion = dict(assertion)
+    assertion["alias"] = f"{assertion.get('bundle_path')}.{assertion.get('child_name')}"
+    return _alias_resolves_to(world, assertion_type, assertion)
+
+
 def _alias_granted_as(
     world: World,
     assertion_type: str,
@@ -640,6 +671,8 @@ _EVALUATORS = {
     "checkpoint_state": _checkpoint_state,
     "alias_resolves_to": _alias_resolves_to,
     "alias_status": _alias_status,
+    "alias_bundle_status": _alias_bundle_status,
+    "bundle_alias_resolves_to": _bundle_alias_resolves_to,
     "alias_granted_as": _alias_granted_as,
     "alias_authority_ceiling": _alias_authority_ceiling,
     "alias_not_resolved": _alias_not_resolved,

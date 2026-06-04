@@ -1,8 +1,9 @@
 # DARWIN v0.5 Alias Registry Planning
 
 This document sketches the planned v0.5 Registry Hub alias model. The direct
-alias helper slice and the basic progressive alias fallback slice are
-implemented; bundles, zones, and DNS-style integration remain planning topics.
+alias helper slice, the basic progressive alias fallback slice, and the minimal
+alias bundle slice are implemented; DNS-style integration remains a planning
+topic.
 
 Aliases are authorized shortcuts. They do not replace canonical identity
 chains, alter traffic paths, or integrate with real DNS.
@@ -19,13 +20,20 @@ Implemented in the current v0.5 planning branch:
 - `claim_progressive_alias(...)` for authority-limited fallback claims.
 - `suggest_alias_fallbacks(...)` and `highest_authorized_alias(...)` for the
   current local-authority fallback model.
+- Basic `AliasBundle`, `AliasBundleClaimResult`, and
+  `BundleAliasClaimResult` models.
+- Registry Hub in-memory alias bundle storage.
+- `create_alias_bundle(...)` for simulator-local delegated namespaces inside a
+  RegistryHub authority scope.
+- `claim_bundle_alias(...)` for child device aliases inside active bundles.
 - Active alias conflict detection using the existing registry conflict table.
+- Active bundle conflict detection for duplicate active bundle paths.
 - Alias claim rejection for quarantined or revoked target devices.
 - Scenario runner support for direct alias claim, progressive alias claim,
-  resolve, and release steps.
+  bundle creation, child bundle alias claim, resolve, and release steps.
 - Scenario assertions for alias resolution, alias status, inactive alias
-  resolution, granted alias provenance, authority ceiling, and canonical
-  identity preservation.
+  resolution, bundle status, child bundle alias resolution, granted alias
+  provenance, authority ceiling, and canonical identity preservation.
 - `scenarios/026_alias_claim_success.yaml` covering direct device alias claim
   and resolution.
 - `scenarios/027_alias_claim_conflict.yaml` covering direct alias conflicts
@@ -34,11 +42,12 @@ Implemented in the current v0.5 planning branch:
   inactive retained alias record that no longer resolves.
 - `scenarios/029_progressive_alias_fallback.yaml` covering a high-level alias
   request that falls back to the RegistryHub-authorized scope.
+- `scenarios/030_alias_bundle_delegation.yaml` covering a delegated alias
+  bundle with an active child alias.
 
 Not implemented yet:
 
 - Parent-chain progressive alias negotiation.
-- Alias bundles or zones.
 - DNS-style public alias integration.
 - Service alias behavior beyond reserved model fields.
 - Production cryptography or external proof flows for alias claims.
@@ -47,9 +56,9 @@ Alias helpers do not mutate device labels, passport IDs, attachments, canonical
 identity chains, or TrafficHub routing state.
 
 Scenario runner alias support calls the alias helper functions and records
-structured step results for scenario assertions, but it does not add alias
-bundles, DNS-style lookup, service alias behavior, TrafficHub routing changes,
-or canonical identity rewrites.
+structured step results for scenario assertions, but it does not add DNS-style
+lookup, service alias behavior, TrafficHub routing changes, or canonical
+identity rewrites.
 
 ## Design Goal
 
@@ -262,7 +271,7 @@ Parent-chain negotiation is not implemented in this slice.
 
 ## Alias Bundles
 
-`AliasBundle` should model delegated namespaces.
+`AliasBundle` models delegated namespaces in the simulator registry only.
 
 Example:
 
@@ -280,23 +289,30 @@ global.us.gov.ca.dmv
 global.us.gov.ca.tax
 ```
 
-Proposed bundle fields:
+Implemented bundle fields:
 
-- `bundle_root`
+- `bundle_path`
 - `bundle_type`
 - `delegated_to_registry_hub`
 - `approved_by_registry_hub`
 - `authority_scope`
 - `status`
 - `visibility`
-- `allowed_alias_types`
-- `default_ttl`
-- `conflict_policy`
-- `auth_mode`
-- `proof_mode`
+- `allowed_record_types`
+- `policy`
+- `created_by_device_id`
 
-`AliasBundleClaim` should capture the child alias request, target, requesting
-device or service, and result status.
+`create_alias_bundle(...)` succeeds only when the bundle path is equal to or
+inside the approving RegistryHub `scope_path`. This slice does not negotiate
+with parent registries. Creating the same active bundle twice fails with
+`bundle_conflict` and leaves the original bundle unchanged.
+
+`claim_bundle_alias(...)` composes the full child alias as
+`bundle_path + "." + child_name`, validates that the bundle exists and is
+active, then creates a normal `AliasRecord`. Child bundle aliases therefore
+resolve through the existing `resolve_alias(...)` helper. Missing bundles fail
+with `bundle_not_found`; inactive bundles fail with `bundle_not_active`; active
+child alias conflicts fail with `alias_conflict`.
 
 ## Resolution
 
@@ -345,10 +361,10 @@ simulator.
   but inactive and no longer resolves.
 - `029_progressive_alias_fallback.yaml`: high-scope request falls back to the
   highest authorized scope. Implemented for local RegistryHub authority.
-- `030_alias_rejects_quarantined_device.yaml`: quarantined device cannot create
+- `030_alias_bundle_delegation.yaml`: RegistryHub creates a delegated bundle
+  and claims a child alias inside it.
+- `031_alias_rejects_quarantined_device.yaml`: quarantined device cannot create
   an active alias.
-- `031_alias_bundle_delegation.yaml`: parent registry delegates a bundle and a
-  child alias is claimed inside it.
 - `032_dns_style_alias_bundle.yaml`: public-style alias bundle resolves inside
   simulator policy without real DNS.
 

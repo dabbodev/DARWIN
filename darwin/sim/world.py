@@ -166,6 +166,20 @@ class World:
                         }
                         for alias, record in sorted(hub.aliases.items())
                     },
+                    "alias_bundles": {
+                        bundle_path: {
+                            "bundle_type": bundle.bundle_type,
+                            "delegated_to_registry_hub": bundle.delegated_to_registry_hub,
+                            "authority_scope": bundle.authority_scope,
+                            "approved_by_registry_hub": bundle.approved_by_registry_hub,
+                            "status": bundle.status,
+                            "visibility": bundle.visibility,
+                            "allowed_record_types": list(bundle.allowed_record_types),
+                            "policy": dict(bundle.policy),
+                            "created_by_device_id": bundle.created_by_device_id,
+                        }
+                        for bundle_path, bundle in sorted(hub.alias_bundles.items())
+                    },
                     "devices": {
                         device_id: {
                             "label": record.current_label,

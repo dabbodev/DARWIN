@@ -43,17 +43,19 @@ The basic implemented local fallback result reports:
 - Reason, such as `insufficient_authority`.
 - Authority ceiling.
 
-Parent registry negotiation and alias bundle policy are not implemented in this
-slice.
+Parent registry negotiation and DNS-style alias bundle policy are not
+implemented in this slice. Minimal simulator-local alias bundle records and
+child device aliases are implemented.
 
 ## Planned Models
 
 - `AliasRecord`
+- `AliasBundle`
 - `AliasClaimResult`
+- `AliasBundleClaimResult`
+- `BundleAliasClaimResult`
 - `ProgressiveAliasClaimResult`
 - `AliasClaimRequest`
-- `AliasBundle`
-- `AliasBundleClaim`
 - `AliasResolutionResult`
 
 ## Planned Registry Helpers
@@ -72,8 +74,8 @@ slice.
 - `scenarios/027_alias_claim_conflict.yaml`
 - `scenarios/028_alias_release_blocks_resolution.yaml`
 - `scenarios/029_progressive_alias_fallback.yaml`
-- `scenarios/030_alias_rejects_quarantined_device.yaml`
-- `scenarios/031_alias_bundle_delegation.yaml`
+- `scenarios/030_alias_bundle_delegation.yaml`
+- `scenarios/031_alias_rejects_quarantined_device.yaml`
 - `scenarios/032_dns_style_alias_bundle.yaml`
 
 ## Compatibility Goals
@@ -93,6 +95,12 @@ slice.
 - Progressive alias scenario action and assertions for granted alias provenance
   and authority ceiling.
 - Scenario `029_progressive_alias_fallback.yaml`.
+- Minimal alias bundle records stored on RegistryHub.
+- Child bundle alias claims that create normal `AliasRecord` entries and
+  resolve through `resolve_alias(...)`.
+- Bundle scenario actions and assertions for bundle status and child alias
+  resolution.
+- Scenario `030_alias_bundle_delegation.yaml`.
 
 ## Safety Limits
 

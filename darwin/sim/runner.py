@@ -22,7 +22,13 @@ from darwin.registry.aliases import (
     claim_alias as claim_alias_op,
 )
 from darwin.registry.aliases import (
+    claim_bundle_alias as claim_bundle_alias_op,
+)
+from darwin.registry.aliases import (
     claim_progressive_alias as claim_progressive_alias_op,
+)
+from darwin.registry.aliases import (
+    create_alias_bundle as create_alias_bundle_op,
 )
 from darwin.registry.aliases import (
     release_alias as release_alias_op,
@@ -203,6 +209,8 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         "register_device": _step_register_device,
         "resolve_label": _step_resolve_label,
         "claim_alias": _step_claim_alias,
+        "create_alias_bundle": _step_create_alias_bundle,
+        "claim_bundle_alias": _step_claim_bundle_alias,
         "claim_progressive_alias": _step_claim_progressive_alias,
         "resolve_alias": _step_resolve_alias,
         "release_alias": _step_release_alias,
@@ -341,6 +349,76 @@ def _step_claim_alias(world: World, fields: dict[str, Any]) -> None:
             "success": result.success,
             "reason": result.reason,
             "conflict_id": result.conflict_id,
+        },
+    )
+
+
+def _step_create_alias_bundle(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    bundle_path = str(fields["bundle_path"])
+    result = create_alias_bundle_op(
+        hub,
+        bundle_path,
+        delegated_to_registry_hub=_optional_str(fields.get("delegated_to_registry_hub")),
+        visibility=str(fields.get("visibility", "local")),
+        allowed_record_types=_optional_str_list(fields.get("allowed_record_types")),
+        created_by_device_id=_optional_str(fields.get("created_by_device")),
+    )
+    world.action_results.append(result)
+    event_type = "alias_bundle_created" if result.success else "alias_bundle_failed"
+    world.log(
+        f"{event_type} {bundle_path} at {hub.hub_id}",
+        event_type=event_type,
+        actor=_optional_str(fields.get("created_by_device")) or hub.hub_id,
+        target=bundle_path,
+        hub_id=hub.hub_id,
+        status=result.status,
+        data={
+            "bundle_path": bundle_path,
+            "delegated_to_registry_hub": (
+                None
+                if result.bundle is None
+                else result.bundle.delegated_to_registry_hub
+            ),
+            "success": result.success,
+            "reason": result.reason,
+        },
+    )
+
+
+def _step_claim_bundle_alias(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    bundle_path = str(fields["bundle_path"])
+    child_name = str(fields["child_name"])
+    target_device_id = str(fields["target_device"])
+    result = claim_bundle_alias_op(
+        hub,
+        bundle_path,
+        child_name,
+        target_device_id,
+        requested_by_device_id=_optional_str(fields.get("requested_by_device")),
+        alias_type=str(fields.get("alias_type", "device_alias")),
+        visibility=str(fields.get("visibility", "local")),
+        ttl=_optional_int(fields.get("ttl")),
+    )
+    world.action_results.append(result)
+    alias = f"{bundle_path}.{child_name}"
+    event_type = "bundle_alias_claimed" if result.success else "bundle_alias_failed"
+    world.log(
+        f"{event_type} {alias} at {hub.hub_id} for {target_device_id}",
+        event_type=event_type,
+        actor=_optional_str(fields.get("requested_by_device")) or target_device_id,
+        target=target_device_id,
+        device_id=target_device_id,
+        hub_id=hub.hub_id,
+        status=result.status,
+        data={
+            "bundle_path": bundle_path,
+            "child_name": child_name,
+            "alias": alias,
+            "target_device": target_device_id,
+            "success": result.success,
+            "reason": result.reason,
         },
     )
 
@@ -1216,6 +1294,14 @@ def _optional_str(value: Any) -> str | None:
 
 def _optional_int(value: Any) -> int | None:
     return None if value is None else int(value)
+
+
+def _optional_str_list(value: Any) -> list[str] | None:
+    if value is None:
+        return None
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    return [str(value)]
 
 
 def _link_metrics(link_config: dict[str, Any]) -> LinkMetrics:

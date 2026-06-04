@@ -33,3 +33,4 @@ Scenarios are deterministic, support presets through `use`, and are simulator-on
 | `027_alias_claim_conflict` - Alias claim conflict | registry | direct alias conflict preserves the original alias owner | `alias`, `conflict`, `registry` |
 | `028_alias_release_blocks_resolution` - Alias release blocks resolution | registry | released aliases are retained but inactive and no longer resolve | `alias`, `release`, `registry` |
 | `029_progressive_alias_fallback` - Progressive alias fallback | registry | progressive alias request falls back to the highest locally authorized scope | `alias`, `progressive_alias`, `fallback`, `registry` |
+| `030_alias_bundle_delegation` - Alias bundle delegation | registry | delegated alias bundle creates a child alias for a registered device | `alias`, `bundle`, `delegation`, `registry` |

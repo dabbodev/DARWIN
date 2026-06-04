@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(slots=True)
@@ -30,6 +30,22 @@ class AliasRecord:
 
 
 @dataclass(slots=True)
+class AliasBundle:
+    """Registry-local delegated namespace for child alias records."""
+
+    bundle_path: str
+    delegated_to_registry_hub: str
+    authority_scope: str
+    approved_by_registry_hub: str
+    bundle_type: str = "alias_zone"
+    status: str = "active"
+    visibility: str = "local"
+    allowed_record_types: list[str] = field(default_factory=lambda: ["device_alias"])
+    policy: dict[str, object] = field(default_factory=dict)
+    created_by_device_id: str | None = None
+
+
+@dataclass(slots=True)
 class AliasClaimResult:
     """Outcome of a direct alias claim."""
 
@@ -38,6 +54,27 @@ class AliasClaimResult:
     reason: str | None
     alias_record: AliasRecord | None
     conflict_id: str | None = None
+
+
+@dataclass(slots=True)
+class AliasBundleClaimResult:
+    """Outcome of creating a delegated alias bundle."""
+
+    success: bool
+    status: str
+    reason: str | None
+    bundle: AliasBundle | None
+
+
+@dataclass(slots=True)
+class BundleAliasClaimResult:
+    """Outcome of claiming a child alias inside an alias bundle."""
+
+    success: bool
+    status: str
+    reason: str | None
+    alias_record: AliasRecord | None
+    bundle_path: str | None
 
 
 @dataclass(slots=True)
