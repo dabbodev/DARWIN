@@ -360,6 +360,7 @@ def _step_create_alias_bundle(world: World, fields: dict[str, Any]) -> None:
         hub,
         bundle_path,
         delegated_to_registry_hub=_optional_str(fields.get("delegated_to_registry_hub")),
+        bundle_type=str(fields.get("bundle_type", "alias_zone")),
         visibility=str(fields.get("visibility", "local")),
         allowed_record_types=_optional_str_list(fields.get("allowed_record_types")),
         created_by_device_id=_optional_str(fields.get("created_by_device")),
@@ -375,6 +376,7 @@ def _step_create_alias_bundle(world: World, fields: dict[str, Any]) -> None:
         status=result.status,
         data={
             "bundle_path": bundle_path,
+            "bundle_type": None if result.bundle is None else result.bundle.bundle_type,
             "delegated_to_registry_hub": (
                 None
                 if result.bundle is None

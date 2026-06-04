@@ -1,8 +1,14 @@
 from pathlib import Path
 
 from darwin.registry.aliases import resolve_alias
+from darwin.sim.library import scenario_metadata_from_dict
 from darwin.sim.runner import run_scenario
-from darwin.sim.scenarios import validate_scenario_dict
+from darwin.sim.scenarios import (
+    list_scenario_files,
+    load_scenario_file,
+    validate_scenario_dict,
+    validate_scenario_file,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -41,6 +47,36 @@ def test_alias_bundle_scenario_runs():
     )
 
     assert result.passed
+
+
+def test_dns_style_alias_bundle_scenario_runs():
+    result = run_scenario(
+        PROJECT_ROOT / "scenarios" / "031_dns_style_alias_bundle.yaml"
+    )
+
+    assert result.passed
+
+
+def test_dns_style_bundle_metadata_present():
+    data = load_scenario_file(
+        PROJECT_ROOT / "scenarios" / "031_dns_style_alias_bundle.yaml"
+    )
+    metadata = scenario_metadata_from_dict(data)
+
+    assert metadata.category == "registry"
+    assert "dns_style" in metadata.tags
+    assert "public_alias" in metadata.tags
+
+
+def test_all_scenarios_still_pass():
+    scenario_files = list_scenario_files(PROJECT_ROOT / "scenarios")
+
+    for scenario_file in scenario_files:
+        validation = validate_scenario_file(scenario_file)
+        assert validation.passed, scenario_file.name
+
+        result = run_scenario(scenario_file)
+        assert result.passed, scenario_file.name
 
 
 def test_alias_conflict_preserves_original_owner():

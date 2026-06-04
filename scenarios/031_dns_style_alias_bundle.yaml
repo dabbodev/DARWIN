@@ -1,0 +1,94 @@
+scenario_id: 031_dns_style_alias_bundle
+name: DNS-style alias bundle
+category: registry
+description: DNS-style public alias bundle modeled as a simulator-only delegated alias zone
+tags:
+  - alias
+  - bundle
+  - dns_style
+  - public_alias
+  - registry
+demonstrates:
+  - public-style alias bundle
+  - child alias records
+  - DNS-like naming without real DNS integration
+  - canonical identity preservation
+expected_result: public-style bundle and child aliases are active and resolve to registered device identities
+setup:
+  hybrid_hubs:
+    - hub_id: hub_gov_001
+      scope_path: global.us.gov
+  devices:
+    - device_id: dev_CA_WEBSITE
+      label: ca_website_server
+      registry_hub: hub_gov_001
+      traffic_hub: hub_gov_001
+    - device_id: dev_CA_DMV
+      label: ca_dmv_server
+      registry_hub: hub_gov_001
+      traffic_hub: hub_gov_001
+steps:
+  - action: create_alias_bundle
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    delegated_to_registry_hub: hub_gov_001
+    bundle_type: dns_style_alias_zone
+    visibility: public
+    allowed_record_types:
+      - device_alias
+    created_by_device: dev_CA_WEBSITE
+  - action: claim_bundle_alias
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    child_name: website
+    target_device: dev_CA_WEBSITE
+    requested_by_device: dev_CA_WEBSITE
+    visibility: public
+  - action: claim_bundle_alias
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    child_name: dmv
+    target_device: dev_CA_DMV
+    requested_by_device: dev_CA_DMV
+    visibility: public
+  - action: resolve_alias
+    registry_hub: hub_gov_001
+    alias: global.us.gov.ca.website
+  - action: resolve_alias
+    registry_hub: hub_gov_001
+    alias: global.us.gov.ca.dmv
+assertions:
+  - type: alias_bundle_status
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    expected: active
+  - type: bundle_alias_resolves_to
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    child_name: website
+    device: dev_CA_WEBSITE
+    identity_chain: global.us.gov.ca_website_server
+  - type: bundle_alias_resolves_to
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    child_name: dmv
+    device: dev_CA_DMV
+    identity_chain: global.us.gov.ca_dmv_server
+  - type: alias_status
+    registry_hub: hub_gov_001
+    alias: global.us.gov.ca.website
+    expected: active
+  - type: alias_status
+    registry_hub: hub_gov_001
+    alias: global.us.gov.ca.dmv
+    expected: active
+  - type: canonical_identity_unchanged
+    registry_hub: hub_gov_001
+    device: dev_CA_WEBSITE
+    expected_identity_chain: global.us.gov.ca_website_server
+  - type: canonical_identity_unchanged
+    registry_hub: hub_gov_001
+    device: dev_CA_DMV
+    expected_identity_chain: global.us.gov.ca_dmv_server
+  - type: latest_step_status
+    expected: active

@@ -43,9 +43,10 @@ The basic implemented local fallback result reports:
 - Reason, such as `insufficient_authority`.
 - Authority ceiling.
 
-Parent registry negotiation and DNS-style alias bundle policy are not
-implemented in this slice. Minimal simulator-local alias bundle records and
-child device aliases are implemented.
+Parent registry negotiation is not implemented in this slice. Minimal
+simulator-local alias bundle records, child device aliases, and a DNS-style
+public alias bundle scenario are implemented. DNS-style means naming data in
+the simulator only, not real DNS lookup or public domain registration.
 
 ## Planned Models
 
@@ -75,8 +76,7 @@ child device aliases are implemented.
 - `scenarios/028_alias_release_blocks_resolution.yaml`
 - `scenarios/029_progressive_alias_fallback.yaml`
 - `scenarios/030_alias_bundle_delegation.yaml`
-- `scenarios/031_alias_rejects_quarantined_device.yaml`
-- `scenarios/032_dns_style_alias_bundle.yaml`
+- `scenarios/031_dns_style_alias_bundle.yaml`
 
 ## Compatibility Goals
 
@@ -101,6 +101,9 @@ child device aliases are implemented.
 - Bundle scenario actions and assertions for bundle status and child alias
   resolution.
 - Scenario `030_alias_bundle_delegation.yaml`.
+- Scenario `031_dns_style_alias_bundle.yaml`, using
+  `bundle_type: dns_style_alias_zone`, `visibility: public`, and child
+  `device_alias` records that resolve through existing direct alias mechanics.
 
 ## Safety Limits
 
@@ -111,6 +114,7 @@ v0.5 must remain simulator-only. It should not add:
 - Public CA behavior.
 - Production identity verification.
 - Real networking.
+- Real network lookup.
 - Production cryptography.
 - External registry integration.
 - Public domain registration.

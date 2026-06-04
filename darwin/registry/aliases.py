@@ -204,6 +204,7 @@ def create_alias_bundle(
     registry_hub: RegistryHub,
     bundle_path: str,
     delegated_to_registry_hub: str | None = None,
+    bundle_type: str = "alias_zone",
     visibility: str = "local",
     allowed_record_types: list[str] | None = None,
     created_by_device_id: str | None = None,
@@ -240,6 +241,7 @@ def create_alias_bundle(
         delegated_to_registry_hub=delegated_to_registry_hub or registry_hub.hub_id,
         authority_scope=registry_hub.scope_path,
         approved_by_registry_hub=registry_hub.hub_id,
+        bundle_type=bundle_type,
         visibility=visibility,
         allowed_record_types=(
             list(allowed_record_types)

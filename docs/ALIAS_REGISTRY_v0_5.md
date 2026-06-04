@@ -1,9 +1,10 @@
 # DARWIN v0.5 Alias Registry Planning
 
 This document sketches the planned v0.5 Registry Hub alias model. The direct
-alias helper slice, the basic progressive alias fallback slice, and the minimal
-alias bundle slice are implemented; DNS-style integration remains a planning
-topic.
+alias helper slice, the basic progressive alias fallback slice, the minimal
+alias bundle slice, and a DNS-style public alias bundle scenario are
+implemented. DNS-style naming remains simulator-only; real DNS integration is
+not implemented.
 
 Aliases are authorized shortcuts. They do not replace canonical identity
 chains, alter traffic paths, or integrate with real DNS.
@@ -26,6 +27,8 @@ Implemented in the current v0.5 planning branch:
 - `create_alias_bundle(...)` for simulator-local delegated namespaces inside a
   RegistryHub authority scope.
 - `claim_bundle_alias(...)` for child device aliases inside active bundles.
+- `bundle_type`, `visibility`, and `allowed_record_types` storage for bundle
+  records, including simulator-only DNS-style bundle metadata.
 - Active alias conflict detection using the existing registry conflict table.
 - Active bundle conflict detection for duplicate active bundle paths.
 - Alias claim rejection for quarantined or revoked target devices.
@@ -44,11 +47,17 @@ Implemented in the current v0.5 planning branch:
   request that falls back to the RegistryHub-authorized scope.
 - `scenarios/030_alias_bundle_delegation.yaml` covering a delegated alias
   bundle with an active child alias.
+- `scenarios/031_dns_style_alias_bundle.yaml` covering a public-style alias
+  bundle with child aliases that resolve to registered device identities.
 
 Not implemented yet:
 
 - Parent-chain progressive alias negotiation.
-- DNS-style public alias integration.
+- Real DNS integration.
+- Domain registrar integration.
+- Public CA modeling.
+- Production identity proof for public aliases.
+- Real network lookup.
 - Service alias behavior beyond reserved model fields.
 - Production cryptography or external proof flows for alias claims.
 
@@ -134,7 +143,7 @@ DNS-style public alias bundle:
 
 - A simulator-only public naming zone.
 - Intended to model public lookup policy without real DNS, registrars, public
-  CA checks, or production verification.
+  CA checks, production verification, or real network lookup.
 
 ## Proposed AliasRecord
 
@@ -314,6 +323,14 @@ resolve through the existing `resolve_alias(...)` helper. Missing bundles fail
 with `bundle_not_found`; inactive bundles fail with `bundle_not_active`; active
 child alias conflicts fail with `alias_conflict`.
 
+Scenario `031_dns_style_alias_bundle.yaml` uses the same bundle machinery with
+`bundle_type: dns_style_alias_zone`, `visibility: public`, and
+`allowed_record_types: ["device_alias"]`. The public-style root
+`global.us.gov.ca` and child aliases such as `global.us.gov.ca.website` are
+plain simulator records. They do not register a domain, query DNS, prove a
+real-world institution, model a public CA, perform a real network lookup, or
+change the target devices' canonical identity chains.
+
 ## Resolution
 
 `AliasResolutionResult` should report:
@@ -363,10 +380,9 @@ simulator.
   highest authorized scope. Implemented for local RegistryHub authority.
 - `030_alias_bundle_delegation.yaml`: RegistryHub creates a delegated bundle
   and claims a child alias inside it.
-- `031_alias_rejects_quarantined_device.yaml`: quarantined device cannot create
-  an active alias.
-- `032_dns_style_alias_bundle.yaml`: public-style alias bundle resolves inside
-  simulator policy without real DNS.
+- `031_dns_style_alias_bundle.yaml`: public-style alias bundle resolves inside
+  simulator policy without real DNS, registrar integration, public CA modeling,
+  production identity proof, or real network lookup.
 
 ## Test Plan
 

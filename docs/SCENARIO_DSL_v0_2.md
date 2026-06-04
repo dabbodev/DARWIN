@@ -176,9 +176,9 @@ Checked-in move-contract auth scenarios:
 ## v0.5 Alias Scenarios
 
 The v0.5 alias registry slices add direct alias, basic progressive fallback,
-and minimal alias bundle scenario support. Alias steps call registry helpers
-and do not change canonical identity, TrafficHub routing, DNS-style behavior,
-or service aliases.
+minimal alias bundle, and DNS-style public alias bundle scenario support. Alias
+steps call registry helpers and do not change canonical identity, TrafficHub
+routing, real DNS behavior, or service aliases.
 
 Supported alias actions:
 
@@ -187,7 +187,7 @@ Supported alias actions:
   - Optional: `requested_by_device`, `alias_type`, `visibility`, `ttl`
 - `create_alias_bundle`
   - Required: `registry_hub`, `bundle_path`
-  - Optional: `delegated_to_registry_hub`, `visibility`,
+  - Optional: `delegated_to_registry_hub`, `bundle_type`, `visibility`,
     `allowed_record_types`, `created_by_device`
 - `claim_bundle_alias`
   - Required: `registry_hub`, `bundle_path`, `child_name`, `target_device`
@@ -235,6 +235,31 @@ Minimal alias bundle checks use `latest_step_status` and
 Child bundle aliases are stored as normal `AliasRecord` entries and resolve
 through `resolve_alias`.
 
+DNS-style public alias bundles use the same simulator-local bundle and direct
+alias mechanics. They are not DNS, do not call a registrar, do not model a
+public CA, do not prove production identity, and do not perform real network
+lookup.
+
+```yaml
+steps:
+  - action: create_alias_bundle
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    bundle_type: dns_style_alias_zone
+    visibility: public
+    allowed_record_types:
+      - device_alias
+  - action: claim_bundle_alias
+    registry_hub: hub_gov_001
+    bundle_path: global.us.gov.ca
+    child_name: website
+    target_device: dev_CA_WEBSITE
+    visibility: public
+  - action: resolve_alias
+    registry_hub: hub_gov_001
+    alias: global.us.gov.ca.website
+```
+
 For the basic progressive fallback slice, a RegistryHub can grant aliases only
 inside its own `scope_path`. If a requested alias is above that scope and
 `fallback_allowed` is true, the granted alias is:
@@ -254,3 +279,4 @@ Checked-in alias scenarios:
 - `scenarios/028_alias_release_blocks_resolution.yaml`
 - `scenarios/029_progressive_alias_fallback.yaml`
 - `scenarios/030_alias_bundle_delegation.yaml`
+- `scenarios/031_dns_style_alias_bundle.yaml`

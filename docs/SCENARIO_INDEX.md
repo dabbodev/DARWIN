@@ -34,3 +34,4 @@ Scenarios are deterministic, support presets through `use`, and are simulator-on
 | `028_alias_release_blocks_resolution` - Alias release blocks resolution | registry | released aliases are retained but inactive and no longer resolve | `alias`, `release`, `registry` |
 | `029_progressive_alias_fallback` - Progressive alias fallback | registry | progressive alias request falls back to the highest locally authorized scope | `alias`, `progressive_alias`, `fallback`, `registry` |
 | `030_alias_bundle_delegation` - Alias bundle delegation | registry | delegated alias bundle creates a child alias for a registered device | `alias`, `bundle`, `delegation`, `registry` |
+| `031_dns_style_alias_bundle` - DNS-style alias bundle | registry | DNS-style public alias bundle modeled as a simulator-only delegated alias zone | `alias`, `bundle`, `dns_style`, `public_alias`, `registry` |
