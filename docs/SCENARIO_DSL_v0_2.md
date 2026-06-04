@@ -172,3 +172,37 @@ Checked-in move-contract auth scenarios:
 - `scenarios/023_hmac_move_contract_expired_session.yaml`
 - `scenarios/024_hmac_move_contract_revoked_device.yaml`
 - `scenarios/025_symbolic_move_contract_still_works.yaml`
+
+## v0.5 Direct Alias Scenarios
+
+The v0.5 alias registry slice adds direct alias scenario support. Alias steps
+call the direct registry helpers and do not change canonical identity,
+TrafficHub routing, progressive fallback, bundles/zones, DNS-style behavior, or
+service aliases.
+
+Supported alias actions:
+
+- `claim_alias`
+  - Required: `registry_hub`, `alias`, `target_device`
+  - Optional: `requested_by_device`, `alias_type`, `visibility`, `ttl`
+- `resolve_alias`
+  - Required: `registry_hub`, `alias`
+- `release_alias`
+  - Required: `registry_hub`, `alias`
+  - Optional: `requested_by_device`
+
+Supported alias assertions:
+
+- `alias_resolves_to`
+  - Required: `registry_hub`, `alias`, `device`
+  - Optional: `identity_chain`
+- `alias_status`
+  - Required: `registry_hub`, `alias`, `expected`
+- `alias_not_resolved`
+  - Required: `registry_hub`, `alias`
+- `canonical_identity_unchanged`
+  - Required: `registry_hub`, `device`, `expected_identity_chain`
+
+Checked-in direct alias scenario:
+
+- `scenarios/026_alias_claim_success.yaml`

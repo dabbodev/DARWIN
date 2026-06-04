@@ -18,6 +18,15 @@ from darwin.models.checkpoint import make_checkpoint_packet
 from darwin.models.device import Device
 from darwin.models.hub import LocalDeviceRecord
 from darwin.models.route import LinkMetrics
+from darwin.registry.aliases import (
+    claim_alias as claim_alias_op,
+)
+from darwin.registry.aliases import (
+    release_alias as release_alias_op,
+)
+from darwin.registry.aliases import (
+    resolve_alias as resolve_alias_op,
+)
 from darwin.registry.checkpoints import record_checkpoint as record_checkpoint_op
 from darwin.registry.operations import (
     register_device as register_device_op,
@@ -190,6 +199,9 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
     handlers = {
         "register_device": _step_register_device,
         "resolve_label": _step_resolve_label,
+        "claim_alias": _step_claim_alias,
+        "resolve_alias": _step_resolve_alias,
+        "release_alias": _step_release_alias,
         "open_lane": _step_open_lane,
         "send_lane_data": _step_send_lane_data,
         "record_checkpoint": _step_record_checkpoint,
@@ -294,6 +306,88 @@ def _step_resolve_label(world: World, fields: dict[str, Any]) -> None:
             status="resolved",
             data={"label": label},
         )
+
+
+def _step_claim_alias(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    alias = str(fields["alias"])
+    target_device_id = str(fields["target_device"])
+    result = claim_alias_op(
+        hub,
+        alias,
+        target_device_id,
+        requested_by_device_id=_optional_str(fields.get("requested_by_device")),
+        alias_type=str(fields.get("alias_type", "device_alias")),
+        visibility=str(fields.get("visibility", "local")),
+        ttl=_optional_int(fields.get("ttl")),
+    )
+    world.action_results.append(result)
+    event_type = "alias_claimed" if result.success else "alias_claim_failed"
+    world.log(
+        f"{event_type} {alias} at {hub.hub_id} for {target_device_id}",
+        event_type=event_type,
+        actor=_optional_str(fields.get("requested_by_device")) or target_device_id,
+        target=target_device_id,
+        device_id=target_device_id,
+        hub_id=hub.hub_id,
+        status=result.status,
+        data={
+            "alias": alias,
+            "target_device": target_device_id,
+            "success": result.success,
+            "reason": result.reason,
+            "conflict_id": result.conflict_id,
+        },
+    )
+
+
+def _step_resolve_alias(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    alias = str(fields["alias"])
+    result = resolve_alias_op(hub, alias)
+    world.action_results.append(result)
+    event_type = "alias_resolved" if result.success else "alias_not_resolved"
+    world.log(
+        f"{event_type} {alias} at {hub.hub_id}",
+        event_type=event_type,
+        actor=hub.hub_id,
+        target=result.target_device_id,
+        device_id=result.target_device_id,
+        hub_id=hub.hub_id,
+        status=result.status,
+        data={
+            "alias": alias,
+            "target_device": result.target_device_id,
+            "target_identity_chain": result.target_identity_chain,
+            "success": result.success,
+            "reason": result.reason,
+        },
+    )
+
+
+def _step_release_alias(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    alias = str(fields["alias"])
+    result = release_alias_op(
+        hub,
+        alias,
+        requested_by_device_id=_optional_str(fields.get("requested_by_device")),
+    )
+    world.action_results.append(result)
+    event_type = "alias_released" if result.success else "alias_release_failed"
+    world.log(
+        f"{event_type} {alias} at {hub.hub_id}",
+        event_type=event_type,
+        actor=_optional_str(fields.get("requested_by_device")),
+        target=alias,
+        hub_id=hub.hub_id,
+        status=result.status,
+        data={
+            "alias": alias,
+            "success": result.success,
+            "reason": result.reason,
+        },
+    )
 
 
 def _step_open_lane(world: World, fields: dict[str, Any]) -> None:

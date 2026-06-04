@@ -14,11 +14,22 @@ short alias granted by the highest registry scope policy allows?
 
 ## Status
 
-Planning only. This roadmap does not implement simulator behavior, bump the
-package version, define real DNS behavior, integrate an external registry, or
-claim production identity proof.
+Direct alias helper and scenario-runner slices are implemented on the v0.5
+planning branch. This roadmap does not bump the package version, define real
+DNS behavior, integrate an external registry, or claim production identity
+proof.
 
 The current stable package remains `darwin-sim 0.4.0`.
+
+Completed v0.5 planning slices:
+
+- Direct alias record/result models and in-memory Registry Hub alias storage.
+- Direct `claim_alias(...)`, `resolve_alias(...)`, and `release_alias(...)`
+  helpers for registered device aliases.
+- Scenario runner support for direct alias claim, resolve, and release.
+- Scenario assertions for alias resolution, alias status, inactive resolution,
+  and canonical identity preservation.
+- `026_alias_claim_success.yaml`.
 
 ## Current v0.4 Foundation
 
@@ -256,7 +267,8 @@ verification terms.
 
 ## Proposed Scenarios
 
-- `026_alias_claim_success.yaml`
+- `026_alias_claim_success.yaml` - completed for direct alias claim and
+  resolution.
 - `027_alias_claim_conflict.yaml`
 - `028_progressive_alias_fallback.yaml`
 - `029_alias_rejects_quarantined_device.yaml`

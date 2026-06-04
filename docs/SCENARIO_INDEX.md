@@ -29,3 +29,4 @@ Scenarios are deterministic, support presets through `use`, and are simulator-on
 | `023_hmac_move_contract_expired_session` - HMAC move contract expired session | security | Expires a simulator-local move auth session before applying an HMAC move contract. | `relocation`, `move-contract`, `hmac`, `session`, `expiration`, `simulator-only` |
 | `024_hmac_move_contract_revoked_device` - HMAC move contract revoked device | security | Revokes a registered device before applying an otherwise valid HMAC move contract. | `relocation`, `move-contract`, `hmac`, `revocation`, `simulator-only` |
 | `025_symbolic_move_contract_still_works` - Symbolic move contract still works | relocation | Applies the default symbolic move contract path without HMAC session fields. | `relocation`, `move-contract`, `symbolic` |
+| `026_alias_claim_success` - Alias claim success | registry | direct alias claim and resolution for a registered device | `alias`, `registry`, `direct_alias` |

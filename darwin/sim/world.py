@@ -144,6 +144,23 @@ class World:
                     "scope_path": hub.scope_path,
                     "parent_hub_id": hub.parent_hub_id,
                     "labels": dict(sorted(hub.labels.items())),
+                    "aliases": {
+                        alias: {
+                            "alias_type": record.alias_type,
+                            "target_device_id": record.target_device_id,
+                            "target_service_id": record.target_service_id,
+                            "target_identity_chain": record.target_identity_chain,
+                            "requested_by_device_id": record.requested_by_device_id,
+                            "requested_through_hub": record.requested_through_hub,
+                            "approved_by_registry_hub": record.approved_by_registry_hub,
+                            "authority_scope": record.authority_scope,
+                            "status": record.status,
+                            "visibility": record.visibility,
+                            "ttl": record.ttl,
+                            "conflict_id": record.conflict_id,
+                        }
+                        for alias, record in sorted(hub.aliases.items())
+                    },
                     "devices": {
                         device_id: {
                             "label": record.current_label,

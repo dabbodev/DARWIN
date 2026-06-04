@@ -18,6 +18,11 @@ Implemented in the current v0.5 planning branch:
 - `release_alias(...)` preserving a released alias record.
 - Active alias conflict detection using the existing registry conflict table.
 - Alias claim rejection for quarantined or revoked target devices.
+- Scenario runner support for direct alias claim, resolve, and release steps.
+- Scenario assertions for alias resolution, alias status, inactive alias
+  resolution, and canonical identity preservation.
+- `scenarios/026_alias_claim_success.yaml` covering direct device alias claim
+  and resolution.
 
 Not implemented yet:
 
@@ -29,6 +34,12 @@ Not implemented yet:
 
 Alias helpers do not mutate device labels, passport IDs, attachments, canonical
 identity chains, or TrafficHub routing state.
+
+Scenario runner alias support is intentionally direct-only. It calls the
+existing helper functions and records structured step results for scenario
+assertions, but it does not add progressive fallback, bundles, DNS-style lookup,
+service alias behavior, TrafficHub routing changes, or canonical identity
+rewrites.
 
 ## Design Goal
 
@@ -308,6 +319,7 @@ simulator.
 ## Scenario Plan
 
 - `026_alias_claim_success.yaml`: device claims an authorized scoped alias.
+  Implemented as direct alias scenario-runner support.
 - `027_alias_claim_conflict.yaml`: duplicate alias request returns conflict.
 - `028_progressive_alias_fallback.yaml`: high-scope request falls back to the
   highest authorized scope.
