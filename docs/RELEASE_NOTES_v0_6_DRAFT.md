@@ -1,8 +1,8 @@
 # DARWIN Simulator v0.6.0 Draft Release Notes
 
-These are draft planning notes for a future v0.6 release. v0.6 is not
-implemented or released. The current stable simulator version remains
-`darwin-sim 0.5.0`.
+These are draft notes for a future v0.6 release. v0.6 authority-chain work is
+unreleased feature-branch behavior, not a released simulator version. The
+current stable simulator version remains `darwin-sim 0.5.0`.
 
 DARWIN means Direct-Access Registration Window Interface Network.
 
@@ -20,7 +20,7 @@ parent chain, record each authority decision, and grant either the requested
 alias or the highest allowed fallback alias.
 ```
 
-## Planned Additions
+## Draft Additions
 
 - Alias claim requests that can traverse parent Registry Hubs.
 - Authority path recording for chain-aware alias claims.
@@ -30,28 +30,46 @@ alias or the highest allowed fallback alias.
 - Highest-approved alias selection.
 - Highest-allowed fallback alias selection when the requested alias is
   unavailable or unauthorized.
-- Sprint 5 draft: scenario runner action
-  `claim_alias_through_authority_chain`, compact
-  `alias_authority_path_summary` assertions, detailed snapshot visibility for
-  authority-chain claim results, simulator-local policy gates, and scenarios
-  `032` through `036`.
 
-## Proposed Models
+## Feature-Branch Draft State
 
-- `AliasAuthorityStep`
+- Sprint 1 added authority path models:
+  - `AliasAuthorityDecision`
+  - `AliasAuthorityPath`
+  - `AliasAuthorityPathSummary`
+- Sprint 2 added authority evaluation helpers:
+  - `is_alias_within_scope(...)`
+  - `fallback_alias_for_scope(...)`
+  - `can_continue_alias_upward(...)`
+  - `evaluate_alias_authority_step(...)`
+- Sprint 3 added explicit parent-chain traversal through
+  `evaluate_alias_authority_chain(...)`.
+- Sprint 4 added `AliasAuthorityClaimResult` and
+  `claim_alias_through_authority_chain(...)`.
+- Sprint 5 added scenario runner support:
+  - `claim_alias_through_authority_chain` action
+  - `alias_authority_path_summary` assertion
+  - compact `alias_authority_claims` detailed snapshot entries
+  - simulator-local `alias_authority_policy` gates
+  - scenarios `032` through `036`
+- Sprint 6 hardens draft docs, scenario discoverability, event/snapshot
+  regression checks, and simulator-local policy coverage.
+
+## Draft Models
+
 - `AliasAuthorityPath`
-- `AliasDelegationPolicy`
+- `AliasAuthorityPathSummary`
 - `AliasAuthorityDecision`
-- `AliasChainClaimRequest`
-- `AliasChainClaimResult`
+- `AliasAuthorityClaimResult`
 
-## Proposed Helpers
+## Draft Helpers
 
 - `claim_alias_through_authority_chain(...)`
 - `evaluate_alias_authority_step(...)`
-- `find_highest_authorized_alias_scope(...)`
-- `record_alias_authority_decision(...)`
-- `summarize_alias_authority_path(...)`
+- `evaluate_alias_authority_chain(...)`
+- `is_alias_within_scope(...)`
+- `fallback_alias_for_scope(...)`
+- `can_continue_alias_upward(...)`
 
 ## Proposed Decision Statuses
 
@@ -65,8 +83,6 @@ alias or the highest allowed fallback alias.
 - `authority_path_broken`
 
 ## Draft Scenario Coverage
-
-Sprint 5 draft scenario coverage:
 
 - `scenarios/032_alias_authority_chain_success.yaml`
 - `scenarios/033_alias_authority_chain_fallback.yaml`
@@ -86,6 +102,8 @@ v0.6 should preserve:
 - Alias bundle records and DNS-style simulator-only bundle behavior.
 - TrafficHub routing behavior.
 - Symbolic simulator proof posture.
+- Canonical identity chains as truthful records; aliases are authorized
+  shortcuts only.
 
 ## Explicit Limits
 
@@ -102,6 +120,11 @@ v0.6 planning does not include:
 - External registry integration.
 - TrafficHub routing changes.
 - Canonical identity replacement.
+- Public release, tag, merge, or version bump.
+
+`alias_authority_policy` is simulator-local helper policy only. It is not
+registrar policy, DNS policy, CA policy, production identity proof, or an
+external authority service.
 
 ## Planning Validation
 

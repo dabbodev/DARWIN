@@ -266,7 +266,9 @@ The v0.6 alias authority-chain slice adds simulator-only scenario support for
 claiming an alias through explicit `RegistryHub.parent_hub_id` traversal. It
 does not implement real DNS, registrar integration, public CA behavior,
 production identity proof, external authority services, TrafficHub routing
-changes, or canonical identity rewrites.
+changes, or canonical identity rewrites. v0.6 remains unreleased draft work on
+the feature branch, and the CLI version remains `darwin-sim 0.5.0` until
+release prep changes it.
 
 Supported authority-chain action:
 
@@ -300,6 +302,9 @@ authority path summary with final status, decision count, and path hubs.
 
 Simulator-local policy can be configured on `registry_hubs` and `hybrid_hubs`
 with `alias_authority_policy`. Empty policy preserves default behavior.
+This policy only affects authority-chain helper behavior in the simulator. It
+is not registrar policy, DNS policy, CA policy, production identity proof, or
+an external authority service.
 Supported keys are:
 
 - `allow_approval`, default `true`
@@ -334,6 +339,14 @@ assertions:
       - registry_home_001
       - registry_family_001
 ```
+
+Checked-in v0.6 authority-chain scenarios:
+
+- `scenarios/032_alias_authority_chain_success.yaml`
+- `scenarios/033_alias_authority_chain_fallback.yaml`
+- `scenarios/034_alias_authority_chain_name_taken.yaml`
+- `scenarios/035_alias_authority_chain_policy_denied.yaml`
+- `scenarios/036_alias_authority_chain_broken_parent.yaml`
 
 For the basic progressive fallback slice, a RegistryHub can grant aliases only
 inside its own `scope_path`. If a requested alias is above that scope and

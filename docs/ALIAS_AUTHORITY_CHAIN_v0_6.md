@@ -8,6 +8,9 @@ implemented.
 
 The goal is to extend v0.5 progressive alias fallback from a local
 RegistryHub-only decision into an explicit parent-scope negotiation path.
+This is unreleased draft work on the v0.6 feature branch; the released
+simulator version remains `darwin-sim 0.5.0` until explicit release prep.
+All behavior described here is simulator-only.
 
 DARWIN means Direct-Access Registration Window Interface Network.
 
@@ -109,6 +112,47 @@ Implemented in Sprint 5:
 Not implemented yet:
 
 - Runtime changes to direct alias claims or progressive fallback.
+
+## Compact Walkthrough
+
+Canonical identity and alias authority are separate simulator concepts.
+Canonical identity is the truthful RegistryHub identity chain for a device,
+such as `global.family.david.home.server`. An alias is only an authorized
+shortcut that can resolve to that canonical device record; it does not replace
+the canonical identity, change passports or attachments, or alter TrafficHub
+routing.
+
+An authority path is the ordered list of Registry Hubs that evaluate one alias
+request. The path starts at the requesting hub and follows explicit
+`parent_hub_id` links. Each step records whether that hub approved the alias,
+continued upward, offered fallback, denied by policy, found a conflict, blocked
+the device, or encountered a broken parent chain.
+
+An authority ceiling is the highest scope that actually controlled the final
+result. For a successful high-scope claim it is the approving hub's scope. For
+a fallback claim it is the scope where the fallback alias was granted. For a
+failure it records the last meaningful scope when available.
+
+Authority-chain requests can finish in these ways:
+
+- Approved at an authority hub: `032_alias_authority_chain_success.yaml` climbs
+  from the home registry to the global registry and grants `global.server`.
+- Granted as fallback: `033_alias_authority_chain_fallback.yaml` stops at the
+  family registry because simulator-local policy denies pass-up, then grants
+  `global.family.david.server`.
+- Denied by conflict: `034_alias_authority_chain_name_taken.yaml` finds
+  `global.server` already active at the global registry and leaves the
+  original owner intact.
+- Denied by policy: `035_alias_authority_chain_policy_denied.yaml` stops at the
+  family registry where pass-up and fallback are both denied by simulator-local
+  policy.
+- Stopped by a broken parent chain:
+  `036_alias_authority_chain_broken_parent.yaml` records
+  `authority_path_broken` when the configured parent hub is missing.
+
+The direct v0.5 alias helpers and progressive local fallback helper remain
+intact. Authority-chain claims use a separate helper and scenario action so the
+registry path stays auditable without changing traffic paths.
 
 ## Proposed Authority Chain Flow
 
@@ -329,6 +373,9 @@ Future helpers:
 - A request can fall back to the highest hub that allows fallback.
 - Quarantined or revoked devices cannot claim aliases through the chain.
 - Existing direct v0.5 alias behavior must remain unchanged.
+- `alias_authority_policy` is simulator-local. It is not registrar policy, DNS
+  policy, CA policy, production identity proof, or an external service.
+- Empty policy preserves default helper behavior.
 
 ## Fallback Recommendation
 

@@ -76,10 +76,12 @@ canonical identity replacement.
 
 ## v0.6 Alias Authority Chain Planning
 
-v0.6 planning explores simulator-only parent-scope authority negotiation for
-alias claims. It does not implement behavior yet, bump the package version, add
-real DNS, integrate registrars, model public CA behavior, change TrafficHub
-routing, or rewrite canonical identity chains.
+v0.6 draft work on the feature branch explores simulator-only parent-scope
+authority negotiation for alias claims. Aliases are authorized shortcuts and do
+not replace canonical identity chains. This work does not bump the package
+version, add real DNS, integrate registrars, model public CA behavior, change
+TrafficHub routing, or rewrite canonical identity chains. The current released
+version remains `darwin-sim 0.5.0`.
 
 - `docs/V0_6_ROADMAP.md`
 - `docs/ALIAS_AUTHORITY_CHAIN_v0_6.md`
@@ -93,6 +95,14 @@ v0.5 alias scenarios:
 - `scenarios/029_progressive_alias_fallback.yaml`
 - `scenarios/030_alias_bundle_delegation.yaml`
 - `scenarios/031_dns_style_alias_bundle.yaml`
+
+v0.6 draft authority-chain scenarios:
+
+- `scenarios/032_alias_authority_chain_success.yaml`
+- `scenarios/033_alias_authority_chain_fallback.yaml`
+- `scenarios/034_alias_authority_chain_name_taken.yaml`
+- `scenarios/035_alias_authority_chain_policy_denied.yaml`
+- `scenarios/036_alias_authority_chain_broken_parent.yaml`
 
 ## What v0.1 Supports
 

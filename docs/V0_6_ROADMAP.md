@@ -14,9 +14,9 @@ documented?
 
 This roadmap tracks v0.6 alias authority-chain work. Sprint 1 data models,
 Sprint 2 authority-step evaluation helpers, the Sprint 3 explicit parent-chain
-traversal helper, and the Sprint 4 claim-through-chain helper are implemented.
-Scenario runner support for chain claims is not implemented yet. The current
-stable package remains `darwin-sim 0.5.0`.
+traversal helper, the Sprint 4 claim-through-chain helper, and Sprint 5
+scenario runner support are implemented on the feature branch. v0.6 remains
+unreleased draft work; the current stable package remains `darwin-sim 0.5.0`.
 
 ## Status
 
@@ -49,26 +49,28 @@ Completed:
   conflict failure without overwrite, insufficient authority without fallback,
   broken parent failure, blocked device failure, authority path recording, and
   no-mutation failure behavior.
+- Sprint 5 scenario runner support:
+  - `claim_alias_through_authority_chain` action
+  - `alias_authority_path_summary` assertion
+  - compact `alias_authority_claims` detailed snapshot entries
+  - scenarios `032` through `036`
 
-Planning target:
+Current hardening target:
 
-- Define alias authority chain behavior.
+- Keep alias authority-chain behavior simulator-only.
 - Preserve v0.5 direct alias behavior.
+- Preserve progressive local fallback behavior outside authority-chain claims.
 - Preserve canonical identity truth.
 - Preserve TrafficHub routing behavior.
-- Propose scenario and test coverage for traversal implementation later.
+- Polish draft docs, scenario discoverability, and regression coverage.
 
-Next planned slice:
-
-- Scenario runner support and scenarios `032` through `036` for alias
-  authority-chain claim behavior.
-
-Not part of this planning pass:
+Not part of this feature-branch work:
 
 - Version bump.
-- Runtime alias claim action wiring.
-- Scenario implementation.
-- Release, tag, merge, or push.
+- Release, tag, or merge.
+- Real DNS, registrar integration, public CA behavior, production identity
+  proof, external services, TrafficHub routing changes, or canonical identity
+  rewrites.
 
 ## Current v0.5 Foundation
 
@@ -116,8 +118,8 @@ Current implementation slice:
   `fallback_granted`, and returns the full authority path in all outcomes.
 - Failed chain claims do not mutate alias tables or record alias conflicts.
 - Existing direct alias and progressive fallback behavior remains unchanged.
-- The next planned slice is scenario runner support and scenarios `032`
-  through `036`.
+- Scenario runner support and scenarios `032` through `036` are implemented as
+  unreleased draft behavior on the feature branch.
 
 Example canonical identity:
 
@@ -201,7 +203,7 @@ Completed helper slice:
 - `evaluate_alias_authority_chain(...)`
 - `claim_alias_through_authority_chain(...)`
 
-Future scenario slice:
+Completed scenario slice:
 
 - Scenario runner action support for chain claims.
 - Scenarios `032` through `036`.
@@ -244,6 +246,10 @@ Proposed v0.6 rules:
 - A request can fall back to the highest hub that allows fallback.
 - Quarantined or revoked devices cannot claim aliases through the chain.
 - Existing direct v0.5 alias behavior must remain unchanged.
+- `alias_authority_policy` is simulator-local helper policy only. It is not
+  registrar policy, DNS policy, CA policy, production identity proof, or an
+  external authority service.
+- Empty policy preserves default authority-chain helper behavior.
 
 ## Implemented Sprint 5 Scenarios
 

@@ -89,6 +89,37 @@ def test_authority_chain_continues_to_parent_and_approves():
     assert path.authority_ceiling == "global"
 
 
+def test_authority_chain_empty_policy_preserves_parent_approval():
+    child = make_hub(
+        "registry_child_001",
+        "global.family.david",
+        parent_hub_id="registry_global_001",
+        alias_authority_policy={},
+    )
+    parent = make_hub(
+        "registry_global_001",
+        "global",
+        alias_authority_policy={},
+    )
+    register_test_device(child)
+    register_test_device(parent)
+
+    path = evaluate_alias_authority_chain(
+        {child.hub_id: child, parent.hub_id: parent},
+        child.hub_id,
+        "global.server",
+        "server",
+        "dev_A9F3",
+    )
+
+    assert [decision.decision for decision in path.decisions] == [
+        "continue_upward",
+        "approved_here",
+    ]
+    assert path.final_status == "approved_here"
+    assert path.granted_alias == "global.server"
+
+
 def test_authority_chain_fallback_at_root_without_parent():
     hub = make_hub("registry_root_001", "global.us")
     register_test_device(hub)
@@ -221,6 +252,30 @@ def test_authority_chain_policy_can_deny_pass_up_and_fallback():
     assert path.final_status == "policy_denied"
     assert path.granted_alias is None
     assert path.authority_ceiling == "global.family.david"
+
+
+def test_authority_chain_policy_can_deny_approval():
+    hub = make_hub(
+        "registry_global_001",
+        "global",
+        alias_authority_policy={"allow_approval": False},
+    )
+    register_test_device(hub)
+
+    path = evaluate_alias_authority_chain(
+        {hub.hub_id: hub},
+        hub.hub_id,
+        "global.server",
+        "server",
+        "dev_A9F3",
+    )
+
+    assert len(path.decisions) == 1
+    assert path.decisions[0].decision == "policy_denied"
+    assert path.decisions[0].reason == "approval_denied_by_policy"
+    assert path.final_status == "policy_denied"
+    assert path.granted_alias is None
+    assert path.authority_ceiling == "global"
 
 
 def test_authority_chain_name_taken_stops():

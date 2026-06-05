@@ -76,6 +76,33 @@ def test_alias_authority_chain_scenarios_run():
         assert result.passed, scenario_name
 
 
+def test_alias_authority_chain_scenarios_are_discoverable():
+    metadata_by_id = {
+        item.scenario_id: item
+        for item in (
+            scenario_metadata_from_dict(
+                load_scenario_file(path),
+                path=str(path.relative_to(PROJECT_ROOT)),
+            )
+            for path in list_scenario_files(PROJECT_ROOT / "scenarios")
+        )
+    }
+    expected_ids = [
+        "032_alias_authority_chain_success",
+        "033_alias_authority_chain_fallback",
+        "034_alias_authority_chain_name_taken",
+        "035_alias_authority_chain_policy_denied",
+        "036_alias_authority_chain_broken_parent",
+    ]
+
+    assert list(metadata_by_id.keys())[31:36] == expected_ids
+    for scenario_id in expected_ids:
+        metadata = metadata_by_id[scenario_id]
+        assert metadata.category == "registry"
+        assert "alias_authority_chain" in metadata.tags
+        assert metadata.description
+
+
 def test_dns_style_bundle_metadata_present():
     data = load_scenario_file(
         PROJECT_ROOT / "scenarios" / "031_dns_style_alias_bundle.yaml"
@@ -197,6 +224,43 @@ def test_claim_alias_through_authority_chain_action_records_path():
     ] == "approved_here"
 
 
+def test_claim_alias_through_authority_chain_success_event_is_deterministic():
+    result = run_scenario({
+        "scenario_id": "claim_alias_through_authority_chain_event_success",
+        "setup": _alias_authority_chain_setup(),
+        "steps": [
+            _register_at("registry_home_001", "dev_A9F3", "server"),
+            _register_at("registry_family_001", "dev_A9F3", "server"),
+            _register_at("registry_global_001", "dev_A9F3", "server"),
+            _claim_alias_through_authority_chain_step(),
+        ],
+        "assertions": [],
+    })
+
+    event = result.world.event_log.entries[-1]
+
+    assert event.event_type == "alias_authority_chain_claimed"
+    assert event.status == "claimed"
+    assert event.hub_id == "registry_home_001"
+    assert event.device_id == "dev_A9F3"
+    assert event.data["requested_alias"] == "global.server"
+    assert event.data["granted_alias"] == "global.server"
+    assert event.data["success"] is True
+    assert event.data["authority_ceiling"] == "global"
+    assert event.data["authority_path_final_status"] == "approved_here"
+    assert event.data["decision_count"] == 3
+    assert event.data["path_hubs"] == [
+        "registry_home_001",
+        "registry_family_001",
+        "registry_global_001",
+    ]
+    assert [decision["decision"] for decision in event.data["decisions"]] == [
+        "continue_upward",
+        "continue_upward",
+        "approved_here",
+    ]
+
+
 def test_claim_alias_through_authority_chain_failure_records_path():
     result = run_scenario({
         "scenario_id": "claim_alias_through_authority_chain_failure_action",
@@ -230,6 +294,78 @@ def test_claim_alias_through_authority_chain_failure_records_path():
     assert result.final_snapshot["alias_authority_claims"][0]["reason"] == (
         "parent_hub_not_found"
     )
+
+
+def test_claim_alias_through_authority_chain_failure_event_is_deterministic():
+    result = run_scenario(
+        PROJECT_ROOT / "scenarios" / "035_alias_authority_chain_policy_denied.yaml"
+    )
+
+    event = result.world.event_log.entries[-1]
+
+    assert result.passed
+    assert event.event_type == "alias_authority_chain_failed"
+    assert event.status == "rejected"
+    assert event.hub_id == "registry_home_001"
+    assert event.device_id == "dev_A9F3"
+    assert event.data["requested_alias"] == "global.server"
+    assert event.data["granted_alias"] is None
+    assert event.data["success"] is False
+    assert event.data["reason"] == "pass_up_denied_by_policy"
+    assert event.data["authority_ceiling"] == "global.family.david"
+    assert event.data["authority_path_final_status"] == "policy_denied"
+    assert event.data["decision_count"] == 2
+    assert event.data["path_hubs"] == [
+        "registry_home_001",
+        "registry_family_001",
+    ]
+    assert [decision["decision"] for decision in event.data["decisions"]] == [
+        "continue_upward",
+        "policy_denied",
+    ]
+
+
+def test_alias_authority_chain_snapshot_records_compact_failure_data():
+    result = run_scenario(
+        PROJECT_ROOT / "scenarios" / "036_alias_authority_chain_broken_parent.yaml"
+    )
+
+    claim_snapshot = result.final_snapshot["alias_authority_claims"][0]
+
+    assert result.passed
+    assert claim_snapshot == {
+        "requested_alias": "global.server",
+        "granted_alias": None,
+        "status": "authority_path_broken",
+        "reason": "parent_hub_not_found",
+        "success": False,
+        "authority_ceiling": "global.family.david.home",
+        "authority_path": {
+            "requested_alias": "global.server",
+            "granted_alias": None,
+            "final_status": "authority_path_broken",
+            "authority_ceiling": "global.family.david.home",
+            "decision_count": 2,
+            "path_hubs": [
+                "registry_home_001",
+                "registry_missing_001",
+            ],
+        },
+    }
+
+
+def test_failed_authority_chain_claim_does_not_create_active_aliases():
+    result = run_scenario(
+        PROJECT_ROOT / "scenarios" / "035_alias_authority_chain_policy_denied.yaml"
+    )
+
+    assert result.passed
+    for hub in result.world.registry_hubs.values():
+        assert not [
+            alias
+            for alias, record in hub.aliases.items()
+            if record.status == "active" and alias.endswith(".server")
+        ]
 
 
 def test_create_alias_bundle_action():
