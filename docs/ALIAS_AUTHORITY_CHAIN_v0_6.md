@@ -1,7 +1,8 @@
 # DARWIN v0.6 Alias Authority Chain
 
-This document plans the v0.6 alias authority chain behavior for DARWIN. It is
-a design note only; no simulator behavior is implemented by this document.
+This document plans the v0.6 alias authority chain behavior for DARWIN. The
+Sprint 1 authority path data models are implemented, but parent-chain
+traversal and negotiation remain future work.
 
 The goal is to extend v0.5 progressive alias fallback from a local
 RegistryHub-only decision into an explicit parent-scope negotiation path.
@@ -32,6 +33,26 @@ v0.6 should preserve these v0.5 behaviors:
   `fallback_reason`, and `authority_ceiling`.
 - Alias bundles and DNS-style alias bundle records remain simulator-only.
 - Aliases do not affect TrafficHub routing.
+
+## Implementation Status
+
+Implemented in Sprint 1:
+
+- `AliasAuthorityDecision` records one hub-local decision in a deterministic,
+  JSON-safe shape.
+- `AliasAuthorityPath` records ordered authority decisions for a requested
+  alias without performing traversal.
+- `AliasAuthorityPathSummary` provides a compact summary with requested alias,
+  granted alias, final status, authority ceiling, decision count, and path
+  hubs.
+
+Not implemented yet:
+
+- Authority-chain traversal.
+- Parent RegistryHub negotiation.
+- Authority-step evaluation helpers.
+- Scenario YAMLs for chain behavior.
+- Runtime changes to direct alias claims or progressive fallback.
 
 ## Proposed Authority Chain Flow
 
@@ -86,27 +107,36 @@ Proposed evaluation order:
 
 ## Proposed Models
 
+Implemented Sprint 1 models:
+
+`AliasAuthorityDecision`:
+
+- A single decision made at one authority step.
+- Records hub ID, scope path, decision code, reason, evaluated alias, fallback
+  alias, authority ceiling, and whether evaluation can continue upward.
+
+`AliasAuthorityPath`:
+
+- Ordered path record from the requesting hub toward future parent evaluation.
+- Stores decisions in append order and can produce a deterministic dictionary
+  or compact summary.
+
+`AliasAuthorityPathSummary`:
+
+- Scenario-friendly summary of requested alias, granted alias, final status,
+  authority ceiling, decision count, and path hub IDs.
+
+Future proposed models:
+
 `AliasAuthorityStep`:
 
 - One RegistryHub evaluation point in an authority chain.
 - Records hub ID, scope path, parent hub ID, and local policy outcome.
 
-`AliasAuthorityPath`:
-
-- Ordered path from the requesting hub toward the root or highest available
-  parent.
-- Records whether the path is complete or broken.
-
 `AliasDelegationPolicy`:
 
 - Simulator-local policy for whether a hub can approve, continue upward, deny
   pass-up, or allow fallback.
-
-`AliasAuthorityDecision`:
-
-- A single decision made at one authority step.
-- Should record the decision code, reason, evaluated alias, scope, and whether
-  fallback remains available.
 
 `AliasChainClaimRequest`:
 
@@ -146,6 +176,9 @@ The implementation may also carry `granted_alias`, `conflict_id`, and the
 created `AliasRecord` to stay compatible with existing claim result patterns.
 
 ## Proposed Helper Functions
+
+These helpers are not implemented in Sprint 1. The current implementation is
+limited to serializable authority path records.
 
 `claim_alias_through_authority_chain(...)`:
 

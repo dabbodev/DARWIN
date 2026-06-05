@@ -12,10 +12,21 @@ does the request climb upward, where does approval stop, and how is fallback
 documented?
 ```
 
-This is a planning roadmap only. v0.6 behavior is not implemented yet, and the
-current stable package remains `darwin-sim 0.5.0`.
+This roadmap tracks v0.6 alias authority-chain work. Sprint 1 data models are
+implemented, but authority-chain traversal and runtime negotiation are not
+implemented yet. The current stable package remains `darwin-sim 0.5.0`.
 
 ## Status
+
+Completed:
+
+- Sprint 1 authority path data models:
+  - `AliasAuthorityDecision`
+  - `AliasAuthorityPath`
+  - `AliasAuthorityPathSummary`
+- Deterministic, JSON-safe dictionary helpers for authority path records.
+- Unit coverage for authority path model serialization, ordering, summaries,
+  and direct alias claim compatibility.
 
 Planning target:
 
@@ -23,12 +34,12 @@ Planning target:
 - Preserve v0.5 direct alias behavior.
 - Preserve canonical identity truth.
 - Preserve TrafficHub routing behavior.
-- Propose scenario and test coverage for implementation later.
+- Propose scenario and test coverage for traversal implementation later.
 
 Not part of this planning pass:
 
 - Version bump.
-- Simulator behavior implementation.
+- Authority-chain traversal or parent negotiation implementation.
 - Scenario implementation.
 - Release, tag, merge, or push.
 
@@ -64,6 +75,13 @@ Proposed behavior:
   granted at the highest allowed scope.
 - Every result records the authority path and the authority ceiling.
 
+Current implementation slice:
+
+- Authority path records can be constructed, appended, summarized, and
+  serialized.
+- Existing direct alias and progressive fallback behavior remains unchanged.
+- The next planned slice is authority-step evaluation helpers.
+
 Example canonical identity:
 
 ```text
@@ -97,16 +115,17 @@ authority_ceiling: global.us.west1.dist25.sf2.xfinity_301
 
 ## Proposed Models
 
-The following names are proposed for the implementation slice. They should
-remain simulator data models and should not imply DNS, registrar, public CA, or
-production identity-proof behavior.
+The following names are planned for v0.6. They remain simulator data models and
+should not imply DNS, registrar, public CA, or production identity-proof
+behavior.
 
-- `AliasAuthorityStep`
-- `AliasAuthorityPath`
-- `AliasDelegationPolicy`
-- `AliasAuthorityDecision`
-- `AliasChainClaimRequest`
-- `AliasChainClaimResult`
+- Complete: `AliasAuthorityDecision`
+- Complete: `AliasAuthorityPath`
+- Complete: `AliasAuthorityPathSummary`
+- Future: `AliasAuthorityStep`
+- Future: `AliasDelegationPolicy`
+- Future: `AliasChainClaimRequest`
+- Future: `AliasChainClaimResult`
 
 ## Proposed Fields
 
@@ -136,10 +155,15 @@ claim result pattern when an active alias is created.
 
 ## Proposed Helpers
 
-- `claim_alias_through_authority_chain(...)`
+Next planned slice:
+
 - `evaluate_alias_authority_step(...)`
-- `find_highest_authorized_alias_scope(...)`
 - `record_alias_authority_decision(...)`
+
+Future traversal slice:
+
+- `claim_alias_through_authority_chain(...)`
+- `find_highest_authorized_alias_scope(...)`
 - `summarize_alias_authority_path(...)`
 
 Helper names should stay registry-oriented and avoid terms that suggest real
