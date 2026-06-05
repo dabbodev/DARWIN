@@ -2,8 +2,9 @@
 
 This document plans the v0.6 alias authority chain behavior for DARWIN. The
 Sprint 1 authority path data models, Sprint 2 authority-step evaluation
-helpers, and Sprint 3 explicit parent-chain traversal helper are implemented.
-Alias claiming through the chain and scenario wiring remain future work.
+helpers, Sprint 3 explicit parent-chain traversal helper, and Sprint 4
+claim-through-chain helper are implemented. Scenario wiring remains future
+work.
 
 The goal is to extend v0.5 progressive alias fallback from a local
 RegistryHub-only decision into an explicit parent-scope negotiation path.
@@ -75,10 +76,24 @@ Implemented in Sprint 3:
   `AliasRecord` instances, record conflicts, mutate parent-chain state, change
   direct alias behavior, or change progressive local fallback behavior.
 
+Implemented in Sprint 4:
+
+- `AliasAuthorityClaimResult` records the chain claim outcome, requested alias,
+  granted alias, created alias record, authority path, and authority ceiling.
+- `claim_alias_through_authority_chain(...)` evaluates the explicit parent
+  authority chain before creating any alias record.
+- The helper creates the requested alias only when the authority path ends in
+  `approved_here`.
+- The helper creates the fallback alias only when the authority path ends in
+  `fallback_granted`.
+- Created alias records preserve requested/granted alias provenance, fallback
+  reason when applicable, approved hub, authority scope, and authority ceiling.
+- Failed paths return the evaluated authority path without mutating alias
+  tables or recording conflicts.
+- The helper is not wired into scenario actions yet.
+
 Not implemented yet:
 
-- Claim-through-chain helper that creates alias records after path approval or
-  fallback.
 - Scenario YAMLs for chain behavior.
 - Runtime changes to direct alias claims or progressive fallback.
 
@@ -153,6 +168,14 @@ Implemented Sprint 1 models:
 
 - Scenario-friendly summary of requested alias, granted alias, final status,
   authority ceiling, decision count, and path hub IDs.
+
+Implemented Sprint 4 model:
+
+`AliasAuthorityClaimResult`:
+
+- Structured result for chain-aware alias claims.
+- Includes success, status, reason, requested alias, granted alias, created
+  alias record, authority path, and authority ceiling.
 
 Future proposed models:
 
@@ -245,11 +268,20 @@ local_name, target_device_id, fallback_allowed=True)`:
 - Does not mutate alias tables, claim aliases, create conflicts, or wire into
   scenario/runtime alias claim actions.
 
-Future claim helper:
+Implemented Sprint 4 claim helper:
 
 `claim_alias_through_authority_chain(...)`:
 
 - Main entry point for chain-aware progressive alias claims.
+- Uses `evaluate_alias_authority_chain(...)` first.
+- Calls existing direct `claim_alias(...)` only after an approved or
+  fallback-granted authority path.
+- Creates the alias on the hub that made the terminal approved or fallback
+  decision, not necessarily the starting hub.
+- Returns failure without mutation for conflicts, insufficient authority,
+  blocked devices, policy denial, or broken parent paths.
+
+Future helpers:
 
 `find_highest_authorized_alias_scope(...)`:
 

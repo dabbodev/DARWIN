@@ -13,10 +13,10 @@ documented?
 ```
 
 This roadmap tracks v0.6 alias authority-chain work. Sprint 1 data models,
-Sprint 2 authority-step evaluation helpers, and the Sprint 3 explicit
-parent-chain traversal helper are implemented. Runtime claim-through-chain
-negotiation is not implemented yet. The current stable package remains
-`darwin-sim 0.5.0`.
+Sprint 2 authority-step evaluation helpers, the Sprint 3 explicit parent-chain
+traversal helper, and the Sprint 4 claim-through-chain helper are implemented.
+Scenario runner support for chain claims is not implemented yet. The current
+stable package remains `darwin-sim 0.5.0`.
 
 ## Status
 
@@ -42,6 +42,13 @@ Completed:
 - Unit coverage for missing starts, start-hub approval, parent approval,
   root fallback, no-fallback rejection, broken parent paths, active-name
   conflicts, blocked devices, no-mutation behavior, and path summaries.
+- Sprint 4 claim-through-chain helper slice:
+  - `AliasAuthorityClaimResult`
+  - `claim_alias_through_authority_chain`
+- Unit coverage for parent-approved alias creation, fallback alias creation,
+  conflict failure without overwrite, insufficient authority without fallback,
+  broken parent failure, blocked device failure, authority path recording, and
+  no-mutation failure behavior.
 
 Planning target:
 
@@ -53,8 +60,8 @@ Planning target:
 
 Next planned slice:
 
-- Claim-through-chain helper that creates alias records after path approval or
-  fallback while preserving the recorded authority path.
+- Scenario runner support and scenarios `032` through `036` for alias
+  authority-chain claim behavior.
 
 Not part of this planning pass:
 
@@ -104,9 +111,13 @@ Current implementation slice:
 - Explicit parent RegistryHub links can be traversed through
   `evaluate_alias_authority_chain(...)`, producing an ordered
   `AliasAuthorityPath`.
+- `claim_alias_through_authority_chain(...)` creates the requested alias only
+  after `approved_here`, creates fallback aliases only after
+  `fallback_granted`, and returns the full authority path in all outcomes.
+- Failed chain claims do not mutate alias tables or record alias conflicts.
 - Existing direct alias and progressive fallback behavior remains unchanged.
-- The next planned slice is a claim-through-chain helper that creates alias
-  records after path approval or fallback.
+- The next planned slice is scenario runner support and scenarios `032`
+  through `036`.
 
 Example canonical identity:
 
@@ -148,10 +159,10 @@ behavior.
 - Complete: `AliasAuthorityDecision`
 - Complete: `AliasAuthorityPath`
 - Complete: `AliasAuthorityPathSummary`
+- Complete: `AliasAuthorityClaimResult`
 - Future: `AliasAuthorityStep`
 - Future: `AliasDelegationPolicy`
 - Future: `AliasChainClaimRequest`
-- Future: `AliasChainClaimResult`
 
 ## Proposed Fields
 
@@ -188,10 +199,15 @@ Completed helper slice:
 - `can_continue_alias_upward(...)`
 - `evaluate_alias_authority_step(...)`
 - `evaluate_alias_authority_chain(...)`
-
-Future claim slice:
-
 - `claim_alias_through_authority_chain(...)`
+
+Future scenario slice:
+
+- Scenario runner action support for chain claims.
+- Scenarios `032` through `036`.
+
+Future helper candidates:
+
 - `find_highest_authorized_alias_scope(...)`
 - `record_alias_authority_decision(...)`
 - `summarize_alias_authority_path(...)`

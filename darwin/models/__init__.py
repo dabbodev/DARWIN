@@ -12,6 +12,7 @@ from darwin.models.alias import (
 )
 from darwin.models.alias_authority import (
     ALIAS_AUTHORITY_DECISIONS,
+    AliasAuthorityClaimResult,
     AliasAuthorityDecision,
     AliasAuthorityPath,
     AliasAuthorityPathSummary,
@@ -33,6 +34,7 @@ from darwin.models.route import (
 
 __all__ = [
     "ALIAS_AUTHORITY_DECISIONS",
+    "AliasAuthorityClaimResult",
     "AliasAuthorityDecision",
     "AliasAuthorityPath",
     "AliasAuthorityPathSummary",

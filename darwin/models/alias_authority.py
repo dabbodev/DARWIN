@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from darwin.models.alias import AliasRecord
+
 ALIAS_AUTHORITY_DECISIONS = (
     "approved_here",
     "continue_upward",
@@ -110,3 +112,17 @@ class AliasAuthorityPath:
             "granted_alias": self.granted_alias,
             "authority_ceiling": self.authority_ceiling,
         }
+
+
+@dataclass(slots=True)
+class AliasAuthorityClaimResult:
+    """Outcome of claiming an alias through an evaluated authority chain."""
+
+    success: bool
+    status: str
+    reason: str | None
+    requested_alias: str
+    granted_alias: str | None
+    alias_record: AliasRecord | None
+    authority_path: AliasAuthorityPath
+    authority_ceiling: str | None
