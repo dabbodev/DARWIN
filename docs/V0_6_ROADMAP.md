@@ -12,9 +12,10 @@ does the request climb upward, where does approval stop, and how is fallback
 documented?
 ```
 
-This roadmap tracks v0.6 alias authority-chain work. Sprint 1 data models are
-implemented, but authority-chain traversal and runtime negotiation are not
-implemented yet. The current stable package remains `darwin-sim 0.5.0`.
+This roadmap tracks v0.6 alias authority-chain work. Sprint 1 data models and
+Sprint 2 authority-step evaluation helpers are implemented, but
+authority-chain traversal and runtime negotiation are not implemented yet. The
+current stable package remains `darwin-sim 0.5.0`.
 
 ## Status
 
@@ -27,6 +28,14 @@ Completed:
 - Deterministic, JSON-safe dictionary helpers for authority path records.
 - Unit coverage for authority path model serialization, ordering, summaries,
   and direct alias claim compatibility.
+- Sprint 2 authority-step evaluation helper slice:
+  - `is_alias_within_scope`
+  - `fallback_alias_for_scope`
+  - `can_continue_alias_upward`
+  - `evaluate_alias_authority_step`
+- Unit coverage for single-hub approval, upward continuation, fallback,
+  insufficient authority, device blocking, active-name conflicts, and
+  no-mutation behavior.
 
 Planning target:
 
@@ -79,8 +88,10 @@ Current implementation slice:
 
 - Authority path records can be constructed, appended, summarized, and
   serialized.
+- One RegistryHub can be evaluated for one alias request through read-only
+  authority-step helpers.
 - Existing direct alias and progressive fallback behavior remains unchanged.
-- The next planned slice is authority-step evaluation helpers.
+- The next planned slice is chain traversal using explicit parent hubs.
 
 Example canonical identity:
 
@@ -155,15 +166,18 @@ claim result pattern when an active alias is created.
 
 ## Proposed Helpers
 
-Next planned slice:
+Completed helper slice:
 
+- `is_alias_within_scope(...)`
+- `fallback_alias_for_scope(...)`
+- `can_continue_alias_upward(...)`
 - `evaluate_alias_authority_step(...)`
-- `record_alias_authority_decision(...)`
 
 Future traversal slice:
 
 - `claim_alias_through_authority_chain(...)`
 - `find_highest_authorized_alias_scope(...)`
+- `record_alias_authority_decision(...)`
 - `summarize_alias_authority_path(...)`
 
 Helper names should stay registry-oriented and avoid terms that suggest real

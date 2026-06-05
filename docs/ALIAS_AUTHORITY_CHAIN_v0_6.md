@@ -1,8 +1,9 @@
 # DARWIN v0.6 Alias Authority Chain
 
 This document plans the v0.6 alias authority chain behavior for DARWIN. The
-Sprint 1 authority path data models are implemented, but parent-chain
-traversal and negotiation remain future work.
+Sprint 1 authority path data models and Sprint 2 authority-step evaluation
+helpers are implemented, but parent-chain traversal and negotiation remain
+future work.
 
 The goal is to extend v0.5 progressive alias fallback from a local
 RegistryHub-only decision into an explicit parent-scope negotiation path.
@@ -46,11 +47,23 @@ Implemented in Sprint 1:
   granted alias, final status, authority ceiling, decision count, and path
   hubs.
 
+Implemented in Sprint 2:
+
+- `is_alias_within_scope(...)` checks alias authority using exact scope or dot
+  segment-boundary matching.
+- `fallback_alias_for_scope(...)` returns the deterministic local fallback
+  alias for a scope and local name.
+- `can_continue_alias_upward(...)` reports whether a RegistryHub has an
+  explicit parent hub ID for future traversal.
+- `evaluate_alias_authority_step(...)` evaluates one RegistryHub's read-only
+  decision for one alias request and returns an `AliasAuthorityDecision`.
+- Authority-step helpers do not claim aliases, record conflicts, mutate
+  registry state, perform traversal, or negotiate with parent hubs.
+
 Not implemented yet:
 
 - Authority-chain traversal.
 - Parent RegistryHub negotiation.
-- Authority-step evaluation helpers.
 - Scenario YAMLs for chain behavior.
 - Runtime changes to direct alias claims or progressive fallback.
 
@@ -177,16 +190,36 @@ created `AliasRecord` to stay compatible with existing claim result patterns.
 
 ## Proposed Helper Functions
 
-These helpers are not implemented in Sprint 1. The current implementation is
-limited to serializable authority path records.
+Implemented Sprint 2 helper functions:
+
+`is_alias_within_scope(alias, scope_path)`:
+
+- Returns true only when the alias equals the scope or begins at a dot segment
+  boundary under the scope.
+
+`fallback_alias_for_scope(scope_path, local_name)`:
+
+- Returns the deterministic local fallback alias as `scope_path.local_name`.
+
+`can_continue_alias_upward(registry_hub)`:
+
+- Returns true when the hub has an explicit `parent_hub_id`.
+
+`evaluate_alias_authority_step(...)`:
+
+- Evaluates a single hub's authority and policy decision without mutation.
+- Returns `approved_here`, `continue_upward`, `fallback_available`,
+  `name_taken`, `insufficient_authority`, or `device_blocked` for the local
+  decision slice.
+- Does not claim aliases, create `AliasRecord` instances, record conflicts,
+  traverse parent hubs, or alter existing direct alias and progressive fallback
+  runtime behavior.
+
+Future traversal helpers:
 
 `claim_alias_through_authority_chain(...)`:
 
 - Main entry point for chain-aware progressive alias claims.
-
-`evaluate_alias_authority_step(...)`:
-
-- Evaluates a single hub's authority and policy decision.
 
 `find_highest_authorized_alias_scope(...)`:
 
