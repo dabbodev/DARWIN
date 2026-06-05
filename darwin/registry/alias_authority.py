@@ -1,8 +1,8 @@
-"""Pure alias authority-step evaluation helpers for RegistryHub."""
+"""Pure alias authority-step and chain evaluation helpers for RegistryHub."""
 
 from __future__ import annotations
 
-from darwin.models.alias_authority import AliasAuthorityDecision
+from darwin.models.alias_authority import AliasAuthorityDecision, AliasAuthorityPath
 from darwin.models.hub import RegistryHub
 
 
@@ -104,6 +104,105 @@ def evaluate_alias_authority_step(
         alias=requested_alias,
         fallback_alias=fallback_alias,
     )
+
+
+def evaluate_alias_authority_chain(
+    registry_hubs: dict[str, RegistryHub],
+    start_hub_id: str,
+    requested_alias: str,
+    local_name: str,
+    target_device_id: str,
+    fallback_allowed: bool = True,
+) -> AliasAuthorityPath:
+    """Walk explicit parent RegistryHub links and record read-only decisions."""
+    path = AliasAuthorityPath(
+        requested_alias=requested_alias,
+        target_device_id=target_device_id,
+        requesting_hub_id=start_hub_id,
+    )
+    current_hub_id = start_hub_id
+    visited_hub_ids: set[str] = set()
+
+    while True:
+        registry_hub = registry_hubs.get(current_hub_id)
+        if registry_hub is None:
+            path.add_decision(
+                AliasAuthorityDecision(
+                    hub_id=current_hub_id,
+                    scope_path="",
+                    decision="authority_path_broken",
+                    reason=(
+                        "start_hub_not_found"
+                        if current_hub_id == start_hub_id
+                        else "parent_hub_not_found"
+                    ),
+                    alias=requested_alias,
+                )
+            )
+            path.final_status = "authority_path_broken"
+            return path
+
+        if current_hub_id in visited_hub_ids:
+            path.add_decision(
+                _decision(
+                    registry_hub,
+                    decision="authority_path_broken",
+                    reason="parent_cycle_detected",
+                    alias=requested_alias,
+                )
+            )
+            path.final_status = "authority_path_broken"
+            path.authority_ceiling = registry_hub.scope_path
+            return path
+        visited_hub_ids.add(current_hub_id)
+
+        decision = evaluate_alias_authority_step(
+            registry_hub,
+            requested_alias,
+            local_name,
+            target_device_id,
+            fallback_allowed=fallback_allowed,
+        )
+        path.add_decision(decision)
+
+        if decision.decision == "approved_here":
+            path.final_status = "approved_here"
+            path.granted_alias = requested_alias
+            path.authority_ceiling = decision.authority_ceiling
+            return path
+
+        if decision.decision == "fallback_available":
+            path.final_status = "fallback_granted"
+            path.granted_alias = decision.fallback_alias
+            path.authority_ceiling = decision.authority_ceiling
+            return path
+
+        if decision.decision == "continue_upward":
+            parent_hub_id = registry_hub.parent_hub_id
+            if parent_hub_id is None:
+                path.final_status = "authority_path_broken"
+                path.authority_ceiling = registry_hub.scope_path
+                return path
+            if parent_hub_id not in registry_hubs:
+                path.add_decision(
+                    AliasAuthorityDecision(
+                        hub_id=parent_hub_id,
+                        scope_path="",
+                        decision="authority_path_broken",
+                        reason="parent_hub_not_found",
+                        alias=requested_alias,
+                        authority_ceiling=registry_hub.scope_path,
+                    )
+                )
+                path.final_status = "authority_path_broken"
+                path.authority_ceiling = registry_hub.scope_path
+                return path
+            current_hub_id = parent_hub_id
+            continue
+
+        path.final_status = decision.decision
+        path.authority_ceiling = decision.authority_ceiling
+        return path
 
 
 def _decision(

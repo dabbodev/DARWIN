@@ -12,10 +12,11 @@ does the request climb upward, where does approval stop, and how is fallback
 documented?
 ```
 
-This roadmap tracks v0.6 alias authority-chain work. Sprint 1 data models and
-Sprint 2 authority-step evaluation helpers are implemented, but
-authority-chain traversal and runtime negotiation are not implemented yet. The
-current stable package remains `darwin-sim 0.5.0`.
+This roadmap tracks v0.6 alias authority-chain work. Sprint 1 data models,
+Sprint 2 authority-step evaluation helpers, and the Sprint 3 explicit
+parent-chain traversal helper are implemented. Runtime claim-through-chain
+negotiation is not implemented yet. The current stable package remains
+`darwin-sim 0.5.0`.
 
 ## Status
 
@@ -36,6 +37,11 @@ Completed:
 - Unit coverage for single-hub approval, upward continuation, fallback,
   insufficient authority, device blocking, active-name conflicts, and
   no-mutation behavior.
+- Sprint 3 parent-chain traversal helper slice:
+  - `evaluate_alias_authority_chain`
+- Unit coverage for missing starts, start-hub approval, parent approval,
+  root fallback, no-fallback rejection, broken parent paths, active-name
+  conflicts, blocked devices, no-mutation behavior, and path summaries.
 
 Planning target:
 
@@ -45,10 +51,15 @@ Planning target:
 - Preserve TrafficHub routing behavior.
 - Propose scenario and test coverage for traversal implementation later.
 
+Next planned slice:
+
+- Claim-through-chain helper that creates alias records after path approval or
+  fallback while preserving the recorded authority path.
+
 Not part of this planning pass:
 
 - Version bump.
-- Authority-chain traversal or parent negotiation implementation.
+- Runtime alias claim action wiring.
 - Scenario implementation.
 - Release, tag, merge, or push.
 
@@ -90,8 +101,12 @@ Current implementation slice:
   serialized.
 - One RegistryHub can be evaluated for one alias request through read-only
   authority-step helpers.
+- Explicit parent RegistryHub links can be traversed through
+  `evaluate_alias_authority_chain(...)`, producing an ordered
+  `AliasAuthorityPath`.
 - Existing direct alias and progressive fallback behavior remains unchanged.
-- The next planned slice is chain traversal using explicit parent hubs.
+- The next planned slice is a claim-through-chain helper that creates alias
+  records after path approval or fallback.
 
 Example canonical identity:
 
@@ -172,8 +187,9 @@ Completed helper slice:
 - `fallback_alias_for_scope(...)`
 - `can_continue_alias_upward(...)`
 - `evaluate_alias_authority_step(...)`
+- `evaluate_alias_authority_chain(...)`
 
-Future traversal slice:
+Future claim slice:
 
 - `claim_alias_through_authority_chain(...)`
 - `find_highest_authorized_alias_scope(...)`

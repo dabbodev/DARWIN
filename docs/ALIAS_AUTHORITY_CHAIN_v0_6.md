@@ -1,9 +1,9 @@
 # DARWIN v0.6 Alias Authority Chain
 
 This document plans the v0.6 alias authority chain behavior for DARWIN. The
-Sprint 1 authority path data models and Sprint 2 authority-step evaluation
-helpers are implemented, but parent-chain traversal and negotiation remain
-future work.
+Sprint 1 authority path data models, Sprint 2 authority-step evaluation
+helpers, and Sprint 3 explicit parent-chain traversal helper are implemented.
+Alias claiming through the chain and scenario wiring remain future work.
 
 The goal is to extend v0.5 progressive alias fallback from a local
 RegistryHub-only decision into an explicit parent-scope negotiation path.
@@ -60,10 +60,25 @@ Implemented in Sprint 2:
 - Authority-step helpers do not claim aliases, record conflicts, mutate
   registry state, perform traversal, or negotiate with parent hubs.
 
+Implemented in Sprint 3:
+
+- `evaluate_alias_authority_chain(...)` walks explicit `RegistryHub`
+  `parent_hub_id` links from a start hub to parent hubs.
+- The traversal helper records ordered `AliasAuthorityDecision` entries into
+  an `AliasAuthorityPath`.
+- Traversal stops on approval, fallback availability, insufficient authority,
+  active-name conflict, policy denial, blocked device, missing start hub,
+  missing parent hub, or cycle detection.
+- Broken parent paths deterministically return `authority_path_broken`; the
+  helper does not attempt fallback after a missing parent.
+- The traversal helper is evaluation-only. It does not claim aliases, create
+  `AliasRecord` instances, record conflicts, mutate parent-chain state, change
+  direct alias behavior, or change progressive local fallback behavior.
+
 Not implemented yet:
 
-- Authority-chain traversal.
-- Parent RegistryHub negotiation.
+- Claim-through-chain helper that creates alias records after path approval or
+  fallback.
 - Scenario YAMLs for chain behavior.
 - Runtime changes to direct alias claims or progressive fallback.
 
@@ -215,7 +230,22 @@ Implemented Sprint 2 helper functions:
   traverse parent hubs, or alter existing direct alias and progressive fallback
   runtime behavior.
 
-Future traversal helpers:
+Implemented Sprint 3 traversal helper:
+
+`evaluate_alias_authority_chain(registry_hubs, start_hub_id, requested_alias,
+local_name, target_device_id, fallback_allowed=True)`:
+
+- Walks explicit parent RegistryHub links and records one decision per
+  evaluated hub.
+- Returns an `AliasAuthorityPath` with final status, granted alias when
+  approval or fallback is available, authority ceiling, and decision order.
+- Stops deterministically at the first terminal decision.
+- Returns `authority_path_broken` for missing start hubs, missing parent hubs,
+  and cycle detection.
+- Does not mutate alias tables, claim aliases, create conflicts, or wire into
+  scenario/runtime alias claim actions.
+
+Future claim helper:
 
 `claim_alias_through_authority_chain(...)`:
 
