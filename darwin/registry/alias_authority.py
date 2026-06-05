@@ -68,6 +68,13 @@ def evaluate_alias_authority_step(
         )
 
     if is_alias_within_scope(requested_alias, registry_hub.scope_path):
+        if not _policy_allows(registry_hub, "allow_approval"):
+            return _decision(
+                registry_hub,
+                decision="policy_denied",
+                reason="approval_denied_by_policy",
+                alias=requested_alias,
+            )
         return _decision(
             registry_hub,
             decision="approved_here",
@@ -75,6 +82,31 @@ def evaluate_alias_authority_step(
         )
 
     can_continue_upward = can_continue_alias_upward(registry_hub)
+    if can_continue_upward and not _policy_allows(registry_hub, "allow_pass_up"):
+        if fallback_allowed and _policy_allows(registry_hub, "allow_fallback"):
+            fallback_alias = fallback_alias_for_scope(registry_hub.scope_path, local_name)
+            if _active_alias_exists(registry_hub, fallback_alias):
+                return _decision(
+                    registry_hub,
+                    decision="name_taken",
+                    reason="fallback_alias_conflict",
+                    alias=requested_alias,
+                    fallback_alias=fallback_alias,
+                )
+            return _decision(
+                registry_hub,
+                decision="fallback_available",
+                reason="pass_up_denied_by_policy",
+                alias=requested_alias,
+                fallback_alias=fallback_alias,
+            )
+        return _decision(
+            registry_hub,
+            decision="policy_denied",
+            reason="pass_up_denied_by_policy",
+            alias=requested_alias,
+        )
+
     if can_continue_upward:
         return _decision(
             registry_hub,
@@ -89,6 +121,14 @@ def evaluate_alias_authority_step(
             registry_hub,
             decision="insufficient_authority",
             reason="insufficient_authority",
+            alias=requested_alias,
+        )
+
+    if not _policy_allows(registry_hub, "allow_fallback"):
+        return _decision(
+            registry_hub,
+            decision="policy_denied",
+            reason="fallback_denied_by_policy",
             alias=requested_alias,
         )
 
@@ -295,6 +335,10 @@ def _decision(
 def _active_alias_exists(registry_hub: RegistryHub, alias: str) -> bool:
     alias_record = registry_hub.aliases.get(alias)
     return alias_record is not None and alias_record.status == "active"
+
+
+def _policy_allows(registry_hub: RegistryHub, policy_key: str) -> bool:
+    return bool(registry_hub.alias_authority_policy.get(policy_key, True))
 
 
 def _claim_alias_from_authority_path(

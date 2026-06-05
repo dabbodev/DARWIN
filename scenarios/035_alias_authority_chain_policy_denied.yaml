@@ -1,0 +1,67 @@
+scenario_id: 035_alias_authority_chain_policy_denied
+name: Alias authority-chain policy denied
+category: registry
+description: parent policy denies pass-up and fallback, producing a rejected claim without creating aliases
+tags:
+  - alias
+  - alias_authority_chain
+  - policy
+  - registry
+demonstrates:
+  - simulator-local pass-up denial
+  - simulator-local fallback denial
+  - failure snapshot without alias creation
+expected_result: global.server is rejected at the family policy ceiling and no alias is created
+setup:
+  registry_hubs:
+    - hub_id: registry_home_001
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_001
+    - hub_id: registry_family_001
+      scope_path: global.family.david
+      parent_hub_id: registry_global_001
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: false
+    - hub_id: registry_global_001
+      scope_path: global
+  devices:
+    - device_id: dev_A9F3
+      label: server
+steps:
+  - action: register_device
+    registry_hub: registry_home_001
+    device: dev_A9F3
+    label: server
+  - action: register_device
+    registry_hub: registry_family_001
+    device: dev_A9F3
+    label: server
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_001
+    requested_alias: global.server
+    local_name: server
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    fallback_allowed: true
+    visibility: scope_local
+assertions:
+  - type: latest_step_status
+    expected: rejected
+  - type: latest_step_reason
+    expected: pass_up_denied_by_policy
+  - type: alias_authority_path_summary
+    requested_alias: global.server
+    final_status: policy_denied
+    granted_alias: null
+    authority_ceiling: global.family.david
+    decision_count: 2
+    path_hubs:
+      - registry_home_001
+      - registry_family_001
+  - type: alias_not_resolved
+    registry_hub: registry_global_001
+    alias: global.server
+  - type: alias_not_resolved
+    registry_hub: registry_family_001
+    alias: global.family.david.server

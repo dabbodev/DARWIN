@@ -1,0 +1,69 @@
+scenario_id: 032_alias_authority_chain_success
+name: Alias authority-chain success
+category: registry
+description: low-level registry request climbs through explicit parents and is approved by the global hub
+tags:
+  - alias
+  - alias_authority_chain
+  - registry
+demonstrates:
+  - explicit parent-chain alias authority traversal
+  - high-scope alias approval by parent authority
+  - canonical identity preservation
+expected_result: global.server is claimed at the global hub for the requesting device
+setup:
+  registry_hubs:
+    - hub_id: registry_home_001
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_001
+    - hub_id: registry_family_001
+      scope_path: global.family.david
+      parent_hub_id: registry_global_001
+    - hub_id: registry_global_001
+      scope_path: global
+  devices:
+    - device_id: dev_A9F3
+      label: server
+steps:
+  - action: register_device
+    registry_hub: registry_home_001
+    device: dev_A9F3
+    label: server
+  - action: register_device
+    registry_hub: registry_family_001
+    device: dev_A9F3
+    label: server
+  - action: register_device
+    registry_hub: registry_global_001
+    device: dev_A9F3
+    label: server
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_001
+    requested_alias: global.server
+    local_name: server
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    fallback_allowed: true
+    visibility: scope_local
+assertions:
+  - type: latest_step_status
+    expected: claimed
+  - type: alias_resolves_to
+    registry_hub: registry_global_001
+    alias: global.server
+    device: dev_A9F3
+    identity_chain: global.server
+  - type: alias_authority_path_summary
+    requested_alias: global.server
+    final_status: approved_here
+    granted_alias: global.server
+    authority_ceiling: global
+    decision_count: 3
+    path_hubs:
+      - registry_home_001
+      - registry_family_001
+      - registry_global_001
+  - type: canonical_identity_unchanged
+    registry_hub: registry_home_001
+    device: dev_A9F3
+    expected_identity_chain: global.family.david.home.server

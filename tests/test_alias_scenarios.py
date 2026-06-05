@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from darwin.registry.aliases import resolve_alias
+from darwin.sim.assertions import evaluate_assertion
 from darwin.sim.library import scenario_metadata_from_dict
 from darwin.sim.runner import run_scenario
 from darwin.sim.scenarios import (
@@ -55,6 +56,24 @@ def test_dns_style_alias_bundle_scenario_runs():
     )
 
     assert result.passed
+
+
+def test_alias_authority_chain_scenarios_run():
+    scenario_names = [
+        "032_alias_authority_chain_success.yaml",
+        "033_alias_authority_chain_fallback.yaml",
+        "034_alias_authority_chain_name_taken.yaml",
+        "035_alias_authority_chain_policy_denied.yaml",
+        "036_alias_authority_chain_broken_parent.yaml",
+    ]
+
+    for scenario_name in scenario_names:
+        scenario_file = PROJECT_ROOT / "scenarios" / scenario_name
+        validation = validate_scenario_file(scenario_file)
+        assert validation.passed, scenario_name
+
+        result = run_scenario(scenario_file)
+        assert result.passed, scenario_name
 
 
 def test_dns_style_bundle_metadata_present():
@@ -147,6 +166,70 @@ def test_claim_progressive_alias_action():
     assert latest_result.success
     assert latest_result.status == "fallback_granted"
     assert latest_result.granted_alias == "global.family.home.david_server"
+
+
+def test_claim_alias_through_authority_chain_action_records_path():
+    result = run_scenario({
+        "scenario_id": "claim_alias_through_authority_chain_action",
+        "setup": _alias_authority_chain_setup(),
+        "steps": [
+            _register_at("registry_home_001", "dev_A9F3", "server"),
+            _register_at("registry_family_001", "dev_A9F3", "server"),
+            _register_at("registry_global_001", "dev_A9F3", "server"),
+            _claim_alias_through_authority_chain_step(),
+        ],
+        "assertions": [],
+    })
+
+    latest_result = result.world.action_results[-1]
+    assert latest_result.success
+    assert latest_result.status == "claimed"
+    assert latest_result.authority_path.to_summary().path_hubs == [
+        "registry_home_001",
+        "registry_family_001",
+        "registry_global_001",
+    ]
+    assert result.world.event_log.entries[-1].event_type == (
+        "alias_authority_chain_claimed"
+    )
+    assert result.final_snapshot["alias_authority_claims"][0]["authority_path"][
+        "final_status"
+    ] == "approved_here"
+
+
+def test_claim_alias_through_authority_chain_failure_records_path():
+    result = run_scenario({
+        "scenario_id": "claim_alias_through_authority_chain_failure_action",
+        "setup": {
+            "registry_hubs": [
+                {
+                    "hub_id": "registry_home_001",
+                    "scope_path": "global.family.david.home",
+                    "parent_hub_id": "registry_missing_001",
+                }
+            ],
+            "devices": [{"device_id": "dev_A9F3", "label": "server"}],
+        },
+        "steps": [
+            _register_at("registry_home_001", "dev_A9F3", "server"),
+            _claim_alias_through_authority_chain_step(),
+        ],
+        "assertions": [],
+    })
+
+    latest_result = result.world.action_results[-1]
+    assert not latest_result.success
+    assert latest_result.status == "authority_path_broken"
+    assert latest_result.authority_path.to_summary().path_hubs == [
+        "registry_home_001",
+        "registry_missing_001",
+    ]
+    assert result.world.event_log.entries[-1].event_type == (
+        "alias_authority_chain_failed"
+    )
+    assert result.final_snapshot["alias_authority_claims"][0]["reason"] == (
+        "parent_hub_not_found"
+    )
 
 
 def test_create_alias_bundle_action():
@@ -348,6 +431,70 @@ def test_alias_authority_ceiling_assertion():
     assert result.passed
 
 
+def test_alias_authority_path_summary_assertion_passes():
+    result = run_scenario({
+        "scenario_id": "alias_authority_path_summary_assertion",
+        "setup": _alias_authority_chain_setup(),
+        "steps": [
+            _register_at("registry_home_001", "dev_A9F3", "server"),
+            _register_at("registry_family_001", "dev_A9F3", "server"),
+            _register_at("registry_global_001", "dev_A9F3", "server"),
+            _claim_alias_through_authority_chain_step(),
+        ],
+        "assertions": [
+            {
+                "type": "alias_authority_path_summary",
+                "requested_alias": "global.server",
+                "final_status": "approved_here",
+                "granted_alias": "global.server",
+                "authority_ceiling": "global",
+                "decision_count": 3,
+                "path_hubs": [
+                    "registry_home_001",
+                    "registry_family_001",
+                    "registry_global_001",
+                ],
+            }
+        ],
+    })
+
+    assert result.passed
+
+
+def test_alias_authority_path_summary_assertion_fails_with_actual():
+    result = run_scenario({
+        "scenario_id": "alias_authority_path_summary_assertion_failure",
+        "setup": _alias_authority_chain_setup(),
+        "steps": [
+            _register_at("registry_home_001", "dev_A9F3", "server"),
+            _register_at("registry_family_001", "dev_A9F3", "server"),
+            _register_at("registry_global_001", "dev_A9F3", "server"),
+            _claim_alias_through_authority_chain_step(),
+        ],
+        "assertions": [],
+    })
+
+    assertion_result = evaluate_assertion(
+        result.world,
+        {
+            "type": "alias_authority_path_summary",
+            "requested_alias": "global.server",
+            "final_status": "policy_denied",
+            "decision_count": 3,
+        },
+    )
+
+    assert not assertion_result.passed
+    assert assertion_result.expected == {
+        "final_status": "policy_denied",
+        "decision_count": 3,
+    }
+    assert assertion_result.actual == {
+        "final_status": "approved_here",
+        "decision_count": 3,
+    }
+
+
 def test_alias_not_resolved_assertion_after_release():
     result = run_scenario({
         "scenario_id": "alias_not_resolved_assertion_after_release",
@@ -400,6 +547,10 @@ def test_alias_actions_validate_required_fields():
             {"action": "create_alias_bundle"},
             {"action": "claim_bundle_alias", "registry_hub": "hub_home_001"},
             {"action": "claim_progressive_alias", "registry_hub": "hub_home_001"},
+            {
+                "action": "claim_alias_through_authority_chain",
+                "registry_hub": "hub_home_001",
+            },
             {"action": "resolve_alias", "registry_hub": "hub_home_001"},
             {"action": "release_alias", "registry_hub": "hub_home_001"},
         ],
@@ -410,6 +561,7 @@ def test_alias_actions_validate_required_fields():
             {"type": "bundle_alias_resolves_to", "registry_hub": "hub_home_001"},
             {"type": "alias_granted_as", "registry_hub": "hub_home_001"},
             {"type": "alias_authority_ceiling", "registry_hub": "hub_home_001"},
+            {"type": "alias_authority_path_summary"},
             {"type": "alias_not_resolved", "registry_hub": "hub_home_001"},
             {
                 "type": "canonical_identity_unchanged",
@@ -430,8 +582,11 @@ def test_alias_actions_validate_required_fields():
     assert "steps[3].requested_alias" in locations
     assert "steps[3].local_name" in locations
     assert "steps[3].target_device" in locations
-    assert "steps[4].alias" in locations
+    assert "steps[4].requested_alias" in locations
+    assert "steps[4].local_name" in locations
+    assert "steps[4].target_device" in locations
     assert "steps[5].alias" in locations
+    assert "steps[6].alias" in locations
     assert "assertions[0].alias" in locations
     assert "assertions[0].device" in locations
     assert "assertions[1].alias" in locations
@@ -445,9 +600,10 @@ def test_alias_actions_validate_required_fields():
     assert "assertions[4].granted_alias" in locations
     assert "assertions[5].alias" in locations
     assert "assertions[5].expected" in locations
-    assert "assertions[6].alias" in locations
-    assert "assertions[7].device" in locations
-    assert "assertions[7].expected_identity_chain" in locations
+    assert "assertions[6].requested_alias" in locations
+    assert "assertions[7].alias" in locations
+    assert "assertions[8].device" in locations
+    assert "assertions[8].expected_identity_chain" in locations
 
 
 def _alias_setup():
@@ -468,6 +624,42 @@ def _alias_setup():
     }
 
 
+def _alias_authority_chain_setup():
+    return {
+        "registry_hubs": [
+            {
+                "hub_id": "registry_home_001",
+                "scope_path": "global.family.david.home",
+                "parent_hub_id": "registry_family_001",
+            },
+            {
+                "hub_id": "registry_family_001",
+                "scope_path": "global.family.david",
+                "parent_hub_id": "registry_global_001",
+            },
+            {
+                "hub_id": "registry_global_001",
+                "scope_path": "global",
+            },
+        ],
+        "devices": [
+            {
+                "device_id": "dev_A9F3",
+                "label": "server",
+            }
+        ],
+    }
+
+
+def _register_at(registry_hub: str, device: str, label: str):
+    return {
+        "action": "register_device",
+        "registry_hub": registry_hub,
+        "device": device,
+        "label": label,
+    }
+
+
 def _claim_alias_step():
     return {
         "action": "claim_alias",
@@ -483,5 +675,15 @@ def _claim_progressive_alias_step():
         "registry_hub": "hub_home_001",
         "requested_alias": "global.david_server",
         "local_name": "david_server",
+        "target_device": "dev_A9F3",
+    }
+
+
+def _claim_alias_through_authority_chain_step():
+    return {
+        "action": "claim_alias_through_authority_chain",
+        "registry_hub": "registry_home_001",
+        "requested_alias": "global.server",
+        "local_name": "server",
         "target_device": "dev_A9F3",
     }

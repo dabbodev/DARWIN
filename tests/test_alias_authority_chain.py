@@ -10,11 +10,15 @@ def make_hub(
     hub_id: str,
     scope_path: str,
     parent_hub_id: str | None = None,
+    alias_authority_policy: dict[str, object] | None = None,
 ) -> RegistryHub:
     return RegistryHub(
         hub_id=hub_id,
         scope_path=scope_path,
         parent_hub_id=parent_hub_id,
+        alias_authority_policy=(
+            {} if alias_authority_policy is None else alias_authority_policy
+        ),
     )
 
 
@@ -146,6 +150,77 @@ def test_authority_chain_broken_parent_path():
     assert path.decisions[-1].hub_id == "registry_missing"
     assert path.decisions[-1].reason == "parent_hub_not_found"
     assert path.final_status == "authority_path_broken"
+
+
+def test_authority_chain_policy_can_stop_pass_up_with_fallback():
+    child = make_hub(
+        "registry_child_001",
+        "global.family.david.home",
+        parent_hub_id="registry_family_001",
+    )
+    parent = make_hub(
+        "registry_family_001",
+        "global.family.david",
+        parent_hub_id="registry_global_001",
+        alias_authority_policy={
+            "allow_pass_up": False,
+            "allow_fallback": True,
+        },
+    )
+    register_test_device(child)
+    register_test_device(parent)
+
+    path = evaluate_alias_authority_chain(
+        {child.hub_id: child, parent.hub_id: parent},
+        child.hub_id,
+        "global.server",
+        "server",
+        "dev_A9F3",
+    )
+
+    assert [decision.decision for decision in path.decisions] == [
+        "continue_upward",
+        "fallback_available",
+    ]
+    assert path.decisions[-1].reason == "pass_up_denied_by_policy"
+    assert path.final_status == "fallback_granted"
+    assert path.granted_alias == "global.family.david.server"
+
+
+def test_authority_chain_policy_can_deny_pass_up_and_fallback():
+    child = make_hub(
+        "registry_child_001",
+        "global.family.david.home",
+        parent_hub_id="registry_family_001",
+    )
+    parent = make_hub(
+        "registry_family_001",
+        "global.family.david",
+        parent_hub_id="registry_global_001",
+        alias_authority_policy={
+            "allow_pass_up": False,
+            "allow_fallback": False,
+        },
+    )
+    register_test_device(child)
+    register_test_device(parent)
+
+    path = evaluate_alias_authority_chain(
+        {child.hub_id: child, parent.hub_id: parent},
+        child.hub_id,
+        "global.server",
+        "server",
+        "dev_A9F3",
+    )
+
+    assert [decision.decision for decision in path.decisions] == [
+        "continue_upward",
+        "policy_denied",
+    ]
+    assert path.decisions[-1].reason == "pass_up_denied_by_policy"
+    assert path.final_status == "policy_denied"
+    assert path.granted_alias is None
+    assert path.authority_ceiling == "global.family.david"
 
 
 def test_authority_chain_name_taken_stops():

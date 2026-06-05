@@ -2,9 +2,9 @@
 
 This document plans the v0.6 alias authority chain behavior for DARWIN. The
 Sprint 1 authority path data models, Sprint 2 authority-step evaluation
-helpers, Sprint 3 explicit parent-chain traversal helper, and Sprint 4
-claim-through-chain helper are implemented. Scenario wiring remains future
-work.
+helpers, Sprint 3 explicit parent-chain traversal helper, Sprint 4
+claim-through-chain helper, and Sprint 5 scenario runner support are
+implemented.
 
 The goal is to extend v0.5 progressive alias fallback from a local
 RegistryHub-only decision into an explicit parent-scope negotiation path.
@@ -90,11 +90,24 @@ Implemented in Sprint 4:
   reason when applicable, approved hub, authority scope, and authority ceiling.
 - Failed paths return the evaluated authority path without mutating alias
   tables or recording conflicts.
-- The helper is not wired into scenario actions yet.
+- The helper is wired into scenario actions through
+  `claim_alias_through_authority_chain`.
+
+Implemented in Sprint 5:
+
+- Scenario DSL action `claim_alias_through_authority_chain` records structured
+  action results and deterministic success/failure events.
+- Assertion `alias_authority_path_summary` compares compact authority path
+  summaries for success and failure paths.
+- Detailed snapshots include top-level `alias_authority_claims` entries for
+  authority-chain claim results.
+- Scenarios `032` through `036` cover success, fallback, name conflict, policy
+  denial, and broken parent traversal.
+- Minimal simulator-local policy keys `allow_approval`, `allow_pass_up`, and
+  `allow_fallback` make policy stops observable in scenarios.
 
 Not implemented yet:
 
-- Scenario YAMLs for chain behavior.
 - Runtime changes to direct alias claims or progressive fallback.
 
 ## Proposed Authority Chain Flow
@@ -346,7 +359,7 @@ Scenario assertions should be able to check:
 - A specific decision in the decision chain.
 - The target device canonical identity remains unchanged.
 
-## Proposed Scenarios
+## Implemented Sprint 5 Scenarios
 
 - `032_alias_authority_chain_success.yaml`: request climbs to a parent that
   can approve the high-level alias.
@@ -359,7 +372,7 @@ Scenario assertions should be able to check:
 - `036_alias_authority_chain_broken_parent.yaml`: traversal fails because the
   configured parent chain is incomplete.
 
-## Proposed Tests
+## Implemented and Proposed Tests
 
 - Parent chain construction.
 - Authority path recording.

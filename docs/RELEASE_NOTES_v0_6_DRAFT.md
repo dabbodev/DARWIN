@@ -30,6 +30,11 @@ alias or the highest allowed fallback alias.
 - Highest-approved alias selection.
 - Highest-allowed fallback alias selection when the requested alias is
   unavailable or unauthorized.
+- Sprint 5 draft: scenario runner action
+  `claim_alias_through_authority_chain`, compact
+  `alias_authority_path_summary` assertions, detailed snapshot visibility for
+  authority-chain claim results, simulator-local policy gates, and scenarios
+  `032` through `036`.
 
 ## Proposed Models
 
@@ -59,9 +64,9 @@ alias or the highest allowed fallback alias.
 - `device_blocked`
 - `authority_path_broken`
 
-## Proposed Scenarios
+## Draft Scenario Coverage
 
-Planned alias authority chain scenarios:
+Sprint 5 draft scenario coverage:
 
 - `scenarios/032_alias_authority_chain_success.yaml`
 - `scenarios/033_alias_authority_chain_fallback.yaml`

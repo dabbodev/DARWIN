@@ -102,6 +102,12 @@ STEP_REQUIRED_FIELDS = {
         "local_name",
         "target_device",
     ),
+    "claim_alias_through_authority_chain": (
+        "registry_hub",
+        "requested_alias",
+        "local_name",
+        "target_device",
+    ),
     "resolve_alias": ("registry_hub", "alias"),
     "release_alias": ("registry_hub", "alias"),
     "open_lane": ("source", "target", "traffic_hub"),
@@ -169,6 +175,7 @@ ASSERTION_REQUIRED_FIELDS = {
     ),
     "alias_granted_as": ("registry_hub", "requested_alias", "granted_alias"),
     "alias_authority_ceiling": ("registry_hub", "alias", "expected"),
+    "alias_authority_path_summary": ("requested_alias",),
     "alias_not_resolved": ("registry_hub", "alias"),
     "canonical_identity_unchanged": (
         "registry_hub",

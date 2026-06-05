@@ -245,7 +245,7 @@ Proposed v0.6 rules:
 - Quarantined or revoked devices cannot claim aliases through the chain.
 - Existing direct v0.5 alias behavior must remain unchanged.
 
-## Proposed Scenarios
+## Implemented Sprint 5 Scenarios
 
 - `032_alias_authority_chain_success.yaml`
 - `033_alias_authority_chain_fallback.yaml`
@@ -253,7 +253,12 @@ Proposed v0.6 rules:
 - `035_alias_authority_chain_policy_denied.yaml`
 - `036_alias_authority_chain_broken_parent.yaml`
 
-## Proposed Tests
+Sprint 5 wires `claim_alias_through_authority_chain` into the scenario runner,
+adds compact `alias_authority_path_summary` assertions, records authority-chain
+claim summaries in detailed snapshots, and adds simulator-local policy keys for
+approval, pass-up, and fallback gates.
+
+## Implemented and Proposed Tests
 
 - Parent chain construction.
 - Authority path recording.

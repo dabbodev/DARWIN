@@ -1,0 +1,79 @@
+scenario_id: 034_alias_authority_chain_name_taken
+name: Alias authority-chain name taken
+category: registry
+description: high-scope alias conflict is reported without overwriting the original owner
+tags:
+  - alias
+  - alias_authority_chain
+  - conflict
+  - registry
+demonstrates:
+  - parent-chain conflict detection
+  - original alias owner preservation
+  - failed authority-chain claim summary
+expected_result: requested global.server claim fails and still resolves to the existing owner
+setup:
+  registry_hubs:
+    - hub_id: registry_home_001
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_001
+    - hub_id: registry_family_001
+      scope_path: global.family.david
+      parent_hub_id: registry_global_001
+    - hub_id: registry_global_001
+      scope_path: global
+  devices:
+    - device_id: dev_A9F3
+      label: server
+    - device_id: dev_B2C8
+      label: backup
+steps:
+  - action: register_device
+    registry_hub: registry_global_001
+    device: dev_A9F3
+    label: server
+  - action: register_device
+    registry_hub: registry_home_001
+    device: dev_B2C8
+    label: backup
+  - action: register_device
+    registry_hub: registry_family_001
+    device: dev_B2C8
+    label: backup
+  - action: register_device
+    registry_hub: registry_global_001
+    device: dev_B2C8
+    label: backup
+  - action: claim_alias
+    registry_hub: registry_global_001
+    alias: global.server
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_001
+    requested_alias: global.server
+    local_name: server
+    target_device: dev_B2C8
+    requested_by_device: dev_B2C8
+    fallback_allowed: true
+    visibility: scope_local
+assertions:
+  - type: latest_step_status
+    expected: conflict
+  - type: latest_step_reason
+    expected: alias_conflict
+  - type: alias_authority_path_summary
+    requested_alias: global.server
+    final_status: name_taken
+    granted_alias: null
+    decision_count: 3
+    path_hubs:
+      - registry_home_001
+      - registry_family_001
+      - registry_global_001
+  - type: alias_resolves_to
+    registry_hub: registry_global_001
+    alias: global.server
+    device: dev_A9F3
+    identity_chain: global.server

@@ -1,0 +1,67 @@
+scenario_id: 033_alias_authority_chain_fallback
+name: Alias authority-chain fallback
+category: registry
+description: parent policy stops pass-up and grants the highest allowed fallback alias
+tags:
+  - alias
+  - alias_authority_chain
+  - fallback
+  - registry
+demonstrates:
+  - simulator-local pass-up policy
+  - fallback alias creation at authority ceiling
+  - requested high-scope alias remains uncreated
+expected_result: global.server falls back to global.family.david.server at the family hub
+setup:
+  registry_hubs:
+    - hub_id: registry_home_001
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_001
+    - hub_id: registry_family_001
+      scope_path: global.family.david
+      parent_hub_id: registry_global_001
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+    - hub_id: registry_global_001
+      scope_path: global
+  devices:
+    - device_id: dev_A9F3
+      label: server
+steps:
+  - action: register_device
+    registry_hub: registry_home_001
+    device: dev_A9F3
+    label: server
+  - action: register_device
+    registry_hub: registry_family_001
+    device: dev_A9F3
+    label: server
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_001
+    requested_alias: global.server
+    local_name: server
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    fallback_allowed: true
+    visibility: scope_local
+assertions:
+  - type: latest_step_status
+    expected: fallback_granted
+  - type: alias_authority_path_summary
+    requested_alias: global.server
+    final_status: fallback_granted
+    granted_alias: global.family.david.server
+    authority_ceiling: global.family.david
+    decision_count: 2
+    path_hubs:
+      - registry_home_001
+      - registry_family_001
+  - type: alias_not_resolved
+    registry_hub: registry_global_001
+    alias: global.server
+  - type: alias_resolves_to
+    registry_hub: registry_family_001
+    alias: global.family.david.server
+    device: dev_A9F3
+    identity_chain: global.family.david.server
