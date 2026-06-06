@@ -578,6 +578,43 @@ def _alias_authority_ceiling(
     )
 
 
+def _alias_authority_path_summary(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    requested_alias = str(assertion.get("requested_alias"))
+    expected = {
+        key: assertion[key]
+        for key in (
+            "final_status",
+            "granted_alias",
+            "authority_ceiling",
+            "decision_count",
+            "path_hubs",
+        )
+        if key in assertion
+    }
+    actual = None
+    for result in reversed(world.action_results):
+        authority_path = getattr(result, "authority_path", None)
+        if authority_path is None:
+            continue
+        if authority_path.requested_alias != requested_alias:
+            continue
+        summary = authority_path.to_summary().to_dict()
+        actual = {key: summary.get(key) for key in expected}
+        break
+
+    return _result(
+        assertion_type,
+        actual == expected,
+        expected,
+        f"{requested_alias} authority path summary matches",
+        actual,
+    )
+
+
 def _alias_not_resolved(
     world: World,
     assertion_type: str,
@@ -675,6 +712,7 @@ _EVALUATORS = {
     "bundle_alias_resolves_to": _bundle_alias_resolves_to,
     "alias_granted_as": _alias_granted_as,
     "alias_authority_ceiling": _alias_authority_ceiling,
+    "alias_authority_path_summary": _alias_authority_path_summary,
     "alias_not_resolved": _alias_not_resolved,
     "canonical_identity_unchanged": _canonical_identity_unchanged,
 }

@@ -38,11 +38,15 @@ class World:
         hub_id: str,
         scope_path: str,
         parent_hub_id: str | None = None,
+        alias_authority_policy: dict[str, object] | None = None,
     ) -> RegistryHub:
         hub = RegistryHub(
             hub_id=hub_id,
             scope_path=scope_path,
             parent_hub_id=parent_hub_id,
+            alias_authority_policy=(
+                {} if alias_authority_policy is None else dict(alias_authority_policy)
+            ),
         )
         self.add_registry_hub(hub)
         return hub
@@ -57,11 +61,13 @@ class World:
         hub_id: str,
         scope_path: str,
         parent_hub_id: str | None = None,
+        alias_authority_policy: dict[str, object] | None = None,
     ) -> tuple[RegistryHub, TrafficHub]:
         registry_hub = self.create_registry_hub(
             hub_id=hub_id,
             scope_path=scope_path,
             parent_hub_id=parent_hub_id,
+            alias_authority_policy=alias_authority_policy,
         )
         traffic_hub = self.create_traffic_hub(hub_id)
         return registry_hub, traffic_hub
@@ -143,6 +149,9 @@ class World:
                 hub_id: {
                     "scope_path": hub.scope_path,
                     "parent_hub_id": hub.parent_hub_id,
+                    "alias_authority_policy": dict(
+                        sorted(hub.alias_authority_policy.items())
+                    ),
                     "labels": dict(sorted(hub.labels.items())),
                     "aliases": {
                         alias: {
@@ -290,4 +299,26 @@ class World:
                 ]
                 for hub_id, hub in sorted(self.traffic_hubs.items())
             },
+            "alias_authority_claims": self._alias_authority_claim_snapshots(),
         }
+
+    def _alias_authority_claim_snapshots(self) -> list[dict[str, object]]:
+        claims = []
+        for result in self.action_results:
+            authority_path = getattr(result, "authority_path", None)
+            if authority_path is None:
+                continue
+
+            authority_summary = authority_path.to_summary()
+            claims.append(
+                {
+                    "requested_alias": getattr(result, "requested_alias", None),
+                    "granted_alias": getattr(result, "granted_alias", None),
+                    "status": getattr(result, "status", None),
+                    "reason": getattr(result, "reason", None),
+                    "success": getattr(result, "success", None),
+                    "authority_ceiling": getattr(result, "authority_ceiling", None),
+                    "authority_path": authority_summary.to_dict(),
+                }
+            )
+        return claims

@@ -18,6 +18,9 @@ from darwin.models.checkpoint import make_checkpoint_packet
 from darwin.models.device import Device
 from darwin.models.hub import LocalDeviceRecord
 from darwin.models.route import LinkMetrics
+from darwin.registry.alias_authority import (
+    claim_alias_through_authority_chain as claim_alias_through_authority_chain_op,
+)
 from darwin.registry.aliases import (
     claim_alias as claim_alias_op,
 )
@@ -162,6 +165,9 @@ def _apply_setup(world: World, setup: dict[str, Any]) -> None:
             hub_id=str(hub_config["hub_id"]),
             scope_path=str(hub_config["scope_path"]),
             parent_hub_id=_optional_str(hub_config.get("parent_hub_id")),
+            alias_authority_policy=_optional_policy(
+                hub_config.get("alias_authority_policy")
+            ),
         )
 
     for hub_config in _configs(setup.get("traffic_hubs", []), "hub_id"):
@@ -172,6 +178,9 @@ def _apply_setup(world: World, setup: dict[str, Any]) -> None:
             hub_id=str(hub_config["hub_id"]),
             scope_path=str(hub_config["scope_path"]),
             parent_hub_id=_optional_str(hub_config.get("parent_hub_id")),
+            alias_authority_policy=_optional_policy(
+                hub_config.get("alias_authority_policy")
+            ),
         )
 
     for link_config in _configs(setup.get("links", []), "from"):
@@ -212,6 +221,9 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         "create_alias_bundle": _step_create_alias_bundle,
         "claim_bundle_alias": _step_claim_bundle_alias,
         "claim_progressive_alias": _step_claim_progressive_alias,
+        "claim_alias_through_authority_chain": (
+            _step_claim_alias_through_authority_chain
+        ),
         "resolve_alias": _step_resolve_alias,
         "release_alias": _step_release_alias,
         "open_lane": _step_open_lane,
@@ -460,6 +472,59 @@ def _step_claim_progressive_alias(world: World, fields: dict[str, Any]) -> None:
             "fallback_reason": result.fallback_reason,
             "authority_ceiling": result.authority_ceiling,
             "conflict_id": result.conflict_id,
+        },
+    )
+
+
+def _step_claim_alias_through_authority_chain(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    start_hub_id = str(fields["registry_hub"])
+    requested_alias = str(fields["requested_alias"])
+    local_name = str(fields["local_name"])
+    target_device_id = str(fields["target_device"])
+    result = claim_alias_through_authority_chain_op(
+        world.registry_hubs,
+        start_hub_id,
+        requested_alias,
+        local_name,
+        target_device_id,
+        requested_by_device_id=_optional_str(fields.get("requested_by_device")),
+        fallback_allowed=bool(fields.get("fallback_allowed", True)),
+        visibility=str(fields.get("visibility", "local")),
+        ttl=_optional_int(fields.get("ttl")),
+    )
+    world.action_results.append(result)
+    event_type = (
+        "alias_authority_chain_claimed"
+        if result.success
+        else "alias_authority_chain_failed"
+    )
+    authority_path = result.authority_path
+    authority_summary = authority_path.to_summary()
+    world.log(
+        f"{event_type} {requested_alias} from {start_hub_id} for {target_device_id}",
+        event_type=event_type,
+        actor=_optional_str(fields.get("requested_by_device")) or target_device_id,
+        target=target_device_id,
+        device_id=target_device_id,
+        hub_id=start_hub_id,
+        status=result.status,
+        data={
+            "requested_alias": requested_alias,
+            "granted_alias": result.granted_alias,
+            "target_device": target_device_id,
+            "success": result.success,
+            "status": result.status,
+            "reason": result.reason,
+            "authority_ceiling": result.authority_ceiling,
+            "authority_path_final_status": authority_summary.final_status,
+            "decision_count": authority_summary.decision_count,
+            "path_hubs": list(authority_summary.path_hubs),
+            "decisions": [
+                decision.to_dict() for decision in authority_path.decisions
+            ],
         },
     )
 
@@ -1304,6 +1369,14 @@ def _optional_str_list(value: Any) -> list[str] | None:
     if isinstance(value, list):
         return [str(item) for item in value]
     return [str(value)]
+
+
+def _optional_policy(value: Any) -> dict[str, object]:
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise TypeError("alias_authority_policy must be a mapping")
+    return dict(value)
 
 
 def _link_metrics(link_config: dict[str, Any]) -> LinkMetrics:

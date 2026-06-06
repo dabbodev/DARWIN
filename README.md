@@ -8,10 +8,11 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently released at **simulator v0.5.0**. The v0.5 release
-adds simulator-only alias registry modeling for direct aliases, progressive
-fallback, and delegated alias bundles while keeping canonical identity and
-TrafficHub routing unchanged.
+This project is currently prepared at **simulator v0.6.0** on the
+`v0.6/alias-authority-chain` release-candidate branch. The v0.6 release
+extends simulator-only alias registry modeling with explicit parent-scope
+authority-chain traversal while keeping canonical identity and TrafficHub
+routing unchanged.
 
 The v0.1 simulator answers questions like:
 
@@ -74,6 +75,19 @@ canonical identity replacement.
 - `docs/ALIAS_REGISTRY_v0_5.md`
 - `docs/RELEASE_NOTES_v0_5.md`
 
+## v0.6 Alias Authority Chain
+
+v0.6 implements simulator-only parent-scope authority negotiation for alias
+claims. Aliases are authorized shortcuts and do not replace canonical identity
+chains. This release-prep branch bumps the simulator version to
+`darwin-sim 0.6.0`, but does not merge, tag, create a GitHub release, publish
+packages, add real DNS, integrate registrars, model public CA behavior, change
+TrafficHub routing, or rewrite canonical identity chains.
+
+- `docs/V0_6_ROADMAP.md`
+- `docs/ALIAS_AUTHORITY_CHAIN_v0_6.md`
+- `docs/RELEASE_NOTES_v0_6_DRAFT.md`
+
 v0.5 alias scenarios:
 
 - `scenarios/026_alias_claim_success.yaml`
@@ -82,6 +96,14 @@ v0.5 alias scenarios:
 - `scenarios/029_progressive_alias_fallback.yaml`
 - `scenarios/030_alias_bundle_delegation.yaml`
 - `scenarios/031_dns_style_alias_bundle.yaml`
+
+v0.6 authority-chain scenarios:
+
+- `scenarios/032_alias_authority_chain_success.yaml`
+- `scenarios/033_alias_authority_chain_fallback.yaml`
+- `scenarios/034_alias_authority_chain_name_taken.yaml`
+- `scenarios/035_alias_authority_chain_policy_denied.yaml`
+- `scenarios/036_alias_authority_chain_broken_parent.yaml`
 
 ## What v0.1 Supports
 
@@ -762,6 +784,12 @@ For v0.5 alias registry behavior, see:
 - `docs/V0_5_ROADMAP.md`
 - `docs/ALIAS_REGISTRY_v0_5.md`
 - `docs/RELEASE_NOTES_v0_5.md`
+
+For v0.6 alias authority chain behavior, see:
+
+- `docs/V0_6_ROADMAP.md`
+- `docs/ALIAS_AUTHORITY_CHAIN_v0_6.md`
+- `docs/RELEASE_NOTES_v0_6_DRAFT.md`
 
 ## What v0.1 Is Not
 

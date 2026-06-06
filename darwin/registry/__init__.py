@@ -1,5 +1,13 @@
 """Public registry helpers for DARWIN v0.1."""
 
+from darwin.registry.alias_authority import (
+    can_continue_alias_upward,
+    claim_alias_through_authority_chain,
+    evaluate_alias_authority_chain,
+    evaluate_alias_authority_step,
+    fallback_alias_for_scope,
+    is_alias_within_scope,
+)
 from darwin.registry.aliases import (
     alias_exists,
     claim_alias,
@@ -28,11 +36,17 @@ __all__ = [
     "alias_exists",
     "assign_temp_label",
     "claim_alias",
+    "claim_alias_through_authority_chain",
     "claim_bundle_alias",
     "claim_progressive_alias",
+    "can_continue_alias_upward",
     "create_alias_bundle",
     "detect_checkpoint_timeouts",
+    "evaluate_alias_authority_chain",
+    "evaluate_alias_authority_step",
+    "fallback_alias_for_scope",
     "get_checkpoint_state",
+    "is_alias_within_scope",
     "record_checkpoint",
     "register_device",
     "release_alias",

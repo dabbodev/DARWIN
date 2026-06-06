@@ -260,6 +260,94 @@ steps:
     alias: global.us.gov.ca.website
 ```
 
+## v0.6 Alias Authority-Chain Scenarios
+
+The v0.6 alias authority-chain slice adds simulator-only scenario support for
+claiming an alias through explicit `RegistryHub.parent_hub_id` traversal. It
+does not implement real DNS, registrar integration, public CA behavior,
+production identity proof, external authority services, TrafficHub routing
+changes, or canonical identity rewrites. On the v0.6 release-candidate branch,
+the CLI version reports `darwin-sim 0.6.0`; merge, tag, GitHub release, and
+package publication remain separate release actions.
+
+Supported authority-chain action:
+
+- `claim_alias_through_authority_chain`
+  - Required: `registry_hub`, `requested_alias`, `local_name`, `target_device`
+  - Optional: `requested_by_device`, `fallback_allowed`, `visibility`, `ttl`
+
+The action calls the simulator helper
+`claim_alias_through_authority_chain(...)`, appends the structured result to
+`world.action_results`, and logs either `alias_authority_chain_claimed` or
+`alias_authority_chain_failed`. Event data includes requested and granted
+alias, target device, success, status, reason, authority ceiling, final path
+status, decision count, path hubs, and JSON-safe authority decisions.
+
+Supported authority-chain assertion:
+
+- `alias_authority_path_summary`
+  - Required: `requested_alias`
+  - Optional expected fields: `final_status`, `granted_alias`,
+    `authority_ceiling`, `decision_count`, `path_hubs`
+
+The assertion finds the latest action result with an `authority_path` matching
+`requested_alias` and compares only the optional fields supplied in the
+assertion. This makes it suitable for both successful claims and failure paths
+where no alias record exists.
+
+Detailed snapshots include a compact top-level `alias_authority_claims` list
+for action results that expose an authority path. Each entry records requested
+alias, granted alias, status, reason, success, authority ceiling, and an
+authority path summary with final status, decision count, and path hubs.
+
+Simulator-local policy can be configured on `registry_hubs` and `hybrid_hubs`
+with `alias_authority_policy`. Empty policy preserves default behavior.
+This policy only affects authority-chain helper behavior in the simulator. It
+is not registrar policy, DNS policy, CA policy, production identity proof, or
+an external authority service.
+Supported keys are:
+
+- `allow_approval`, default `true`
+- `allow_pass_up`, default `true`
+- `allow_fallback`, default `true`
+
+Example:
+
+```yaml
+setup:
+  registry_hubs:
+    - hub_id: registry_family_001
+      scope_path: global.family.david
+      parent_hub_id: registry_global_001
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+steps:
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_001
+    requested_alias: global.server
+    local_name: server
+    target_device: dev_A9F3
+assertions:
+  - type: alias_authority_path_summary
+    requested_alias: global.server
+    final_status: fallback_granted
+    granted_alias: global.family.david.server
+    authority_ceiling: global.family.david
+    decision_count: 2
+    path_hubs:
+      - registry_home_001
+      - registry_family_001
+```
+
+Checked-in v0.6 authority-chain scenarios:
+
+- `scenarios/032_alias_authority_chain_success.yaml`
+- `scenarios/033_alias_authority_chain_fallback.yaml`
+- `scenarios/034_alias_authority_chain_name_taken.yaml`
+- `scenarios/035_alias_authority_chain_policy_denied.yaml`
+- `scenarios/036_alias_authority_chain_broken_parent.yaml`
+
 For the basic progressive fallback slice, a RegistryHub can grant aliases only
 inside its own `scope_path`. If a requested alias is above that scope and
 `fallback_allowed` is true, the granted alias is:

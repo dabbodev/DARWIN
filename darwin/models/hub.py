@@ -78,6 +78,7 @@ class RegistryHub:
     hub_id: str
     scope_path: str
     parent_hub_id: str | None = None
+    alias_authority_policy: dict[str, object] = field(default_factory=dict)
     labels: dict[str, str] = field(default_factory=dict)
     devices: dict[str, LocalDeviceRecord] = field(default_factory=dict)
     passports: dict[str, PassportRecord] = field(default_factory=dict)

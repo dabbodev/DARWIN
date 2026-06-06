@@ -1,0 +1,54 @@
+scenario_id: 036_alias_authority_chain_broken_parent
+name: Alias authority-chain broken parent
+category: registry
+description: parent-chain traversal fails because the configured parent hub is missing
+tags:
+  - alias
+  - alias_authority_chain
+  - authority_path_broken
+  - registry
+demonstrates:
+  - explicit parent-chain traversal failure
+  - missing parent authority-path summary
+  - no alias creation on broken authority path
+expected_result: global.server claim fails with parent_hub_not_found and no alias is created
+setup:
+  registry_hubs:
+    - hub_id: registry_home_001
+      scope_path: global.family.david.home
+      parent_hub_id: registry_missing_001
+  devices:
+    - device_id: dev_A9F3
+      label: server
+steps:
+  - action: register_device
+    registry_hub: registry_home_001
+    device: dev_A9F3
+    label: server
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_001
+    requested_alias: global.server
+    local_name: server
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    fallback_allowed: true
+    visibility: scope_local
+assertions:
+  - type: latest_step_status
+    expected: authority_path_broken
+  - type: latest_step_reason
+    expected: parent_hub_not_found
+  - type: alias_authority_path_summary
+    requested_alias: global.server
+    final_status: authority_path_broken
+    granted_alias: null
+    decision_count: 2
+    path_hubs:
+      - registry_home_001
+      - registry_missing_001
+  - type: alias_not_resolved
+    registry_hub: registry_home_001
+    alias: global.server
+  - type: alias_not_resolved
+    registry_hub: registry_home_001
+    alias: global.family.david.home.server
