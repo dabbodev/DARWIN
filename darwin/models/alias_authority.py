@@ -1,4 +1,4 @@
-"""Alias authority-chain data models for DARWIN v0.6 planning."""
+"""Alias authority-chain data models for DARWIN v0.6."""
 
 from __future__ import annotations
 

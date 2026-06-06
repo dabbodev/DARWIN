@@ -2,17 +2,45 @@
 
 ## [Unreleased]
 
-Planning:
+No unreleased changes yet.
 
-- Added v0.6 alias authority chain planning docs for parent-scope alias
-  negotiation, authority path recording, authority ceilings, fallback behavior,
-  proposed models, helper functions, scenarios, and tests.
-- Documented that v0.6 planning preserves v0.5 direct aliases, local
-  progressive fallback, alias bundles, canonical identity truth, and TrafficHub
-  routing behavior.
-- Reaffirmed v0.6 non-goals: no real DNS, registrar integration, public CA
-  behavior, production identity proof, distributed consensus, external registry
-  integration, TrafficHub routing changes, or canonical identity rewrite.
+## [0.6.0] - 2026-06-06
+
+DARWIN v0.6.0 is a simulator-only alias authority chain modeling release. It
+adds explicit parent-scope alias authority traversal while preserving canonical
+identity truth, direct alias behavior, local progressive fallback, alias
+bundles, and TrafficHub routing behavior.
+
+Added:
+
+- Alias authority path data models for deterministic decision recording:
+  `AliasAuthorityDecision`, `AliasAuthorityPath`, and
+  `AliasAuthorityPathSummary`.
+- Authority-step evaluation helpers for scope checks, fallback alias
+  selection, upward traversal eligibility, and one-hub authority decisions.
+- Parent-chain traversal through explicit `RegistryHub.parent_hub_id` links.
+- Chain-aware claim helper `claim_alias_through_authority_chain(...)` and
+  result model `AliasAuthorityClaimResult`.
+- Scenario runner action `claim_alias_through_authority_chain`.
+- Scenario assertion `alias_authority_path_summary`.
+- Detailed snapshot entries for authority-chain claims.
+- Event payload visibility for authority-chain success and failure paths.
+- Simulator-local `alias_authority_policy` gates for approval, pass-up, and
+  fallback.
+- Alias authority-chain scenarios `032` through `036`:
+  `scenarios/032_alias_authority_chain_success.yaml`,
+  `scenarios/033_alias_authority_chain_fallback.yaml`,
+  `scenarios/034_alias_authority_chain_name_taken.yaml`,
+  `scenarios/035_alias_authority_chain_policy_denied.yaml`, and
+  `scenarios/036_alias_authority_chain_broken_parent.yaml`.
+
+Compatibility and limits:
+
+- Direct v0.5 aliases, local progressive fallback, alias bundles, canonical
+  identity chains, and TrafficHub routing behavior remain unchanged.
+- v0.6 does not add real DNS, registrar integration, public CA behavior,
+  production identity proof, external services, TrafficHub routing changes, or
+  canonical identity rewrite.
 
 ## [0.5.0] - 2026-06-04
 

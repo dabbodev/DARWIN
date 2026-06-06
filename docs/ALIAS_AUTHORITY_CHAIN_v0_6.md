@@ -1,6 +1,6 @@
 # DARWIN v0.6 Alias Authority Chain
 
-This document plans the v0.6 alias authority chain behavior for DARWIN. The
+This document describes the v0.6 alias authority chain behavior for DARWIN. The
 Sprint 1 authority path data models, Sprint 2 authority-step evaluation
 helpers, Sprint 3 explicit parent-chain traversal helper, Sprint 4
 claim-through-chain helper, and Sprint 5 scenario runner support are
@@ -8,9 +8,10 @@ implemented.
 
 The goal is to extend v0.5 progressive alias fallback from a local
 RegistryHub-only decision into an explicit parent-scope negotiation path.
-This is unreleased draft work on the v0.6 feature branch; the released
-simulator version remains `darwin-sim 0.5.0` until explicit release prep.
-All behavior described here is simulator-only.
+This is implemented branch behavior on the v0.6 release-candidate branch. The
+release actions themselves, including merge, tag, GitHub release, and package
+publication, are still separate. All behavior described here is
+simulator-only.
 
 DARWIN means Direct-Access Registration Window Interface Network.
 
@@ -58,7 +59,7 @@ Implemented in Sprint 2:
 - `fallback_alias_for_scope(...)` returns the deterministic local fallback
   alias for a scope and local name.
 - `can_continue_alias_upward(...)` reports whether a RegistryHub has an
-  explicit parent hub ID for future traversal.
+  explicit parent hub ID for authority traversal.
 - `evaluate_alias_authority_step(...)` evaluates one RegistryHub's read-only
   decision for one alias request and returns an `AliasAuthorityDecision`.
 - Authority-step helpers do not claim aliases, record conflicts, mutate
@@ -109,9 +110,11 @@ Implemented in Sprint 5:
 - Minimal simulator-local policy keys `allow_approval`, `allow_pass_up`, and
   `allow_fallback` make policy stops observable in scenarios.
 
-Not implemented yet:
+Unchanged behavior:
 
-- Runtime changes to direct alias claims or progressive fallback.
+- Direct alias claims and progressive fallback still use their existing v0.5
+  helpers unless a scenario or caller explicitly uses the authority-chain
+  claim helper.
 
 ## Compact Walkthrough
 
@@ -154,7 +157,7 @@ The direct v0.5 alias helpers and progressive local fallback helper remain
 intact. Authority-chain claims use a separate helper and scenario action so the
 registry path stays auditable without changing traffic paths.
 
-## Proposed Authority Chain Flow
+## Authority Chain Flow
 
 Example canonical identity:
 
@@ -189,7 +192,7 @@ authority_ceiling: global.us.west1.dist25.sf2.xfinity_301
 approved_by_hub: xfinity_301
 ```
 
-Proposed evaluation order:
+Evaluation order:
 
 1. Validate the target device exists at the requesting RegistryHub.
 2. Reject quarantined or revoked target devices before path traversal.
@@ -205,7 +208,7 @@ Proposed evaluation order:
 9. Return the full authority path, decision chain, authority ceiling, and final
    status.
 
-## Proposed Models
+## Models
 
 Implemented Sprint 1 models:
 
@@ -217,7 +220,7 @@ Implemented Sprint 1 models:
 
 `AliasAuthorityPath`:
 
-- Ordered path record from the requesting hub toward future parent evaluation.
+- Ordered path record from the requesting hub through parent evaluation.
 - Stores decisions in append order and can produce a deterministic dictionary
   or compact summary.
 
@@ -234,7 +237,7 @@ Implemented Sprint 4 model:
 - Includes success, status, reason, requested alias, granted alias, created
   alias record, authority path, and authority ceiling.
 
-Future proposed models:
+Future model candidates:
 
 `AliasAuthorityStep`:
 
@@ -257,7 +260,7 @@ Future proposed models:
 - Should include the final status, granted or fallback alias, authority path,
   decision chain, authority ceiling, and approving hub when available.
 
-## Proposed Fields
+## Fields
 
 Request fields:
 
@@ -283,7 +286,7 @@ Result fields:
 The implementation may also carry `granted_alias`, `conflict_id`, and the
 created `AliasRecord` to stay compatible with existing claim result patterns.
 
-## Proposed Helper Functions
+## Helper Functions
 
 Implemented Sprint 2 helper functions:
 
@@ -419,7 +422,7 @@ Scenario assertions should be able to check:
 - `036_alias_authority_chain_broken_parent.yaml`: traversal fails because the
   configured parent chain is incomplete.
 
-## Implemented and Proposed Tests
+## Implemented Tests
 
 - Parent chain construction.
 - Authority path recording.

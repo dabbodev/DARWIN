@@ -266,9 +266,9 @@ The v0.6 alias authority-chain slice adds simulator-only scenario support for
 claiming an alias through explicit `RegistryHub.parent_hub_id` traversal. It
 does not implement real DNS, registrar integration, public CA behavior,
 production identity proof, external authority services, TrafficHub routing
-changes, or canonical identity rewrites. v0.6 remains unreleased draft work on
-the feature branch, and the CLI version remains `darwin-sim 0.5.0` until
-release prep changes it.
+changes, or canonical identity rewrites. On the v0.6 release-candidate branch,
+the CLI version reports `darwin-sim 0.6.0`; merge, tag, GitHub release, and
+package publication remain separate release actions.
 
 Supported authority-chain action:
 

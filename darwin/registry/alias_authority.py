@@ -22,7 +22,7 @@ def fallback_alias_for_scope(scope_path: str, local_name: str) -> str:
 
 
 def can_continue_alias_upward(registry_hub: RegistryHub) -> bool:
-    """Return whether a hub has an explicit parent for future traversal."""
+    """Return whether a hub has an explicit parent for authority traversal."""
     return registry_hub.parent_hub_id is not None
 
 
