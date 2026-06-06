@@ -88,6 +88,14 @@ TrafficHub routing, or rewrite canonical identity chains.
 - `docs/ALIAS_AUTHORITY_CHAIN_v0_6.md`
 - `docs/RELEASE_NOTES_v0_6_DRAFT.md`
 
+## v0.7 Planning
+
+v0.7 is not implemented yet. The planning branch focuses on registry history,
+authority audit trails, and scenario trace explainability while preserving the
+v0.6 released behavior.
+
+- `docs/V0_7_ROADMAP.md`
+
 v0.5 alias scenarios:
 
 - `scenarios/026_alias_claim_success.yaml`
@@ -792,6 +800,10 @@ For v0.6 alias authority chain behavior, see:
 - `docs/V0_6_ROADMAP.md`
 - `docs/ALIAS_AUTHORITY_CHAIN_v0_6.md`
 - `docs/RELEASE_NOTES_v0_6_DRAFT.md`
+
+For v0.7 planning, see:
+
+- `docs/V0_7_ROADMAP.md`
 
 ## What v0.1 Is Not
 
