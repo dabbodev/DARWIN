@@ -8,10 +8,9 @@ implemented.
 
 The goal is to extend v0.5 progressive alias fallback from a local
 RegistryHub-only decision into an explicit parent-scope negotiation path.
-This is implemented branch behavior on the v0.6 release-candidate branch. The
-release actions themselves, including merge, tag, GitHub release, and package
-publication, are still separate. All behavior described here is
-simulator-only.
+This behavior is released in v0.6.0 on `main`. The annotated `v0.6.0` tag and
+GitHub release exist. No package publication was performed. All behavior
+described here is simulator-only.
 
 DARWIN means Direct-Access Registration Window Interface Network.
 

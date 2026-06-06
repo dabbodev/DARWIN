@@ -237,35 +237,34 @@ python -m darwin.cli.main run scenarios/031_dns_style_alias_bundle.yaml
 python -m darwin.cli.main run scenarios/031_dns_style_alias_bundle.yaml --export-snapshot tmp_v05_snapshot.json --export-events tmp_v05_events.json --export-result tmp_v05_result.json --export-mermaid tmp_v05.mmd --export-timeline-md tmp_v05_timeline.md --export-timeline-json tmp_v05_timeline.json
 ```
 
-# DARWIN v0.6 Alias Authority Chain Release-Prep Checklist
+# DARWIN v0.6 Alias Authority Chain Release Checklist
 
-Do not merge, tag, create a GitHub release, rebase, force push, publish, or
-bump anything beyond the simulator version as part of this release-prep
-checklist.
+v0.6.0 has been merged to `main`, tagged as annotated `v0.6.0`, and published
+as a GitHub release. No package publication was performed.
 
-- [ ] Ruff passes with `python -m ruff check .`.
-- [ ] Tests pass with `python -m pytest`.
-- [ ] All checked-in scenarios pass with `python scripts/run_all_scenarios.py`.
-- [ ] CLI version reports `darwin-sim 0.6.0`.
-- [ ] Package version is confirmed as `0.6.0`.
-- [ ] v0.6 roadmap is checked in `docs/V0_6_ROADMAP.md`.
-- [ ] Alias authority chain design is checked in
+- [x] Ruff passes with `python -m ruff check .`.
+- [x] Tests pass with `python -m pytest`.
+- [x] All checked-in scenarios `001` through `036` pass with
+  `python scripts/run_all_scenarios.py`.
+- [x] CLI version reports `darwin-sim 0.6.0`.
+- [x] Package version is confirmed as `0.6.0`.
+- [x] v0.6 roadmap is checked in `docs/V0_6_ROADMAP.md`.
+- [x] Alias authority chain design is checked in
   `docs/ALIAS_AUTHORITY_CHAIN_v0_6.md`.
-- [ ] Draft v0.6 release notes are checked in
+- [x] v0.6 release notes are checked in
   `docs/RELEASE_NOTES_v0_6_DRAFT.md`.
-- [ ] CHANGELOG contains a dated `0.6.0` release section.
-- [ ] README links to the v0.6 docs.
-- [ ] Scenarios `032` through `036` are documented and discoverable.
-- [ ] Parent-chain models and helpers are documented as implemented branch
-  behavior.
-- [ ] Documentation states that direct v0.5 alias behavior remains unchanged.
-- [ ] Documentation states that TrafficHub routing and canonical identity
+- [x] CHANGELOG contains a dated `0.6.0` release section.
+- [x] README links to the v0.6 docs.
+- [x] Scenarios `032` through `036` are documented and discoverable.
+- [x] Parent-chain models and helpers are documented as released behavior.
+- [x] Documentation states that direct v0.5 alias behavior remains unchanged.
+- [x] Documentation states that TrafficHub routing and canonical identity
   chains remain unchanged.
-- [ ] Documentation avoids real DNS, registrar integration, public CA,
+- [x] Documentation avoids real DNS, registrar integration, public CA,
   production identity proof, distributed consensus, external registry,
   TrafficHub routing change, or canonical identity replacement claims.
-- [ ] Merge, tag, GitHub release, and package publication are intentionally
-  deferred.
+- [x] Merge, annotated tag, and GitHub release are complete.
+- [x] Package publication was intentionally not performed.
 
 ## v0.6 Release-Prep Validation Commands
 

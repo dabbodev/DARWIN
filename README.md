@@ -8,11 +8,11 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently prepared at **simulator v0.6.0** on the
-`v0.6/alias-authority-chain` release-candidate branch. The v0.6 release
-extends simulator-only alias registry modeling with explicit parent-scope
-authority-chain traversal while keeping canonical identity and TrafficHub
-routing unchanged.
+This project is currently released at **simulator v0.6.0** on `main`. The
+annotated `v0.6.0` tag and GitHub release have been published. No package
+publication was performed. The v0.6 release extends simulator-only alias
+registry modeling with explicit parent-scope authority-chain traversal while
+keeping canonical identity and TrafficHub routing unchanged.
 
 The v0.1 simulator answers questions like:
 
@@ -79,9 +79,9 @@ canonical identity replacement.
 
 v0.6 implements simulator-only parent-scope authority negotiation for alias
 claims. Aliases are authorized shortcuts and do not replace canonical identity
-chains. This release-prep branch bumps the simulator version to
-`darwin-sim 0.6.0`, but does not merge, tag, create a GitHub release, publish
-packages, add real DNS, integrate registrars, model public CA behavior, change
+chains. The released simulator version is `darwin-sim 0.6.0`. The `v0.6.0`
+tag and GitHub release exist; no package publication was performed. v0.6 does
+not add real DNS, integrate registrars, model public CA behavior, change
 TrafficHub routing, or rewrite canonical identity chains.
 
 - `docs/V0_6_ROADMAP.md`
@@ -104,6 +104,8 @@ v0.6 authority-chain scenarios:
 - `scenarios/034_alias_authority_chain_name_taken.yaml`
 - `scenarios/035_alias_authority_chain_policy_denied.yaml`
 - `scenarios/036_alias_authority_chain_broken_parent.yaml`
+
+The current released scenario set is `001` through `036`.
 
 ## What v0.1 Supports
 

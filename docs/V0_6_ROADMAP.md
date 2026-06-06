@@ -14,16 +14,13 @@ documented?
 
 ## Status
 
-Implementation status: complete on branch `v0.6/alias-authority-chain`.
+Implementation status: complete and merged to `main`.
 
-Release status: release-prep candidate. Version and release-facing docs are
-being finalized on the branch.
+Release status: v0.6.0 released. The annotated `v0.6.0` tag exists and the
+GitHub release has been published.
 
-Not yet performed:
+Not performed:
 
-- Merge.
-- Release tag.
-- GitHub release.
 - Package publication.
 
 Completed branch work:
@@ -280,7 +277,7 @@ v0.6 does not include:
 
 ## Release Validation
 
-Release-prep validation should pass:
+Release validation passed on `main`:
 
 ```bash
 python -m ruff check .
@@ -294,3 +291,5 @@ Expected CLI version:
 ```text
 darwin-sim 0.6.0
 ```
+
+The released scenario set is scenarios `001` through `036`.

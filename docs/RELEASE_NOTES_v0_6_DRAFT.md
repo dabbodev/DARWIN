@@ -1,8 +1,9 @@
-# DARWIN Simulator v0.6.0 Draft Release Notes
+# DARWIN Simulator v0.6.0 Release Notes
 
-These notes are release-ready for the v0.6 release candidate branch. The file
-keeps the `_DRAFT` name until the project performs the separate release
-actions: merge, tag, GitHub release, or package publication.
+These notes describe the published v0.6.0 release on `main`. The annotated
+`v0.6.0` tag exists and the GitHub release has been published. No package
+publication was performed. The file keeps the `_DRAFT` suffix for existing
+repository links and release-readiness tests.
 
 DARWIN means Direct-Access Registration Window Interface Network.
 
@@ -83,8 +84,8 @@ Sprint 6 hardened release-facing behavior and documentation:
   pass-up, and fallback gates.
 - Failed-claim safety tests confirm rejected authority-chain claims do not
   create aliases or conflict records.
-- Docs now distinguish implemented branch behavior from release operations
-  that are still intentionally deferred.
+- Docs distinguish implemented simulator behavior from release operations and
+  record that package publication was not performed for v0.6.0.
 
 ## Compatibility
 
@@ -122,9 +123,9 @@ v0.6 does not include:
 registrar policy, DNS policy, CA policy, production identity proof, or an
 external authority service.
 
-## Release Prep Validation
+## Release Validation
 
-Final release-prep validation should pass:
+Final release validation passed on `main`:
 
 ```bash
 python -m ruff check .
@@ -138,3 +139,5 @@ Expected CLI version:
 ```text
 darwin-sim 0.6.0
 ```
+
+The released scenario set is scenarios `001` through `036`.
