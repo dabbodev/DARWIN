@@ -46,6 +46,13 @@ from darwin.registry.operations import (
     resolve_device_id,
     resolve_label,
 )
+from darwin.registry.trace_explain import (
+    explain_alias_conflict_entry,
+    explain_alias_history_entry,
+    explain_authority_trace,
+    explain_authority_traces,
+    explain_quarantine_event_entry,
+)
 
 __all__ = [
     "alias_exists",
@@ -63,6 +70,11 @@ __all__ = [
     "detect_checkpoint_timeouts",
     "evaluate_alias_authority_chain",
     "evaluate_alias_authority_step",
+    "explain_alias_conflict_entry",
+    "explain_alias_history_entry",
+    "explain_authority_trace",
+    "explain_authority_traces",
+    "explain_quarantine_event_entry",
     "fallback_alias_for_scope",
     "get_checkpoint_state",
     "is_alias_within_scope",

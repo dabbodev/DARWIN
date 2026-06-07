@@ -1,7 +1,7 @@
 # DARWIN v0.7 Roadmap: Registry History, Authority Audit Trails, and Scenario Trace Explainability
 
-DARWIN v0.7 is a planning simulator roadmap with Sprint 2 implementation now
-in progress on the planning branch. The proposed theme is registry history,
+DARWIN v0.7 is a planning simulator roadmap with Sprint 3 implementation now
+implemented on the planning branch. The proposed theme is registry history,
 authority audit trails, and scenario trace explainability.
 
 The goal is to make existing registry and alias behavior easier to inspect
@@ -10,7 +10,7 @@ or the v0.6 alias authority-chain model.
 
 ## Status
 
-Implementation status: Sprint 2 implemented on the planning branch.
+Implementation status: Sprint 3 implemented on the planning branch.
 
 Planning branch: `v0.7/planning`.
 
@@ -117,6 +117,10 @@ Non-goals:
 Add human-readable explanation output for why an alias claim succeeded, fell
 back, conflicted, or was denied.
 
+Status: implemented as deterministic helper-level explanations over Sprint 1
+history query results and Sprint 2 authority audit trace summaries. See
+`docs/TRACE_EXPLAINABILITY_v0_7.md`.
+
 Candidate explanations:
 
 - Requested alias approved by an authority hub.
@@ -128,6 +132,19 @@ Candidate explanations:
 
 The explanation layer should be derived from structured results and events. It
 should not become a second source of truth.
+
+Implemented helpers:
+
+- `explain_authority_trace(...)`
+- `explain_authority_traces(...)`
+- `explain_alias_history_entry(...)`
+- `explain_alias_conflict_entry(...)`
+- `explain_quarantine_event_entry(...)`
+
+Current limit: RegistryHub still does not persist full failed authority-chain
+paths. Failed authority outcomes can be explained when the caller still has the
+in-memory `AliasAuthorityPath` summary; retained RegistryHub grant traces can
+explain stored approved and fallback grants.
 
 ## Sprint 4: Documentation and Scenario Examples
 

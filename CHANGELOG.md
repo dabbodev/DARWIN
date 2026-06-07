@@ -12,6 +12,10 @@ Added:
   in-memory authority paths and retained RegistryHub authority grant
   provenance.
 - v0.7 authority audit trace summary documentation.
+- v0.7 planning-branch deterministic trace explanation helpers for authority
+  audit summaries, alias history entries, alias conflict entries, and
+  quarantine event entries.
+- v0.7 trace explainability documentation.
 
 ## [0.6.0] - 2026-06-06
 
