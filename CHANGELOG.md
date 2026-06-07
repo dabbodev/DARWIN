@@ -2,7 +2,12 @@
 
 ## [Unreleased]
 
-No unreleased changes yet.
+Added:
+
+- v0.7 planning-branch read-only RegistryHub history query helpers for retained
+  alias records, alias conflicts, persisted alias authority grant provenance,
+  and quarantine records.
+- v0.7 registry history query documentation.
 
 ## [0.6.0] - 2026-06-06
 

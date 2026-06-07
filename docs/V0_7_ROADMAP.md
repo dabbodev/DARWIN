@@ -1,8 +1,8 @@
 # DARWIN v0.7 Roadmap: Registry History, Authority Audit Trails, and Scenario Trace Explainability
 
-DARWIN v0.7 is a planning-only simulator roadmap. It is not implemented yet.
-The proposed theme is registry history, authority audit trails, and scenario
-trace explainability.
+DARWIN v0.7 is a planning simulator roadmap with Sprint 1 implementation now
+in progress on the planning branch. The proposed theme is registry history,
+authority audit trails, and scenario trace explainability.
 
 The goal is to make existing registry and alias behavior easier to inspect
 without changing simulator semantics, TrafficHub routing, canonical identity,
@@ -10,7 +10,7 @@ or the v0.6 alias authority-chain model.
 
 ## Status
 
-Implementation status: not started.
+Implementation status: Sprint 1 implemented on the planning branch.
 
 Planning branch: `v0.7/planning`.
 
@@ -54,6 +54,10 @@ Out of scope:
 Add small, read-only helpers for querying registry history from existing
 simulator state.
 
+Status: implemented for existing retained alias records, alias conflicts,
+persisted alias authority grant provenance, and quarantine records. See
+`docs/REGISTRY_HISTORY_QUERIES_v0_7.md`.
+
 Candidate queries:
 
 - Alias claims by alias, device, hub, status, and visibility.
@@ -64,6 +68,10 @@ Candidate queries:
 
 Expected output should be deterministic, JSON-safe, and useful in tests and
 scenario assertions.
+
+Implemented helper-level outputs are deterministic, JSON-safe dataclass
+results. Full failed authority-chain paths and broad append-only registry event
+history remain deferred because RegistryHub does not currently persist them.
 
 Non-goals:
 

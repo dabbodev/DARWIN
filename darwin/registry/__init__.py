@@ -25,6 +25,16 @@ from darwin.registry.checkpoints import (
     get_checkpoint_state,
     record_checkpoint,
 )
+from darwin.registry.history_queries import (
+    AliasConflictQueryResult,
+    AliasHistoryQueryResult,
+    AuthorityDecisionQueryResult,
+    QuarantineEventQueryResult,
+    query_alias_conflicts,
+    query_alias_history,
+    query_authority_decisions,
+    query_quarantine_events,
+)
 from darwin.registry.operations import (
     assign_temp_label,
     register_device,
@@ -34,6 +44,9 @@ from darwin.registry.operations import (
 
 __all__ = [
     "alias_exists",
+    "AliasConflictQueryResult",
+    "AliasHistoryQueryResult",
+    "AuthorityDecisionQueryResult",
     "assign_temp_label",
     "claim_alias",
     "claim_alias_through_authority_chain",
@@ -47,6 +60,11 @@ __all__ = [
     "fallback_alias_for_scope",
     "get_checkpoint_state",
     "is_alias_within_scope",
+    "QuarantineEventQueryResult",
+    "query_alias_conflicts",
+    "query_alias_history",
+    "query_authority_decisions",
+    "query_quarantine_events",
     "record_checkpoint",
     "register_device",
     "release_alias",
