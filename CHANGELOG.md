@@ -8,6 +8,10 @@ Added:
   alias records, alias conflicts, persisted alias authority grant provenance,
   and quarantine records.
 - v0.7 registry history query documentation.
+- v0.7 planning-branch read-only authority audit trace summary helpers for
+  in-memory authority paths and retained RegistryHub authority grant
+  provenance.
+- v0.7 authority audit trace summary documentation.
 
 ## [0.6.0] - 2026-06-06
 

@@ -92,10 +92,12 @@ TrafficHub routing, or rewrite canonical identity chains.
 
 v0.7 planning focuses on registry history, authority audit trails, and scenario
 trace explainability while preserving the v0.6 released behavior. Sprint 1 adds
-read-only RegistryHub history query helpers on the planning branch.
+read-only RegistryHub history query helpers, and Sprint 2 adds read-only
+authority audit trace summary helpers on the planning branch.
 
 - `docs/V0_7_ROADMAP.md`
 - `docs/REGISTRY_HISTORY_QUERIES_v0_7.md`
+- `docs/AUTHORITY_AUDIT_TRACES_v0_7.md`
 
 v0.5 alias scenarios:
 
@@ -806,6 +808,7 @@ For v0.7 planning, see:
 
 - `docs/V0_7_ROADMAP.md`
 - `docs/REGISTRY_HISTORY_QUERIES_v0_7.md`
+- `docs/AUTHORITY_AUDIT_TRACES_v0_7.md`
 
 ## What v0.1 Is Not
 

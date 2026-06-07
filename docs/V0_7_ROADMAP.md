@@ -1,6 +1,6 @@
 # DARWIN v0.7 Roadmap: Registry History, Authority Audit Trails, and Scenario Trace Explainability
 
-DARWIN v0.7 is a planning simulator roadmap with Sprint 1 implementation now
+DARWIN v0.7 is a planning simulator roadmap with Sprint 2 implementation now
 in progress on the planning branch. The proposed theme is registry history,
 authority audit trails, and scenario trace explainability.
 
@@ -10,7 +10,7 @@ or the v0.6 alias authority-chain model.
 
 ## Status
 
-Implementation status: Sprint 1 implemented on the planning branch.
+Implementation status: Sprint 2 implemented on the planning branch.
 
 Planning branch: `v0.7/planning`.
 
@@ -84,14 +84,27 @@ Non-goals:
 Make v0.6 authority decisions easier to inspect from scenario outputs while
 preserving compact snapshot behavior.
 
+Status: implemented as read-only helper-level summaries for in-memory
+authority paths and retained RegistryHub authority grant provenance. See
+`docs/AUTHORITY_AUDIT_TRACES_v0_7.md`.
+
 Candidate work:
 
-- Export ordered authority decisions for each chain claim.
+- Export ordered authority decisions for in-memory chain claim paths.
 - Include requested alias, granted alias, authority ceiling, final status,
-  decision count, path hubs, and policy stop reasons.
-- Keep compact summaries in normal snapshots.
-- Add optional detailed export paths only where existing export patterns make
-  sense.
+  decision count, path hubs, and policy stop reasons where retained or still
+  available from the authority path.
+- Keep compact helper-level summaries without changing normal snapshots.
+
+Implemented helpers:
+
+- `summarize_authority_decision(...)`
+- `summarize_authority_path(...)`
+- `build_authority_audit_trace(...)`
+
+Current limit: failed authority-chain paths are only available from returned
+claim/evaluation results. RegistryHub does not persist full failed paths after
+the call, so the retained audit trace helper does not fabricate them.
 
 Non-goals:
 

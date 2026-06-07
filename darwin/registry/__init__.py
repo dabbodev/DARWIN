@@ -20,6 +20,11 @@ from darwin.registry.aliases import (
     resolve_bundle_alias,
     suggest_alias_fallbacks,
 )
+from darwin.registry.authority_audit import (
+    build_authority_audit_trace,
+    summarize_authority_decision,
+    summarize_authority_path,
+)
 from darwin.registry.checkpoints import (
     detect_checkpoint_timeouts,
     get_checkpoint_state,
@@ -47,6 +52,7 @@ __all__ = [
     "AliasConflictQueryResult",
     "AliasHistoryQueryResult",
     "AuthorityDecisionQueryResult",
+    "build_authority_audit_trace",
     "assign_temp_label",
     "claim_alias",
     "claim_alias_through_authority_chain",
@@ -74,4 +80,6 @@ __all__ = [
     "resolve_label",
     "highest_authorized_alias",
     "suggest_alias_fallbacks",
+    "summarize_authority_decision",
+    "summarize_authority_path",
 ]
