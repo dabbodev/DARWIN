@@ -637,6 +637,10 @@ def _alias_history_contains(
         "status": _optional_filter_str(assertion, "status"),
     }
     records = []
+    actual_context = {
+        "registry_hub": str(assertion.get("registry_hub")),
+        "registry_hub_found": hub is not None,
+    }
     if hub is not None:
         records = [
             result.to_dict()
@@ -652,6 +656,8 @@ def _alias_history_contains(
         assertion,
         records,
         f"alias history contains {filters}",
+        expected_context={"filters": filters},
+        actual_context=actual_context,
     )
 
 
@@ -666,6 +672,10 @@ def _alias_conflict_history_contains(
         "device_id": _optional_device_filter(assertion),
     }
     records = []
+    actual_context = {
+        "registry_hub": str(assertion.get("registry_hub")),
+        "registry_hub_found": hub is not None,
+    }
     if hub is not None:
         records = [
             result.to_dict()
@@ -680,6 +690,8 @@ def _alias_conflict_history_contains(
         assertion,
         records,
         f"alias conflict history contains {filters}",
+        expected_context={"filters": filters},
+        actual_context=actual_context,
     )
 
 
@@ -699,6 +711,10 @@ def _authority_audit_trace_contains(
         "summary_contains": _optional_filter_str(assertion, "summary_contains"),
     }
     candidates: list[dict[str, object]] = []
+    actual_context = {
+        "registry_hub": hub_id,
+        "registry_hub_found": hub is not None,
+    }
     if hub is not None:
         for trace in build_authority_audit_trace(
             hub,
@@ -721,6 +737,8 @@ def _authority_audit_trace_contains(
         assertion,
         candidates,
         f"authority audit trace contains {filters}",
+        expected_context={"filters": filters},
+        actual_context=actual_context,
     )
 
 
@@ -735,6 +753,10 @@ def _quarantine_history_contains(
         "reason": _optional_filter_str(assertion, "reason"),
     }
     records = []
+    actual_context = {
+        "registry_hub": str(assertion.get("registry_hub")),
+        "registry_hub_found": hub is not None,
+    }
     if hub is not None:
         records = [
             result.to_dict()
@@ -749,6 +771,8 @@ def _quarantine_history_contains(
         assertion,
         records,
         f"quarantine history contains {filters}",
+        expected_context={"filters": filters},
+        actual_context=actual_context,
     )
 
 
@@ -825,6 +849,9 @@ def _count_result(
     assertion: dict[str, Any],
     records: list[dict[str, object]],
     message: str,
+    *,
+    expected_context: dict[str, object] | None = None,
+    actual_context: dict[str, object] | None = None,
 ) -> AssertionResult:
     count = len(records)
     expected_count = _optional_int_field(assertion, "expected_count")
@@ -833,10 +860,14 @@ def _count_result(
         "expected_count": expected_count,
         "min_count": min_count,
     }
+    if expected_context is not None:
+        expected.update(expected_context)
     actual = {
         "count": count,
         "records": records,
     }
+    if actual_context is not None:
+        actual.update(actual_context)
 
     passed = True
     if expected_count is not None:
@@ -846,6 +877,8 @@ def _count_result(
     if expected_count is None and min_count is None:
         passed = count > 0
         expected = {"min_count": 1}
+        if expected_context is not None:
+            expected.update(expected_context)
 
     return _result(
         assertion_type,

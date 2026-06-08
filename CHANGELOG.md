@@ -20,6 +20,23 @@ Added:
   conflict history, authority audit traces, and quarantine history.
 - v0.7 planning scenarios `037` through `041` for registry history, authority
   audit traces, fallback traces, and in-memory denial explainability.
+- v0.7 Sprint 5 hardening for scenario assertion validation, failure output,
+  read-only assertion regression coverage, documentation consistency, and draft
+  v0.7 release-note material.
+
+Compatibility and limits:
+
+- v0.7 remains unreleased draft work on `v0.7/planning`; the package and CLI
+  version remain `darwin-sim 0.6.0`.
+- v0.7 helper, assertion, and explanation layers are read-only and do not
+  change alias outcomes, TrafficHub routing, canonical identity, or simulator
+  runtime behavior.
+- RegistryHub retains terminal grant provenance, not full persistent failed
+  authority-chain paths. Scenario `041` explains denial from in-memory
+  action-result authority path data.
+- No production audit/compliance guarantees, external services, DNS,
+  registrar integration, public CA behavior, or production identity proof are
+  added.
 
 ## [0.6.0] - 2026-06-06
 

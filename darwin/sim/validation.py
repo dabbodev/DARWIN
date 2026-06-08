@@ -499,6 +499,7 @@ def _validate_assertions(data: dict[str, Any], errors: list[ValidationIssue]) ->
             "assertion",
             errors,
         )
+        _validate_assertion_count_fields(assertion, location, errors)
 
 
 def _validate_required_fields(
@@ -515,6 +516,34 @@ def _validate_required_fields(
                     f"{location}.{field_name}",
                     f"Missing required {item_name} field: {field_name}",
                     suggestion=f"Add {field_name} to {location}.",
+                )
+            )
+
+
+def _validate_assertion_count_fields(
+    assertion: dict[str, Any],
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    for field_name in ("expected_count", "min_count"):
+        value = assertion.get(field_name)
+        if value is None:
+            continue
+        try:
+            parsed = int(value)
+        except (TypeError, ValueError):
+            errors.append(
+                _issue(
+                    f"{location}.{field_name}",
+                    f"{field_name} must be a non-negative integer",
+                )
+            )
+            continue
+        if isinstance(value, bool) or parsed < 0:
+            errors.append(
+                _issue(
+                    f"{location}.{field_name}",
+                    f"{field_name} must be a non-negative integer",
                 )
             )
 

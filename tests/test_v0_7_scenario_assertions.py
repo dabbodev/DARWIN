@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from darwin.sim.assertions import evaluate_assertion
 from darwin.sim.runner import run_scenario
 from darwin.sim.scenarios import list_scenario_files, validate_scenario_dict
 from darwin.sim.validation import ASSERTION_REQUIRED_FIELDS
@@ -27,6 +28,31 @@ def test_v0_7_assertion_validation_requires_registry_hub():
     assert not result.valid
     assert result.errors[0].location == "assertions[0].registry_hub"
     assert "Missing required assertion field: registry_hub" in result.errors[0].message
+
+
+def test_v0_7_assertion_validation_rejects_invalid_counts():
+    scenario = _base_scenario()
+    scenario["assertions"] = [
+        {
+            "type": "alias_history_contains",
+            "registry_hub": "registry_home_001",
+            "expected_count": "one",
+        },
+        {
+            "type": "quarantine_history_contains",
+            "registry_hub": "registry_home_001",
+            "min_count": -1,
+        },
+    ]
+
+    result = validate_scenario_dict(scenario)
+
+    assert not result.valid
+    assert [error.location for error in result.errors] == [
+        "assertions[0].expected_count",
+        "assertions[1].min_count",
+    ]
+    assert all("non-negative integer" in error.message for error in result.errors)
 
 
 def test_alias_history_contains_passes_and_reports_counts():
@@ -75,7 +101,39 @@ def test_alias_history_contains_fails_for_missing_record():
     })
 
     assert not result.passed
-    assert result.assertion_results[0].actual == {"count": 0, "records": []}
+    assertion_result = result.assertion_results[0]
+    assert assertion_result.expected == {
+        "min_count": 1,
+        "filters": {
+            "alias": "missing",
+            "device_id": None,
+            "status": None,
+        },
+    }
+    assert assertion_result.actual == {
+        "count": 0,
+        "records": [],
+        "registry_hub": "registry_home_001",
+        "registry_hub_found": True,
+    }
+
+
+def test_alias_history_contains_reports_missing_registry_hub():
+    result = run_scenario({
+        **_base_scenario(),
+        "steps": [],
+        "assertions": [
+            {
+                "type": "alias_history_contains",
+                "registry_hub": "missing_hub",
+                "alias": "shared",
+            }
+        ],
+    })
+
+    assert not result.passed
+    assert result.assertion_results[0].actual["registry_hub"] == "missing_hub"
+    assert result.assertion_results[0].actual["registry_hub_found"] is False
 
 
 def test_alias_conflict_history_contains_passes_and_fails_by_count():
@@ -275,7 +333,36 @@ def test_authority_audit_trace_contains_fails_for_missing_outcome():
     })
 
     assert not result.passed
-    assert result.assertion_results[0].actual["count"] == 0
+    assertion_result = result.assertion_results[0]
+    assert assertion_result.expected["filters"]["outcome"] == "approved"
+    assert assertion_result.actual["count"] == 0
+    assert assertion_result.actual["registry_hub_found"] is True
+
+
+def test_authority_audit_trace_contains_failure_includes_expected_filters():
+    result = run_scenario({
+        **_base_scenario(),
+        "steps": [],
+        "assertions": [
+            {
+                "type": "authority_audit_trace_contains",
+                "registry_hub": "registry_home_001",
+                "requested_alias": "global.server",
+                "outcome": "approved",
+                "summary_contains": "approved at registry_global_001",
+                "expected_count": 1,
+            }
+        ],
+    })
+
+    assert not result.passed
+    expected = result.assertion_results[0].expected
+    actual = result.assertion_results[0].actual
+    assert expected["expected_count"] == 1
+    assert expected["filters"]["requested_alias"] == "global.server"
+    assert expected["filters"]["summary_contains"] == "approved at registry_global_001"
+    assert actual["count"] == 0
+    assert actual["records"] == []
 
 
 def test_quarantine_history_contains_passes():
@@ -301,6 +388,36 @@ def test_quarantine_history_contains_passes():
     })
 
     assert result.passed
+
+
+def test_v0_7_history_assertion_is_read_only():
+    result = run_scenario({
+        **_base_scenario(),
+        "steps": [
+            {
+                "action": "claim_alias",
+                "registry_hub": "registry_home_001",
+                "alias": "shared",
+                "target_device": "dev_A9F3",
+            }
+        ],
+    })
+    before_snapshot = result.world.snapshot(detailed=True)
+    before_action_result_count = len(result.world.action_results)
+
+    assertion_result = evaluate_assertion(
+        result.world,
+        {
+            "type": "alias_history_contains",
+            "registry_hub": "registry_home_001",
+            "alias": "shared",
+            "expected_count": 1,
+        },
+    )
+
+    assert assertion_result.passed
+    assert result.world.snapshot(detailed=True) == before_snapshot
+    assert len(result.world.action_results) == before_action_result_count
 
 
 def test_v0_7_scenarios_validate_and_run():

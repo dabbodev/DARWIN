@@ -1,8 +1,8 @@
 # DARWIN v0.7 Roadmap: Registry History, Authority Audit Trails, and Scenario Trace Explainability
 
-DARWIN v0.7 is a planning simulator roadmap with Sprint 4 implementation now
-implemented on the planning branch. The proposed theme is registry history,
-authority audit trails, and scenario trace explainability.
+DARWIN v0.7 is an unreleased planning simulator roadmap with Sprint 5
+hardening now implemented on the planning branch. The proposed theme is
+registry history, authority audit trails, and scenario trace explainability.
 
 The goal is to make existing registry and alias behavior easier to inspect
 without changing simulator semantics, TrafficHub routing, canonical identity,
@@ -10,7 +10,7 @@ or the v0.6 alias authority-chain model.
 
 ## Status
 
-Implementation status: Sprint 4 implemented on the planning branch.
+Implementation status: Sprint 5 hardening implemented on the planning branch.
 
 Planning branch: `v0.7/planning`.
 
@@ -194,14 +194,22 @@ Non-goals:
 
 Harden the v0.7 slices once implementation exists.
 
-Release-prep candidates:
+Status: implemented as release-candidate hardening on the planning branch,
+without bumping the simulator version or marking v0.7 as released.
 
-- Regression tests for history query helpers.
-- Regression tests for audit trace export shape.
-- Regression tests for explanation text stability where text is public-facing.
-- Scenario runner coverage for any new v0.7 scenarios.
-- Docs polish across README, changelog, scenario DSL, and release notes.
+Implemented hardening:
+
+- Regression tests for v0.7 scenario assertion validation and failure output.
+- Read-only regression coverage for history-style assertion evaluation.
+- Scenario runner coverage for v0.7 scenarios `037` through `041`.
+- Docs polish across README, changelog, scenario DSL, and draft release notes.
+- Failure output context for count-style assertions, including filters and
+  whether the requested RegistryHub was present.
+
+Deferred release-prep work:
+
 - Version bump only at explicit release-prep time.
+- Merge, tag, package publication, and release creation.
 
 Validation target:
 

@@ -401,7 +401,10 @@ Supported v0.7 assertions:
 If neither `expected_count` nor `min_count` is supplied, the assertion passes
 when at least one matching record exists. When `expected_count` is supplied,
 the count must match exactly. When `min_count` is supplied, the count must be
-at least that value.
+at least that value. Count fields must be non-negative integers. Failed
+count-style assertion output includes the requested filters, matching record
+count, matching records, and whether the referenced `registry_hub` existed in
+the scenario world.
 
 `authority_audit_trace_contains` validates retained RegistryHub grant traces
 from `build_authority_audit_trace(...)`. For failed authority outcomes in the

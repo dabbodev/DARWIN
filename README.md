@@ -95,12 +95,15 @@ trace explainability while preserving the v0.6 released behavior. Sprint 1 adds
 read-only RegistryHub history query helpers, Sprint 2 adds read-only authority
 audit trace summary helpers, Sprint 3 adds deterministic trace explanation
 helpers, and Sprint 4 adds read-only scenario assertions and v0.7 planning
-scenarios on the planning branch.
+scenarios on the planning branch. Sprint 5 hardens assertion validation,
+failure output, tests, and draft release-note material without changing
+simulator runtime behavior.
 
 - `docs/V0_7_ROADMAP.md`
 - `docs/REGISTRY_HISTORY_QUERIES_v0_7.md`
 - `docs/AUTHORITY_AUDIT_TRACES_v0_7.md`
 - `docs/TRACE_EXPLAINABILITY_v0_7.md`
+- `docs/RELEASE_NOTES_v0_7_DRAFT.md`
 
 v0.7 planning scenarios:
 
@@ -128,7 +131,8 @@ v0.6 authority-chain scenarios:
 - `scenarios/036_alias_authority_chain_broken_parent.yaml`
 
 The current released scenario set remains `001` through `036`; scenarios
-`037` through `041` are v0.7 planning scenarios.
+`037` through `041` are v0.7 planning scenarios. The current simulator package
+version remains `darwin-sim 0.6.0` until an explicit v0.7 release-prep step.
 
 ## What v0.1 Supports
 
