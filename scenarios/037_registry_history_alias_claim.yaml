@@ -1,0 +1,50 @@
+scenario_id: 037_registry_history_alias_claim
+name: Registry history alias claim
+category: registry
+description: read-only alias history assertions observe a retained direct alias claim and release
+tags:
+  - alias
+  - registry_history
+  - v0.7
+demonstrates:
+  - alias history query assertions
+  - retained released alias status
+  - canonical identity preservation
+expected_result: alias history contains the claimed and then released alias record
+use:
+  - single_home_network
+setup:
+  devices:
+    - device_id: dev_A9F3
+      label: project_server
+      registry_hub: hub_home_001
+      traffic_hub: hub_home_001
+steps:
+  - action: claim_alias
+    registry_hub: hub_home_001
+    alias: global.family.david.history_server
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    visibility: scope_local
+  - action: release_alias
+    registry_hub: hub_home_001
+    alias: global.family.david.history_server
+    requested_by_device: dev_A9F3
+assertions:
+  - type: alias_history_contains
+    registry_hub: hub_home_001
+    alias: global.family.david.history_server
+    device_id: dev_A9F3
+    status: released
+    expected_count: 1
+  - type: alias_status
+    registry_hub: hub_home_001
+    alias: global.family.david.history_server
+    expected: released
+  - type: alias_not_resolved
+    registry_hub: hub_home_001
+    alias: global.family.david.history_server
+  - type: canonical_identity_unchanged
+    registry_hub: hub_home_001
+    device: dev_A9F3
+    expected_identity_chain: global.family.home.project_server

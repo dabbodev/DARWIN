@@ -6,6 +6,16 @@ from dataclasses import dataclass
 from typing import Any
 
 from darwin.registry.aliases import resolve_alias
+from darwin.registry.authority_audit import (
+    build_authority_audit_trace,
+    summarize_authority_path,
+)
+from darwin.registry.history_queries import (
+    query_alias_conflicts,
+    query_alias_history,
+    query_quarantine_events,
+)
+from darwin.registry.trace_explain import explain_authority_trace
 from darwin.sim.world import World
 
 
@@ -615,6 +625,157 @@ def _alias_authority_path_summary(
     )
 
 
+def _alias_history_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    filters = {
+        "alias": _optional_filter_str(assertion, "alias"),
+        "device_id": _optional_device_filter(assertion),
+        "status": _optional_filter_str(assertion, "status"),
+    }
+    records = []
+    actual_context = {
+        "registry_hub": str(assertion.get("registry_hub")),
+        "registry_hub_found": hub is not None,
+    }
+    if hub is not None:
+        records = [
+            result.to_dict()
+            for result in query_alias_history(
+                hub,
+                alias=filters["alias"],
+                device_id=filters["device_id"],
+                status=filters["status"],
+            )
+        ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"alias history contains {filters}",
+        expected_context={"filters": filters},
+        actual_context=actual_context,
+    )
+
+
+def _alias_conflict_history_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    filters = {
+        "alias": _optional_filter_str(assertion, "alias"),
+        "device_id": _optional_device_filter(assertion),
+    }
+    records = []
+    actual_context = {
+        "registry_hub": str(assertion.get("registry_hub")),
+        "registry_hub_found": hub is not None,
+    }
+    if hub is not None:
+        records = [
+            result.to_dict()
+            for result in query_alias_conflicts(
+                hub,
+                alias=filters["alias"],
+                device_id=filters["device_id"],
+            )
+        ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"alias conflict history contains {filters}",
+        expected_context={"filters": filters},
+        actual_context=actual_context,
+    )
+
+
+def _authority_audit_trace_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    filters = {
+        "requested_alias": _optional_filter_str(assertion, "requested_alias"),
+        "granted_alias": _optional_filter_str(assertion, "granted_alias"),
+        "device_id": _optional_device_filter(assertion),
+        "final_status": _optional_filter_str(assertion, "final_status"),
+        "outcome": _optional_filter_str(assertion, "outcome"),
+        "summary_contains": _optional_filter_str(assertion, "summary_contains"),
+    }
+    candidates: list[dict[str, object]] = []
+    actual_context = {
+        "registry_hub": hub_id,
+        "registry_hub_found": hub is not None,
+    }
+    if hub is not None:
+        for trace in build_authority_audit_trace(
+            hub,
+            requested_alias=filters["requested_alias"],
+            granted_alias=filters["granted_alias"],
+            device_id=filters["device_id"],
+            final_status=filters["final_status"],
+        ):
+            candidates.append(
+                _authority_trace_candidate(
+                    "retained_registry_hub",
+                    trace,
+                )
+            )
+
+    candidates.extend(_in_memory_authority_trace_candidates(world, hub_id, filters))
+    candidates = _filter_authority_trace_candidates(candidates, filters)
+    return _count_result(
+        assertion_type,
+        assertion,
+        candidates,
+        f"authority audit trace contains {filters}",
+        expected_context={"filters": filters},
+        actual_context=actual_context,
+    )
+
+
+def _quarantine_history_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub = world.registry_hubs.get(str(assertion.get("registry_hub")))
+    filters = {
+        "device_id": _optional_device_filter(assertion),
+        "reason": _optional_filter_str(assertion, "reason"),
+    }
+    records = []
+    actual_context = {
+        "registry_hub": str(assertion.get("registry_hub")),
+        "registry_hub_found": hub is not None,
+    }
+    if hub is not None:
+        records = [
+            result.to_dict()
+            for result in query_quarantine_events(
+                hub,
+                device_id=filters["device_id"],
+                reason=filters["reason"],
+            )
+        ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"quarantine history contains {filters}",
+        expected_context={"filters": filters},
+        actual_context=actual_context,
+    )
+
+
 def _alias_not_resolved(
     world: World,
     assertion_type: str,
@@ -683,6 +844,154 @@ def _result(
     )
 
 
+def _count_result(
+    assertion_type: str,
+    assertion: dict[str, Any],
+    records: list[dict[str, object]],
+    message: str,
+    *,
+    expected_context: dict[str, object] | None = None,
+    actual_context: dict[str, object] | None = None,
+) -> AssertionResult:
+    count = len(records)
+    expected_count = _optional_int_field(assertion, "expected_count")
+    min_count = _optional_int_field(assertion, "min_count")
+    expected: dict[str, object] = {
+        "expected_count": expected_count,
+        "min_count": min_count,
+    }
+    if expected_context is not None:
+        expected.update(expected_context)
+    actual = {
+        "count": count,
+        "records": records,
+    }
+    if actual_context is not None:
+        actual.update(actual_context)
+
+    passed = True
+    if expected_count is not None:
+        passed = passed and count == expected_count
+    if min_count is not None:
+        passed = passed and count >= min_count
+    if expected_count is None and min_count is None:
+        passed = count > 0
+        expected = {"min_count": 1}
+        if expected_context is not None:
+            expected.update(expected_context)
+
+    return _result(
+        assertion_type,
+        passed,
+        expected,
+        message,
+        actual,
+    )
+
+
+def _authority_trace_candidate(
+    source: str,
+    trace: dict[str, object],
+) -> dict[str, object]:
+    return {
+        "source": source,
+        "trace": trace,
+        "explanation": explain_authority_trace(trace),
+    }
+
+
+def _in_memory_authority_trace_candidates(
+    world: World,
+    hub_id: str,
+    filters: dict[str, str | None],
+) -> list[dict[str, object]]:
+    candidates = []
+    for result in world.action_results:
+        authority_path = getattr(result, "authority_path", None)
+        if authority_path is None:
+            continue
+        if authority_path.final_status in {"approved_here", "fallback_granted"}:
+            continue
+        path_hub_ids = {decision.hub_id for decision in authority_path.decisions}
+        path_hub_ids.add(authority_path.requesting_hub_id)
+        if hub_id not in path_hub_ids:
+            continue
+        if (
+            filters["requested_alias"] is not None
+            and authority_path.requested_alias != filters["requested_alias"]
+        ):
+            continue
+        if (
+            filters["granted_alias"] is not None
+            and authority_path.granted_alias != filters["granted_alias"]
+        ):
+            continue
+        if (
+            filters["device_id"] is not None
+            and authority_path.target_device_id != filters["device_id"]
+        ):
+            continue
+        if (
+            filters["final_status"] is not None
+            and authority_path.final_status != filters["final_status"]
+        ):
+            continue
+        candidates.append(
+            _authority_trace_candidate(
+                "in_memory_authority_path",
+                summarize_authority_path(authority_path),
+            )
+        )
+    return candidates
+
+
+def _filter_authority_trace_candidates(
+    candidates: list[dict[str, object]],
+    filters: dict[str, str | None],
+) -> list[dict[str, object]]:
+    outcome = filters["outcome"]
+    summary_contains = filters["summary_contains"]
+    if outcome is None and summary_contains is None:
+        return candidates
+
+    filtered = []
+    for candidate in candidates:
+        explanation = candidate["explanation"]
+        if not isinstance(explanation, dict):
+            continue
+        if outcome is not None and explanation.get("outcome") != outcome:
+            continue
+        if summary_contains is not None:
+            summary = str(explanation.get("summary", ""))
+            if summary_contains not in summary:
+                continue
+        filtered.append(candidate)
+    return filtered
+
+
+def _optional_filter_str(
+    assertion: dict[str, Any],
+    field_name: str,
+) -> str | None:
+    if field_name not in assertion or assertion[field_name] is None:
+        return None
+    return str(assertion[field_name])
+
+
+def _optional_device_filter(assertion: dict[str, Any]) -> str | None:
+    if "device_id" in assertion and assertion["device_id"] is not None:
+        return str(assertion["device_id"])
+    if "device" in assertion and assertion["device"] is not None:
+        return str(assertion["device"])
+    return None
+
+
+def _optional_int_field(assertion: dict[str, Any], field_name: str) -> int | None:
+    if field_name not in assertion or assertion[field_name] is None:
+        return None
+    return int(assertion[field_name])
+
+
 _EVALUATORS = {
     "device_registered": _device_registered,
     "label_maps_to": _label_maps_to,
@@ -713,6 +1022,10 @@ _EVALUATORS = {
     "alias_granted_as": _alias_granted_as,
     "alias_authority_ceiling": _alias_authority_ceiling,
     "alias_authority_path_summary": _alias_authority_path_summary,
+    "alias_history_contains": _alias_history_contains,
+    "alias_conflict_history_contains": _alias_conflict_history_contains,
+    "authority_audit_trace_contains": _authority_audit_trace_contains,
+    "quarantine_history_contains": _quarantine_history_contains,
     "alias_not_resolved": _alias_not_resolved,
     "canonical_identity_unchanged": _canonical_identity_unchanged,
 }

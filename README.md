@@ -14,6 +14,10 @@ publication was performed. The v0.6 release extends simulator-only alias
 registry modeling with explicit parent-scope authority-chain traversal while
 keeping canonical identity and TrafficHub routing unchanged.
 
+v0.7.0 is unreleased release-prep work on `v0.7/planning`. The current branch
+reports `darwin-sim 0.7.0`, but v0.7.0 has not been merged to `main`, tagged,
+published as a GitHub release, or packaged.
+
 The v0.1 simulator answers questions like:
 
 - Can a device register under a scoped Registry Hub?
@@ -88,6 +92,31 @@ TrafficHub routing, or rewrite canonical identity chains.
 - `docs/ALIAS_AUTHORITY_CHAIN_v0_6.md`
 - `docs/RELEASE_NOTES_v0_6_DRAFT.md`
 
+## v0.7 Release Prep
+
+v0.7 release-prep work on `v0.7/planning` focuses on registry history,
+authority audit trails, and scenario trace explainability while preserving the
+v0.6 released behavior. Sprint 1 adds read-only RegistryHub history query
+helpers, Sprint 2 adds read-only authority audit trace summary helpers, Sprint
+3 adds deterministic trace explanation helpers, Sprint 4 adds read-only
+scenario assertions and v0.7 scenarios on the planning branch, and Sprint 5
+hardens assertion validation, diagnostics, docs, scenario index checks, and
+draft release-note material without changing simulator runtime behavior.
+
+- `docs/V0_7_ROADMAP.md`
+- `docs/REGISTRY_HISTORY_QUERIES_v0_7.md`
+- `docs/AUTHORITY_AUDIT_TRACES_v0_7.md`
+- `docs/TRACE_EXPLAINABILITY_v0_7.md`
+- `docs/RELEASE_NOTES_v0_7_DRAFT.md`
+
+v0.7 release-prep scenarios:
+
+- `scenarios/037_registry_history_alias_claim.yaml`
+- `scenarios/038_registry_history_alias_conflict.yaml`
+- `scenarios/039_authority_audit_trace_success.yaml`
+- `scenarios/040_authority_audit_trace_fallback.yaml`
+- `scenarios/041_trace_explainability_denials.yaml`
+
 v0.5 alias scenarios:
 
 - `scenarios/026_alias_claim_success.yaml`
@@ -105,7 +134,18 @@ v0.6 authority-chain scenarios:
 - `scenarios/035_alias_authority_chain_policy_denied.yaml`
 - `scenarios/036_alias_authority_chain_broken_parent.yaml`
 
-The current released scenario set is `001` through `036`.
+The current released scenario set remains `001` through `036`; scenarios
+`037` through `041` are v0.7 release-prep scenarios. The current branch
+scenario set is `001` through `041`, and the current branch version reports
+`darwin-sim 0.7.0`.
+
+v0.7 remains simulator-only. RegistryHub retains terminal grant provenance,
+not full persistent failed authority-chain paths, and scenario `041` relies on
+scenario-run in-memory denial explainability data. v0.7 does not add
+production audit/compliance guarantees, persistent failed-path audit storage,
+a broad event store, real DNS, registrar integration, public CA behavior,
+production identity proof, external services, TrafficHub routing changes, or
+canonical identity rewrites.
 
 ## What v0.1 Supports
 
@@ -792,6 +832,13 @@ For v0.6 alias authority chain behavior, see:
 - `docs/V0_6_ROADMAP.md`
 - `docs/ALIAS_AUTHORITY_CHAIN_v0_6.md`
 - `docs/RELEASE_NOTES_v0_6_DRAFT.md`
+
+For v0.7 release-prep work, see:
+
+- `docs/V0_7_ROADMAP.md`
+- `docs/REGISTRY_HISTORY_QUERIES_v0_7.md`
+- `docs/AUTHORITY_AUDIT_TRACES_v0_7.md`
+- `docs/TRACE_EXPLAINABILITY_v0_7.md`
 
 ## What v0.1 Is Not
 

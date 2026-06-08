@@ -276,3 +276,44 @@ python -m darwin.cli.main --version
 python -m darwin.cli.main scenario-index
 python -m darwin.cli.main list-scenarios
 ```
+
+# DARWIN v0.7 History, Audit, and Trace Explainability Release-Prep Checklist
+
+v0.7.0 is unreleased release-prep work on `v0.7/planning`. Do not merge, tag,
+create a GitHub release, publish packages, or claim v0.7.0 has been released
+as part of this checklist.
+
+- [x] Ruff passes with `python -m ruff check .`.
+- [x] Tests pass with `python -m pytest`.
+- [x] All checked-in scenarios `001` through `041` pass with
+  `python scripts/run_all_scenarios.py`.
+- [x] CLI version reports `darwin-sim 0.7.0`.
+- [x] Package version is confirmed as `0.7.0`.
+- [x] Scenario index is current and lists scenarios `001` through `041`
+  without numbering gaps.
+- [x] v0.7 release notes remain draft/release-prep notes in
+  `docs/RELEASE_NOTES_v0_7_DRAFT.md`.
+- [x] CHANGELOG contains an unreleased `0.7.0` release-prep section.
+- [x] README and v0.7 docs state that helper, assertion, and explanation
+  layers are read-only.
+- [x] Documentation states that RegistryHub retains terminal grant provenance,
+  not full persistent failed authority-chain paths.
+- [x] Documentation states that scenario `041` relies on in-memory denial
+  explainability data.
+- [x] Documentation avoids production audit/compliance guarantees, persistent
+  failed-path audit storage, broad event-store claims, real DNS, registrar
+  integration, public CA behavior, production identity proof, external
+  services, TrafficHub routing changes, and canonical identity rewrites.
+- [x] Merge, tag, GitHub release creation, and package publication have not
+  been performed.
+
+## v0.7 Release-Prep Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main list-scenarios
+```
