@@ -2,23 +2,30 @@
 
 ## [Unreleased]
 
+No post-v0.7.0 release-prep changes are recorded yet.
+
+## [0.7.0] - Unreleased release prep
+
+DARWIN v0.7.0 is release-prep work on `v0.7/planning`. It has not been
+merged to `main`, tagged, published as a GitHub release, or packaged.
+
 Added:
 
-- v0.7 planning-branch read-only RegistryHub history query helpers for retained
+- v0.7 release-prep branch read-only RegistryHub history query helpers for retained
   alias records, alias conflicts, persisted alias authority grant provenance,
   and quarantine records.
 - v0.7 registry history query documentation.
-- v0.7 planning-branch read-only authority audit trace summary helpers for
+- v0.7 release-prep branch read-only authority audit trace summary helpers for
   in-memory authority paths and retained RegistryHub authority grant
   provenance.
 - v0.7 authority audit trace summary documentation.
-- v0.7 planning-branch deterministic trace explanation helpers for authority
+- v0.7 release-prep branch deterministic trace explanation helpers for authority
   audit summaries, alias history entries, alias conflict entries, and
   quarantine event entries.
 - v0.7 trace explainability documentation.
-- v0.7 planning-branch read-only scenario assertions for alias history, alias
+- v0.7 release-prep branch read-only scenario assertions for alias history, alias
   conflict history, authority audit traces, and quarantine history.
-- v0.7 planning scenarios `037` through `041` for registry history, authority
+- v0.7 release-prep scenarios `037` through `041` for registry history, authority
   audit traces, fallback traces, and in-memory denial explainability.
 - v0.7 Sprint 5 hardening for scenario assertion validation, failure output,
   read-only assertion regression coverage, documentation consistency, and draft
@@ -26,8 +33,8 @@ Added:
 
 Compatibility and limits:
 
-- v0.7 remains unreleased draft work on `v0.7/planning`; the package and CLI
-  version remain `darwin-sim 0.6.0`.
+- v0.7.0 remains unreleased release-prep work on `v0.7/planning`; the package
+  and CLI version on this branch report `darwin-sim 0.7.0`.
 - v0.7 helper, assertion, and explanation layers are read-only and do not
   change alias outcomes, TrafficHub routing, canonical identity, or simulator
   runtime behavior.

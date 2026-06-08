@@ -1,5 +1,8 @@
 # DARWIN v0.7 Authority Audit Trace Summaries
 
+Status: unreleased release-prep work on `v0.7/planning`. The current branch
+version is `darwin-sim 0.7.0`.
+
 This document describes the v0.7 Sprint 2 read-only authority audit trace
 summary helpers. The helpers expose compact, JSON-safe views of authority-chain
 claim decisions and retained alias grant provenance already represented by the

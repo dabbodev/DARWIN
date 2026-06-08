@@ -1,8 +1,9 @@
 # DARWIN v0.7 Roadmap: Registry History, Authority Audit Trails, and Scenario Trace Explainability
 
-DARWIN v0.7 is an unreleased planning simulator roadmap with Sprint 5
-hardening now implemented on the planning branch. The proposed theme is
-registry history, authority audit trails, and scenario trace explainability.
+DARWIN v0.7 is unreleased release-prep simulator work on `v0.7/planning` with
+Sprint 5 hardening implemented and the branch version bumped to `0.7.0`. The
+theme is registry history, authority audit trails, and scenario trace
+explainability.
 
 The goal is to make existing registry and alias behavior easier to inspect
 without changing simulator semantics, TrafficHub routing, canonical identity,
@@ -10,16 +11,18 @@ or the v0.6 alias authority-chain model.
 
 ## Status
 
-Implementation status: Sprint 5 hardening implemented on the planning branch.
+Implementation status: release-prep ready on the planning branch.
 
 Planning branch: `v0.7/planning`.
 
 Released baseline: `darwin-sim 0.6.0` with scenarios `001` through `036`.
 
+Current branch version: `darwin-sim 0.7.0` with scenarios `001` through `041`.
+
 Version policy:
 
-- Keep the simulator version at `0.6.0` during planning.
-- Bump the version only during an explicit v0.7 release-prep step.
+- The simulator version has been bumped to `0.7.0` for release prep.
+- Do not bump beyond `0.7.0` before v0.7 release completion.
 
 ## Scope
 
@@ -44,7 +47,7 @@ Out of scope:
 - Public CA behavior.
 - Production identity proof.
 - External services.
-- Package publication during planning.
+- Package publication during release prep.
 - TrafficHub routing changes.
 - Canonical identity rewrite.
 - Runtime refactors unrelated to history, audit trails, or explainability.
@@ -182,11 +185,12 @@ Candidate docs and scenarios:
 - Example scenario output snippets for success, fallback, conflict, policy
   denial, and broken parent paths.
 - Scenario documentation that keeps scenarios `001` through `036` as the
-  released v0.6 baseline while v0.7 planning scenarios begin at `037`.
+  released v0.6 baseline while v0.7 release-prep scenarios begin at `037`.
 
 Non-goals:
 
-- Do not claim v0.7 behavior is released before release prep.
+- Do not claim v0.7 behavior is released before merge, tag, GitHub release,
+  and final release completion.
 - Do not document real DNS, registrar, public CA, or production identity
   behavior as implemented.
 
@@ -194,8 +198,9 @@ Non-goals:
 
 Harden the v0.7 slices once implementation exists.
 
-Status: implemented as release-candidate hardening on the planning branch,
-without bumping the simulator version or marking v0.7 as released.
+Status: implemented as release-candidate hardening on the planning branch.
+The simulator version is now bumped for release prep, but v0.7.0 is not marked
+as released.
 
 Implemented hardening:
 
@@ -206,9 +211,8 @@ Implemented hardening:
 - Failure output context for count-style assertions, including filters and
   whether the requested RegistryHub was present.
 
-Deferred release-prep work:
+Deferred release work:
 
-- Version bump only at explicit release-prep time.
 - Merge, tag, package publication, and release creation.
 
 Validation target:
@@ -220,10 +224,10 @@ python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
 ```
 
-During planning, the expected version remains:
+During release prep, the expected version is:
 
 ```text
-darwin-sim 0.6.0
+darwin-sim 0.7.0
 ```
 
 ## Recommended First Implementation Sprint

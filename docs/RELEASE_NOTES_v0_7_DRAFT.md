@@ -1,11 +1,11 @@
-# DARWIN v0.7 Draft Release Notes
+# DARWIN v0.7.0 Draft Release Notes
 
-Status: unreleased draft work on `v0.7/planning`.
+Status: unreleased release-prep work on `v0.7/planning`.
 
-Current package and CLI version: `darwin-sim 0.6.0`.
+Current package and CLI version on this branch: `darwin-sim 0.7.0`.
 
-These notes are draft release-note material only. v0.7 has not been tagged,
-merged, packaged, or released.
+These notes are release-prep material only. v0.7.0 has not been merged to
+`main`, tagged, published as a GitHub release, packaged, or released.
 
 ## Draft Highlights
 
@@ -20,23 +20,27 @@ merged, packaged, or released.
   explanation checks:
   `alias_history_contains`, `alias_conflict_history_contains`,
   `authority_audit_trace_contains`, and `quarantine_history_contains`.
-- v0.7 draft scenarios `037` through `041`:
+- v0.7 release-prep scenarios `037` through `041`:
   `037_registry_history_alias_claim`,
   `038_registry_history_alias_conflict`,
   `039_authority_audit_trace_success`,
   `040_authority_audit_trace_fallback`, and
   `041_trace_explainability_denials`.
-- Sprint 5 tests and documentation hardening for assertion validation, failure
-  output, scenario coverage, and retained-data limitations.
+- Sprint 5 assertion diagnostics and validation hardening, including clearer
+  count-style failure output, filter context, missing-RegistryHub diagnostics,
+  and read-only assertion regression coverage.
+- Documentation, scenario index, and draft release-note hardening that keeps
+  scenarios `001` through `041` discoverable and gap-free.
 
 ## Simulator-Only Non-Goals
 
 - No simulator runtime behavior changes are intended.
 - No changes to alias claim, release, resolution, conflict, denial,
   quarantine, or explanation semantics.
+- No persistent failed-path audit store.
 - No TrafficHub routing changes.
 - No canonical identity rewrite.
-- No new persistent history storage or broad event store.
+- No broad event store.
 - No external services.
 - No real DNS, registrar integration, public CA behavior, or production
   identity proof.
@@ -62,8 +66,8 @@ python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
 ```
 
-Expected version output remains:
+Expected version output:
 
 ```text
-darwin-sim 0.6.0
+darwin-sim 0.7.0
 ```

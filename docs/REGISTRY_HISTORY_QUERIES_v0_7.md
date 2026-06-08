@@ -1,5 +1,8 @@
 # DARWIN v0.7 Registry History Queries
 
+Status: unreleased release-prep work on `v0.7/planning`. The current branch
+version is `darwin-sim 0.7.0`.
+
 This document describes the v0.7 Sprint 1 read-only RegistryHub history query
 helpers. The helpers make simulator state that already exists easier to inspect
 from tests, audit/explanation layers, and v0.7 scenario assertions.
@@ -166,5 +169,5 @@ Deferred categories:
 - External audit log export, production audit retention, compliance reporting,
   or external service integration.
 
-These helpers are a foundation for later v0.7 audit trace and explainability
-work, not a production audit subsystem.
+These helpers support the v0.7 audit trace and explainability layers, not a
+production audit subsystem.
