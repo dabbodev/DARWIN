@@ -176,6 +176,10 @@ ASSERTION_REQUIRED_FIELDS = {
     "alias_granted_as": ("registry_hub", "requested_alias", "granted_alias"),
     "alias_authority_ceiling": ("registry_hub", "alias", "expected"),
     "alias_authority_path_summary": ("requested_alias",),
+    "alias_history_contains": ("registry_hub",),
+    "alias_conflict_history_contains": ("registry_hub",),
+    "authority_audit_trace_contains": ("registry_hub",),
+    "quarantine_history_contains": ("registry_hub",),
     "alias_not_resolved": ("registry_hub", "alias"),
     "canonical_identity_unchanged": (
         "registry_hub",

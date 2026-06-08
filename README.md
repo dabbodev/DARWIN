@@ -93,13 +93,22 @@ TrafficHub routing, or rewrite canonical identity chains.
 v0.7 planning focuses on registry history, authority audit trails, and scenario
 trace explainability while preserving the v0.6 released behavior. Sprint 1 adds
 read-only RegistryHub history query helpers, Sprint 2 adds read-only authority
-audit trace summary helpers, and Sprint 3 adds deterministic trace explanation
-helpers on the planning branch.
+audit trace summary helpers, Sprint 3 adds deterministic trace explanation
+helpers, and Sprint 4 adds read-only scenario assertions and v0.7 planning
+scenarios on the planning branch.
 
 - `docs/V0_7_ROADMAP.md`
 - `docs/REGISTRY_HISTORY_QUERIES_v0_7.md`
 - `docs/AUTHORITY_AUDIT_TRACES_v0_7.md`
 - `docs/TRACE_EXPLAINABILITY_v0_7.md`
+
+v0.7 planning scenarios:
+
+- `scenarios/037_registry_history_alias_claim.yaml`
+- `scenarios/038_registry_history_alias_conflict.yaml`
+- `scenarios/039_authority_audit_trace_success.yaml`
+- `scenarios/040_authority_audit_trace_fallback.yaml`
+- `scenarios/041_trace_explainability_denials.yaml`
 
 v0.5 alias scenarios:
 
@@ -118,7 +127,8 @@ v0.6 authority-chain scenarios:
 - `scenarios/035_alias_authority_chain_policy_denied.yaml`
 - `scenarios/036_alias_authority_chain_broken_parent.yaml`
 
-The current released scenario set is `001` through `036`.
+The current released scenario set remains `001` through `036`; scenarios
+`037` through `041` are v0.7 planning scenarios.
 
 ## What v0.1 Supports
 

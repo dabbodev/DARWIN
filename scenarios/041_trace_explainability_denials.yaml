@@ -1,0 +1,67 @@
+scenario_id: 041_trace_explainability_denials
+name: Trace explainability denials
+category: registry
+description: scenario-run-only in-memory authority path explanation covers a simulator-local policy denial
+tags:
+  - alias
+  - alias_authority_chain
+  - trace_explainability
+  - policy
+  - v0.7
+demonstrates:
+  - deterministic denial explanation from in-memory authority path data
+  - simulator-local policy denial
+  - no persistent failed-path audit storage
+expected_result: global.server is denied by policy and explained from the current scenario action result
+setup:
+  registry_hubs:
+    - hub_id: registry_home_001
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_001
+    - hub_id: registry_family_001
+      scope_path: global.family.david
+      parent_hub_id: registry_global_001
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: false
+    - hub_id: registry_global_001
+      scope_path: global
+  devices:
+    - device_id: dev_A9F3
+      label: server
+steps:
+  - action: register_device
+    registry_hub: registry_home_001
+    device: dev_A9F3
+    label: server
+  - action: register_device
+    registry_hub: registry_family_001
+    device: dev_A9F3
+    label: server
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_001
+    requested_alias: global.server
+    local_name: server
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    fallback_allowed: true
+    visibility: scope_local
+assertions:
+  - type: latest_step_status
+    expected: rejected
+  - type: latest_step_reason
+    expected: pass_up_denied_by_policy
+  - type: authority_audit_trace_contains
+    registry_hub: registry_family_001
+    requested_alias: global.server
+    device_id: dev_A9F3
+    final_status: policy_denied
+    outcome: policy_denied
+    summary_contains: simulator-local policy
+    expected_count: 1
+  - type: alias_not_resolved
+    registry_hub: registry_global_001
+    alias: global.server
+  - type: alias_not_resolved
+    registry_hub: registry_family_001
+    alias: global.family.david.server

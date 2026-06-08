@@ -2,7 +2,7 @@
 
 This document describes the v0.7 Sprint 1 read-only RegistryHub history query
 helpers. The helpers make simulator state that already exists easier to inspect
-from tests and future audit/explanation layers.
+from tests, audit/explanation layers, and v0.7 scenario assertions.
 
 The helpers are simulator-only. They do not add external storage, external
 services, production audit guarantees, compliance guarantees, real DNS,
@@ -141,6 +141,16 @@ Ordering is deterministic:
 Each result is a small frozen dataclass with a `to_dict()` method for JSON-safe
 inspection.
 
+## Scenario Assertions
+
+Sprint 4 wires these helpers into read-only scenario assertions:
+
+- `alias_history_contains` uses `query_alias_history(...)`.
+- `alias_conflict_history_contains` uses `query_alias_conflicts(...)`.
+- `quarantine_history_contains` uses `query_quarantine_events(...)`.
+
+See `docs/SCENARIO_DSL_v0_2.md` for assertion fields and count behavior.
+
 ## Limitations
 
 The v0.7 Sprint 1 helpers intentionally query only data already represented by
@@ -153,7 +163,6 @@ Deferred categories:
 - Historical versions of alias records before release or overwrite.
 - Historical canonical identity/device registration revisions beyond the
   current local registry records.
-- Scenario DSL actions or assertions for history queries.
 - External audit log export, production audit retention, compliance reporting,
   or external service integration.
 

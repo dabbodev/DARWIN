@@ -368,3 +368,56 @@ Checked-in alias scenarios:
 - `scenarios/029_progressive_alias_fallback.yaml`
 - `scenarios/030_alias_bundle_delegation.yaml`
 - `scenarios/031_dns_style_alias_bundle.yaml`
+
+## v0.7 Registry History and Trace Assertions
+
+The v0.7 planning slice adds read-only scenario assertions over existing
+RegistryHub state, retained authority grant provenance, and scenario-run
+in-memory authority path summaries. These assertions do not add new scenario
+actions, mutate simulator state, change alias outcomes, alter TrafficHub
+routing, rewrite canonical identity, or add persistent failed-path storage.
+
+Supported v0.7 assertions:
+
+- `alias_history_contains`
+  - Required: `registry_hub`
+  - Optional filters: `alias`, `device_id`, `status`
+  - Optional count checks: `expected_count`, `min_count`
+- `alias_conflict_history_contains`
+  - Required: `registry_hub`
+  - Optional filters: `alias`, `device_id`
+  - Optional count checks: `expected_count`, `min_count`
+- `authority_audit_trace_contains`
+  - Required: `registry_hub`
+  - Optional filters: `requested_alias`, `granted_alias`, `device_id`,
+    `final_status`
+  - Optional explanation checks: `outcome`, `summary_contains`
+  - Optional count checks: `expected_count`, `min_count`
+- `quarantine_history_contains`
+  - Required: `registry_hub`
+  - Optional filters: `device_id`, `reason`
+  - Optional count checks: `expected_count`, `min_count`
+
+If neither `expected_count` nor `min_count` is supplied, the assertion passes
+when at least one matching record exists. When `expected_count` is supplied,
+the count must match exactly. When `min_count` is supplied, the count must be
+at least that value.
+
+`authority_audit_trace_contains` validates retained RegistryHub grant traces
+from `build_authority_audit_trace(...)`. For failed authority outcomes in the
+same scenario run, it can also explain the in-memory `AliasAuthorityPath`
+summary still attached to the action result. Assertion output identifies this
+as `in_memory_authority_path`; it is not persistent failed-path audit storage.
+
+Retained-data limits remain important: RegistryHub retains terminal grant
+provenance, not full failed authority-chain paths. Failed paths are explainable
+only while the runner still has the in-memory action result or a summary
+derived from it.
+
+Checked-in v0.7 planning scenarios:
+
+- `scenarios/037_registry_history_alias_claim.yaml`
+- `scenarios/038_registry_history_alias_conflict.yaml`
+- `scenarios/039_authority_audit_trace_success.yaml`
+- `scenarios/040_authority_audit_trace_fallback.yaml`
+- `scenarios/041_trace_explainability_denials.yaml`

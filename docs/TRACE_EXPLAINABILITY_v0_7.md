@@ -14,7 +14,7 @@ LLM-style prose generation.
 
 Sprint 1 exposed read-only RegistryHub history query helpers. Sprint 2 exposed
 read-only authority audit trace summaries. Sprint 3 adds a small explanation
-layer over those structured outputs so tests, future scenario assertions, and
+layer over those structured outputs so tests, scenario assertions, and
 documentation examples can display why an alias claim was approved, fell back,
 conflicted, or failed.
 
@@ -112,6 +112,18 @@ Registry history explanations currently support:
 - `observed`: retained quarantine event query entry.
 - `partial`: alias history input without enough known fields.
 
+## Scenario Assertions
+
+Sprint 4 uses `explain_authority_trace(...)` inside
+`authority_audit_trace_contains` when a scenario assertion supplies `outcome`
+or `summary_contains`. This keeps scenario checks deterministic and derived
+from structured helper output.
+
+The assertion can explain retained approved/fallback grants from
+`build_authority_audit_trace(...)`. Denied outcomes are explainable only when
+the scenario runner still has the in-memory authority path from the current
+action result.
+
 ## Limits
 
 RegistryHub retains terminal grant provenance, not full failed authority-chain
@@ -121,8 +133,6 @@ do not pretend full persistent failed-path audit storage exists.
 
 Deferred work:
 
-- Scenario DSL actions or assertions for explanations.
-- New v0.7 scenario YAMLs.
 - Broad append-only registry event storage.
 - Full historical alias record versions.
 - Production audit, compliance reporting, or external audit export.

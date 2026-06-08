@@ -1,0 +1,62 @@
+scenario_id: 038_registry_history_alias_conflict
+name: Registry history alias conflict
+category: registry
+description: read-only alias conflict history assertions observe a direct alias conflict
+tags:
+  - alias
+  - conflict
+  - registry_history
+  - v0.7
+demonstrates:
+  - alias conflict history query assertions
+  - original alias owner preservation
+  - canonical identity preservation
+expected_result: conflict history records the second device request and the original alias remains active
+use:
+  - single_home_network
+setup:
+  devices:
+    - device_id: dev_A9F3
+      label: project_server
+      registry_hub: hub_home_001
+      traffic_hub: hub_home_001
+    - device_id: dev_B2C8
+      label: tablet
+      registry_hub: hub_home_001
+      traffic_hub: hub_home_001
+steps:
+  - action: claim_alias
+    registry_hub: hub_home_001
+    alias: global.family.david.shared_history_alias
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    visibility: scope_local
+  - action: claim_alias
+    registry_hub: hub_home_001
+    alias: global.family.david.shared_history_alias
+    target_device: dev_B2C8
+    requested_by_device: dev_B2C8
+    visibility: scope_local
+assertions:
+  - type: latest_step_status
+    expected: conflict
+  - type: alias_conflict_history_contains
+    registry_hub: hub_home_001
+    alias: global.family.david.shared_history_alias
+    device_id: dev_B2C8
+    expected_count: 1
+  - type: alias_history_contains
+    registry_hub: hub_home_001
+    alias: global.family.david.shared_history_alias
+    device_id: dev_A9F3
+    status: active
+    expected_count: 1
+  - type: alias_resolves_to
+    registry_hub: hub_home_001
+    alias: global.family.david.shared_history_alias
+    device: dev_A9F3
+    identity_chain: global.family.home.project_server
+  - type: canonical_identity_unchanged
+    registry_hub: hub_home_001
+    device: dev_B2C8
+    expected_identity_chain: global.family.home.tablet

@@ -1,0 +1,65 @@
+scenario_id: 039_authority_audit_trace_success
+name: Authority audit trace success
+category: registry
+description: retained authority audit trace assertions observe a successful parent-approved alias claim
+tags:
+  - alias
+  - alias_authority_chain
+  - authority_audit
+  - v0.7
+demonstrates:
+  - retained authority audit trace assertions
+  - deterministic approved trace explanation
+  - parent authority approval
+expected_result: global.server is retained at the global hub with an approved explanation
+setup:
+  registry_hubs:
+    - hub_id: registry_home_001
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_001
+    - hub_id: registry_family_001
+      scope_path: global.family.david
+      parent_hub_id: registry_global_001
+    - hub_id: registry_global_001
+      scope_path: global
+  devices:
+    - device_id: dev_A9F3
+      label: server
+steps:
+  - action: register_device
+    registry_hub: registry_home_001
+    device: dev_A9F3
+    label: server
+  - action: register_device
+    registry_hub: registry_family_001
+    device: dev_A9F3
+    label: server
+  - action: register_device
+    registry_hub: registry_global_001
+    device: dev_A9F3
+    label: server
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_001
+    requested_alias: global.server
+    local_name: server
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    fallback_allowed: true
+    visibility: scope_local
+assertions:
+  - type: latest_step_status
+    expected: claimed
+  - type: authority_audit_trace_contains
+    registry_hub: registry_global_001
+    requested_alias: global.server
+    granted_alias: global.server
+    device_id: dev_A9F3
+    final_status: approved_here
+    outcome: approved
+    summary_contains: approved at registry_global_001
+    expected_count: 1
+  - type: alias_resolves_to
+    registry_hub: registry_global_001
+    alias: global.server
+    device: dev_A9F3
+    identity_chain: global.server

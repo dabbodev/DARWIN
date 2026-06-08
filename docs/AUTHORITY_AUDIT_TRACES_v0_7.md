@@ -114,6 +114,21 @@ Currently available from in-memory authority paths:
 - Terminal reason.
 - Flags for fallback, conflict, policy denial, and broken paths.
 
+## Scenario Assertions
+
+Sprint 4 wires retained authority grant traces into
+`authority_audit_trace_contains`. The assertion uses
+`build_authority_audit_trace(...)` for retained RegistryHub provenance and can
+apply deterministic explanation checks through the Sprint 3 explainability
+helpers.
+
+During a scenario run, failed authority outcomes can also be checked from the
+in-memory `AliasAuthorityPath` still attached to the action result. Assertion
+actuals identify that source as `in_memory_authority_path`; this is
+scenario-run-only data, not persistent failed-path audit storage.
+
+See `docs/SCENARIO_DSL_v0_2.md` for assertion fields and count behavior.
+
 ## Limitations
 
 RegistryHub does not currently persist full failed authority-chain paths after
@@ -128,8 +143,6 @@ available to the caller.
 
 Deferred work:
 
-- Scenario DSL actions or assertions for audit traces.
-- New v0.7 scenario YAMLs.
 - Broad append-only event storage.
 - Production audit or compliance reporting.
 - External audit log export or service integration.
