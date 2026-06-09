@@ -1,7 +1,6 @@
 # DARWIN v0.7 Registry History Queries
 
-Status: unreleased release-prep work on `v0.7/planning`. The current branch
-version is `darwin-sim 0.7.0`.
+Status: released on `main`. The current version is `darwin-sim 0.7.0`.
 
 This document describes the v0.7 Sprint 1 read-only RegistryHub history query
 helpers. The helpers make simulator state that already exists easier to inspect

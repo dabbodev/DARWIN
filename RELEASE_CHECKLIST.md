@@ -277,11 +277,10 @@ python -m darwin.cli.main scenario-index
 python -m darwin.cli.main list-scenarios
 ```
 
-# DARWIN v0.7 History, Audit, and Trace Explainability Release-Prep Checklist
+# DARWIN v0.7 History, Audit, and Trace Explainability Release Checklist
 
-v0.7.0 is unreleased release-prep work on `v0.7/planning`. Do not merge, tag,
-create a GitHub release, publish packages, or claim v0.7.0 has been released
-as part of this checklist.
+v0.7.0 has been merged to `main`, tagged as annotated `v0.7.0`, and published
+as a GitHub release. No package publication was performed.
 
 - [x] Ruff passes with `python -m ruff check .`.
 - [x] Tests pass with `python -m pytest`.
@@ -291,9 +290,9 @@ as part of this checklist.
 - [x] Package version is confirmed as `0.7.0`.
 - [x] Scenario index is current and lists scenarios `001` through `041`
   without numbering gaps.
-- [x] v0.7 release notes remain draft/release-prep notes in
+- [x] v0.7 release notes are checked in
   `docs/RELEASE_NOTES_v0_7_DRAFT.md`.
-- [x] CHANGELOG contains an unreleased `0.7.0` release-prep section.
+- [x] CHANGELOG contains a dated `0.7.0` release section.
 - [x] README and v0.7 docs state that helper, assertion, and explanation
   layers are read-only.
 - [x] Documentation states that RegistryHub retains terminal grant provenance,
@@ -304,10 +303,10 @@ as part of this checklist.
   failed-path audit storage, broad event-store claims, real DNS, registrar
   integration, public CA behavior, production identity proof, external
   services, TrafficHub routing changes, and canonical identity rewrites.
-- [x] Merge, tag, GitHub release creation, and package publication have not
-  been performed.
+- [x] Merge, annotated tag, and GitHub release are complete.
+- [x] Package publication was intentionally not performed.
 
-## v0.7 Release-Prep Validation Commands
+## v0.7 Release Validation Commands
 
 ```bash
 python -m ruff check .

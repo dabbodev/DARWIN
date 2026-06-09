@@ -371,14 +371,14 @@ Checked-in alias scenarios:
 
 ## v0.7 Registry History and Trace Assertions
 
-The v0.7 release-prep slice on `v0.7/planning` adds read-only scenario
+The v0.7 released slice adds read-only scenario
 assertions over existing RegistryHub state, retained authority grant
 provenance, and scenario-run in-memory authority path summaries. These
 assertions do not add new scenario actions, mutate simulator state, change
 alias outcomes, alter TrafficHub routing, rewrite canonical identity, or add
-persistent failed-path storage. The current branch version reports
-`darwin-sim 0.7.0`; v0.7.0 has not been merged, tagged, published as a GitHub
-release, or packaged.
+persistent failed-path storage. v0.7.0 is released on `main`; the annotated
+`v0.7.0` tag and GitHub release exist, no package publication was performed,
+and the CLI version reports `darwin-sim 0.7.0`.
 
 Supported v0.7 assertions:
 
@@ -420,7 +420,7 @@ provenance, not full failed authority-chain paths. Failed paths are explainable
 only while the runner still has the in-memory action result or a summary
 derived from it.
 
-Checked-in v0.7 release-prep scenarios:
+Checked-in v0.7 scenarios:
 
 - `scenarios/037_registry_history_alias_claim.yaml`
 - `scenarios/038_registry_history_alias_conflict.yaml`

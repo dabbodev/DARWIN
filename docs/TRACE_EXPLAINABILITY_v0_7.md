@@ -1,7 +1,6 @@
 # DARWIN v0.7 Trace Explainability Helpers
 
-Status: unreleased release-prep work on `v0.7/planning`. The current branch
-version is `darwin-sim 0.7.0`.
+Status: released on `main`. The current version is `darwin-sim 0.7.0`.
 
 This document describes the v0.7 Sprint 3 deterministic trace explanation
 helpers. The helpers convert existing registry history query results and

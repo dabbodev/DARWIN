@@ -1,9 +1,7 @@
 # DARWIN v0.7 Roadmap: Registry History, Authority Audit Trails, and Scenario Trace Explainability
 
-DARWIN v0.7 is unreleased release-prep simulator work on `v0.7/planning` with
-Sprint 5 hardening implemented and the branch version bumped to `0.7.0`. The
-theme is registry history, authority audit trails, and scenario trace
-explainability.
+DARWIN v0.7 is released simulator work on `main`. The theme is registry
+history, authority audit trails, and scenario trace explainability.
 
 The goal is to make existing registry and alias behavior easier to inspect
 without changing simulator semantics, TrafficHub routing, canonical identity,
@@ -11,18 +9,17 @@ or the v0.6 alias authority-chain model.
 
 ## Status
 
-Implementation status: release-prep ready on the planning branch.
+Implementation status: released.
 
-Planning branch: `v0.7/planning`.
+Release branch: `main`.
 
-Released baseline: `darwin-sim 0.6.0` with scenarios `001` through `036`.
+Released version: `darwin-sim 0.7.0` with scenarios `001` through `041`.
 
-Current branch version: `darwin-sim 0.7.0` with scenarios `001` through `041`.
+Release tag: annotated `v0.7.0`.
 
-Version policy:
+GitHub release: published.
 
-- The simulator version has been bumped to `0.7.0` for release prep.
-- Do not bump beyond `0.7.0` before v0.7 release completion.
+Package publication: not performed.
 
 ## Scope
 
@@ -47,7 +44,7 @@ Out of scope:
 - Public CA behavior.
 - Production identity proof.
 - External services.
-- Package publication during release prep.
+- Package publication.
 - TrafficHub routing changes.
 - Canonical identity rewrite.
 - Runtime refactors unrelated to history, audit trails, or explainability.
@@ -154,8 +151,8 @@ explain stored approved and fallback grants.
 Add read-only scenario assertions and examples that teach how to read registry
 history, authority audit traces, and explanation output.
 
-Status: implemented on the planning branch as scenario assertions and
-scenarios `037` through `041`. The assertions are documented in
+Status: implemented as scenario assertions and scenarios `037` through `041`.
+The assertions are documented in
 `docs/SCENARIO_DSL_v0_2.md`.
 
 Implemented assertions:
@@ -184,13 +181,13 @@ Candidate docs and scenarios:
 - A focused guide for interpreting authority-chain audit traces.
 - Example scenario output snippets for success, fallback, conflict, policy
   denial, and broken parent paths.
-- Scenario documentation that keeps scenarios `001` through `036` as the
-  released v0.6 baseline while v0.7 release-prep scenarios begin at `037`.
+- Scenario documentation that keeps scenarios `001` through `041` as the
+  released v0.7 scenario set.
 
 Non-goals:
 
-- Do not claim v0.7 behavior is released before merge, tag, GitHub release,
-  and final release completion.
+- Do not claim production audit/compliance behavior from v0.7 simulator
+  helper output.
 - Do not document real DNS, registrar, public CA, or production identity
   behavior as implemented.
 
@@ -198,22 +195,20 @@ Non-goals:
 
 Harden the v0.7 slices once implementation exists.
 
-Status: implemented as release-candidate hardening on the planning branch.
-The simulator version is now bumped for release prep, but v0.7.0 is not marked
-as released.
+Status: implemented and released.
 
 Implemented hardening:
 
 - Regression tests for v0.7 scenario assertion validation and failure output.
 - Read-only regression coverage for history-style assertion evaluation.
 - Scenario runner coverage for v0.7 scenarios `037` through `041`.
-- Docs polish across README, changelog, scenario DSL, and draft release notes.
+- Docs polish across README, changelog, scenario DSL, and release notes.
 - Failure output context for count-style assertions, including filters and
   whether the requested RegistryHub was present.
 
 Deferred release work:
 
-- Merge, tag, package publication, and release creation.
+- Package publication.
 
 Validation target:
 
@@ -224,7 +219,7 @@ python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
 ```
 
-During release prep, the expected version is:
+The expected released version is:
 
 ```text
 darwin-sim 0.7.0

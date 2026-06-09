@@ -1,13 +1,13 @@
-# DARWIN v0.7.0 Draft Release Notes
+# DARWIN v0.7.0 Release Notes
 
-Status: unreleased release-prep work on `v0.7/planning`.
+Status: released on `main`.
 
-Current package and CLI version on this branch: `darwin-sim 0.7.0`.
+Current package and CLI version: `darwin-sim 0.7.0`.
 
-These notes are release-prep material only. v0.7.0 has not been merged to
-`main`, tagged, published as a GitHub release, packaged, or released.
+v0.7.0 has been merged to `main`, tagged as annotated `v0.7.0`, and published
+as a GitHub release. No package publication was performed.
 
-## Draft Highlights
+## Highlights
 
 - Read-only RegistryHub history query helpers for retained alias records, alias
   conflicts, persisted terminal alias authority grant provenance, and
@@ -20,7 +20,7 @@ These notes are release-prep material only. v0.7.0 has not been merged to
   explanation checks:
   `alias_history_contains`, `alias_conflict_history_contains`,
   `authority_audit_trace_contains`, and `quarantine_history_contains`.
-- v0.7 release-prep scenarios `037` through `041`:
+- v0.7 scenarios `037` through `041`:
   `037_registry_history_alias_claim`,
   `038_registry_history_alias_conflict`,
   `039_authority_audit_trace_success`,
@@ -29,7 +29,7 @@ These notes are release-prep material only. v0.7.0 has not been merged to
 - Sprint 5 assertion diagnostics and validation hardening, including clearer
   count-style failure output, filter context, missing-RegistryHub diagnostics,
   and read-only assertion regression coverage.
-- Documentation, scenario index, and draft release-note hardening that keeps
+- Documentation, scenario index, and release-note hardening that keeps
   scenarios `001` through `041` discoverable and gap-free.
 
 ## Simulator-Only Non-Goals
@@ -57,7 +57,7 @@ has the in-memory action-result authority path or a summary derived from it.
 Scenario `041_trace_explainability_denials` demonstrates that scenario-run-only
 path, not persistent failed-path audit storage.
 
-## Draft Validation Target
+## Release Validation Target
 
 ```bash
 python -m ruff check .
