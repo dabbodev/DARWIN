@@ -142,6 +142,15 @@ a broad event store, real DNS, registrar integration, public CA behavior,
 production identity proof, external services, TrafficHub routing changes, or
 canonical identity rewrites.
 
+## v0.8 Planning
+
+v0.8 is not implemented yet. The planning theme is persistent simulator audit
+retention and failed-path provenance while remaining simulator-first and
+avoiding production audit/compliance, DNS, registrar, CA, external service,
+TrafficHub routing, and canonical identity changes.
+
+- `docs/V0_8_ROADMAP.md`
+
 ## What v0.1 Supports
 
 - Scoped Registry Hub registration and label conflict handling.
@@ -834,6 +843,10 @@ For v0.7 history, audit, and trace explainability behavior, see:
 - `docs/REGISTRY_HISTORY_QUERIES_v0_7.md`
 - `docs/AUTHORITY_AUDIT_TRACES_v0_7.md`
 - `docs/TRACE_EXPLAINABILITY_v0_7.md`
+
+For v0.8 planning, see:
+
+- `docs/V0_8_ROADMAP.md`
 
 ## What v0.1 Is Not
 
