@@ -14,6 +14,7 @@ from darwin.models.alias_authority import (
     ALIAS_AUTHORITY_DECISIONS,
     AliasAuthorityClaimResult,
     AliasAuthorityDecision,
+    AliasAuthorityOutcomeRecord,
     AliasAuthorityPath,
     AliasAuthorityPathSummary,
 )
@@ -36,6 +37,7 @@ __all__ = [
     "ALIAS_AUTHORITY_DECISIONS",
     "AliasAuthorityClaimResult",
     "AliasAuthorityDecision",
+    "AliasAuthorityOutcomeRecord",
     "AliasAuthorityPath",
     "AliasAuthorityPathSummary",
     "AliasClaimResult",

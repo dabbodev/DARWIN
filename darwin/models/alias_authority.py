@@ -114,6 +114,53 @@ class AliasAuthorityPath:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class AliasAuthorityOutcomeRecord:
+    """Compact simulator-local retention record for one authority outcome."""
+
+    record_id: str
+    requested_alias: str
+    granted_alias: str | None
+    target_device: str | None
+    requesting_hub: str | None
+    authority_ceiling: str | None
+    final_status: str
+    status: str | None
+    reason: str | None
+    decision_count: int
+    path_hubs: tuple[str, ...]
+    decisions: tuple[dict[str, object], ...]
+    fallback_used: bool
+    conflict_detected: bool
+    policy_denied: bool
+    path_broken: bool
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe retained outcome summary."""
+        return {
+            "record_id": self.record_id,
+            "requested_alias": self.requested_alias,
+            "granted_alias": self.granted_alias,
+            "target_device": self.target_device,
+            "requesting_hub": self.requesting_hub,
+            "authority_ceiling": self.authority_ceiling,
+            "final_status": self.final_status,
+            "status": self.status,
+            "reason": self.reason,
+            "decision_count": self.decision_count,
+            "path_hubs": list(self.path_hubs),
+            "decisions": [dict(decision) for decision in self.decisions],
+            "fallback_used": self.fallback_used,
+            "conflict_detected": self.conflict_detected,
+            "policy_denied": self.policy_denied,
+            "path_broken": self.path_broken,
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
 @dataclass(slots=True)
 class AliasAuthorityClaimResult:
     """Outcome of claiming an alias through an evaluated authority chain."""

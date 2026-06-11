@@ -2,7 +2,22 @@
 
 ## [Unreleased]
 
-No post-v0.7.0 changes are recorded yet.
+Added:
+
+- v0.8 draft Sprint 1 simulator-local authority outcome retention on
+  `RegistryHub.authority_outcome_history`, with compact
+  `AliasAuthorityOutcomeRecord` summaries for successful approvals, fallback
+  grants, name-taken conflicts, simulator-local policy denials, and broken
+  authority paths.
+- v0.8 authority outcome retention documentation.
+
+Compatibility and limits:
+
+- The package and CLI version remain `darwin-sim 0.7.0`.
+- No scenario DSL actions, scenario DSL assertions, scenarios, query helpers,
+  TrafficHub routing changes, canonical identity changes, broad event store,
+  production audit/compliance behavior, external services, DNS, registrar
+  integration, public CA behavior, or production identity proof are added.
 
 ## [0.7.0] - 2026-06-09
 

@@ -1,7 +1,7 @@
 # DARWIN v0.8 Roadmap: Persistent Simulator Audit Retention and Failed-Path Provenance
 
-DARWIN v0.8 is planning-only and not implemented yet. The proposed theme is
-persistent simulator audit retention and failed-path provenance.
+DARWIN v0.8 is in early implementation. The theme is persistent simulator
+audit retention and failed-path provenance.
 
 v0.8 should remain simulator-first. It should make authority-chain outcomes
 easier to inspect after scenario actions complete without becoming a production
@@ -10,7 +10,7 @@ service system.
 
 ## Status
 
-Implementation status: not implemented.
+Implementation status: Sprint 1 implemented on `v0.8/planning`.
 
 Planning branch: `v0.8/planning`.
 
@@ -56,6 +56,8 @@ Out of scope:
 Retain compact failed and successful authority-chain outcome summaries on
 `RegistryHub`.
 
+Status: implemented.
+
 Candidate work:
 
 - Add a small simulator-local retained outcome record for authority-chain
@@ -66,6 +68,15 @@ Candidate work:
 - Preserve existing in-memory `AliasAuthorityPath` behavior and action result
   shape.
 - Keep retained records deterministic and JSON-safe.
+
+Implemented notes:
+
+- `RegistryHub.authority_outcome_history` retains compact
+  `AliasAuthorityOutcomeRecord` entries on the starting/requesting hub.
+- Retained entries cover successful approvals, fallback grants, name-taken
+  conflicts, simulator-local policy denials, and broken authority paths.
+- Existing v0.7 retained grant provenance, in-memory `AliasAuthorityPath`
+  behavior, scenario action result shape, and alias semantics are preserved.
 
 Non-goals:
 

@@ -144,12 +144,19 @@ canonical identity rewrites.
 
 ## v0.8 Planning
 
-v0.8 is not implemented yet. The planning theme is persistent simulator audit
-retention and failed-path provenance while remaining simulator-first and
-avoiding production audit/compliance, DNS, registrar, CA, external service,
-TrafficHub routing, and canonical identity changes.
+v0.8 planning is underway. Sprint 1 adds simulator-local authority outcome
+retention on the requesting `RegistryHub`, keeping compact records for
+successful, fallback, conflict, policy-denied, and broken-path authority-chain
+attempts while preserving v0.7 alias, audit, explanation, TrafficHub routing,
+and canonical identity behavior.
 
 - `docs/V0_8_ROADMAP.md`
+- `docs/AUTHORITY_OUTCOME_RETENTION_v0_8.md`
+
+v0.8 remains simulator-only and does not add production audit/compliance
+guarantees, DNS, registrar integration, public CA behavior, production identity
+proof, external services, TrafficHub routing changes, or canonical identity
+rewrites. The current version still reports `darwin-sim 0.7.0`.
 
 ## What v0.1 Supports
 
