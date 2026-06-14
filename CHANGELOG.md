@@ -9,15 +9,19 @@ Added:
   `AliasAuthorityOutcomeRecord` summaries for successful approvals, fallback
   grants, name-taken conflicts, simulator-local policy denials, and broken
   authority paths.
+- v0.8 draft Sprint 2 read-only `query_authority_outcomes(...)` helper for
+  retained authority outcome summaries, with additive filters and deterministic
+  append-order results.
 - v0.8 authority outcome retention documentation.
+- v0.8 authority outcome query documentation.
 
 Compatibility and limits:
 
 - The package and CLI version remain `darwin-sim 0.7.0`.
-- No scenario DSL actions, scenario DSL assertions, scenarios, query helpers,
-  TrafficHub routing changes, canonical identity changes, broad event store,
-  production audit/compliance behavior, external services, DNS, registrar
-  integration, public CA behavior, or production identity proof are added.
+- No scenario DSL actions, scenario DSL assertions, scenarios, TrafficHub
+  routing changes, canonical identity changes, broad event store, production
+  audit/compliance behavior, external services, DNS, registrar integration,
+  public CA behavior, or production identity proof are added.
 
 ## [0.7.0] - 2026-06-09
 

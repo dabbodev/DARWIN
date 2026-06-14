@@ -147,11 +147,13 @@ canonical identity rewrites.
 v0.8 planning is underway. Sprint 1 adds simulator-local authority outcome
 retention on the requesting `RegistryHub`, keeping compact records for
 successful, fallback, conflict, policy-denied, and broken-path authority-chain
-attempts while preserving v0.7 alias, audit, explanation, TrafficHub routing,
-and canonical identity behavior.
+attempts. Sprint 2 adds read-only query helpers for those retained outcomes
+while preserving v0.7 alias, audit, explanation, TrafficHub routing, and
+canonical identity behavior.
 
 - `docs/V0_8_ROADMAP.md`
 - `docs/AUTHORITY_OUTCOME_RETENTION_v0_8.md`
+- `docs/AUTHORITY_OUTCOME_QUERIES_v0_8.md`
 
 v0.8 remains simulator-only and does not add production audit/compliance
 guarantees, DNS, registrar integration, public CA behavior, production identity
@@ -854,6 +856,8 @@ For v0.7 history, audit, and trace explainability behavior, see:
 For v0.8 planning, see:
 
 - `docs/V0_8_ROADMAP.md`
+- `docs/AUTHORITY_OUTCOME_RETENTION_v0_8.md`
+- `docs/AUTHORITY_OUTCOME_QUERIES_v0_8.md`
 
 ## What v0.1 Is Not
 

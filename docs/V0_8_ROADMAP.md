@@ -10,7 +10,7 @@ service system.
 
 ## Status
 
-Implementation status: Sprint 1 implemented on `v0.8/planning`.
+Implementation status: Sprints 1 and 2 implemented on `v0.8/planning`.
 
 Planning branch: `v0.8/planning`.
 
@@ -89,6 +89,8 @@ Non-goals:
 Extend read-only history queries to include persisted failed authority
 outcomes.
 
+Status: implemented.
+
 Candidate work:
 
 - Add query helpers for retained authority outcomes by requested alias, granted
@@ -96,6 +98,17 @@ Candidate work:
 - Keep deterministic ordering and JSON-safe dataclass results.
 - Preserve v0.7 query helper behavior for retained alias records, conflicts,
   authority grant provenance, and quarantine records.
+
+Implemented notes:
+
+- `query_authority_outcomes(...)` reads
+  `RegistryHub.authority_outcome_history` without mutating registry state.
+- Filters are additive and include requested alias, granted alias, target
+  device, requesting hub, final status, status, reason, authority ceiling,
+  fallback, conflict, policy-denial, and path-broken markers.
+- Results are deterministic, compact, JSON-safe dataclasses returned in
+  retained append order.
+- Existing v0.7 history query helpers are preserved.
 
 Non-goals:
 

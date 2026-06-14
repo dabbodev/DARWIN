@@ -107,6 +107,9 @@ v0.7 history queries and authority audit traces continue to behave as before:
 
 - `query_authority_decisions(...)` reads terminal grant provenance from
   retained `AliasRecord` data.
+- `query_authority_outcomes(...)` reads retained
+  `AliasAuthorityOutcomeRecord` summaries from
+  `RegistryHub.authority_outcome_history`, including failed paths.
 - `build_authority_audit_trace(...)` summarizes retained successful and
   fallback grants from alias records.
 - `summarize_authority_path(...)` summarizes an in-memory
@@ -114,8 +117,8 @@ v0.7 history queries and authority audit traces continue to behave as before:
 - `explain_authority_trace(...)` can still explain v0.7 trace summaries and
   in-memory path summaries.
 
-Sprint 1 intentionally does not expand query helpers or scenario assertions to
-read `authority_outcome_history`. That work is deferred to later v0.8 sprints.
+Sprint 2 adds read-only query helpers for `authority_outcome_history`. Scenario
+assertions remain deferred to later v0.8 sprints.
 
 ## Retained Record vs. AliasAuthorityPath
 
@@ -141,5 +144,5 @@ The retained record does not replace or mutate the original path.
 - No production identity proof.
 - No TrafficHub routing changes.
 - No canonical identity rewrite.
-- No new scenario DSL actions or assertions in Sprint 1.
-- No failed-path query helpers until a later v0.8 sprint.
+- No scenario DSL actions or assertions are added by retention or query helpers.
+- Query helpers are read-only and simulator-local.
