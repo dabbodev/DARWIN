@@ -11,6 +11,10 @@ visibility tier, and lane use remains a separate authorization question.
 Lane signatures are service-intent descriptors. They are not network ports,
 socket bindings, DNS records, endpoint URLs, or cryptographic signatures.
 
+Sprint 3 builds on these signatures with scoped RegistryHub lane definition
+catalogs. See `docs/LANE_REGISTRY_v0_9.md` for the simulator-local catalog
+records that describe available lane signatures in a scope.
+
 ## Why Not Numeric Ports
 
 DARWIN should model typed, authorized lane intent rather than open ports.
@@ -104,6 +108,8 @@ adapter models:
 - mailbox registration can bind a mailbox record to a lane intent;
 - local adapter endpoint records can describe inert availability for that
   lane;
+- scoped lane registries can publish local lane definitions and fallback
+  policy data before any mailbox binding or delivery exists;
 - in-memory delivery can later require both discovery and authorization before
   symbolic delivery.
 

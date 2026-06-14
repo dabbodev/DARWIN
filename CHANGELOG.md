@@ -18,6 +18,12 @@ Added:
 - v0.9 mailbox addressing documentation that keeps registration, lane binding,
   adapter endpoints, delivery, networking, production chat, and production
   encryption explicitly deferred.
+- v0.9 Sprint 3 simulator-local scoped lane definition, fallback policy, and
+  lane registry status models for RegistryHub-local lane catalogs.
+- RegistryHub lane registry storage plus pure helper functions to register,
+  retrieve, list, filter, and discover scoped lane definitions.
+- Deterministic `basic_messaging:v1` lane definition constructor and scoped
+  lane registry documentation.
 
 Compatibility and limits:
 

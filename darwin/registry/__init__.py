@@ -42,6 +42,13 @@ from darwin.registry.history_queries import (
     query_authority_outcomes,
     query_quarantine_events,
 )
+from darwin.registry.lane_registry import (
+    can_discover_lane_definition,
+    get_lane_definition,
+    list_discoverable_lane_definitions,
+    list_lane_definitions,
+    register_lane_definition,
+)
 from darwin.registry.operations import (
     assign_temp_label,
     register_device,
@@ -63,6 +70,7 @@ __all__ = [
     "AuthorityDecisionQueryResult",
     "AuthorityOutcomeQueryResult",
     "build_authority_audit_trace",
+    "can_discover_lane_definition",
     "assign_temp_label",
     "claim_alias",
     "claim_alias_through_authority_chain",
@@ -80,7 +88,10 @@ __all__ = [
     "explain_quarantine_event_entry",
     "fallback_alias_for_scope",
     "get_checkpoint_state",
+    "get_lane_definition",
     "is_alias_within_scope",
+    "list_discoverable_lane_definitions",
+    "list_lane_definitions",
     "QuarantineEventQueryResult",
     "query_alias_conflicts",
     "query_alias_history",
@@ -89,6 +100,7 @@ __all__ = [
     "query_quarantine_events",
     "record_checkpoint",
     "register_device",
+    "register_lane_definition",
     "release_alias",
     "resolve_device_id",
     "resolve_alias",

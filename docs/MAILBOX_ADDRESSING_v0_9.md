@@ -83,9 +83,11 @@ Mailbox capabilities can reference lane signatures introduced in Sprint 1,
 especially `basic_messaging:v1`. This gives later v0.9 work a stable way to
 say a mailbox may support symbolic basic messaging in the simulator.
 
-Sprint 2 does not resolve capabilities through `RegistryHub`, authorize lane
-use, create lane intent advertisements, or attach adapter endpoints. Those
-remain future slices.
+Sprint 3 adds scoped RegistryHub lane definition catalogs for signatures such
+as `basic_messaging:v1`, documented in `docs/LANE_REGISTRY_v0_9.md`. Mailbox
+capabilities still do not register mailboxes, bind lanes, authorize lane use,
+create lane intent advertisements, or attach adapter endpoints. Those remain
+future slices.
 
 ## Relationship to Future RegistryHub Registration
 

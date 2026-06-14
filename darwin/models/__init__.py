@@ -23,8 +23,13 @@ from darwin.models.device import Device
 from darwin.models.hub import LocalDeviceRecord, RegistryHub, TrafficHub
 from darwin.models.lane import LogicalLane
 from darwin.models.lane_signature import (
+    LANE_FALLBACK_ACTIONS,
+    LANE_REGISTRY_STATUSES,
     LANE_VISIBILITY_TIERS,
+    LaneDefinition,
+    LaneDeliveryFallbackPolicy,
     LaneIntentAdvertisement,
+    LaneRegistryStatus,
     LaneSignature,
     LaneTrustContext,
     LaneVisibilityTier,
@@ -32,6 +37,7 @@ from darwin.models.lane_signature import (
     filter_discoverable_lane_intents,
     format_lane_signature,
     is_lane_signature,
+    make_basic_messaging_lane_definition,
     parse_lane_signature,
 )
 from darwin.models.mailbox import (
@@ -73,8 +79,13 @@ __all__ = [
     "DarwinPacket",
     "Device",
     "ForwardingResult",
+    "LANE_FALLBACK_ACTIONS",
+    "LANE_REGISTRY_STATUSES",
     "LANE_VISIBILITY_TIERS",
+    "LaneDefinition",
+    "LaneDeliveryFallbackPolicy",
     "LaneIntentAdvertisement",
+    "LaneRegistryStatus",
     "LaneSignature",
     "LaneTrustContext",
     "LaneVisibilityTier",
@@ -97,6 +108,7 @@ __all__ = [
     "format_lane_signature",
     "is_lane_signature",
     "is_mailbox_address",
+    "make_basic_messaging_lane_definition",
     "parse_lane_signature",
     "parse_mailbox_address",
 ]

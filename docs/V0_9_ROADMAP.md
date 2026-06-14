@@ -37,6 +37,7 @@ In scope:
 - Simulator-local lane signature and lane intent advertisement models.
 - Lane visibility tiers for discovery control.
 - Pure lane intent discovery helpers.
+- Scoped RegistryHub lane definition catalogs and fallback policy models.
 - Simulator-local mailbox identity and resource models after lane intent
   foundations.
 - DARWIN mailbox address strings, such as `darwin://global.chat.neo/inbox`.
@@ -113,7 +114,43 @@ Acceptance targets:
   external services.
 - Docs clearly state that mailbox addresses are not real URLs or DNS.
 
-## Sprint 3: Mailbox Registration and Lane Binding
+## Sprint 3: Scoped Lane Registry Definitions
+
+Status: implemented on the v0.9 planning branch.
+
+Goal: add scoped lane definition records and RegistryHub-local lane registry
+catalog helpers before mailbox registration or delivery exists.
+
+Candidate work:
+
+- Add `LaneDefinition` records for lane signatures available in a simulator
+  scope.
+- Add `LaneDeliveryFallbackPolicy` data for future delivery planning outcomes.
+- Add compact lane registry status values for local catalog lifecycle.
+- Add an empty default `RegistryHub.lane_registry` catalog.
+- Add helpers to register, retrieve, list, filter, and discover lane
+  definitions.
+- Add a deterministic `basic_messaging:v1` lane definition constructor.
+- Keep visibility and use authorization separate.
+- Do not implement mailbox registration, lane binding, adapter endpoints,
+  message delivery, real networking, or scenario DSL changes yet.
+
+Acceptance targets:
+
+- `RegistryHub` construction remains backward compatible with an empty lane
+  registry.
+- Lane definitions and fallback policies return JSON-safe summaries.
+- Registering a lane definition stores or replaces it deterministically by
+  lane signature.
+- Listing definitions is deterministic and supports visibility/status filters.
+- Discovery uses the same tier `0` through `5` visibility semantics as lane
+  intent advertisements.
+- Discovery does not imply lane-use authorization.
+- Docs clearly state that scoped lane registries are simulator-local catalogs,
+  not DNS, service discovery, production protocol registries, registrars,
+  public CAs, external services, or networking.
+
+## Sprint 4: Mailbox Registration and Lane Binding
 
 Goal: register mailbox identities through existing RegistryHub concepts.
 
@@ -133,7 +170,7 @@ Acceptance targets:
   identity.
 - Conflict handling remains deterministic and simulator-local.
 
-## Sprint 4: Local Adapter Endpoint Records
+## Sprint 5: Local Adapter Endpoint Records
 
 Goal: model how a mailbox might expose local adapter availability without
 opening real transport.
@@ -153,7 +190,7 @@ Acceptance targets:
 - Delivery planning can explain unavailable or stale endpoint failures.
 - Placeholder endpoint types remain inert data, not live transports.
 
-## Sprint 5: In-Memory Message Delivery over `basic_messaging:v1`
+## Sprint 6: In-Memory Message Delivery over `basic_messaging:v1`
 
 Goal: add a toy delivery path that proves address resolution and adapter
 selection without production transport.
@@ -172,7 +209,7 @@ Acceptance targets:
 - Unresolved mailbox and unavailable adapter outcomes are explicit.
 - Payloads are test fixtures only and are not described as secure messaging.
 
-## Sprint 6: Delivery Audit, Docs, Hardening, and Release Prep
+## Sprint 7: Delivery Audit, Docs, Hardening, and Release Prep
 
 Goal: make delivery decisions explainable in scenario output and prepare a
 clean release candidate only after the simulator slices are implemented and

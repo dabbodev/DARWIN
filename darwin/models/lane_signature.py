@@ -14,6 +14,23 @@ LANE_VISIBILITY_TIERS: dict[int, str] = {
     5: "explicit_private",
 }
 
+LANE_REGISTRY_STATUSES: tuple[str, ...] = (
+    "draft",
+    "active",
+    "deprecated",
+    "disabled",
+)
+
+LANE_FALLBACK_ACTIONS: tuple[str, ...] = (
+    "reject",
+    "bounce",
+    "queue",
+    "queue_with_expiry",
+    "hold_until_relocation_resolves",
+    "queue_with_retry",
+    "manual_resolution_required",
+)
+
 
 @dataclass(frozen=True, slots=True)
 class LaneSignature:
@@ -49,6 +66,161 @@ class LaneSignature:
             "required_capability": self.required_capability,
             "auth_policy": self.auth_policy,
             "adapter_kind": self.adapter_kind,
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class LaneDeliveryFallbackPolicy:
+    """Simulator-local fallback actions for future lane delivery planning."""
+
+    unknown_recipient: str = "bounce"
+    stale_device: str = "queue_with_expiry"
+    in_transit: str = "hold_until_relocation_resolves"
+    quarantined: str = "reject"
+    missing_lane_capability: str = "reject"
+    adapter_unavailable: str = "queue_with_retry"
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        for field_name in (
+            "unknown_recipient",
+            "stale_device",
+            "in_transit",
+            "quarantined",
+            "missing_lane_capability",
+            "adapter_unavailable",
+        ):
+            _validate_fallback_action(getattr(self, field_name), field_name)
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe fallback policy summary."""
+        return {
+            "unknown_recipient": self.unknown_recipient,
+            "stale_device": self.stale_device,
+            "in_transit": self.in_transit,
+            "quarantined": self.quarantined,
+            "missing_lane_capability": self.missing_lane_capability,
+            "adapter_unavailable": self.adapter_unavailable,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class LaneRegistryStatus:
+    """Controlled simulator-local lifecycle status for a lane definition."""
+
+    status: str = "active"
+
+    def __post_init__(self) -> None:
+        if self.status not in LANE_REGISTRY_STATUSES:
+            raise ValueError(
+                "lane registry status must be one of "
+                f"{', '.join(LANE_REGISTRY_STATUSES)}"
+            )
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe status summary."""
+        return {"status": self.status}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class LaneDefinition:
+    """Scoped simulator-local definition for an available lane signature."""
+
+    lane_signature: LaneSignature | str
+    scope: str
+    description: str = ""
+    payload_kind: str | None = None
+    schema_ref: str | None = None
+    protocol_ref: str | None = None
+    visibility_tier: LaneVisibilityTier | int = 0
+    authority_scope: str | None = None
+    adapter_kinds: tuple[str, ...] | list[str] = field(default_factory=tuple)
+    status: LaneRegistryStatus | str = "active"
+    fallback_policy: LaneDeliveryFallbackPolicy | None = None
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        lane_signature = self.lane_signature
+        if isinstance(lane_signature, str):
+            lane_signature = parse_lane_signature(lane_signature)
+        if not isinstance(lane_signature, LaneSignature):
+            raise TypeError("lane_signature must be a LaneSignature or string")
+        object.__setattr__(self, "lane_signature", lane_signature)
+
+        _validate_required_string(self.scope, "scope")
+        if self.description is None:
+            object.__setattr__(self, "description", "")
+        elif not isinstance(self.description, str):
+            raise TypeError("description must be a string")
+
+        payload_kind = self.payload_kind or lane_signature.payload_kind
+        _validate_required_string(payload_kind, "payload_kind")
+        object.__setattr__(self, "payload_kind", payload_kind)
+
+        _validate_optional_string(self.schema_ref, "schema_ref")
+        _validate_optional_string(self.protocol_ref, "protocol_ref")
+
+        visibility_tier = self.visibility_tier
+        if isinstance(visibility_tier, int):
+            visibility_tier = LaneVisibilityTier(visibility_tier)
+        if not isinstance(visibility_tier, LaneVisibilityTier):
+            raise TypeError("visibility_tier must be a LaneVisibilityTier or integer")
+        object.__setattr__(self, "visibility_tier", visibility_tier)
+
+        authority_scope = self.authority_scope or self.scope
+        _validate_required_string(authority_scope, "authority_scope")
+        object.__setattr__(self, "authority_scope", authority_scope)
+
+        adapter_kinds = tuple(self.adapter_kinds or (lane_signature.adapter_kind,))
+        if not adapter_kinds:
+            raise ValueError("adapter_kinds must contain at least one adapter kind")
+        for adapter_kind in adapter_kinds:
+            _validate_required_string(adapter_kind, "adapter_kind")
+        object.__setattr__(self, "adapter_kinds", adapter_kinds)
+
+        status = self.status
+        if isinstance(status, str):
+            status = LaneRegistryStatus(status)
+        if not isinstance(status, LaneRegistryStatus):
+            raise TypeError("status must be a LaneRegistryStatus or string")
+        object.__setattr__(self, "status", status)
+
+        fallback_policy = self.fallback_policy or LaneDeliveryFallbackPolicy()
+        if not isinstance(fallback_policy, LaneDeliveryFallbackPolicy):
+            raise TypeError("fallback_policy must be a LaneDeliveryFallbackPolicy")
+        object.__setattr__(self, "fallback_policy", fallback_policy)
+
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe lane definition summary."""
+        return {
+            "lane_signature": self.lane_signature.signature,
+            "scope": self.scope,
+            "description": self.description,
+            "payload_kind": self.payload_kind,
+            "schema_ref": self.schema_ref,
+            "protocol_ref": self.protocol_ref,
+            "visibility_tier": self.visibility_tier.tier,
+            "authority_scope": self.authority_scope,
+            "adapter_kinds": list(self.adapter_kinds),
+            "status": self.status.status,
+            "fallback_policy": self.fallback_policy.to_summary(),
+            "metadata": _json_safe_copy(self.metadata or {}),
         }
 
     def to_dict(self) -> dict[str, object]:
@@ -211,6 +383,40 @@ def filter_discoverable_lane_intents(
     ]
 
 
+def make_basic_messaging_lane_definition(
+    scope: str,
+    *,
+    authority_scope: str | None = None,
+) -> LaneDefinition:
+    """Return the deterministic simulator-local `basic_messaging:v1` definition."""
+    _validate_required_string(scope, "scope")
+    if authority_scope is not None:
+        _validate_required_string(authority_scope, "authority_scope")
+    return LaneDefinition(
+        lane_signature=LaneSignature(
+            lane_id="basic_messaging",
+            version="v1",
+            direction="receive",
+            payload_kind="symbolic_message_envelope",
+            recipient_kind="mailbox",
+            required_capability="basic_messaging",
+            auth_policy="authorization_required",
+            adapter_kind="mailbox_adapter",
+        ),
+        scope=scope,
+        description="Simulator-local symbolic mailbox messaging lane.",
+        payload_kind="symbolic_message_envelope",
+        schema_ref="darwin://schemas/basic_messaging/v1",
+        protocol_ref="darwin://protocols/basic_messaging/v1",
+        visibility_tier=0,
+        authority_scope=authority_scope or scope,
+        adapter_kinds=("mailbox_adapter",),
+        status="active",
+        fallback_policy=LaneDeliveryFallbackPolicy(),
+        metadata={"simulator_local": True},
+    )
+
+
 def _validate_signature_part(value: str, field_name: str) -> None:
     if not isinstance(value, str):
         raise TypeError(f"{field_name} must be a string")
@@ -220,6 +426,29 @@ def _validate_signature_part(value: str, field_name: str) -> None:
         raise ValueError(f"{field_name} must not contain whitespace")
     if ":" in value:
         raise ValueError(f"{field_name} must not contain ':'")
+
+
+def _validate_required_string(value: str, field_name: str) -> None:
+    if not isinstance(value, str):
+        raise TypeError(f"{field_name} must be a string")
+    if not value:
+        raise ValueError(f"{field_name} is required")
+    if value.strip() != value or any(character.isspace() for character in value):
+        raise ValueError(f"{field_name} must not contain whitespace")
+
+
+def _validate_optional_string(value: str | None, field_name: str) -> None:
+    if value is None:
+        return
+    _validate_required_string(value, field_name)
+
+
+def _validate_fallback_action(value: str, field_name: str) -> None:
+    _validate_required_string(value, field_name)
+    if value not in LANE_FALLBACK_ACTIONS:
+        raise ValueError(
+            f"{field_name} must be one of {', '.join(LANE_FALLBACK_ACTIONS)}"
+        )
 
 
 def _has_delegated_trust_path(
