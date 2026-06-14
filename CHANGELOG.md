@@ -20,10 +20,15 @@ Added:
   conflict, policy-denied, and broken-path authority outcomes.
 - v0.8 authority outcome retention documentation.
 - v0.8 authority outcome query documentation.
+- v0.8 Sprint 5 hardening documentation and draft release-note material for
+  retained records, queries, assertions, snapshot/export visibility, and
+  scenario coverage.
 
 Compatibility and limits:
 
 - The package and CLI version remain `darwin-sim 0.7.0`.
+- v0.8 is unreleased draft work on `v0.8/planning`; no merge, tag, release, or
+  package publication has been performed.
 - No scenario DSL actions, TrafficHub routing changes, canonical identity
   changes, broad event store, production audit/compliance behavior, external
   services, DNS, registrar integration, public CA behavior, or production

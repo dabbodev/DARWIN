@@ -144,18 +144,22 @@ canonical identity rewrites.
 
 ## v0.8 Planning
 
-v0.8 planning is underway. Sprint 1 adds simulator-local authority outcome
-retention on the requesting `RegistryHub`, keeping compact records for
+v0.8 draft work is underway on `v0.8/planning`. Sprint 1 adds
+simulator-local authority outcome retention on the requesting `RegistryHub`,
+keeping compact records for
 successful, fallback, conflict, policy-denied, and broken-path authority-chain
 attempts. Sprint 2 adds read-only query helpers for those retained outcomes.
 Sprint 3 adds read-only scenario assertions for retained authority outcomes
 and Sprint 4 exposes those retained summaries in detailed snapshots and
-existing JSON snapshot/result exports while preserving v0.7 alias, audit,
-explanation, TrafficHub routing, and canonical identity behavior.
+existing JSON snapshot/result exports. Sprint 5 hardens tests and docs for
+retained records, queries, assertions, snapshot/export visibility, scenario
+listing coverage, and draft release-note material while preserving v0.7 alias,
+audit, explanation, TrafficHub routing, and canonical identity behavior.
 
 - `docs/V0_8_ROADMAP.md`
 - `docs/AUTHORITY_OUTCOME_RETENTION_v0_8.md`
 - `docs/AUTHORITY_OUTCOME_QUERIES_v0_8.md`
+- `docs/RELEASE_NOTES_v0_8_DRAFT.md`
 
 v0.8 planning scenarios:
 
@@ -165,7 +169,11 @@ v0.8 planning scenarios:
 v0.8 remains simulator-only and does not add production audit/compliance
 guarantees, DNS, registrar integration, public CA behavior, production identity
 proof, external services, scenario actions, TrafficHub routing changes, or
-canonical identity rewrites. The current version still reports
+canonical identity rewrites. Retained authority outcome history is
+simulator-local introspection on the requesting `RegistryHub`; detailed
+snapshots and JSON result exports expose compact retained summaries, while
+compact `world.snapshot()` remains unchanged. The checked-in scenario set is
+currently `001` through `043`, and the current version still reports
 `darwin-sim 0.7.0`.
 
 ## What v0.1 Supports
@@ -866,6 +874,7 @@ For v0.8 planning, see:
 - `docs/V0_8_ROADMAP.md`
 - `docs/AUTHORITY_OUTCOME_RETENTION_v0_8.md`
 - `docs/AUTHORITY_OUTCOME_QUERIES_v0_8.md`
+- `docs/RELEASE_NOTES_v0_8_DRAFT.md`
 
 ## What v0.1 Is Not
 

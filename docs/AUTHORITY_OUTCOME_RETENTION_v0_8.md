@@ -1,5 +1,8 @@
 # Authority Outcome Retention v0.8
 
+Status: unreleased draft work on `v0.8/planning`. The current package and CLI
+version remain `darwin-sim 0.7.0`.
+
 DARWIN v0.8 Sprint 1 adds minimal persistent simulator-local records for
 authority-chain outcomes. The goal is to keep enough compact provenance on a
 `RegistryHub` to inspect what happened after an authority-chain claim attempt,

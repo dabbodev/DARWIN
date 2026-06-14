@@ -1,7 +1,7 @@
 # DARWIN v0.8 Roadmap: Persistent Simulator Audit Retention and Failed-Path Provenance
 
-DARWIN v0.8 is in early implementation. The theme is persistent simulator
-audit retention and failed-path provenance.
+DARWIN v0.8 is unreleased draft work on `v0.8/planning`. The theme is
+persistent simulator audit retention and failed-path provenance.
 
 v0.8 should remain simulator-first. It should make authority-chain outcomes
 easier to inspect after scenario actions complete without becoming a production
@@ -10,7 +10,7 @@ service system.
 
 ## Status
 
-Implementation status: Sprints 1, 2, 3, and 4 implemented on
+Implementation status: Sprints 1, 2, 3, 4, and 5 implemented on
 `v0.8/planning`.
 
 Planning branch: `v0.8/planning`.
@@ -190,16 +190,22 @@ Non-goals:
 Clarify retained versus in-memory provenance and prepare the release only after
 implementation is complete.
 
-Candidate work:
+Status: implemented.
 
-- Update docs to distinguish persisted simulator outcome summaries from
+Implemented notes:
+
+- Documentation distinguishes retained simulator outcome summaries from
   in-memory `AliasAuthorityPath` data.
-- Add regression tests for query ordering, JSON safety, assertion diagnostics,
-  and scenario index coverage.
-- Polish scenario docs and release-facing notes.
-- Run Ruff, pytest, all scenarios, scenario index checks, and CLI version
-  validation.
-- Bump version only during release prep.
+- Draft v0.8 release notes are tracked without marking v0.8 as released.
+- Regression coverage confirms retained record ordering, JSON safety,
+  assertion diagnostics, detailed snapshot/export visibility, compact snapshot
+  behavior, and scenario listing coverage.
+- Scenario index checks confirm scenarios `001` through `043` are
+  discoverable without numbering gaps.
+- Ruff, pytest, all scenarios, and CLI version validation are the release
+  candidate hardening gates.
+- Version remains `darwin-sim 0.7.0`; bumping is deferred to intentional v0.8
+  release prep.
 
 Non-goals:
 
