@@ -12,16 +12,20 @@ Added:
 - v0.8 draft Sprint 2 read-only `query_authority_outcomes(...)` helper for
   retained authority outcome summaries, with additive filters and deterministic
   append-order results.
+- v0.8 draft Sprint 3 read-only scenario assertion
+  `authority_outcome_history_contains` for retained authority outcome records.
+- v0.8 planning scenarios `042` and `043` for retained approval, fallback,
+  conflict, policy-denied, and broken-path authority outcomes.
 - v0.8 authority outcome retention documentation.
 - v0.8 authority outcome query documentation.
 
 Compatibility and limits:
 
 - The package and CLI version remain `darwin-sim 0.7.0`.
-- No scenario DSL actions, scenario DSL assertions, scenarios, TrafficHub
-  routing changes, canonical identity changes, broad event store, production
-  audit/compliance behavior, external services, DNS, registrar integration,
-  public CA behavior, or production identity proof are added.
+- No scenario DSL actions, TrafficHub routing changes, canonical identity
+  changes, broad event store, production audit/compliance behavior, external
+  services, DNS, registrar integration, public CA behavior, or production
+  identity proof are added.
 
 ## [0.7.0] - 2026-06-09
 

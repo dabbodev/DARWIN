@@ -10,7 +10,7 @@ service system.
 
 ## Status
 
-Implementation status: Sprints 1 and 2 implemented on `v0.8/planning`.
+Implementation status: Sprints 1, 2, and 3 implemented on `v0.8/planning`.
 
 Planning branch: `v0.8/planning`.
 
@@ -121,6 +121,8 @@ Non-goals:
 Add scenario assertions proving failed authority outcomes remain explainable
 after action execution.
 
+Status: implemented.
+
 Candidate work:
 
 - Add focused assertions for retained denied, conflict, and broken-parent
@@ -129,6 +131,17 @@ Candidate work:
   with new scenarios or tightly scoped additions.
 - Prove retained summaries are sufficient for deterministic explanation after
   the original action result has completed.
+
+Implemented notes:
+
+- `authority_outcome_history_contains` validates retained records on
+  `RegistryHub.authority_outcome_history` through
+  `query_authority_outcomes(...)`.
+- The assertion supports additive filters for requested alias, granted alias,
+  target device, requesting hub, final status, status, reason, authority
+  ceiling, fallback, conflict, policy-denial, and path-broken markers.
+- New scenarios `042` and `043` cover retained approval, fallback, name-taken
+  conflict, simulator-local policy denial, and broken-parent outcomes.
 
 Non-goals:
 

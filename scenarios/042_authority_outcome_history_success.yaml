@@ -1,0 +1,111 @@
+scenario_id: 042_authority_outcome_history_success
+name: Authority outcome history success
+category: registry
+description: retained authority outcome assertions observe successful approval and fallback records
+tags:
+  - alias
+  - alias_authority_chain
+  - authority_outcome_history
+  - v0.8
+demonstrates:
+  - retained authority outcome history for approved claims
+  - retained authority outcome history for fallback grants
+  - requesting RegistryHub retention location
+expected_result: requesting hubs retain read-only authority outcome records for approved and fallback claims
+setup:
+  registry_hubs:
+    - hub_id: registry_home_001
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_001
+    - hub_id: registry_family_001
+      scope_path: global.family.david
+      parent_hub_id: registry_global_001
+    - hub_id: registry_global_001
+      scope_path: global
+    - hub_id: registry_lab_001
+      scope_path: global.family.david.lab
+      parent_hub_id: registry_lab_family_001
+    - hub_id: registry_lab_family_001
+      scope_path: global.family.david
+      parent_hub_id: registry_global_001
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+  devices:
+    - device_id: dev_A9F3
+      label: server
+steps:
+  - action: register_device
+    registry_hub: registry_home_001
+    device: dev_A9F3
+    label: server
+  - action: register_device
+    registry_hub: registry_family_001
+    device: dev_A9F3
+    label: server
+  - action: register_device
+    registry_hub: registry_global_001
+    device: dev_A9F3
+    label: server
+  - action: register_device
+    registry_hub: registry_lab_001
+    device: dev_A9F3
+    label: server
+  - action: register_device
+    registry_hub: registry_lab_family_001
+    device: dev_A9F3
+    label: server
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_001
+    requested_alias: global.server
+    local_name: server
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    fallback_allowed: true
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_lab_001
+    requested_alias: global.edge
+    local_name: edge
+    target_device: dev_A9F3
+    requested_by_device: dev_A9F3
+    fallback_allowed: true
+    visibility: scope_local
+assertions:
+  - type: authority_outcome_history_contains
+    registry_hub: registry_home_001
+    requested_alias: global.server
+    granted_alias: global.server
+    device_id: dev_A9F3
+    requesting_hub: registry_home_001
+    final_status: approved_here
+    status: claimed
+    authority_ceiling: global
+    fallback_used: false
+    expected_count: 1
+  - type: authority_outcome_history_contains
+    registry_hub: registry_lab_001
+    requested_alias: global.edge
+    granted_alias: global.family.david.edge
+    device_id: dev_A9F3
+    requesting_hub: registry_lab_001
+    final_status: fallback_granted
+    status: fallback_granted
+    reason: pass_up_denied_by_policy
+    authority_ceiling: global.family.david
+    fallback_used: true
+    expected_count: 1
+  - type: alias_resolves_to
+    registry_hub: registry_global_001
+    alias: global.server
+    device: dev_A9F3
+    identity_chain: global.server
+  - type: alias_resolves_to
+    registry_hub: registry_lab_family_001
+    alias: global.family.david.edge
+    device: dev_A9F3
+    identity_chain: global.family.david.server
+  - type: canonical_identity_unchanged
+    registry_hub: registry_home_001
+    device: dev_A9F3
+    expected_identity_chain: global.family.david.home.server

@@ -171,6 +171,15 @@ The v0.7 query, audit, and explanation helpers remain unchanged:
 `query_authority_outcomes(...)` is the v0.8 helper for retained authority
 outcome summaries, including failed authority paths.
 
+## Relationship to Scenario Assertions
+
+Sprint 3 adds the read-only scenario assertion
+`authority_outcome_history_contains`. It calls
+`query_authority_outcomes(...)`, applies the same filter fields, and validates
+retained records on the requesting `RegistryHub`. The assertion does not add
+scenario actions, mutate retained records, or change authority-chain runtime
+behavior.
+
 ## Limitations
 
 - Simulator-local only.
@@ -183,5 +192,5 @@ outcome summaries, including failed authority paths.
 - No production identity proof.
 - No TrafficHub routing changes.
 - No canonical identity rewrite.
-- No scenario DSL actions or assertions in Sprint 2.
-- No snapshot or export expansion in Sprint 2.
+- No scenario DSL actions.
+- No snapshot or export expansion yet.

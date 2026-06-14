@@ -179,6 +179,7 @@ ASSERTION_REQUIRED_FIELDS = {
     "alias_history_contains": ("registry_hub",),
     "alias_conflict_history_contains": ("registry_hub",),
     "authority_audit_trace_contains": ("registry_hub",),
+    "authority_outcome_history_contains": ("registry_hub",),
     "quarantine_history_contains": ("registry_hub",),
     "alias_not_resolved": ("registry_hub", "alias"),
     "canonical_identity_unchanged": (
@@ -500,6 +501,7 @@ def _validate_assertions(data: dict[str, Any], errors: list[ValidationIssue]) ->
             errors,
         )
         _validate_assertion_count_fields(assertion, location, errors)
+        _validate_assertion_type_fields(assertion_type, assertion, location, errors)
 
 
 def _validate_required_fields(
@@ -546,6 +548,24 @@ def _validate_assertion_count_fields(
                     f"{field_name} must be a non-negative integer",
                 )
             )
+
+
+def _validate_assertion_type_fields(
+    assertion_type: str,
+    assertion: dict[str, Any],
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    if assertion_type != "authority_outcome_history_contains":
+        return
+
+    for field_name in (
+        "fallback_used",
+        "conflict_detected",
+        "policy_denied",
+        "path_broken",
+    ):
+        _validate_optional_bool(assertion, field_name, location, errors)
 
 
 def _validate_step_auth_fields(

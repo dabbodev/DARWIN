@@ -1,0 +1,153 @@
+scenario_id: 043_authority_outcome_history_denials
+name: Authority outcome history denials
+category: registry
+description: retained authority outcome assertions observe conflict, policy denial, and broken-path records
+tags:
+  - alias
+  - alias_authority_chain
+  - authority_outcome_history
+  - conflict
+  - policy
+  - authority_path_broken
+  - v0.8
+demonstrates:
+  - retained authority outcome history for name-taken conflicts
+  - retained authority outcome history for simulator-local policy denial
+  - retained authority outcome history for broken parent paths
+expected_result: requesting hubs retain read-only authority outcome records for failed authority-chain claims
+setup:
+  registry_hubs:
+    - hub_id: registry_conflict_home_001
+      scope_path: global.family.david.home
+      parent_hub_id: registry_conflict_family_001
+    - hub_id: registry_conflict_family_001
+      scope_path: global.family.david
+      parent_hub_id: registry_conflict_global_001
+    - hub_id: registry_conflict_global_001
+      scope_path: global
+    - hub_id: registry_policy_home_001
+      scope_path: global.family.david.policy
+      parent_hub_id: registry_policy_family_001
+    - hub_id: registry_policy_family_001
+      scope_path: global.family.david
+      parent_hub_id: registry_policy_global_001
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: false
+    - hub_id: registry_policy_global_001
+      scope_path: global
+    - hub_id: registry_broken_home_001
+      scope_path: global.family.david.broken
+      parent_hub_id: registry_missing_001
+  devices:
+    - device_id: dev_OWNER
+      label: owner
+    - device_id: dev_REQUESTER
+      label: requester
+    - device_id: dev_POLICY
+      label: policy
+    - device_id: dev_BROKEN
+      label: broken
+steps:
+  - action: register_device
+    registry_hub: registry_conflict_global_001
+    device: dev_OWNER
+    label: owner
+  - action: register_device
+    registry_hub: registry_conflict_home_001
+    device: dev_REQUESTER
+    label: requester
+  - action: register_device
+    registry_hub: registry_conflict_family_001
+    device: dev_REQUESTER
+    label: requester
+  - action: register_device
+    registry_hub: registry_conflict_global_001
+    device: dev_REQUESTER
+    label: requester
+  - action: claim_alias
+    registry_hub: registry_conflict_global_001
+    alias: global.taken
+    target_device: dev_OWNER
+    requested_by_device: dev_OWNER
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_conflict_home_001
+    requested_alias: global.taken
+    local_name: taken
+    target_device: dev_REQUESTER
+    requested_by_device: dev_REQUESTER
+    fallback_allowed: true
+    visibility: scope_local
+  - action: register_device
+    registry_hub: registry_policy_home_001
+    device: dev_POLICY
+    label: policy
+  - action: register_device
+    registry_hub: registry_policy_family_001
+    device: dev_POLICY
+    label: policy
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_policy_home_001
+    requested_alias: global.policy
+    local_name: policy
+    target_device: dev_POLICY
+    requested_by_device: dev_POLICY
+    fallback_allowed: true
+    visibility: scope_local
+  - action: register_device
+    registry_hub: registry_broken_home_001
+    device: dev_BROKEN
+    label: broken
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_broken_home_001
+    requested_alias: global.broken
+    local_name: broken
+    target_device: dev_BROKEN
+    requested_by_device: dev_BROKEN
+    fallback_allowed: true
+    visibility: scope_local
+assertions:
+  - type: authority_outcome_history_contains
+    registry_hub: registry_conflict_home_001
+    requested_alias: global.taken
+    device_id: dev_REQUESTER
+    requesting_hub: registry_conflict_home_001
+    final_status: name_taken
+    status: conflict
+    reason: alias_conflict
+    conflict_detected: true
+    expected_count: 1
+  - type: authority_outcome_history_contains
+    registry_hub: registry_policy_home_001
+    requested_alias: global.policy
+    device_id: dev_POLICY
+    requesting_hub: registry_policy_home_001
+    final_status: policy_denied
+    status: rejected
+    reason: pass_up_denied_by_policy
+    authority_ceiling: global.family.david
+    policy_denied: true
+    expected_count: 1
+  - type: authority_outcome_history_contains
+    registry_hub: registry_broken_home_001
+    requested_alias: global.broken
+    device_id: dev_BROKEN
+    requesting_hub: registry_broken_home_001
+    final_status: authority_path_broken
+    status: authority_path_broken
+    reason: parent_hub_not_found
+    authority_ceiling: global.family.david.broken
+    path_broken: true
+    expected_count: 1
+  - type: alias_resolves_to
+    registry_hub: registry_conflict_global_001
+    alias: global.taken
+    device: dev_OWNER
+    identity_chain: global.owner
+  - type: alias_not_resolved
+    registry_hub: registry_policy_global_001
+    alias: global.policy
+  - type: alias_not_resolved
+    registry_hub: registry_broken_home_001
+    alias: global.broken

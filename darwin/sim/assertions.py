@@ -13,6 +13,7 @@ from darwin.registry.authority_audit import (
 from darwin.registry.history_queries import (
     query_alias_conflicts,
     query_alias_history,
+    query_authority_outcomes,
     query_quarantine_events,
 )
 from darwin.registry.trace_explain import explain_authority_trace
@@ -742,6 +743,61 @@ def _authority_audit_trace_contains(
     )
 
 
+def _authority_outcome_history_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    filters = {
+        "requested_alias": _optional_filter_str(assertion, "requested_alias"),
+        "granted_alias": _optional_filter_str(assertion, "granted_alias"),
+        "device_id": _optional_device_filter(assertion),
+        "requesting_hub": _optional_filter_str(assertion, "requesting_hub"),
+        "final_status": _optional_filter_str(assertion, "final_status"),
+        "status": _optional_filter_str(assertion, "status"),
+        "reason": _optional_filter_str(assertion, "reason"),
+        "authority_ceiling": _optional_filter_str(assertion, "authority_ceiling"),
+        "fallback_used": _optional_bool_filter(assertion, "fallback_used"),
+        "conflict_detected": _optional_bool_filter(assertion, "conflict_detected"),
+        "policy_denied": _optional_bool_filter(assertion, "policy_denied"),
+        "path_broken": _optional_bool_filter(assertion, "path_broken"),
+    }
+    records = []
+    actual_context = {
+        "registry_hub": hub_id,
+        "registry_hub_found": hub is not None,
+    }
+    if hub is not None:
+        records = [
+            result.to_dict()
+            for result in query_authority_outcomes(
+                hub,
+                requested_alias=filters["requested_alias"],
+                granted_alias=filters["granted_alias"],
+                device_id=filters["device_id"],
+                requesting_hub=filters["requesting_hub"],
+                final_status=filters["final_status"],
+                status=filters["status"],
+                reason=filters["reason"],
+                authority_ceiling=filters["authority_ceiling"],
+                fallback_used=filters["fallback_used"],
+                conflict_detected=filters["conflict_detected"],
+                policy_denied=filters["policy_denied"],
+                path_broken=filters["path_broken"],
+            )
+        ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"authority outcome history contains {filters}",
+        expected_context={"filters": filters},
+        actual_context=actual_context,
+    )
+
+
 def _quarantine_history_contains(
     world: World,
     assertion_type: str,
@@ -986,6 +1042,15 @@ def _optional_device_filter(assertion: dict[str, Any]) -> str | None:
     return None
 
 
+def _optional_bool_filter(assertion: dict[str, Any], field_name: str) -> bool | None:
+    if field_name not in assertion or assertion[field_name] is None:
+        return None
+    value = assertion[field_name]
+    if isinstance(value, bool):
+        return value
+    raise ValueError(f"{field_name} must be a boolean")
+
+
 def _optional_int_field(assertion: dict[str, Any], field_name: str) -> int | None:
     if field_name not in assertion or assertion[field_name] is None:
         return None
@@ -1025,6 +1090,7 @@ _EVALUATORS = {
     "alias_history_contains": _alias_history_contains,
     "alias_conflict_history_contains": _alias_conflict_history_contains,
     "authority_audit_trace_contains": _authority_audit_trace_contains,
+    "authority_outcome_history_contains": _authority_outcome_history_contains,
     "quarantine_history_contains": _quarantine_history_contains,
     "alias_not_resolved": _alias_not_resolved,
     "canonical_identity_unchanged": _canonical_identity_unchanged,

@@ -427,3 +427,67 @@ Checked-in v0.7 scenarios:
 - `scenarios/039_authority_audit_trace_success.yaml`
 - `scenarios/040_authority_audit_trace_fallback.yaml`
 - `scenarios/041_trace_explainability_denials.yaml`
+
+## v0.8 Retained Authority Outcome Assertions
+
+The v0.8 planning slice adds simulator-local retention and read-only scenario
+assertions for authority-chain outcome records. These assertions validate
+compact records retained in:
+
+```python
+RegistryHub.authority_outcome_history
+```
+
+Authority outcome records are retained on the starting/requesting
+`RegistryHub`, not copied to every hub in the authority path. Successful and
+fallback grants may still create aliases at the approving authority hub; the
+new assertion reads the retained outcome record from the requesting hub.
+
+Supported v0.8 assertion:
+
+- `authority_outcome_history_contains`
+  - Required: `registry_hub`
+  - Optional filters: `requested_alias`, `granted_alias`, `device_id`,
+    `requesting_hub`, `final_status`, `status`, `reason`,
+    `authority_ceiling`, `fallback_used`, `conflict_detected`,
+    `policy_denied`, `path_broken`
+  - Optional count checks: `expected_count`, `min_count`
+
+The assertion uses `query_authority_outcomes(...)` and applies only supplied
+filters. If neither `expected_count` nor `min_count` is supplied, it passes
+when at least one matching retained outcome exists. `expected_count` requires
+an exact match count. `min_count` requires at least that many matches. Count
+fields must be non-negative integers. Boolean marker filters must be YAML
+booleans, such as `true` or `false`.
+
+Example:
+
+```yaml
+assertions:
+  - type: authority_outcome_history_contains
+    registry_hub: registry_home_001
+    requested_alias: global.server
+    granted_alias: global.server
+    device_id: dev_A9F3
+    requesting_hub: registry_home_001
+    final_status: approved_here
+    status: claimed
+    authority_ceiling: global
+    fallback_used: false
+    expected_count: 1
+```
+
+Failure output follows the existing count-style assertion diagnostics: expected
+filters and count requirements are reported alongside the matching retained
+record count, matching records, and whether the referenced `registry_hub`
+existed in the scenario world.
+
+Checked-in v0.8 authority outcome scenarios:
+
+- `scenarios/042_authority_outcome_history_success.yaml`
+- `scenarios/043_authority_outcome_history_denials.yaml`
+
+These are simulator-local retained-record assertions only. They are not
+production audit or compliance guarantees, do not add scenario actions, and do
+not change alias claim, release, resolution, conflict, denial, quarantine,
+fallback, authority-chain, TrafficHub routing, or canonical identity behavior.

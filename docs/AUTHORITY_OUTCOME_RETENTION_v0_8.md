@@ -118,7 +118,9 @@ v0.7 history queries and authority audit traces continue to behave as before:
   in-memory path summaries.
 
 Sprint 2 adds read-only query helpers for `authority_outcome_history`. Scenario
-assertions remain deferred to later v0.8 sprints.
+assertions are added in Sprint 3 through the read-only
+`authority_outcome_history_contains` assertion, which queries retained records
+without changing retention or authority-chain behavior.
 
 ## Retained Record vs. AliasAuthorityPath
 
@@ -144,5 +146,6 @@ The retained record does not replace or mutate the original path.
 - No production identity proof.
 - No TrafficHub routing changes.
 - No canonical identity rewrite.
-- No scenario DSL actions or assertions are added by retention or query helpers.
+- No scenario DSL actions are added by retention, query helpers, or retained
+  outcome assertions.
 - Query helpers are read-only and simulator-local.

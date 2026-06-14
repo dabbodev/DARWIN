@@ -147,7 +147,8 @@ canonical identity rewrites.
 v0.8 planning is underway. Sprint 1 adds simulator-local authority outcome
 retention on the requesting `RegistryHub`, keeping compact records for
 successful, fallback, conflict, policy-denied, and broken-path authority-chain
-attempts. Sprint 2 adds read-only query helpers for those retained outcomes
+attempts. Sprint 2 adds read-only query helpers for those retained outcomes.
+Sprint 3 adds read-only scenario assertions for retained authority outcomes
 while preserving v0.7 alias, audit, explanation, TrafficHub routing, and
 canonical identity behavior.
 
@@ -155,10 +156,16 @@ canonical identity behavior.
 - `docs/AUTHORITY_OUTCOME_RETENTION_v0_8.md`
 - `docs/AUTHORITY_OUTCOME_QUERIES_v0_8.md`
 
+v0.8 planning scenarios:
+
+- `scenarios/042_authority_outcome_history_success.yaml`
+- `scenarios/043_authority_outcome_history_denials.yaml`
+
 v0.8 remains simulator-only and does not add production audit/compliance
 guarantees, DNS, registrar integration, public CA behavior, production identity
-proof, external services, TrafficHub routing changes, or canonical identity
-rewrites. The current version still reports `darwin-sim 0.7.0`.
+proof, external services, scenario actions, TrafficHub routing changes, or
+canonical identity rewrites. The current version still reports
+`darwin-sim 0.7.0`.
 
 ## What v0.1 Supports
 
