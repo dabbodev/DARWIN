@@ -881,6 +881,7 @@ For v0.8 retained authority outcome behavior, see:
 For v0.9 mailbox/chat adapter planning, see:
 
 - `docs/V0_9_ROADMAP.md`
+- `docs/LANE_SIGNATURES_v0_9.md`
 
 ## What v0.1 Is Not
 

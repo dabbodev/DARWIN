@@ -2,7 +2,23 @@
 
 ## [Unreleased]
 
-No post-v0.8 release changes yet.
+Added:
+
+- v0.9 Sprint 1 simulator-local lane signature, lane intent advertisement,
+  visibility tier, and trust context models for typed lane intent discovery.
+- Pure lane signature formatting/parsing and lane intent discovery helpers,
+  keeping discovery visibility separate from future lane-use authorization.
+- v0.9 lane signature documentation and revised roadmap ordering that places
+  mailbox identity, registration, adapter records, and message delivery after
+  lane intent foundations.
+
+Compatibility and limits:
+
+- The package and CLI version remain `darwin-sim 0.8.0`.
+- No real networking, sockets, external services, mailbox registration,
+  message delivery, scenario DSL actions, TrafficHub routing changes,
+  canonical identity changes, production chat behavior, or production
+  encryption are added.
 
 ## [0.8.0] - 2026-06-14
 

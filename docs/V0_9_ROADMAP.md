@@ -11,20 +11,34 @@ CA, real networking replacement, or production identity/compliance layer.
 
 ## Core Concept
 
-Add a simple DARWIN-addressed mailbox/chat foundation where DARWIN handles
-identity-aware mailbox registration, alias resolution, adapter binding, and
-delivery explainability. Transport stays local, in-memory, or adapter-mode
-only.
+Add typed, simulator-local lane intent foundations before mailbox delivery.
+DARWIN should not model open ports. It should model lane signatures that
+describe what a lane is for, plus authorized lane intent advertisements that
+control who can discover those intents.
 
-The release should model how a DARWIN mailbox address can resolve through
-existing RegistryHub authority without changing canonical identity truth,
-TrafficHub routing, real DNS, external services, or production cryptography.
+The release should then build toward DARWIN-addressed mailbox/chat adapter
+models where lane discovery, mailbox registration, adapter binding, and
+delivery explainability remain separate simulator concepts. Transport stays
+local, in-memory, or adapter-mode only.
+
+Discovery and authorization stay separate:
+
+- visibility means "can this requester see that the lane exists?"
+- authorization means "can this requester actually use the lane?"
+
+v0.9 should preserve existing RegistryHub authority concepts without changing
+canonical identity truth, TrafficHub routing, real DNS, external services, or
+production cryptography.
 
 ## Release Boundaries
 
 In scope:
 
-- Simulator-local mailbox identity and resource models.
+- Simulator-local lane signature and lane intent advertisement models.
+- Lane visibility tiers for discovery control.
+- Pure lane intent discovery helpers.
+- Simulator-local mailbox identity and resource models after lane intent
+  foundations.
 - DARWIN mailbox address strings, such as `darwin://global.chat.neo/inbox`.
 - RegistryHub-backed mailbox registration and alias resolution helpers.
 - Simulator-local adapter endpoint records.
@@ -44,9 +58,40 @@ Out of scope:
 - Canonical identity rewrites.
 - Version bump beyond `0.8.0` until release prep.
 
-## Sprint 1: Mailbox Identity and Address Models
+## Sprint 1: Lane Signature and Lane Intent Discovery Models
 
-Goal: define the smallest simulator-local mailbox shape.
+Goal: define the smallest simulator-local lane intent vocabulary.
+
+Candidate work:
+
+- Add `LaneSignature` for compact typed lane intent, such as
+  `basic_messaging:v1`.
+- Add `LaneIntentAdvertisement` for simulator identities, devices, mailboxes,
+  or future resources that can advertise a lane intent.
+- Add a 0-5 `LaneVisibilityTier` model for discovery visibility.
+- Add a simulator-local `LaneTrustContext` and pure discovery helpers.
+- Keep lane signatures as service-intent descriptors, not ports, sockets,
+  DNS records, endpoint URLs, or cryptographic signatures.
+- Keep visibility and use authorization separate.
+- Do not implement mailbox registration, adapter binding, message delivery,
+  scenario DSL actions, or scenario assertions yet.
+
+Acceptance targets:
+
+- `basic_messaging:v1` formats and parses deterministically.
+- Malformed lane signatures are rejected.
+- Lane signature and lane intent advertisement summaries are JSON-safe.
+- Visibility tiers `0` through `5` have deterministic discovery behavior.
+- Discovery visibility does not imply lane-use authorization.
+- Filtering discoverable advertisements preserves deterministic ordering.
+- Docs clearly state that lane signatures are not network ports, socket
+  bindings, DNS records, production service discovery, or cryptographic
+  signatures.
+
+## Sprint 2: Mailbox Identity and Address Models
+
+Goal: define the smallest simulator-local mailbox shape after lane intent
+foundations exist.
 
 Candidate work:
 
@@ -56,6 +101,7 @@ Candidate work:
 - Keep addresses as simulator strings, not real URLs or DNS records.
 - Bind mailbox records to stable simulator identity fields without changing
   canonical device identity.
+- Reference supported lane signatures without registering or delivering mail.
 - Do not implement message delivery yet.
 
 Acceptance targets:
@@ -65,13 +111,14 @@ Acceptance targets:
   external services.
 - Docs clearly state that mailbox addresses are not real URLs or DNS.
 
-## Sprint 2: Mailbox Registration and Registry Binding Helpers
+## Sprint 3: Mailbox Registration and Lane Binding
 
 Goal: register mailbox identities through existing RegistryHub concepts.
 
 Candidate work:
 
 - Register mailboxes against `RegistryHub`.
+- Bind registered mailboxes to advertised lane signatures.
 - Bind mailbox identity to device/canonical identity where appropriate.
 - Preserve canonical identity truth.
 - Keep aliases as authorized shortcuts.
@@ -84,7 +131,7 @@ Acceptance targets:
   identity.
 - Conflict handling remains deterministic and simulator-local.
 
-## Sprint 3: Local Adapter Endpoint Records
+## Sprint 4: Local Adapter Endpoint Records
 
 Goal: model how a mailbox might expose local adapter availability without
 opening real transport.
@@ -104,7 +151,7 @@ Acceptance targets:
 - Delivery planning can explain unavailable or stale endpoint failures.
 - Placeholder endpoint types remain inert data, not live transports.
 
-## Sprint 4: In-Memory Message Delivery Prototype
+## Sprint 5: In-Memory Message Delivery over `basic_messaging:v1`
 
 Goal: add a toy delivery path that proves address resolution and adapter
 selection without production transport.
@@ -123,9 +170,11 @@ Acceptance targets:
 - Unresolved mailbox and unavailable adapter outcomes are explicit.
 - Payloads are test fixtures only and are not described as secure messaging.
 
-## Sprint 5: Delivery Audit and Scenario Examples
+## Sprint 6: Delivery Audit, Docs, Hardening, and Release Prep
 
-Goal: make delivery decisions explainable in scenario output.
+Goal: make delivery decisions explainable in scenario output and prepare a
+clean release candidate only after the simulator slices are implemented and
+tested.
 
 Candidate work:
 
@@ -135,21 +184,6 @@ Candidate work:
   stale endpoint, and delivery audit.
 - Keep simulator-only framing clear.
 - Avoid production audit/compliance claims.
-
-Acceptance targets:
-
-- Scenario assertions can validate delivery success and failure reasons.
-- Delivery explainability shows address, registry resolution, adapter status,
-  and terminal outcome.
-- Scenario index coverage remains contiguous and discoverable.
-
-## Sprint 6: Docs, Hardening, and Release Prep
-
-Goal: prepare a clean v0.9 release candidate only after the simulator slices
-are implemented and tested.
-
-Candidate work:
-
 - Regression tests for mailbox registration, adapter records, delivery, and
   delivery explainability.
 - Documentation polish and scenario index checks.
@@ -159,6 +193,10 @@ Candidate work:
 Acceptance targets:
 
 - Ruff, pytest, scenario runner, and CLI version checks pass.
+- Scenario assertions can validate delivery success and failure reasons.
+- Delivery explainability shows address, registry resolution, adapter status,
+  and terminal outcome.
+- Scenario index coverage remains contiguous and discoverable.
 - Scenario documentation distinguishes local adapter simulation from real
   networking.
 - Release-facing docs state that v0.9 remains simulator-only.
@@ -174,10 +212,10 @@ Noise-style handshakes. v0.9 should not implement production encryption.
 
 ## Recommended First Implementation Sprint
 
-Start with Sprint 1: mailbox identity and address models. It is the smallest
-slice that creates a shared vocabulary for later registration, adapter, and
-delivery work without changing simulator behavior outside the new mailbox
-surface.
+Start with Sprint 1: lane signature and lane intent discovery models. It is
+the smallest slice that creates a shared vocabulary for later mailbox address,
+registration, adapter, and delivery work without changing simulator behavior
+outside the new lane-intent surface.
 
 ## Intentionally Deferred Work
 

@@ -22,6 +22,18 @@ from darwin.models.checkpoint import CheckpointPacket, CheckpointState
 from darwin.models.device import Device
 from darwin.models.hub import LocalDeviceRecord, RegistryHub, TrafficHub
 from darwin.models.lane import LogicalLane
+from darwin.models.lane_signature import (
+    LANE_VISIBILITY_TIERS,
+    LaneIntentAdvertisement,
+    LaneSignature,
+    LaneTrustContext,
+    LaneVisibilityTier,
+    can_discover_lane_intent,
+    filter_discoverable_lane_intents,
+    format_lane_signature,
+    is_lane_signature,
+    parse_lane_signature,
+)
 from darwin.models.packet import DarwinPacket
 from darwin.models.passport import PassportRecord
 from darwin.models.route import (
@@ -52,6 +64,11 @@ __all__ = [
     "DarwinPacket",
     "Device",
     "ForwardingResult",
+    "LANE_VISIBILITY_TIERS",
+    "LaneIntentAdvertisement",
+    "LaneSignature",
+    "LaneTrustContext",
+    "LaneVisibilityTier",
     "LinkMetrics",
     "LocalDeviceRecord",
     "LogicalLane",
@@ -63,4 +80,9 @@ __all__ = [
     "RouteRecord",
     "RoutingPolicy",
     "TrafficHub",
+    "can_discover_lane_intent",
+    "filter_discoverable_lane_intents",
+    "format_lane_signature",
+    "is_lane_signature",
+    "parse_lane_signature",
 ]
