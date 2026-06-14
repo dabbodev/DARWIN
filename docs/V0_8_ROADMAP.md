@@ -1,7 +1,7 @@
 # DARWIN v0.8 Roadmap: Persistent Simulator Audit Retention and Failed-Path Provenance
 
-DARWIN v0.8 is unreleased release-prep work on `v0.8/planning`. The theme is
-persistent simulator audit retention and failed-path provenance.
+DARWIN v0.8 is released simulator work on `main`. The theme is persistent
+simulator audit retention and failed-path provenance.
 
 v0.8 should remain simulator-first. It should make authority-chain outcomes
 easier to inspect after scenario actions complete without becoming a production
@@ -10,20 +10,22 @@ service system.
 
 ## Status
 
-Implementation status: Sprints 1, 2, 3, 4, and 5 plus release-prep
-finalization are implemented on `v0.8/planning`; the branch version reports
-`darwin-sim 0.8.0`.
+Implementation status: released.
 
 Planning branch: `v0.8/planning`.
 
-Starting released baseline: `darwin-sim 0.7.0` on `main`, with released
-scenarios `001` through `041`.
+Released version: `darwin-sim 0.8.0` with scenarios `001` through `043`.
+
+Release tag: annotated `v0.8.0`.
+
+GitHub release: published.
+
+Package publication: not performed.
 
 Version policy:
 
-- Keep the released baseline at `darwin-sim 0.7.0` on `main`.
-- Release-prep work on `v0.8/planning` now reports `darwin-sim 0.8.0`.
-- Do not bump beyond `0.8.0` before release.
+- Keep the released version at `darwin-sim 0.8.0` until future release prep.
+- Do not bump beyond `0.8.0` during post-release planning.
 
 ## Scope
 
@@ -197,7 +199,7 @@ Implemented notes:
 
 - Documentation distinguishes retained simulator outcome summaries from
   in-memory `AliasAuthorityPath` data.
-- Draft v0.8 release notes are tracked without marking v0.8 as released.
+- v0.8 release notes are tracked in `docs/RELEASE_NOTES_v0_8_DRAFT.md`.
 - Regression coverage confirms retained record ordering, JSON safety,
   assertion diagnostics, detailed snapshot/export visibility, compact snapshot
   behavior, and scenario listing coverage.
@@ -205,13 +207,14 @@ Implemented notes:
   discoverable without numbering gaps.
 - Ruff, pytest, all scenarios, and CLI version validation are the release
   candidate hardening gates.
-- Version now reports `darwin-sim 0.8.0` on `v0.8/planning`.
-- Merge, tag, GitHub release creation, and package publication remain
-  intentionally unperformed.
+- Version reports `darwin-sim 0.8.0` on `main`.
+- Merge, annotated tag, and GitHub release are complete.
+- Package publication was intentionally not performed.
 
 Non-goals:
 
-- Do not tag, publish, or create a release during release prep.
+- Do not create another tag, publish packages, or create another release
+  during post-release closure.
 - Do not claim production audit/compliance guarantees.
 - Do not add real DNS, registrar, CA, or production identity behavior.
 

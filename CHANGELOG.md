@@ -2,13 +2,12 @@
 
 ## [Unreleased]
 
-No post-v0.8 release-prep changes yet.
+No post-v0.8 release changes yet.
 
-## [0.8.0] - Release prep on v0.8/planning (unreleased)
+## [0.8.0] - 2026-06-14
 
-DARWIN v0.8.0 release-prep work is complete on `v0.8/planning`, but v0.8.0
-has not been merged to `main`, tagged, published as a GitHub release, or
-published as a package.
+DARWIN v0.8.0 has been merged to `main`, tagged as annotated `v0.8.0`, and
+published as a GitHub release. No package publication was performed.
 
 Added:
 
@@ -34,10 +33,10 @@ Added:
 
 Compatibility and limits:
 
-- The package and CLI version now report `darwin-sim 0.8.0` on
-  `v0.8/planning`.
-- v0.8 is unreleased release-prep work on `v0.8/planning`; no merge, tag,
-  GitHub release, or package publication has been performed.
+- v0.8.0 is released on `main`; the package and CLI version report
+  `darwin-sim 0.8.0`.
+- The annotated `v0.8.0` tag and GitHub release exist; no package publication
+  was performed.
 - No scenario DSL actions, TrafficHub routing changes, canonical identity
   changes, broad event store, production audit/compliance behavior, external
   services, DNS, registrar integration, public CA behavior, or production

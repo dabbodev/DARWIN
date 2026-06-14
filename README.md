@@ -8,17 +8,11 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently released at **simulator v0.7.0** on `main`. The
-annotated `v0.7.0` tag and GitHub release have been published. No package
-publication was performed. The v0.7 release extends simulator-only registry
-history, authority audit trace, and scenario trace explainability helpers
-while keeping canonical identity, TrafficHub routing, and v0.6 authority-chain
-behavior unchanged.
-
-v0.8 release-prep work is currently unreleased on `v0.8/planning`. On that
-branch the package and CLI version report `darwin-sim 0.8.0`, but v0.8 has not
-been merged, tagged, released, published to GitHub Releases, or published as a
-package.
+This project is currently released at **simulator v0.8.0** on `main`. The
+annotated `v0.8.0` tag and GitHub release have been published. No package
+publication was performed. The v0.8 release extends simulator-only retained
+authority outcome history while keeping canonical identity, TrafficHub routing,
+and v0.7 registry history, audit, and trace explainability behavior unchanged.
 
 The v0.1 simulator answers questions like:
 
@@ -136,8 +130,8 @@ v0.6 authority-chain scenarios:
 - `scenarios/035_alias_authority_chain_policy_denied.yaml`
 - `scenarios/036_alias_authority_chain_broken_parent.yaml`
 
-The current released scenario set is `001` through `041`, and the current
-version reports `darwin-sim 0.7.0`.
+The v0.7 released scenario set is `001` through `041`, and the v0.7 version
+reported `darwin-sim 0.7.0`.
 
 v0.7 remains simulator-only. RegistryHub retains terminal grant provenance,
 not full persistent failed authority-chain paths, and scenario `041` relies on
@@ -147,9 +141,9 @@ a broad event store, real DNS, registrar integration, public CA behavior,
 production identity proof, external services, TrafficHub routing changes, or
 canonical identity rewrites.
 
-## v0.8 Release Prep
+## v0.8 Retained Authority Outcomes
 
-v0.8 release-prep work is complete on `v0.8/planning`. Sprint 1 adds
+v0.8 released work adds retained authority outcome history. Sprint 1 adds
 simulator-local authority outcome retention on the requesting `RegistryHub`,
 keeping compact records for
 successful, fallback, conflict/name-taken, policy-denied, broken-path, and
@@ -161,8 +155,8 @@ existing JSON snapshot/result exports. Sprint 5 hardens tests and docs for
 retained records, queries, assertions, snapshot/export visibility, scenario
 listing coverage, and draft release-note material while preserving v0.7 alias,
 audit, explanation, TrafficHub routing, and canonical identity behavior.
-Release prep finalizes the branch version, checklist, and release-facing docs
-without merging, tagging, publishing a GitHub release, or publishing a package.
+The v0.8.0 release is on `main` with annotated tag `v0.8.0` and a published
+GitHub release. No package publication was performed.
 
 - `docs/V0_8_ROADMAP.md`
 - `docs/AUTHORITY_OUTCOME_RETENTION_v0_8.md`
@@ -182,7 +176,7 @@ simulator-local introspection on the requesting `RegistryHub`; detailed
 snapshots and JSON result exports expose compact retained summaries, while
 compact `world.snapshot()` remains unchanged. The checked-in scenario set is
 currently `001` through `043`, and the current branch version reports
-`darwin-sim 0.8.0`. v0.8 has not been merged, tagged, released, or published.
+`darwin-sim 0.8.0`.
 
 ## What v0.1 Supports
 
@@ -877,7 +871,7 @@ For v0.7 history, audit, and trace explainability behavior, see:
 - `docs/AUTHORITY_AUDIT_TRACES_v0_7.md`
 - `docs/TRACE_EXPLAINABILITY_v0_7.md`
 
-For v0.8 release-prep work, see:
+For v0.8 retained authority outcome behavior, see:
 
 - `docs/V0_8_ROADMAP.md`
 - `docs/AUTHORITY_OUTCOME_RETENTION_v0_8.md`

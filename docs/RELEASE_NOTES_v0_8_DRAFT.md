@@ -1,12 +1,11 @@
-# DARWIN v0.8 Draft Release Notes
+# DARWIN v0.8.0 Release Notes
 
-Status: unreleased release-prep work on `v0.8/planning`.
+Status: released on `main`.
 
-Current package and CLI version on this branch: `darwin-sim 0.8.0`.
+DARWIN v0.8.0 has been merged to `main`, tagged as annotated `v0.8.0`, and
+published as a GitHub release. No package publication was performed.
 
-Do not treat this document as a release announcement. v0.8.0 has not been
-merged, tagged, released, published to GitHub Releases, or published as a
-package.
+Current package and CLI version: `darwin-sim 0.8.0`.
 
 ## Highlights
 
@@ -37,8 +36,7 @@ package.
 
 ## Compatibility
 
-- The package and CLI version now report `darwin-sim 0.8.0` on
-  `v0.8/planning`.
+- The package and CLI version now report `darwin-sim 0.8.0`.
 - Compact `world.snapshot()` output remains unchanged.
 - Existing alias claim, release, resolve, conflict, denial, quarantine,
   fallback, and authority-chain behavior remains unchanged.
@@ -62,7 +60,7 @@ Non-goals:
 - No external services.
 - No TrafficHub routing changes.
 - No canonical identity rewrite.
-- No package publication.
+- No package publication was performed.
 
 ## Current Limitations
 
@@ -74,12 +72,11 @@ Non-goals:
 - Retention is deterministic and JSON-safe, but it has no persistence layer
   outside the simulator process unless callers explicitly export scenario
   results or snapshots.
-- v0.8 remains unreleased release-prep work until a later merge, tag, GitHub
-  release, and package-publication decision happen outside this sprint.
+- The released scenario set is scenarios `001` through `043`.
 
 ## Validation Target
 
-For v0.8 release prep, the expected validation set is:
+Final release validation passed on `main`:
 
 ```bash
 python -m ruff check .

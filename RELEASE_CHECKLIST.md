@@ -317,37 +317,37 @@ python -m darwin.cli.main scenario-index
 python -m darwin.cli.main list-scenarios
 ```
 
-# DARWIN v0.8 Retained Authority Outcomes Release-Prep Checklist
+# DARWIN v0.8 Retained Authority Outcomes Release Checklist
 
-v0.8.0 release-prep work is on `v0.8/planning`. It has not been merged to
-`main`, tagged, published as a GitHub release, or published as a package.
+v0.8.0 has been merged to `main`, tagged as annotated `v0.8.0`, and published
+as a GitHub release. No package publication was performed.
 
-- [ ] Ruff passes with `python -m ruff check .`.
-- [ ] Tests pass with `python -m pytest`.
-- [ ] All checked-in scenarios `001` through `043` pass with
+- [x] Ruff passes with `python -m ruff check .`.
+- [x] Tests pass with `python -m pytest`.
+- [x] All checked-in scenarios `001` through `043` pass with
   `python scripts/run_all_scenarios.py`.
-- [ ] CLI version reports `darwin-sim 0.8.0`.
-- [ ] Package version is confirmed as `0.8.0`.
-- [ ] Scenario index is current and lists scenarios `001` through `043`
+- [x] CLI version reports `darwin-sim 0.8.0`.
+- [x] Package version is confirmed as `0.8.0`.
+- [x] Scenario index is current and lists scenarios `001` through `043`
   without numbering gaps.
-- [ ] Scenario metadata regression confirms scenarios `001` through `043` are
+- [x] Scenario metadata regression confirms scenarios `001` through `043` are
   contiguous and discoverable.
-- [ ] v0.8 release notes are checked in
-  `docs/RELEASE_NOTES_v0_8_DRAFT.md` without claiming release publication.
-- [ ] CHANGELOG contains an unreleased release-prep `0.8.0` section.
-- [ ] README and v0.8 docs state that retained authority outcome history is
+- [x] v0.8 release notes are checked in
+  `docs/RELEASE_NOTES_v0_8_DRAFT.md`.
+- [x] CHANGELOG contains a dated `0.8.0` release section.
+- [x] README and v0.8 docs state that retained authority outcome history is
   simulator-local introspection on the requesting `RegistryHub`.
-- [ ] Documentation states that detailed snapshots and JSON result exports
+- [x] Documentation states that detailed snapshots and JSON result exports
   expose compact retained outcome summaries, while compact `world.snapshot()`
   remains unchanged.
-- [ ] Documentation avoids production audit/compliance guarantees, broad event
+- [x] Documentation avoids production audit/compliance guarantees, broad event
   store claims, real DNS, registrar integration, public CA behavior,
   production identity proof, external services, TrafficHub routing changes,
   canonical identity rewrites, and package-publication claims.
-- [ ] Merge, annotated tag, GitHub release creation, and package publication
-  have not been performed.
+- [x] Merge, annotated tag, and GitHub release are complete.
+- [x] Package publication was intentionally not performed.
 
-## v0.8 Release-Prep Validation Commands
+## v0.8 Release Validation Commands
 
 ```bash
 python -m ruff check .

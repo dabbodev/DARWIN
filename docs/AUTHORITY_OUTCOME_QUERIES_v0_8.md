@@ -1,7 +1,7 @@
 # Authority Outcome Queries v0.8
 
-Status: unreleased release-prep work on `v0.8/planning`. The current package
-and CLI version on this branch report `darwin-sim 0.8.0`.
+Status: released on `main`. The current package and CLI version report
+`darwin-sim 0.8.0`.
 
 DARWIN v0.8 Sprint 2 adds read-only query helpers for authority-chain outcome
 records retained by Sprint 1. The purpose is to inspect compact retained

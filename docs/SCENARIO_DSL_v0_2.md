@@ -430,8 +430,8 @@ Checked-in v0.7 scenarios:
 
 ## v0.8 Retained Authority Outcome Assertions
 
-The v0.8 slice is unreleased release-prep work on `v0.8/planning`; the
-current package and CLI version on this branch report `darwin-sim 0.8.0`. It
+The v0.8 slice is released on `main`; the current package and CLI version
+report `darwin-sim 0.8.0`. It
 adds simulator-local retention and read-only scenario assertions for
 authority-chain outcome records. These assertions validate compact records
 retained in:
