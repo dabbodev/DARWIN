@@ -5,6 +5,7 @@ from __future__ import annotations
 from darwin.models.alias_authority import (
     AliasAuthorityClaimResult,
     AliasAuthorityDecision,
+    AliasAuthorityOutcomeRecord,
     AliasAuthorityPath,
 )
 from darwin.models.hub import RegistryHub
@@ -272,7 +273,7 @@ def claim_alias_through_authority_chain(
     )
 
     if authority_path.final_status == "approved_here":
-        return _claim_alias_from_authority_path(
+        result = _claim_alias_from_authority_path(
             registry_hubs=registry_hubs,
             authority_path=authority_path,
             target_device_id=target_device_id,
@@ -284,9 +285,11 @@ def claim_alias_through_authority_chain(
             visibility=visibility,
             ttl=ttl,
         )
+        _retain_authority_outcome(registry_hubs, start_hub_id, result)
+        return result
 
     if authority_path.final_status == "fallback_granted":
-        return _claim_alias_from_authority_path(
+        result = _claim_alias_from_authority_path(
             registry_hubs=registry_hubs,
             authority_path=authority_path,
             target_device_id=target_device_id,
@@ -298,8 +301,10 @@ def claim_alias_through_authority_chain(
             visibility=visibility,
             ttl=ttl,
         )
+        _retain_authority_outcome(registry_hubs, start_hub_id, result)
+        return result
 
-    return AliasAuthorityClaimResult(
+    result = AliasAuthorityClaimResult(
         success=False,
         status=_failure_status(authority_path.final_status),
         reason=_latest_reason(authority_path) or authority_path.final_status,
@@ -309,6 +314,8 @@ def claim_alias_through_authority_chain(
         authority_path=authority_path,
         authority_ceiling=authority_path.authority_ceiling,
     )
+    _retain_authority_outcome(registry_hubs, start_hub_id, result)
+    return result
 
 
 def _decision(
@@ -436,3 +443,41 @@ def _failure_status(final_status: str) -> str:
     if final_status in {"device_blocked", "insufficient_authority", "policy_denied"}:
         return "rejected"
     return final_status
+
+
+def _retain_authority_outcome(
+    registry_hubs: dict[str, RegistryHub],
+    start_hub_id: str,
+    result: AliasAuthorityClaimResult,
+) -> None:
+    requesting_hub = registry_hubs.get(start_hub_id)
+    if requesting_hub is None:
+        return
+
+    authority_path = result.authority_path
+    decisions = tuple(decision.to_dict() for decision in authority_path.decisions)
+    path_hubs = tuple(decision.hub_id for decision in authority_path.decisions)
+    decision_names = {decision.decision for decision in authority_path.decisions}
+    record = AliasAuthorityOutcomeRecord(
+        record_id=(
+            f"authority_outcome:{requesting_hub.hub_id}:"
+            f"{len(requesting_hub.authority_outcome_history) + 1:04d}"
+        ),
+        requested_alias=result.requested_alias,
+        granted_alias=result.granted_alias,
+        target_device=authority_path.target_device_id,
+        requesting_hub=authority_path.requesting_hub_id,
+        authority_ceiling=result.authority_ceiling,
+        final_status=authority_path.final_status,
+        status=result.status,
+        reason=result.reason,
+        decision_count=len(authority_path.decisions),
+        path_hubs=path_hubs,
+        decisions=decisions,
+        fallback_used=authority_path.final_status == "fallback_granted",
+        conflict_detected="name_taken" in decision_names or result.status == "conflict",
+        policy_denied="policy_denied" in decision_names,
+        path_broken=authority_path.final_status == "authority_path_broken"
+        or "authority_path_broken" in decision_names,
+    )
+    requesting_hub.authority_outcome_history.append(record)

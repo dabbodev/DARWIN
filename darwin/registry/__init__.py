@@ -34,10 +34,12 @@ from darwin.registry.history_queries import (
     AliasConflictQueryResult,
     AliasHistoryQueryResult,
     AuthorityDecisionQueryResult,
+    AuthorityOutcomeQueryResult,
     QuarantineEventQueryResult,
     query_alias_conflicts,
     query_alias_history,
     query_authority_decisions,
+    query_authority_outcomes,
     query_quarantine_events,
 )
 from darwin.registry.operations import (
@@ -59,6 +61,7 @@ __all__ = [
     "AliasConflictQueryResult",
     "AliasHistoryQueryResult",
     "AuthorityDecisionQueryResult",
+    "AuthorityOutcomeQueryResult",
     "build_authority_audit_trace",
     "assign_temp_label",
     "claim_alias",
@@ -82,6 +85,7 @@ __all__ = [
     "query_alias_conflicts",
     "query_alias_history",
     "query_authority_decisions",
+    "query_authority_outcomes",
     "query_quarantine_events",
     "record_checkpoint",
     "register_device",

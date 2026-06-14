@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from darwin.models.alias import AliasRecord
+from darwin.models.alias_authority import AliasAuthorityOutcomeRecord
 from darwin.models.hub import ConflictRecord, RegistryHub
 from darwin.models.security import QuarantineRecord, SecurityEvent
 
@@ -133,6 +134,49 @@ class QuarantineEventQueryResult:
         }
 
 
+@dataclass(frozen=True, slots=True)
+class AuthorityOutcomeQueryResult:
+    """Compact JSON-safe view of a retained authority outcome."""
+
+    record_id: str
+    requested_alias: str
+    granted_alias: str | None
+    target_device: str | None
+    requesting_hub: str | None
+    authority_ceiling: str | None
+    final_status: str
+    status: str | None
+    reason: str | None
+    decision_count: int
+    path_hubs: tuple[str, ...]
+    decisions: tuple[dict[str, object], ...]
+    fallback_used: bool
+    conflict_detected: bool
+    policy_denied: bool
+    path_broken: bool
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return {
+            "record_id": self.record_id,
+            "requested_alias": self.requested_alias,
+            "granted_alias": self.granted_alias,
+            "target_device": self.target_device,
+            "requesting_hub": self.requesting_hub,
+            "authority_ceiling": self.authority_ceiling,
+            "final_status": self.final_status,
+            "status": self.status,
+            "reason": self.reason,
+            "decision_count": self.decision_count,
+            "path_hubs": list(self.path_hubs),
+            "decisions": [dict(decision) for decision in self.decisions],
+            "fallback_used": self.fallback_used,
+            "conflict_detected": self.conflict_detected,
+            "policy_denied": self.policy_denied,
+            "path_broken": self.path_broken,
+        }
+
+
 def query_alias_history(
     registry_hub: RegistryHub,
     *,
@@ -209,6 +253,56 @@ def query_authority_decisions(
     return results
 
 
+def query_authority_outcomes(
+    registry_hub: RegistryHub,
+    *,
+    requested_alias: str | None = None,
+    granted_alias: str | None = None,
+    device_id: str | None = None,
+    requesting_hub: str | None = None,
+    final_status: str | None = None,
+    status: str | None = None,
+    reason: str | None = None,
+    authority_ceiling: str | None = None,
+    fallback_used: bool | None = None,
+    conflict_detected: bool | None = None,
+    policy_denied: bool | None = None,
+    path_broken: bool | None = None,
+) -> list[AuthorityOutcomeQueryResult]:
+    """Query retained authority outcomes without mutating registry state."""
+    results: list[AuthorityOutcomeQueryResult] = []
+    for record in registry_hub.authority_outcome_history:
+        if requested_alias is not None and record.requested_alias != requested_alias:
+            continue
+        if granted_alias is not None and record.granted_alias != granted_alias:
+            continue
+        if device_id is not None and record.target_device != device_id:
+            continue
+        if requesting_hub is not None and record.requesting_hub != requesting_hub:
+            continue
+        if final_status is not None and record.final_status != final_status:
+            continue
+        if status is not None and record.status != status:
+            continue
+        if reason is not None and record.reason != reason:
+            continue
+        if authority_ceiling is not None and record.authority_ceiling != authority_ceiling:
+            continue
+        if fallback_used is not None and record.fallback_used != fallback_used:
+            continue
+        if (
+            conflict_detected is not None
+            and record.conflict_detected != conflict_detected
+        ):
+            continue
+        if policy_denied is not None and record.policy_denied != policy_denied:
+            continue
+        if path_broken is not None and record.path_broken != path_broken:
+            continue
+        results.append(_authority_outcome_result(record))
+    return results
+
+
 def query_quarantine_events(
     registry_hub: RegistryHub,
     *,
@@ -261,6 +355,29 @@ def _alias_history_result(record: AliasRecord) -> AliasHistoryQueryResult:
         fallback_reason=record.fallback_reason,
         authority_ceiling=record.authority_ceiling,
         fallback_from=record.fallback_from,
+    )
+
+
+def _authority_outcome_result(
+    record: AliasAuthorityOutcomeRecord,
+) -> AuthorityOutcomeQueryResult:
+    return AuthorityOutcomeQueryResult(
+        record_id=record.record_id,
+        requested_alias=record.requested_alias,
+        granted_alias=record.granted_alias,
+        target_device=record.target_device,
+        requesting_hub=record.requesting_hub,
+        authority_ceiling=record.authority_ceiling,
+        final_status=record.final_status,
+        status=record.status,
+        reason=record.reason,
+        decision_count=record.decision_count,
+        path_hubs=tuple(record.path_hubs),
+        decisions=tuple(dict(decision) for decision in record.decisions),
+        fallback_used=record.fallback_used,
+        conflict_detected=record.conflict_detected,
+        policy_denied=record.policy_denied,
+        path_broken=record.path_broken,
     )
 
 

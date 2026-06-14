@@ -47,6 +47,18 @@ def test_discover_scenario_metadata_lists_checked_in_scenarios():
     assert "011_preset_lane_demo" in scenario_ids
 
 
+def test_discover_scenario_metadata_has_contiguous_001_through_043():
+    metadata = discover_scenario_metadata(SCENARIOS_DIR)
+
+    scenario_numbers = sorted(
+        int(item.scenario_id[:3])
+        for item in metadata
+        if item.scenario_id[:3].isdigit()
+    )
+
+    assert scenario_numbers == list(range(1, 44))
+
+
 def test_describe_scenario_includes_counts_and_validation():
     description = describe_scenario(SCENARIOS_DIR / "004_relocation_pause_resume.yaml")
 

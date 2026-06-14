@@ -14,6 +14,7 @@ from darwin.models.route import LinkMetrics
 from darwin.models.session import LocalAuthSession
 
 if TYPE_CHECKING:
+    from darwin.models.alias_authority import AliasAuthorityOutcomeRecord
     from darwin.models.checkpoint import CheckpointState
     from darwin.models.device import Device
     from darwin.models.lane import LogicalLane
@@ -85,6 +86,9 @@ class RegistryHub:
     attachments: dict[str, AttachmentRecord] = field(default_factory=dict)
     aliases: dict[str, AliasRecord] = field(default_factory=dict)
     alias_bundles: dict[str, AliasBundle] = field(default_factory=dict)
+    authority_outcome_history: list[AliasAuthorityOutcomeRecord] = field(
+        default_factory=list
+    )
     conflicts: dict[str, ConflictRecord] = field(default_factory=dict)
     checkpoints: dict[str, CheckpointState] = field(default_factory=dict)
     moves: dict[str, list[MoveContract]] = field(default_factory=dict)
