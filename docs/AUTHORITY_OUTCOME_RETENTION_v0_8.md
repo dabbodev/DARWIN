@@ -122,6 +122,20 @@ assertions are added in Sprint 3 through the read-only
 `authority_outcome_history_contains` assertion, which queries retained records
 without changing retention or authority-chain behavior.
 
+Sprint 4 exposes retained authority outcome records in detailed world
+snapshots under each requesting `RegistryHub`:
+
+```text
+registry_hubs.<hub_id>.authority_outcome_history
+```
+
+The snapshot entries use the retained record's JSON-safe summary shape and
+preserve retained append order. Compact `world.snapshot()` output continues to
+list only entity IDs and does not include retained authority outcomes.
+Existing scenario JSON snapshot and result exports write the final detailed
+snapshot, so they include the same simulator-local retained summaries without
+new export flags or external services.
+
 ## Retained Record vs. AliasAuthorityPath
 
 `AliasAuthorityPath` remains the ordered in-memory path attached to a claim
@@ -149,3 +163,5 @@ The retained record does not replace or mutate the original path.
 - No scenario DSL actions are added by retention, query helpers, or retained
   outcome assertions.
 - Query helpers are read-only and simulator-local.
+- Detailed snapshot and JSON export visibility is read-only simulator-local
+  introspection, not production audit/compliance infrastructure.

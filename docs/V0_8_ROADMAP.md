@@ -10,7 +10,8 @@ service system.
 
 ## Status
 
-Implementation status: Sprints 1, 2, and 3 implemented on `v0.8/planning`.
+Implementation status: Sprints 1, 2, 3, and 4 implemented on
+`v0.8/planning`.
 
 Planning branch: `v0.8/planning`.
 
@@ -154,6 +155,8 @@ Non-goals:
 Add compact persisted audit retention visibility to snapshots or exports if
 current repository conventions support it.
 
+Status: implemented.
+
 Candidate work:
 
 - Add compact retained authority outcome visibility to detailed snapshots or
@@ -162,6 +165,19 @@ Candidate work:
 - Include only JSON-safe summaries.
 - Avoid golden-file churn unless snapshot or export conventions already expect
   the new data.
+
+Implemented notes:
+
+- Detailed world snapshots now include
+  `registry_hubs.<hub_id>.authority_outcome_history` for each `RegistryHub`.
+- Entries use the retained record's deterministic JSON-safe summary shape and
+  preserve retained append order.
+- Compact `world.snapshot()` output remains unchanged.
+- Existing JSON snapshot and scenario-result exports include retained outcome
+  visibility because they already write the final detailed snapshot.
+- No new scenario DSL actions, CLI flags, export subsystem, authority-chain
+  semantics, TrafficHub routing behavior, or canonical identity behavior are
+  added.
 
 Non-goals:
 

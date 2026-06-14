@@ -149,8 +149,9 @@ retention on the requesting `RegistryHub`, keeping compact records for
 successful, fallback, conflict, policy-denied, and broken-path authority-chain
 attempts. Sprint 2 adds read-only query helpers for those retained outcomes.
 Sprint 3 adds read-only scenario assertions for retained authority outcomes
-while preserving v0.7 alias, audit, explanation, TrafficHub routing, and
-canonical identity behavior.
+and Sprint 4 exposes those retained summaries in detailed snapshots and
+existing JSON snapshot/result exports while preserving v0.7 alias, audit,
+explanation, TrafficHub routing, and canonical identity behavior.
 
 - `docs/V0_8_ROADMAP.md`
 - `docs/AUTHORITY_OUTCOME_RETENTION_v0_8.md`

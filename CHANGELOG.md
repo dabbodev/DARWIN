@@ -14,6 +14,8 @@ Added:
   append-order results.
 - v0.8 draft Sprint 3 read-only scenario assertion
   `authority_outcome_history_contains` for retained authority outcome records.
+- v0.8 draft Sprint 4 compact detailed snapshot and JSON export visibility for
+  retained authority outcome records on each requesting `RegistryHub`.
 - v0.8 planning scenarios `042` and `043` for retained approval, fallback,
   conflict, policy-denied, and broken-path authority outcomes.
 - v0.8 authority outcome retention documentation.

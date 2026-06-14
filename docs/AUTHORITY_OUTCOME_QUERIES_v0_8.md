@@ -180,6 +180,22 @@ retained records on the requesting `RegistryHub`. The assertion does not add
 scenario actions, mutate retained records, or change authority-chain runtime
 behavior.
 
+## Relationship to Snapshots and Exports
+
+Sprint 4 adds compact retained authority outcome visibility to detailed world
+snapshots under:
+
+```text
+registry_hubs.<hub_id>.authority_outcome_history
+```
+
+Those snapshot entries are JSON-safe retained record summaries in deterministic
+append order. The records are still retained only on the requesting
+`RegistryHub`. Existing JSON snapshot and scenario-result exports include the
+field because they already write the final detailed snapshot. Compact
+`world.snapshot()` output remains unchanged and does not include retained
+outcome history.
+
 ## Limitations
 
 - Simulator-local only.
@@ -193,4 +209,4 @@ behavior.
 - No TrafficHub routing changes.
 - No canonical identity rewrite.
 - No scenario DSL actions.
-- No snapshot or export expansion yet.
+- Snapshot and export visibility is simulator-local introspection only.

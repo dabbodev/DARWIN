@@ -491,3 +491,11 @@ These are simulator-local retained-record assertions only. They are not
 production audit or compliance guarantees, do not add scenario actions, and do
 not change alias claim, release, resolution, conflict, denial, quarantine,
 fallback, authority-chain, TrafficHub routing, or canonical identity behavior.
+
+Detailed snapshots also include retained authority outcome summaries under
+each `RegistryHub` at `authority_outcome_history`. The entries use the same
+compact JSON-safe summary fields as the retained records and preserve append
+order on the requesting hub. Existing JSON snapshot and scenario-result
+exports include this field because they write the final detailed snapshot.
+Compact `world.snapshot()` output remains an ID-only overview and does not
+include retained outcome history.

@@ -189,6 +189,10 @@ class World:
                         }
                         for bundle_path, bundle in sorted(hub.alias_bundles.items())
                     },
+                    "authority_outcome_history": [
+                        record.to_summary()
+                        for record in hub.authority_outcome_history
+                    ],
                     "devices": {
                         device_id: {
                             "label": record.current_label,
