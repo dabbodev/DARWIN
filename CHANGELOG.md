@@ -11,14 +11,21 @@ Added:
 - v0.9 lane signature documentation and revised roadmap ordering that places
   mailbox identity, registration, adapter records, and message delivery after
   lane intent foundations.
+- v0.9 Sprint 2 simulator-local mailbox address, mailbox identity, and mailbox
+  capability models for future DARWIN-addressed mailbox demos.
+- Pure mailbox address formatting/parsing helpers for deterministic
+  `darwin://scope.mailbox/resource` simulator strings.
+- v0.9 mailbox addressing documentation that keeps registration, lane binding,
+  adapter endpoints, delivery, networking, production chat, and production
+  encryption explicitly deferred.
 
 Compatibility and limits:
 
 - The package and CLI version remain `darwin-sim 0.8.0`.
-- No real networking, sockets, external services, mailbox registration,
-  message delivery, scenario DSL actions, TrafficHub routing changes,
-  canonical identity changes, production chat behavior, or production
-  encryption are added.
+- No real networking, sockets, external services, mailbox registration, lane
+  binding, adapter endpoints, message delivery, scenario DSL actions,
+  TrafficHub routing changes, canonical identity changes, production chat
+  behavior, or production encryption are added.
 
 ## [0.8.0] - 2026-06-14
 

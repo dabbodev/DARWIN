@@ -34,6 +34,14 @@ from darwin.models.lane_signature import (
     is_lane_signature,
     parse_lane_signature,
 )
+from darwin.models.mailbox import (
+    DarwinMailboxAddress,
+    MailboxCapability,
+    MailboxIdentity,
+    format_mailbox_address,
+    is_mailbox_address,
+    parse_mailbox_address,
+)
 from darwin.models.packet import DarwinPacket
 from darwin.models.passport import PassportRecord
 from darwin.models.route import (
@@ -61,6 +69,7 @@ __all__ = [
     "BundleAliasClaimResult",
     "CheckpointPacket",
     "CheckpointState",
+    "DarwinMailboxAddress",
     "DarwinPacket",
     "Device",
     "ForwardingResult",
@@ -72,6 +81,8 @@ __all__ = [
     "LinkMetrics",
     "LocalDeviceRecord",
     "LogicalLane",
+    "MailboxCapability",
+    "MailboxIdentity",
     "PassportRecord",
     "ProgressiveAliasClaimResult",
     "RegistryHub",
@@ -82,7 +93,10 @@ __all__ = [
     "TrafficHub",
     "can_discover_lane_intent",
     "filter_discoverable_lane_intents",
+    "format_mailbox_address",
     "format_lane_signature",
     "is_lane_signature",
+    "is_mailbox_address",
     "parse_lane_signature",
+    "parse_mailbox_address",
 ]

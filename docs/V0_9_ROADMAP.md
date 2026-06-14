@@ -90,6 +90,8 @@ Acceptance targets:
 
 ## Sprint 2: Mailbox Identity and Address Models
 
+Status: implemented on the v0.9 planning branch.
+
 Goal: define the smallest simulator-local mailbox shape after lane intent
 foundations exist.
 
