@@ -878,6 +878,10 @@ For v0.8 retained authority outcome behavior, see:
 - `docs/AUTHORITY_OUTCOME_QUERIES_v0_8.md`
 - `docs/RELEASE_NOTES_v0_8_DRAFT.md`
 
+For v0.9 mailbox/chat adapter planning, see:
+
+- `docs/V0_9_ROADMAP.md`
+
 ## What v0.1 Is Not
 
 DARWIN simulator v0.1 is not:
