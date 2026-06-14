@@ -1,11 +1,12 @@
 # DARWIN v0.8 Draft Release Notes
 
-Status: unreleased draft work on `v0.8/planning`.
+Status: unreleased release-prep work on `v0.8/planning`.
 
-Current package and CLI version: `darwin-sim 0.7.0`.
+Current package and CLI version on this branch: `darwin-sim 0.8.0`.
 
-Do not treat this document as a release announcement. v0.8 has not been
-merged, tagged, released, or published.
+Do not treat this document as a release announcement. v0.8.0 has not been
+merged, tagged, released, published to GitHub Releases, or published as a
+package.
 
 ## Highlights
 
@@ -14,13 +15,15 @@ merged, tagged, released, or published.
 - Retained authority outcomes on the starting/requesting `RegistryHub` in
   `RegistryHub.authority_outcome_history`.
 - Preserved successful approvals, fallback grants, name-taken conflicts,
-  simulator-local policy denials, broken authority paths, and other terminal
+  simulator-local policy denials, broken authority paths, and terminal
   authority-chain failures as compact retained summaries.
 - Added read-only retained authority outcome query helpers through
   `query_authority_outcomes(...)`.
+- Added compact JSON-safe `AuthorityOutcomeQueryResult` objects for query
+  results.
 - Added the read-only scenario assertion
   `authority_outcome_history_contains`.
-- Added draft v0.8 scenarios `042_authority_outcome_history_success` and
+- Added v0.8 scenarios `042_authority_outcome_history_success` and
   `043_authority_outcome_history_denials`.
 - Exposed retained authority outcome summaries in detailed snapshots under
   `registry_hubs.<hub_id>.authority_outcome_history`.
@@ -29,10 +32,13 @@ merged, tagged, released, or published.
 - Hardened tests and documentation for retained records, query filters,
   scenario assertion validation, diagnostics, snapshot/export visibility, and
   scenario listing coverage.
+- Hardened scenario metadata/index checks so checked-in scenarios `001`
+  through `043` remain discoverable without numbering gaps.
 
 ## Compatibility
 
-- The package and CLI version remain `darwin-sim 0.7.0` during v0.8 planning.
+- The package and CLI version now report `darwin-sim 0.8.0` on
+  `v0.8/planning`.
 - Compact `world.snapshot()` output remains unchanged.
 - Existing alias claim, release, resolve, conflict, denial, quarantine,
   fallback, and authority-chain behavior remains unchanged.
@@ -56,6 +62,7 @@ Non-goals:
 - No external services.
 - No TrafficHub routing changes.
 - No canonical identity rewrite.
+- No package publication.
 
 ## Current Limitations
 
@@ -67,12 +74,12 @@ Non-goals:
 - Retention is deterministic and JSON-safe, but it has no persistence layer
   outside the simulator process unless callers explicitly export scenario
   results or snapshots.
-- v0.8 remains unreleased draft work until release prep intentionally bumps
-  version, validates release artifacts, tags, and publishes a release.
+- v0.8 remains unreleased release-prep work until a later merge, tag, GitHub
+  release, and package-publication decision happen outside this sprint.
 
 ## Validation Target
 
-Before v0.8 release prep, the expected validation set is:
+For v0.8 release prep, the expected validation set is:
 
 ```bash
 python -m ruff check .
@@ -81,8 +88,8 @@ python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
 ```
 
-Expected version output remains:
+Expected version output is:
 
 ```text
-darwin-sim 0.7.0
+darwin-sim 0.8.0
 ```

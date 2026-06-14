@@ -430,9 +430,9 @@ Checked-in v0.7 scenarios:
 
 ## v0.8 Retained Authority Outcome Assertions
 
-The v0.8 planning slice is unreleased draft work on `v0.8/planning`; the
-current package and CLI version remain `darwin-sim 0.7.0`. It adds
-simulator-local retention and read-only scenario assertions for
+The v0.8 slice is unreleased release-prep work on `v0.8/planning`; the
+current package and CLI version on this branch report `darwin-sim 0.8.0`. It
+adds simulator-local retention and read-only scenario assertions for
 authority-chain outcome records. These assertions validate compact records
 retained in:
 
@@ -490,7 +490,7 @@ Checked-in v0.8 authority outcome scenarios:
 - `scenarios/043_authority_outcome_history_denials.yaml`
 
 The checked-in scenario set currently covers `001` through `043`, with
-scenarios `042` and `043` marked as v0.8 draft scenarios.
+scenarios `042` and `043` marked as v0.8 scenarios.
 
 These are simulator-local retained-record assertions only. They are not
 production audit or compliance guarantees, do not add scenario actions, and do

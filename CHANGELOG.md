@@ -2,21 +2,29 @@
 
 ## [Unreleased]
 
+No post-v0.8 release-prep changes yet.
+
+## [0.8.0] - Release prep on v0.8/planning (unreleased)
+
+DARWIN v0.8.0 release-prep work is complete on `v0.8/planning`, but v0.8.0
+has not been merged to `main`, tagged, published as a GitHub release, or
+published as a package.
+
 Added:
 
-- v0.8 draft Sprint 1 simulator-local authority outcome retention on
+- v0.8 Sprint 1 simulator-local authority outcome retention on
   `RegistryHub.authority_outcome_history`, with compact
   `AliasAuthorityOutcomeRecord` summaries for successful approvals, fallback
-  grants, name-taken conflicts, simulator-local policy denials, and broken
-  authority paths.
-- v0.8 draft Sprint 2 read-only `query_authority_outcomes(...)` helper for
+  grants, conflict/name-taken outcomes, simulator-local policy denials, broken
+  authority paths, and other terminal authority-chain failures.
+- v0.8 Sprint 2 read-only `query_authority_outcomes(...)` helper for
   retained authority outcome summaries, with additive filters and deterministic
   append-order results.
-- v0.8 draft Sprint 3 read-only scenario assertion
+- v0.8 Sprint 3 read-only scenario assertion
   `authority_outcome_history_contains` for retained authority outcome records.
-- v0.8 draft Sprint 4 compact detailed snapshot and JSON export visibility for
+- v0.8 Sprint 4 compact detailed snapshot and JSON export visibility for
   retained authority outcome records on each requesting `RegistryHub`.
-- v0.8 planning scenarios `042` and `043` for retained approval, fallback,
+- v0.8 scenarios `042` and `043` for retained approval, fallback,
   conflict, policy-denied, and broken-path authority outcomes.
 - v0.8 authority outcome retention documentation.
 - v0.8 authority outcome query documentation.
@@ -26,9 +34,10 @@ Added:
 
 Compatibility and limits:
 
-- The package and CLI version remain `darwin-sim 0.7.0`.
-- v0.8 is unreleased draft work on `v0.8/planning`; no merge, tag, release, or
-  package publication has been performed.
+- The package and CLI version now report `darwin-sim 0.8.0` on
+  `v0.8/planning`.
+- v0.8 is unreleased release-prep work on `v0.8/planning`; no merge, tag,
+  GitHub release, or package publication has been performed.
 - No scenario DSL actions, TrafficHub routing changes, canonical identity
   changes, broad event store, production audit/compliance behavior, external
   services, DNS, registrar integration, public CA behavior, or production
