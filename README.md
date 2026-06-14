@@ -147,9 +147,9 @@ a broad event store, real DNS, registrar integration, public CA behavior,
 production identity proof, external services, TrafficHub routing changes, or
 canonical identity rewrites.
 
-## v0.8 Planning
+## v0.8 Release Prep
 
-v0.8 release-prep work is underway on `v0.8/planning`. Sprint 1 adds
+v0.8 release-prep work is complete on `v0.8/planning`. Sprint 1 adds
 simulator-local authority outcome retention on the requesting `RegistryHub`,
 keeping compact records for
 successful, fallback, conflict/name-taken, policy-denied, broken-path, and
@@ -161,6 +161,8 @@ existing JSON snapshot/result exports. Sprint 5 hardens tests and docs for
 retained records, queries, assertions, snapshot/export visibility, scenario
 listing coverage, and draft release-note material while preserving v0.7 alias,
 audit, explanation, TrafficHub routing, and canonical identity behavior.
+Release prep finalizes the branch version, checklist, and release-facing docs
+without merging, tagging, publishing a GitHub release, or publishing a package.
 
 - `docs/V0_8_ROADMAP.md`
 - `docs/AUTHORITY_OUTCOME_RETENTION_v0_8.md`

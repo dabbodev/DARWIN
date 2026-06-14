@@ -10,8 +10,8 @@ service system.
 
 ## Status
 
-Implementation status: Sprints 1, 2, 3, 4, and 5 implemented on
-`v0.8/planning`; release prep has bumped the branch version to
+Implementation status: Sprints 1, 2, 3, 4, and 5 plus release-prep
+finalization are implemented on `v0.8/planning`; the branch version reports
 `darwin-sim 0.8.0`.
 
 Planning branch: `v0.8/planning`.
@@ -211,7 +211,7 @@ Implemented notes:
 
 Non-goals:
 
-- Do not tag, publish, or create a release during planning.
+- Do not tag, publish, or create a release during release prep.
 - Do not claim production audit/compliance guarantees.
 - Do not add real DNS, registrar, CA, or production identity behavior.
 
