@@ -60,6 +60,15 @@ from darwin.models.mailbox import (
     is_mailbox_address,
     parse_mailbox_address,
 )
+from darwin.models.message import (
+    MESSAGE_DELIVERY_FAILURE_REASONS,
+    MESSAGE_DELIVERY_STATUSES,
+    MessageDeliveryFailureReason,
+    MessageDeliveryResult,
+    MessageDeliveryStatus,
+    MessageEnvelope,
+    make_basic_message_envelope,
+)
 from darwin.models.packet import DarwinPacket
 from darwin.models.passport import PassportRecord
 from darwin.models.route import (
@@ -114,6 +123,12 @@ __all__ = [
     "LogicalLane",
     "MailboxCapability",
     "MailboxIdentity",
+    "MESSAGE_DELIVERY_FAILURE_REASONS",
+    "MESSAGE_DELIVERY_STATUSES",
+    "MessageDeliveryFailureReason",
+    "MessageDeliveryResult",
+    "MessageDeliveryStatus",
+    "MessageEnvelope",
     "PassportRecord",
     "ProgressiveAliasClaimResult",
     "RegistryHub",
@@ -129,6 +144,7 @@ __all__ = [
     "is_lane_signature",
     "is_mailbox_address",
     "make_basic_messaging_lane_definition",
+    "make_basic_message_envelope",
     "make_domain_hint_hub_endpoint",
     "make_in_memory_mailbox_endpoint",
     "parse_lane_signature",

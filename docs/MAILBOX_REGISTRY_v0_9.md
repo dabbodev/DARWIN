@@ -130,6 +130,11 @@ documented in `docs/ADAPTER_ENDPOINTS_v0_9.md`. Endpoint records may describe
 adapter-shaped availability for future delivery planning, but they still do
 not authorize lane use, select a transport, or deliver messages.
 
+Sprint 6 adds toy, RegistryHub-local in-memory message envelopes and delivery
+results, documented in `docs/MESSAGE_DELIVERY_v0_9.md`. Mailbox registration
+remains separate: delivery requires a registered mailbox, registered lane,
+enabled mailbox capability, and available in-memory endpoint.
+
 Future delivery authorization may decide whether a requester can use a mailbox
 lane. Sprint 4 lane support does not imply delivery authorization.
 

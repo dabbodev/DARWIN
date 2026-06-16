@@ -217,6 +217,10 @@ Acceptance targets:
 
 ## Sprint 6: In-Memory Message Delivery over `basic_messaging:v1`
 
+Status: implemented on the v0.9 planning branch for toy, RegistryHub-local
+message envelopes, retained delivery results, and in-memory inbox append
+helpers. Scenario DSL support remains deferred.
+
 Goal: add a toy delivery path that proves address resolution and adapter
 selection without production transport.
 
@@ -233,6 +237,12 @@ Acceptance targets:
 - A message envelope can be delivered to an in-memory mailbox.
 - Unresolved mailbox and unavailable adapter outcomes are explicit.
 - Payloads are test fixtures only and are not described as secure messaging.
+- Delivery results retain deterministic audit paths and can be filtered by
+  message ID, recipient address, mailbox ID, status, reason, and lane
+  signature.
+- The helper remains simulator-local and does not perform networking, DNS
+  lookup, TrafficHub routing, canonical identity mutation, background retries,
+  durable queues, or production encryption.
 
 ## Sprint 7: Delivery Audit, Docs, Hardening, and Release Prep
 
@@ -242,8 +252,8 @@ tested.
 
 Candidate work:
 
-- Add delivery result records explaining how an address resolved and why
-  delivery succeeded or failed.
+- Expose delivery result records in scenario output once scenario DSL delivery
+  actions and assertions are explicitly scoped.
 - Add scenarios for successful delivery, unresolved mailbox, alias conflict or
   stale endpoint, and delivery audit.
 - Keep simulator-only framing clear.

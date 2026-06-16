@@ -142,8 +142,9 @@ message.
 Scoped lane registries give later v0.9 sprints a local catalog to reference.
 Sprint 4 uses that catalog for strict mailbox capability binding. Sprint 5
 adds inert adapter endpoint records and hub topology advertisements,
-documented in `docs/ADAPTER_ENDPOINTS_v0_9.md`. Delivery planning and delivery
-explainability remain future work.
+documented in `docs/ADAPTER_ENDPOINTS_v0_9.md`. Sprint 6 adds toy,
+RegistryHub-local in-memory message delivery over registered mailbox, lane, and
+endpoint records, documented in `docs/MESSAGE_DELIVERY_v0_9.md`.
 
 Those later behaviors should continue to preserve canonical identity truth,
 existing alias authority behavior, retained authority outcomes, audit traces,
@@ -162,7 +163,7 @@ Scoped lane registries do not add:
 - public CA behavior;
 - production identity proof;
 - production chat system behavior;
-- message delivery;
+- production message delivery;
 - mailbox registration by themselves;
 - mailbox lane binding by themselves;
 - production encryption or E2EE;

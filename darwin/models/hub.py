@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from darwin.models.lane import LogicalLane
     from darwin.models.lane_signature import LaneDefinition
     from darwin.models.mailbox import MailboxIdentity
+    from darwin.models.message import MessageDeliveryResult, MessageEnvelope
     from darwin.models.route import ForwardingResult, RouteRecord
     from darwin.models.security import QuarantineRecord, SecurityEvent
     from darwin.registry.summaries import SummaryDeviceEntry, UpwardSummary
@@ -105,6 +106,10 @@ class RegistryHub:
     adapter_endpoints: dict[str, AdapterEndpoint] = field(default_factory=dict)
     hub_topology_advertisements: dict[str, HubTopologyAdvertisement] = field(
         default_factory=dict
+    )
+    message_inboxes: dict[str, list[MessageEnvelope]] = field(default_factory=dict)
+    message_delivery_results: list[MessageDeliveryResult] = field(
+        default_factory=list
     )
     metrics: RegistryMetrics = field(default_factory=RegistryMetrics)
     summary_version: int = 0

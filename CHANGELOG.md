@@ -43,14 +43,25 @@ Added:
 - v0.9 adapter endpoint documentation that keeps domain, host, port, and path
   hints explicitly separate from networking, DNS lookup, sockets, deployment,
   delivery, and production chat behavior.
+- v0.9 Sprint 6 simulator-local message envelope and retained delivery result
+  models for toy `basic_messaging:v1` delivery.
+- RegistryHub in-memory inbox/result storage plus helper functions to deliver
+  to a registered mailbox, read mailbox inboxes, and filter retained delivery
+  results in deterministic append order.
+- Pure `make_basic_message_envelope(...)` constructor for symbolic plaintext
+  test messages.
+- v0.9 message delivery documentation that keeps in-memory delivery separate
+  from networking, DNS lookup, sockets, production chat, production encryption,
+  background retries, durable queues, TrafficHub routing, and scenario DSL
+  behavior.
 
 Compatibility and limits:
 
 - The package and CLI version remain `darwin-sim 0.8.0`.
-- No real networking, sockets, DNS lookup, external services, message
-  delivery, scenario DSL actions, TrafficHub routing changes, canonical
-  identity changes, alias behavior changes, production chat behavior, or
-  production encryption are added.
+- No real networking, sockets, DNS lookup, external services, scenario DSL
+  actions, TrafficHub routing changes, canonical identity changes, alias
+  behavior changes, production chat behavior, production encryption, background
+  retries, durable queues, or production message delivery are added.
 
 ## [0.8.0] - 2026-06-14
 

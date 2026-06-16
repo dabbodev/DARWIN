@@ -169,8 +169,11 @@ may reference lane signatures, but Sprint 5 does not require the lane to be
 registered and does not change lane registry behavior.
 
 Future message delivery may use endpoint status and topology advertisements to
-explain adapter availability or stale endpoints. Sprint 5 does not add delivery
-or queues.
+explain adapter availability or stale endpoints. Sprint 6 adds toy,
+RegistryHub-local in-memory delivery results and inbox append behavior,
+documented in `docs/MESSAGE_DELIVERY_v0_9.md`. Endpoint records still do not
+open transports, contact hosts, authorize lane use by themselves, or create
+durable queues.
 
 ## Non-Goals
 

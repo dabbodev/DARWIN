@@ -67,6 +67,11 @@ from darwin.registry.mailbox_registry import (
     register_mailbox,
     resolve_mailbox_address,
 )
+from darwin.registry.message_delivery import (
+    deliver_message_to_mailbox,
+    get_mailbox_inbox,
+    list_message_delivery_results,
+)
 from darwin.registry.operations import (
     assign_temp_label,
     register_device,
@@ -98,6 +103,7 @@ __all__ = [
     "can_continue_alias_upward",
     "create_alias_bundle",
     "detect_checkpoint_timeouts",
+    "deliver_message_to_mailbox",
     "evaluate_alias_authority_chain",
     "evaluate_alias_authority_step",
     "explain_alias_conflict_entry",
@@ -111,6 +117,7 @@ __all__ = [
     "get_hub_topology_advertisement",
     "get_lane_definition",
     "get_mailbox",
+    "get_mailbox_inbox",
     "is_alias_within_scope",
     "list_adapter_endpoints",
     "list_discoverable_lane_definitions",
@@ -118,6 +125,7 @@ __all__ = [
     "list_lane_definitions",
     "list_mailbox_capabilities",
     "list_mailboxes",
+    "list_message_delivery_results",
     "mailbox_supports_lane",
     "make_basic_messaging_mailbox",
     "QuarantineEventQueryResult",
