@@ -187,6 +187,10 @@ Acceptance targets:
 
 ## Sprint 5: Local Adapter Endpoint Records
 
+Status: implemented on the v0.9 planning branch for simulator-local adapter
+endpoint records and hub topology advertisements. Endpoint records remain
+inert metadata and do not perform networking or delivery.
+
 Goal: model how a mailbox might expose local adapter availability without
 opening real transport.
 
@@ -194,7 +198,10 @@ Candidate work:
 
 - Add simulator-local adapter endpoint models, such as `in_memory`,
   `loopback_placeholder`, or `websocket_placeholder`.
+- Add hub topology advertisement records for future top-level hub and local
+  hub planning metadata.
 - Do not open real sockets.
+- Do not resolve domains or host hints.
 - Do not add external services.
 - Model endpoint availability and stale endpoint behavior.
 - Keep adapter records separate from TrafficHub routing.
@@ -202,7 +209,10 @@ Candidate work:
 Acceptance targets:
 
 - Tests can mark an endpoint available, unavailable, or stale.
-- Delivery planning can explain unavailable or stale endpoint failures.
+- Hub topology advertisements can describe future domain-shaped or local hub
+  metadata without registering upstream or contacting external services.
+- Future delivery planning can later explain unavailable or stale endpoint
+  failures.
 - Placeholder endpoint types remain inert data, not live transports.
 
 ## Sprint 6: In-Memory Message Delivery over `basic_messaging:v1`

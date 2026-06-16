@@ -34,11 +34,20 @@ Added:
 - v0.9 mailbox registry documentation that keeps mailbox registration and lane
   binding explicitly separate from adapters, delivery, networking, production
   chat, and production encryption.
+- v0.9 Sprint 5 simulator-local adapter endpoint and hub topology
+  advertisement models for inert adapter-shaped availability metadata.
+- RegistryHub endpoint and topology storage plus helper functions to register,
+  retrieve, list, and filter endpoint/topology records deterministically.
+- Pure endpoint constructors for in-memory mailbox endpoints and domain-hint
+  hub endpoints that construct records only.
+- v0.9 adapter endpoint documentation that keeps domain, host, port, and path
+  hints explicitly separate from networking, DNS lookup, sockets, deployment,
+  delivery, and production chat behavior.
 
 Compatibility and limits:
 
 - The package and CLI version remain `darwin-sim 0.8.0`.
-- No real networking, sockets, external services, adapter endpoints, message
+- No real networking, sockets, DNS lookup, external services, message
   delivery, scenario DSL actions, TrafficHub routing changes, canonical
   identity changes, alias behavior changes, production chat behavior, or
   production encryption are added.

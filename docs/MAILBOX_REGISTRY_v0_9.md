@@ -125,8 +125,10 @@ A lane intent advertisement is a discoverable statement that a subject exposes
 lane intent. It is separate from the hub's lane catalog and from mailbox
 capability binding.
 
-A future adapter endpoint may describe inert local adapter availability. Sprint
-4 does not add adapter endpoint records.
+Sprint 5 adds inert adapter endpoint records and hub topology advertisements,
+documented in `docs/ADAPTER_ENDPOINTS_v0_9.md`. Endpoint records may describe
+adapter-shaped availability for future delivery planning, but they still do
+not authorize lane use, select a transport, or deliver messages.
 
 Future delivery authorization may decide whether a requester can use a mailbox
 lane. Sprint 4 lane support does not imply delivery authorization.
@@ -145,7 +147,6 @@ Mailbox registry helpers do not add:
 - production chat system behavior;
 - production encryption or E2EE;
 - external services;
-- adapter endpoint records;
 - message delivery.
 
 Mailbox registration and lane binding remain deterministic, simulator-local

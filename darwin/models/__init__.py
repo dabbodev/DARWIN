@@ -1,5 +1,17 @@
 """Public data models for DARWIN v0.1."""
 
+from darwin.models.adapter_endpoint import (
+    ADAPTER_ENDPOINT_KINDS,
+    ADAPTER_ENDPOINT_STATUSES,
+    ADAPTER_ENDPOINT_SUBJECT_KINDS,
+    HUB_TOPOLOGY_KINDS,
+    AdapterEndpoint,
+    AdapterEndpointKind,
+    AdapterEndpointStatus,
+    HubTopologyAdvertisement,
+    make_domain_hint_hub_endpoint,
+    make_in_memory_mailbox_endpoint,
+)
 from darwin.models.alias import (
     AliasBundle,
     AliasBundleClaimResult,
@@ -61,6 +73,9 @@ from darwin.models.route import (
 
 __all__ = [
     "ALIAS_AUTHORITY_DECISIONS",
+    "ADAPTER_ENDPOINT_KINDS",
+    "ADAPTER_ENDPOINT_STATUSES",
+    "ADAPTER_ENDPOINT_SUBJECT_KINDS",
     "AliasAuthorityClaimResult",
     "AliasAuthorityDecision",
     "AliasAuthorityOutcomeRecord",
@@ -72,6 +87,9 @@ __all__ = [
     "AliasRecord",
     "AliasReleaseResult",
     "AliasResolutionResult",
+    "AdapterEndpoint",
+    "AdapterEndpointKind",
+    "AdapterEndpointStatus",
     "BundleAliasClaimResult",
     "CheckpointPacket",
     "CheckpointState",
@@ -79,6 +97,8 @@ __all__ = [
     "DarwinPacket",
     "Device",
     "ForwardingResult",
+    "HUB_TOPOLOGY_KINDS",
+    "HubTopologyAdvertisement",
     "LANE_FALLBACK_ACTIONS",
     "LANE_REGISTRY_STATUSES",
     "LANE_VISIBILITY_TIERS",
@@ -109,6 +129,8 @@ __all__ = [
     "is_lane_signature",
     "is_mailbox_address",
     "make_basic_messaging_lane_definition",
+    "make_domain_hint_hub_endpoint",
+    "make_in_memory_mailbox_endpoint",
     "parse_lane_signature",
     "parse_mailbox_address",
 ]

@@ -90,8 +90,9 @@ Sprint 3 adds scoped RegistryHub lane definition catalogs for signatures such
 as `basic_messaging:v1`, documented in `docs/LANE_REGISTRY_v0_9.md`. Mailbox
 capabilities can be bound to registered lane definitions by Sprint 4 mailbox
 registry helpers, documented in `docs/MAILBOX_REGISTRY_v0_9.md`. They still do
-not authorize lane use, create lane intent advertisements, attach adapter
-endpoints, or deliver messages.
+not authorize lane use, create lane intent advertisements, select adapter
+endpoints, or deliver messages. Sprint 5 adapter endpoint records are inert
+availability metadata, documented in `docs/ADAPTER_ENDPOINTS_v0_9.md`.
 
 ## Relationship to RegistryHub Registration
 
@@ -126,7 +127,6 @@ v0.9 mailbox addressing does not add:
 - production identity proof;
 - production chat system behavior;
 - message delivery;
-- adapter endpoint records;
 - production encryption or E2EE;
 - external services.
 

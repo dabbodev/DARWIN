@@ -140,9 +140,10 @@ message.
 ## Relationship to Future Work
 
 Scoped lane registries give later v0.9 sprints a local catalog to reference.
-Sprint 4 uses that catalog for strict mailbox capability binding. Adapter
-endpoint records, delivery planning, and delivery explainability remain future
-work.
+Sprint 4 uses that catalog for strict mailbox capability binding. Sprint 5
+adds inert adapter endpoint records and hub topology advertisements,
+documented in `docs/ADAPTER_ENDPOINTS_v0_9.md`. Delivery planning and delivery
+explainability remain future work.
 
 Those later behaviors should continue to preserve canonical identity truth,
 existing alias authority behavior, retained authority outcomes, audit traces,
@@ -164,7 +165,6 @@ Scoped lane registries do not add:
 - message delivery;
 - mailbox registration by themselves;
 - mailbox lane binding by themselves;
-- adapter endpoint records;
 - production encryption or E2EE;
 - external services;
 - production protocol registry behavior.

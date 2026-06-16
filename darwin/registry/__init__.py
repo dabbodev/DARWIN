@@ -1,5 +1,13 @@
 """Public registry helpers for DARWIN v0.1."""
 
+from darwin.registry.adapter_endpoints import (
+    get_adapter_endpoint,
+    get_hub_topology_advertisement,
+    list_adapter_endpoints,
+    list_hub_topology_advertisements,
+    register_adapter_endpoint,
+    register_hub_topology_advertisement,
+)
 from darwin.registry.alias_authority import (
     can_continue_alias_upward,
     claim_alias_through_authority_chain,
@@ -98,11 +106,15 @@ __all__ = [
     "explain_authority_traces",
     "explain_quarantine_event_entry",
     "fallback_alias_for_scope",
+    "get_adapter_endpoint",
     "get_checkpoint_state",
+    "get_hub_topology_advertisement",
     "get_lane_definition",
     "get_mailbox",
     "is_alias_within_scope",
+    "list_adapter_endpoints",
     "list_discoverable_lane_definitions",
+    "list_hub_topology_advertisements",
     "list_lane_definitions",
     "list_mailbox_capabilities",
     "list_mailboxes",
@@ -115,7 +127,9 @@ __all__ = [
     "query_authority_outcomes",
     "query_quarantine_events",
     "record_checkpoint",
+    "register_adapter_endpoint",
     "register_device",
+    "register_hub_topology_advertisement",
     "register_lane_definition",
     "register_mailbox",
     "release_alias",

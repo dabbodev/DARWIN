@@ -14,6 +14,7 @@ from darwin.models.route import LinkMetrics
 from darwin.models.session import LocalAuthSession
 
 if TYPE_CHECKING:
+    from darwin.models.adapter_endpoint import AdapterEndpoint, HubTopologyAdvertisement
     from darwin.models.alias_authority import AliasAuthorityOutcomeRecord
     from darwin.models.checkpoint import CheckpointState
     from darwin.models.device import Device
@@ -101,6 +102,10 @@ class RegistryHub:
     lane_registry: dict[str, LaneDefinition] = field(default_factory=dict)
     mailboxes: dict[str, MailboxIdentity] = field(default_factory=dict)
     mailbox_address_index: dict[str, str] = field(default_factory=dict)
+    adapter_endpoints: dict[str, AdapterEndpoint] = field(default_factory=dict)
+    hub_topology_advertisements: dict[str, HubTopologyAdvertisement] = field(
+        default_factory=dict
+    )
     metrics: RegistryMetrics = field(default_factory=RegistryMetrics)
     summary_version: int = 0
     child_summaries: dict[str, UpwardSummary] = field(default_factory=dict)
