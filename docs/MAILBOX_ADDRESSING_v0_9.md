@@ -6,6 +6,9 @@ mailbox records in the simulator only. They do not register mailboxes, bind
 lanes, open adapters, deliver messages, contact external services, or define a
 production networking protocol.
 
+Sprint 4 adds RegistryHub-local mailbox registration and lane binding helpers
+around these models. See `docs/MAILBOX_REGISTRY_v0_9.md`.
+
 ## Address Shape
 
 A DARWIN mailbox address uses this compact simulator string form:
@@ -85,19 +88,20 @@ say a mailbox may support symbolic basic messaging in the simulator.
 
 Sprint 3 adds scoped RegistryHub lane definition catalogs for signatures such
 as `basic_messaging:v1`, documented in `docs/LANE_REGISTRY_v0_9.md`. Mailbox
-capabilities still do not register mailboxes, bind lanes, authorize lane use,
-create lane intent advertisements, or attach adapter endpoints. Those remain
-future slices.
+capabilities can be bound to registered lane definitions by Sprint 4 mailbox
+registry helpers, documented in `docs/MAILBOX_REGISTRY_v0_9.md`. They still do
+not authorize lane use, create lane intent advertisements, attach adapter
+endpoints, or deliver messages.
 
-## Relationship to Future RegistryHub Registration
+## Relationship to RegistryHub Registration
 
-Future v0.9 work may add RegistryHub-backed mailbox registration. That future
-registration should bind mailbox records to existing simulator identity and
-authority concepts while preserving canonical identity truth.
+Sprint 4 adds RegistryHub-backed mailbox registration storage, direct mailbox
+lookup, raw-address lookup, and strict capability binding to registered lane
+definitions. Registration binds mailbox records to existing simulator identity
+fields while preserving canonical identity truth.
 
-Sprint 2 intentionally stops at data models and pure address helpers. It does
-not add RegistryHub storage, registration helpers, mailbox lookup, mailbox
-conflict handling, or lane binding.
+Address parsing remains pure. Parsing a DARWIN mailbox address still does not
+perform lookup, registration, authorization, alias resolution, or delivery.
 
 ## Relationship to Aliases
 
@@ -122,8 +126,6 @@ v0.9 mailbox addressing does not add:
 - production identity proof;
 - production chat system behavior;
 - message delivery;
-- mailbox registration;
-- lane binding;
 - adapter endpoint records;
 - production encryption or E2EE;
 - external services.

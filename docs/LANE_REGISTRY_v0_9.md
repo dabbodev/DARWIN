@@ -26,9 +26,10 @@ A lane intent advertisement says that a subject, such as a future mailbox or
 device resource, can expose a lane intent. Advertisements are about a subject's
 intent, not the hub's scoped catalog.
 
-A mailbox capability says that a mailbox record may support a lane signature in
-future registration and binding work. Capabilities are descriptive until a later
-sprint adds mailbox registration and lane binding.
+A mailbox capability says that a mailbox record may support a lane signature.
+Sprint 4 adds RegistryHub-local mailbox registration helpers that bind mailbox
+capabilities to lane definitions already registered in this catalog. See
+`docs/MAILBOX_REGISTRY_v0_9.md`.
 
 ## RegistryHub Catalogs
 
@@ -138,9 +139,10 @@ message.
 
 ## Relationship to Future Work
 
-Scoped lane registries give later v0.9 sprints a local catalog to reference
-when adding mailbox registration, mailbox lane binding, adapter endpoint
-records, delivery planning, and delivery explainability.
+Scoped lane registries give later v0.9 sprints a local catalog to reference.
+Sprint 4 uses that catalog for strict mailbox capability binding. Adapter
+endpoint records, delivery planning, and delivery explainability remain future
+work.
 
 Those later behaviors should continue to preserve canonical identity truth,
 existing alias authority behavior, retained authority outcomes, audit traces,
@@ -160,8 +162,8 @@ Scoped lane registries do not add:
 - production identity proof;
 - production chat system behavior;
 - message delivery;
-- mailbox registration;
-- mailbox lane binding;
+- mailbox registration by themselves;
+- mailbox lane binding by themselves;
 - adapter endpoint records;
 - production encryption or E2EE;
 - external services;

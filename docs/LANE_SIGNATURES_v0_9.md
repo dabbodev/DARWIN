@@ -15,6 +15,9 @@ Sprint 3 builds on these signatures with scoped RegistryHub lane definition
 catalogs. See `docs/LANE_REGISTRY_v0_9.md` for the simulator-local catalog
 records that describe available lane signatures in a scope.
 
+Sprint 4 adds RegistryHub-local mailbox registration and capability binding
+helpers. See `docs/MAILBOX_REGISTRY_v0_9.md`.
+
 ## Why Not Numeric Ports
 
 DARWIN should model typed, authorized lane intent rather than open ports.
@@ -105,11 +108,12 @@ Lane signatures give later v0.9 sprints a vocabulary for mailbox and chat
 adapter models:
 
 - mailbox address models can refer to `basic_messaging:v1`;
-- mailbox registration can bind a mailbox record to a lane intent;
+- mailbox registration can bind a mailbox capability to a registered lane
+  definition;
 - local adapter endpoint records can describe inert availability for that
   lane;
-- scoped lane registries can publish local lane definitions and fallback
-  policy data before any mailbox binding or delivery exists;
+- scoped lane registries publish local lane definitions and fallback policy
+  data before any delivery exists;
 - in-memory delivery can later require both discovery and authorization before
   symbolic delivery.
 

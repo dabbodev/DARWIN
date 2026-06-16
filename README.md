@@ -884,6 +884,7 @@ For v0.9 mailbox/chat adapter planning, see:
 - `docs/LANE_SIGNATURES_v0_9.md`
 - `docs/LANE_REGISTRY_v0_9.md`
 - `docs/MAILBOX_ADDRESSING_v0_9.md`
+- `docs/MAILBOX_REGISTRY_v0_9.md`
 
 ## What v0.1 Is Not
 

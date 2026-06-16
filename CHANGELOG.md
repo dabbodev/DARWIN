@@ -24,14 +24,24 @@ Added:
   retrieve, list, filter, and discover scoped lane definitions.
 - Deterministic `basic_messaging:v1` lane definition constructor and scoped
   lane registry documentation.
+- v0.9 Sprint 4 RegistryHub-local mailbox registry storage and helper
+  functions to register, retrieve, resolve, list, and filter mailbox
+  identities.
+- Strict mailbox capability binding helpers that require registered lane
+  definitions, report enabled lane support, keep disabled capabilities from
+  counting as supported, and replace duplicate capability IDs
+  deterministically.
+- v0.9 mailbox registry documentation that keeps mailbox registration and lane
+  binding explicitly separate from adapters, delivery, networking, production
+  chat, and production encryption.
 
 Compatibility and limits:
 
 - The package and CLI version remain `darwin-sim 0.8.0`.
-- No real networking, sockets, external services, mailbox registration, lane
-  binding, adapter endpoints, message delivery, scenario DSL actions,
-  TrafficHub routing changes, canonical identity changes, production chat
-  behavior, or production encryption are added.
+- No real networking, sockets, external services, adapter endpoints, message
+  delivery, scenario DSL actions, TrafficHub routing changes, canonical
+  identity changes, alias behavior changes, production chat behavior, or
+  production encryption are added.
 
 ## [0.8.0] - 2026-06-14
 

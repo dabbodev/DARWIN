@@ -152,6 +152,10 @@ Acceptance targets:
 
 ## Sprint 4: Mailbox Registration and Lane Binding
 
+Status: implemented on the v0.9 planning branch for direct RegistryHub
+mailbox registration and capability-to-lane-definition binding. Alias-to-mailbox
+integration remains deferred.
+
 Goal: register mailbox identities through existing RegistryHub concepts.
 
 Candidate work:
@@ -160,15 +164,26 @@ Candidate work:
 - Bind registered mailboxes to advertised lane signatures.
 - Bind mailbox identity to device/canonical identity where appropriate.
 - Preserve canonical identity truth.
-- Keep aliases as authorized shortcuts.
-- Reuse existing alias conflict and authority language where it fits.
+- Keep aliases as authorized shortcuts without changing alias behavior in this
+  sprint.
+- Reuse existing alias conflict and authority language only when future
+  alias-to-mailbox integration is explicitly scoped.
 
 Acceptance targets:
 
-- A mailbox can be registered under an authorized RegistryHub scope.
-- Alias shortcuts resolve to mailbox records without replacing canonical
-  identity.
-- Conflict handling remains deterministic and simulator-local.
+- A mailbox can be registered under a RegistryHub scope.
+- Registered mailboxes can be looked up by mailbox ID or raw DARWIN mailbox
+  address.
+- Mailbox listings are deterministic and can filter by scope, canonical device
+  identity, or mailbox capability.
+- Binding a mailbox capability requires the referenced lane definition to be
+  registered first.
+- Enabled mailbox capabilities can report lane support; disabled capabilities
+  do not count as supported.
+- Duplicate mailbox ID, duplicate address, and duplicate capability behavior
+  remains deterministic and simulator-local.
+- Canonical identity truth, alias behavior, TrafficHub routing, scenarios, and
+  existing lane registry behavior remain unchanged.
 
 ## Sprint 5: Local Adapter Endpoint Records
 

@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from darwin.models.device import Device
     from darwin.models.lane import LogicalLane
     from darwin.models.lane_signature import LaneDefinition
+    from darwin.models.mailbox import MailboxIdentity
     from darwin.models.route import ForwardingResult, RouteRecord
     from darwin.models.security import QuarantineRecord, SecurityEvent
     from darwin.registry.summaries import SummaryDeviceEntry, UpwardSummary
@@ -98,6 +99,8 @@ class RegistryHub:
     quarantines: dict[str, QuarantineRecord] = field(default_factory=dict)
     local_sessions: dict[str, LocalAuthSession] = field(default_factory=dict)
     lane_registry: dict[str, LaneDefinition] = field(default_factory=dict)
+    mailboxes: dict[str, MailboxIdentity] = field(default_factory=dict)
+    mailbox_address_index: dict[str, str] = field(default_factory=dict)
     metrics: RegistryMetrics = field(default_factory=RegistryMetrics)
     summary_version: int = 0
     child_summaries: dict[str, UpwardSummary] = field(default_factory=dict)
