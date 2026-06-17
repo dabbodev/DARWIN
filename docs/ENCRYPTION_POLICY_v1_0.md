@@ -1,7 +1,7 @@
 # DARWIN Mailbox Encryption Policy v1.0
 
 Status: v1.0 planning on `v1.0/planning`; current package and CLI version
-remains `darwin-sim 0.9.0`.
+on this branch report `darwin-sim 1.0.0`.
 
 DARWIN v1.0 Sprint 3 adds simulator-local mailbox encryption policy helpers.
 These helpers decide whether a mailbox lane requires symbolic encrypted

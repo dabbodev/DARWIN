@@ -593,9 +593,10 @@ The v0.9 released scenario set covers `001` through `046`, with scenarios
 
 ## v1.0 Symbolic Encryption Registry and Policy Scenarios
 
-The v1.0 planning branch remains at package and CLI version
-`darwin-sim 0.9.0`. It adds scenario DSL coverage for symbolic encryption
-registry records and mailbox encryption policy decisions. This is
+The v1.0 planning branch reports package and CLI version
+`darwin-sim 1.0.0` for release-prep validation. It adds scenario DSL coverage
+for symbolic encryption registry records and mailbox encryption policy
+decisions. This is
 simulator-only policy validation. It is not real cryptography, key generation,
 encryption, decryption, production E2EE, secure messaging, networking, or
 delivery enforcement.

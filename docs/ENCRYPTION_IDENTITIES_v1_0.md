@@ -1,7 +1,7 @@
 # DARWIN Encryption Identities v1.0
 
 Status: v1.0 planning on `v1.0/planning`; current package and CLI version
-remains `darwin-sim 0.9.0`.
+on this branch report `darwin-sim 1.0.0`.
 
 DARWIN v1.0 Sprint 1 adds simulator-local encryption identity and key
 reference records. These records describe how a mailbox, device, or future

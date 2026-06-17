@@ -1,6 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.0] - Release prep (unreleased)
+
+DARWIN v1.0.0 release preparation is complete on `v1.0/planning`. It has not
+been merged to `main`, tagged, published as a GitHub release, or published as
+a package.
 
 Added:
 
@@ -61,8 +65,11 @@ Added:
 
 Compatibility and limits:
 
-- v1.0 remains unreleased draft work on `v1.0/planning`; the package and CLI
-  version remain `darwin-sim 0.9.0`.
+- v1.0 remains unreleased release-prep work on `v1.0/planning`; the package
+  and CLI version now report `darwin-sim 1.0.0` on this branch.
+- The checked-in scenario set is expected to run contiguously from `001`
+  through `049`, with scenarios `047` through `049` covering v1.0 symbolic
+  encryption registry and policy-decision behavior.
 - No real cryptography, key generation, private key storage, encryption,
   decryption, production E2EE, secure messenger behavior, crypto library
   integration, delivery enforcement, networking, DNS lookup, external

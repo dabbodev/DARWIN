@@ -2,7 +2,7 @@
 
 DARWIN v1.0 planning starts from the released v0.9.0 simulator on `main`.
 The planning branch is `v1.0/planning`. The current package and CLI version
-remain `darwin-sim 0.9.0` until explicit release-prep work.
+on this branch report `darwin-sim 1.0.0` for release-prep validation.
 
 Recommended theme: Encrypted Mailbox Model Foundations.
 
@@ -45,7 +45,7 @@ Out of scope:
 - Durable queues, retry workers, or background delivery.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
-- Version bump beyond `0.9.0` before release prep.
+- Version bump beyond `1.0.0` during release prep.
 
 ## Sprint 1: Encryption Identity and Key Reference Models
 
@@ -231,8 +231,8 @@ Sprint 6 documentation:
 ## Sprint 7: Docs, Hardening, and Release Prep
 
 Status: implemented on the v1.0 planning branch as release-candidate
-hardening; v1.0 remains unreleased and the version remains
-`darwin-sim 0.9.0`.
+hardening; v1.0 remains unreleased and the branch version is
+`darwin-sim 1.0.0`.
 
 Goal: polish the v1.0 planning line without expanding scope.
 
@@ -242,7 +242,7 @@ Candidate work:
 - Docs polish for simulator-only encrypted mailbox modeling.
 - Scenario index checks and scenario coverage validation.
 - Draft release notes in `docs/RELEASE_NOTES_v1_0_DRAFT.md`.
-- Version bump only during explicit future release prep.
+- Version bump to `darwin-sim 1.0.0` only during explicit release prep.
 
 Acceptance targets:
 
@@ -250,7 +250,7 @@ Acceptance targets:
 - Scenario set remains contiguous.
 - Docs avoid production secure messaging, custom cryptography, real networking,
   DNS, registrar, public CA, or external-service claims.
-- Version remains `darwin-sim 0.9.0` until release prep explicitly changes it.
+- Version reports `darwin-sim 1.0.0` on the release-prep branch.
 
 ## Future Real Crypto Adapter Considerations
 

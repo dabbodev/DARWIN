@@ -180,15 +180,23 @@ In the v0.9 release, scenarios `044` through `046` add
 simulator-local mailbox message delivery coverage for successful in-memory
 delivery, deterministic failure behavior, and lane fallback policy outcomes.
 The v0.9 released scenario set covers `001` through `046`, and the current
-released version is `darwin-sim 0.9.0`. On the v1.0 planning branch, the
-checked-in scenario set extends to `049` with symbolic encryption registry and
-policy-decision scenarios.
+released version on `main` is `darwin-sim 0.9.0`. On the unreleased
+`v1.0/planning` release-prep branch, the checked-in scenario set extends to
+`049`, the branch version reports `darwin-sim 1.0.0`, and scenarios `047`
+through `049` cover symbolic encryption registry and policy-decision behavior.
 
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
 networking, sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar
 integration, public CA behavior, production identity proof, external services,
 durable queues, retry workers, TrafficHub routing changes, or canonical
+identity rewrites.
+
+v1.0 symbolic encryption remains metadata, policy, registry, scenario, and
+audit modeling only. It does not add real cryptography, key generation,
+private key storage, encryption/decryption, crypto library integration,
+production E2EE, secure messenger behavior, delivery enforcement, networking,
+DNS lookup, external services, TrafficHub routing changes, or canonical
 identity rewrites.
 
 ## What v0.1 Supports

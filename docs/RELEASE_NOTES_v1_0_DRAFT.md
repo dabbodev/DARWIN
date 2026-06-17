@@ -1,16 +1,16 @@
-# DARWIN v1.0 Draft Release Notes
+# DARWIN v1.0.0 Draft Release Notes
 
 Status: unreleased draft work on `v1.0/planning`. The current package and CLI
-version remain `darwin-sim 0.9.0`. Do not treat v1.0 as released until an
-explicit release-prep step bumps the version, tags, and publishes release
-artifacts.
+version on this branch is `darwin-sim 1.0.0`. Do not treat v1.0.0 as released
+until it is merged, tagged, and published as a GitHub release. No package
+publication has been performed.
 
 DARWIN v1.0 is scoped as symbolic encrypted mailbox model foundations. It
 adds model, registry, policy, scenario, audit, and documentation coverage for
 simulator-only encrypted mailbox concepts without implementing real
 cryptography or changing v0.9 message delivery behavior.
 
-## Draft Highlights
+## Release-Prep Highlights
 
 - Symbolic encryption identity records for mailbox, device, and future
   resource subjects.
@@ -54,6 +54,8 @@ cryptography or changing v0.9 message delivery behavior.
 - Detailed snapshot visibility for RegistryHub encryption registries and
   retained encryption policy decision history. Compact `world.snapshot()`
   remains unchanged.
+- Scenario index regression and release-candidate hardening for scenarios
+  `001` through `049`.
 - Tests and documentation hardening for JSON-safe summaries, deterministic
   predicates, missing cross-reference diagnostics, non-mutating policy
   evaluation, scenario validation, scenario index continuity, and simulator-only
@@ -75,10 +77,11 @@ sockets, perform DNS lookup, or import cryptographic libraries.
 
 - v0.9 released scenarios `001` through `046` remain valid.
 - v1.0 draft scenarios `047` through `049` run on `v1.0/planning`.
-- The package and CLI version remain `darwin-sim 0.9.0`.
+- The package and CLI version now report `darwin-sim 1.0.0` on this branch.
 - TrafficHub routing and canonical identity behavior are unchanged.
 - Existing plaintext mailbox delivery semantics are unchanged.
-- No package publication has been performed for v1.0.
+- v1.0.0 has not been merged, tagged, published as a GitHub release, or
+  published as a package.
 
 ## Explicit Non-Goals
 
@@ -107,8 +110,9 @@ v1.0 draft symbolic encryption work does not add:
 - canonical identity rewrites;
 - package publication.
 
-## Release Readiness Draft
+## Release Readiness
 
-Sprint 7 hardening keeps this file as draft release-note material only. A
-future release-prep step must still decide final versioning, final release
-notes, tag creation, GitHub release publication, and any package publication.
+This branch is prepared for v1.0.0 release review with the simulator version
+bumped to `darwin-sim 1.0.0`, release-facing docs updated, and scenarios
+`001` through `049` expected to pass. Merge, tag creation, GitHub release
+publication, and package publication remain intentionally deferred.

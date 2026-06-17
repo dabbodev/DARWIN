@@ -1,7 +1,7 @@
 # DARWIN Encryption Policy Decisions v1.0
 
 Status: v1.0 planning on `v1.0/planning`; current package and CLI version
-remains `darwin-sim 0.9.0`.
+on this branch report `darwin-sim 1.0.0`.
 
 DARWIN v1.0 Sprint 6 adds compact simulator-local retention for symbolic
 mailbox encryption policy decisions. These records are audit summaries for the
