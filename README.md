@@ -900,6 +900,10 @@ For v0.9 mailbox/chat adapter planning, see:
 - `docs/MESSAGE_DELIVERY_v0_9.md`
 - `docs/RELEASE_NOTES_v0_9_DRAFT.md`
 
+For v1.0 encrypted mailbox model planning, see:
+
+- `docs/V1_0_ROADMAP.md`
+
 ## What v0.1 Is Not
 
 DARWIN simulator v0.1 is not:
