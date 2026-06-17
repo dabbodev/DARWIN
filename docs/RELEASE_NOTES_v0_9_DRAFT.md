@@ -1,12 +1,9 @@
-# DARWIN v0.9 Draft Release Notes
+# DARWIN v0.9 Release Notes
 
-Status: unreleased release-prep work on `v0.9/planning`.
+Status: released on `main`. The annotated `v0.9.0` tag and GitHub release
+exist. No package publication was performed.
 
-Current branch package and CLI version: `darwin-sim 0.9.0`.
-
-These notes are release-ready draft notes for the planning branch only.
-v0.9.0 has not been merged, tagged, published as a GitHub release, or
-published as a package.
+Current package and CLI version: `darwin-sim 0.9.0`.
 
 ## Added
 
@@ -64,8 +61,7 @@ The checked-in scenario set is currently `001` through `046`.
 
 ## Compatibility
 
-- The package and CLI version now report `darwin-sim 0.9.0` on
-  `v0.9/planning`.
+- The package and CLI version now report `darwin-sim 0.9.0` on `main`.
 - Compact `world.snapshot()` output remains an ID-only overview.
 - Detailed snapshots and JSON result exports expose compact v0.9 RegistryHub
   state summaries.

@@ -2,9 +2,12 @@
 
 ## [Unreleased]
 
-Release-prep target: [0.9.0]. This work is release-prep ready on
-`v0.9/planning`, but v0.9.0 has not been merged, tagged, published as a
-GitHub release, or published as a package.
+No unreleased changes.
+
+## [0.9.0] - 2026-06-17
+
+DARWIN v0.9.0 has been merged to `main`, tagged as annotated `v0.9.0`, and
+published as a GitHub release. No package publication was performed.
 
 Added:
 
@@ -73,8 +76,7 @@ Added:
 
 Compatibility and limits:
 
-- The package and CLI version now report `darwin-sim 0.9.0` on the
-  `v0.9/planning` release-prep branch.
+- The package and CLI version now report `darwin-sim 0.9.0` on `main`.
 - The checked-in scenario set is expected to run contiguously from `001`
   through `046`, with scenarios `044` through `046` covering v0.9 mailbox
   delivery.
@@ -82,8 +84,8 @@ Compatibility and limits:
   routing changes, canonical identity changes, alias behavior changes,
   production chat behavior, production encryption, background retries, durable
   queues, or production message delivery are added.
-- Merge, tag, GitHub release creation, and package publication have not been
-  performed.
+- The annotated `v0.9.0` tag and GitHub release exist; no package publication
+  was performed.
 
 ## [0.8.0] - 2026-06-14
 

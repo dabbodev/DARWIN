@@ -360,8 +360,8 @@ python -m darwin.cli.main list-scenarios
 
 # DARWIN v0.9 Mailbox Delivery Foundations Release-Prep Checklist
 
-v0.9.0 is unreleased release-prep work on `v0.9/planning`. Do not merge, tag,
-create a GitHub release, or publish packages as part of this checklist.
+v0.9.0 has been merged to `main`, tagged as annotated `v0.9.0`, and published
+as a GitHub release. No package publication was performed.
 
 - [x] Ruff passes with `python -m ruff check .`.
 - [x] Tests pass with `python -m pytest`.
@@ -376,8 +376,7 @@ create a GitHub release, or publish packages as part of this checklist.
 - [x] v0.9 scenarios `044` through `046` validate and run.
 - [x] v0.9 release notes are checked in
   `docs/RELEASE_NOTES_v0_9_DRAFT.md`.
-- [x] CHANGELOG reflects v0.9.0 release-prep readiness without claiming
-  release completion.
+- [x] CHANGELOG contains a dated `0.9.0` release section.
 - [x] README and v0.9 docs state that mailbox delivery is toy,
   RegistryHub-local, in-memory simulator behavior only.
 - [x] Documentation avoids production chat, production encryption or E2EE,
@@ -386,8 +385,8 @@ create a GitHub release, or publish packages as part of this checklist.
   identity proof, external services, durable queues, retry workers, TrafficHub
   routing changes, canonical identity rewrites, and package-publication
   claims.
-- [x] Merge, annotated tag, GitHub release creation, and package publication
-  remain intentionally unperformed.
+- [x] Merge, annotated tag, and GitHub release are complete.
+- [x] Package publication was intentionally not performed.
 
 ## v0.9 Release-Prep Validation Commands
 

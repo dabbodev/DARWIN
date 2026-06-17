@@ -1,7 +1,7 @@
 # DARWIN In-Memory Message Delivery v0.9
 
-Status: unreleased v0.9 release-prep work on `v0.9/planning`; current branch
-version is `darwin-sim 0.9.0`.
+Status: released in v0.9.0 on `main`; current package and CLI version is
+`darwin-sim 0.9.0`.
 
 DARWIN v0.9 Sprint 6 adds toy, simulator-local message envelopes and delivery
 results for `basic_messaging:v1`. Sprint 7 exposes that helper path through

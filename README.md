@@ -8,15 +8,11 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently released at **simulator v0.8.0** on `main`. The
-annotated `v0.8.0` tag and GitHub release have been published. No package
-publication was performed. The v0.8 release extends simulator-only retained
-authority outcome history while keeping canonical identity, TrafficHub routing,
-and v0.7 registry history, audit, and trace explainability behavior unchanged.
-
-The `v0.9/planning` branch is unreleased release-prep work for
-`darwin-sim 0.9.0`. It has not been merged, tagged, published as a GitHub
-release, or published as a package.
+This project is currently released at **simulator v0.9.0** on `main`. The
+annotated `v0.9.0` tag and GitHub release have been published. No package
+publication was performed. The v0.9 release adds simulator-only mailbox
+delivery foundations while keeping canonical identity, TrafficHub routing,
+and v0.8 retained authority outcome behavior unchanged.
 
 The v0.1 simulator answers questions like:
 
@@ -180,11 +176,11 @@ simulator-local introspection on the requesting `RegistryHub`; detailed
 snapshots and JSON result exports expose compact retained summaries, while
 compact `world.snapshot()` remains unchanged.
 
-On the v0.9 planning branch, scenarios `044` through `046` add
+In the v0.9 release, scenarios `044` through `046` add
 simulator-local mailbox message delivery coverage for successful in-memory
 delivery, deterministic failure behavior, and lane fallback policy outcomes.
 The checked-in scenario set is currently `001` through `046`, and the current
-branch version is `darwin-sim 0.9.0`.
+released version is `darwin-sim 0.9.0`.
 
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real

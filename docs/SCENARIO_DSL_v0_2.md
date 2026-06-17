@@ -507,8 +507,8 @@ include retained outcome history.
 
 ## v0.9 Mailbox Message Delivery Scenarios
 
-The v0.9 planning branch is unreleased release-prep work for
-`darwin-sim 0.9.0`. It adds simulator-local scenario actions and assertions for
+The v0.9 release is available on `main` as `darwin-sim 0.9.0`. It adds
+simulator-local scenario actions and assertions for
 toy in-memory mailbox message delivery. These actions call the existing v0.9
 helper modules for lane definitions, mailbox registration, adapter endpoint
 records, and message delivery results.
@@ -588,5 +588,5 @@ Checked-in v0.9 mailbox delivery scenarios:
 - `scenarios/045_mailbox_delivery_failures.yaml`
 - `scenarios/046_mailbox_delivery_fallback_policy.yaml`
 
-The checked-in scenario set currently covers `001` through `046`, with
-scenarios `044` through `046` marked as v0.9 planning scenarios.
+The checked-in released scenario set currently covers `001` through `046`,
+with scenarios `044` through `046` covering v0.9 mailbox delivery behavior.

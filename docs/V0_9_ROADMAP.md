@@ -1,9 +1,8 @@
 # DARWIN v0.9 Roadmap: Mailbox / Chat Adapter Foundations
 
 DARWIN v0.9 planning starts from the released v0.8.0 simulator on `main`.
-The planning branch is `v0.9/planning`. It is now unreleased release-prep work
-for `darwin-sim 0.9.0`; v0.9.0 has not been merged, tagged, published as a
-GitHub release, or published as a package.
+v0.9.0 is released on `main` as `darwin-sim 0.9.0`; the annotated `v0.9.0`
+tag and GitHub release exist. No package publication was performed.
 
 Recommended theme: DARWIN Mailbox / Chat Adapter Foundations.
 
@@ -93,7 +92,7 @@ Acceptance targets:
 
 ## Sprint 2: Mailbox Identity and Address Models
 
-Status: implemented on the v0.9 planning branch.
+Status: released in v0.9.0.
 
 Goal: define the smallest simulator-local mailbox shape after lane intent
 foundations exist.
@@ -118,7 +117,7 @@ Acceptance targets:
 
 ## Sprint 3: Scoped Lane Registry Definitions
 
-Status: implemented on the v0.9 planning branch.
+Status: released in v0.9.0.
 
 Goal: add scoped lane definition records and RegistryHub-local lane registry
 catalog helpers before mailbox registration or delivery exists.
@@ -154,9 +153,9 @@ Acceptance targets:
 
 ## Sprint 4: Mailbox Registration and Lane Binding
 
-Status: implemented on the v0.9 planning branch for direct RegistryHub
-mailbox registration and capability-to-lane-definition binding. Alias-to-mailbox
-integration remains deferred.
+Status: released in v0.9.0 for direct RegistryHub mailbox registration and
+capability-to-lane-definition binding. Alias-to-mailbox integration remains
+deferred.
 
 Goal: register mailbox identities through existing RegistryHub concepts.
 
@@ -189,9 +188,9 @@ Acceptance targets:
 
 ## Sprint 5: Local Adapter Endpoint Records
 
-Status: implemented on the v0.9 planning branch for simulator-local adapter
-endpoint records and hub topology advertisements. Endpoint records remain
-inert metadata and do not perform networking or delivery.
+Status: released in v0.9.0 for simulator-local adapter endpoint records and
+hub topology advertisements. Endpoint records remain inert metadata and do not
+perform networking or delivery.
 
 Goal: model how a mailbox might expose local adapter availability without
 opening real transport.
@@ -219,9 +218,9 @@ Acceptance targets:
 
 ## Sprint 6: In-Memory Message Delivery over `basic_messaging:v1`
 
-Status: implemented on the v0.9 planning branch for toy, RegistryHub-local
-message envelopes, retained delivery results, and in-memory inbox append
-helpers. Sprint 7 adds scenario DSL support for this helper path.
+Status: released in v0.9.0 for toy, RegistryHub-local message envelopes,
+retained delivery results, and in-memory inbox append helpers. Sprint 7 adds
+scenario DSL support for this helper path.
 
 Goal: add a toy delivery path that proves address resolution and adapter
 selection without production transport.
@@ -248,9 +247,8 @@ Acceptance targets:
 
 ## Sprint 7: Scenario DSL Message Delivery Coverage
 
-Status: implemented on the v0.9 planning branch for simulator-local scenario
-actions, assertions, and scenarios `044` through `046`. Release prep remains
-deferred.
+Status: released in v0.9.0 for simulator-local scenario actions, assertions,
+and scenarios `044` through `046`.
 
 Goal: make delivery decisions explainable in scenario output without changing
 the release version or crossing simulator-only boundaries.
@@ -283,14 +281,14 @@ Acceptance targets:
   networking.
 - Release-facing docs state that v0.9 remains simulator-only.
 
-Still deferred after release prep:
+Completed during release closure:
 
-- Merge, tag, GitHub release, and package publication.
+- Merge, annotated tag, and GitHub release.
+- Package publication was intentionally not performed.
 
 ## Sprint 8: Hardening and Draft Release Notes
 
-Status: implemented on the v0.9 planning branch. This is a hardening sprint,
-not a feature sprint.
+Status: released in v0.9.0. This is a hardening sprint, not a feature sprint.
 
 Goal: polish the mailbox/chat adapter foundations without changing runtime
 semantics.
@@ -316,8 +314,7 @@ Candidate work:
 
 ## Release Prep
 
-Status: completed release-prep work on `v0.9/planning` for
-`darwin-sim 0.9.0`.
+Status: released on `main` as `darwin-sim 0.9.0`.
 
 Release prep finalizes release-facing docs, keeps the checked-in scenario set
 at `001` through `046`, and validates Ruff, pytest, the scenario runner,
@@ -326,7 +323,8 @@ not add features, scenarios, scenario actions, scenario assertions, runtime
 behavior, networking, production chat behavior, encryption, durable queueing,
 TrafficHub routing changes, or canonical identity changes.
 
-Merge, tag, GitHub release creation, and package publication remain deferred.
+Merge, annotated tag, and GitHub release creation are complete. Package
+publication was intentionally not performed.
 
 ## Future Encryption Planning
 

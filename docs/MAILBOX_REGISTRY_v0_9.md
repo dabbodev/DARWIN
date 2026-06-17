@@ -1,7 +1,7 @@
 # DARWIN Mailbox Registry v0.9
 
-Status: unreleased v0.9 release-prep work on `v0.9/planning`; current branch
-version is `darwin-sim 0.9.0`.
+Status: released in v0.9.0 on `main`; current package and CLI version is
+`darwin-sim 0.9.0`.
 
 DARWIN v0.9 Sprint 4 adds simulator-local mailbox registration and lane
 binding helpers on `RegistryHub`. These helpers connect `MailboxIdentity`
