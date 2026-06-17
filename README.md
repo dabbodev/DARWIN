@@ -8,11 +8,12 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently released at **simulator v0.9.0** on `main`. The
-annotated `v0.9.0` tag and GitHub release have been published. No package
-publication was performed. The v0.9 release adds simulator-only mailbox
-delivery foundations while keeping canonical identity, TrafficHub routing,
-and v0.8 retained authority outcome behavior unchanged.
+This project is currently released at **simulator v1.0.0** on `main`. The
+annotated `v1.0.0` tag and GitHub release have been published. No package
+publication was performed. The v1.0 release adds simulator-only symbolic
+encryption metadata, policy, registry, scenario, and audit modeling while
+keeping plaintext mailbox delivery, canonical identity, TrafficHub routing,
+and v0.9 mailbox delivery behavior unchanged.
 
 The v0.1 simulator answers questions like:
 
@@ -179,11 +180,13 @@ compact `world.snapshot()` remains unchanged.
 In the v0.9 release, scenarios `044` through `046` add
 simulator-local mailbox message delivery coverage for successful in-memory
 delivery, deterministic failure behavior, and lane fallback policy outcomes.
-The v0.9 released scenario set covers `001` through `046`, and the current
-released version on `main` is `darwin-sim 0.9.0`. On the unreleased
-`v1.0/planning` release-prep branch, the checked-in scenario set extends to
-`049`, the branch version reports `darwin-sim 1.0.0`, and scenarios `047`
-through `049` cover symbolic encryption registry and policy-decision behavior.
+The v0.9 released scenario set covers `001` through `046`.
+
+In the v1.0 release, scenarios `047` through `049` cover symbolic encryption
+registry and policy-decision behavior. The current released scenario set
+covers `001` through `049`, and the current released version on `main` is
+`darwin-sim 1.0.0`. The annotated `v1.0.0` tag and GitHub release exist; no
+package publication was performed.
 
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real

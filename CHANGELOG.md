@@ -1,10 +1,9 @@
 # Changelog
 
-## [1.0.0] - Release prep (unreleased)
+## [1.0.0] - 2026-06-17
 
-DARWIN v1.0.0 release preparation is complete on `v1.0/planning`. It has not
-been merged to `main`, tagged, published as a GitHub release, or published as
-a package.
+DARWIN v1.0.0 has been merged to `main`, tagged as annotated `v1.0.0`, and
+published as a GitHub release. No package publication was performed.
 
 Added:
 
@@ -65,8 +64,8 @@ Added:
 
 Compatibility and limits:
 
-- v1.0 remains unreleased release-prep work on `v1.0/planning`; the package
-  and CLI version now report `darwin-sim 1.0.0` on this branch.
+- v1.0.0 is released on `main`; the package and CLI version report
+  `darwin-sim 1.0.0`.
 - The checked-in scenario set is expected to run contiguously from `001`
   through `049`, with scenarios `047` through `049` covering v1.0 symbolic
   encryption registry and policy-decision behavior.
@@ -74,7 +73,10 @@ Compatibility and limits:
   decryption, production E2EE, secure messenger behavior, crypto library
   integration, delivery enforcement, networking, DNS lookup, external
   services, TrafficHub routing changes, canonical identity rewrites, package
-  publication, tag, or release are added.
+  publication, or additional release artifacts are added by the simulator
+  work.
+- The annotated `v1.0.0` tag and GitHub release exist; no package publication
+  was performed.
 
 ## [0.9.0] - 2026-06-17
 

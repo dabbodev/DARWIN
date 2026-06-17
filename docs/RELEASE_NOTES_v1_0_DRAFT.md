@@ -1,16 +1,15 @@
-# DARWIN v1.0.0 Draft Release Notes
+# DARWIN v1.0.0 Release Notes
 
-Status: unreleased release-prep draft on `v1.0/planning`. The current package
-and CLI version on this branch is `darwin-sim 1.0.0`. Do not treat v1.0.0 as
-released until it is merged, tagged, and published as a GitHub release. No
-package publication has been performed.
+Status: released on `main`. The annotated `v1.0.0` tag and GitHub release
+exist. No package publication was performed. The current package and CLI
+version report `darwin-sim 1.0.0`.
 
 DARWIN v1.0 is scoped as symbolic encrypted mailbox model foundations. It
 adds model, registry, policy, scenario, audit, and documentation coverage for
 simulator-only encrypted mailbox concepts without implementing real
 cryptography or changing v0.9 message delivery behavior.
 
-## Release-Prep Highlights
+## Release Highlights
 
 - Symbolic encryption identity records for mailbox, device, and future
   resource subjects.
@@ -48,13 +47,13 @@ cryptography or changing v0.9 message delivery behavior.
   - `mailbox_encryption_binding_registered`
   - `mailbox_encryption_policy_registered`
   - `encryption_policy_decision_contains`
-- v1.0 release-prep scenarios `047` through `049` for symbolic encryption
+- v1.0 scenarios `047` through `049` for symbolic encryption
   registry setup, successful required policy evaluation, and deterministic
   policy failure outcomes.
 - Detailed snapshot visibility for RegistryHub encryption registries and
   retained encryption policy decision history. Compact `world.snapshot()`
   remains unchanged.
-- Scenario index regression and release-candidate hardening for scenarios
+- Scenario index regression and release hardening for scenarios
   `001` through `049`.
 - Tests and documentation hardening for JSON-safe summaries, deterministic
   predicates, missing cross-reference diagnostics, non-mutating policy
@@ -63,29 +62,29 @@ cryptography or changing v0.9 message delivery behavior.
 
 ## Scenario Coverage
 
-The current checked-in release-prep scenario set is `001` through `049`.
+The current checked-in released scenario set is `001` through `049`.
 
 - `047_symbolic_encryption_registry.yaml`
 - `048_symbolic_encryption_policy_required.yaml`
 - `049_symbolic_encryption_policy_failures.yaml`
 
-Scenarios `047` through `049` are v1.0 release-prep scenarios. They are
-simulator-only and do not deliver messages, mutate inboxes, enforce encrypted
-delivery, open sockets, perform DNS lookup, or import cryptographic libraries.
+Scenarios `047` through `049` are v1.0 scenarios. They are simulator-only and
+do not deliver messages, mutate inboxes, enforce encrypted delivery, open
+sockets, perform DNS lookup, or import cryptographic libraries.
 
 ## Compatibility Notes
 
 - v0.9 released scenarios `001` through `046` remain valid.
-- v1.0 release-prep scenarios `047` through `049` run on `v1.0/planning`.
-- The package and CLI version now report `darwin-sim 1.0.0` on this branch.
+- v1.0 scenarios `047` through `049` run on `main`.
+- The package and CLI version report `darwin-sim 1.0.0`.
 - TrafficHub routing and canonical identity behavior are unchanged.
 - Existing plaintext mailbox delivery semantics are unchanged.
-- v1.0.0 has not been merged, tagged, published as a GitHub release, or
-  published as a package.
+- v1.0.0 has been merged to `main`, tagged as annotated `v1.0.0`, and
+  published as a GitHub release. No package publication was performed.
 
 ## Explicit Non-Goals
 
-v1.0 release-prep symbolic encryption work does not add:
+v1.0 symbolic encryption work does not add:
 
 - real cryptography;
 - key generation;
@@ -110,9 +109,9 @@ v1.0 release-prep symbolic encryption work does not add:
 - canonical identity rewrites;
 - package publication.
 
-## Release Readiness
+## Release Validation
 
-This branch is prepared for v1.0.0 release review with the simulator version
-bumped to `darwin-sim 1.0.0`, release-facing docs updated, and scenarios
-`001` through `049` expected to pass. Merge, tag creation, GitHub release
-publication, and package publication remain intentionally deferred.
+The v1.0.0 release on `main` reports `darwin-sim 1.0.0`, includes
+release-facing docs, and keeps scenarios `001` through `049` passing. Merge,
+annotated tag creation, and GitHub release publication are complete. Package
+publication was intentionally not performed.

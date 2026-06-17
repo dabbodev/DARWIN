@@ -1,8 +1,9 @@
 # DARWIN v1.0 Roadmap: Encrypted Mailbox Model Foundations
 
-DARWIN v1.0 release prep starts from the released v0.9.0 simulator on `main`.
-The release-prep branch is `v1.0/planning`. The current package and CLI
-version on this branch report `darwin-sim 1.0.0` for release-prep validation.
+DARWIN v1.0.0 is released on `main` from the completed `v1.0/planning` line.
+The annotated `v1.0.0` tag and GitHub release exist, and no package
+publication was performed. The current package and CLI version report
+`darwin-sim 1.0.0`.
 
 Recommended theme: Encrypted Mailbox Model Foundations.
 
@@ -32,7 +33,7 @@ In scope:
 - Mailbox encryption delivery policy helpers.
 - Scenario DSL coverage after helper-level models are stable.
 - Compact deterministic snapshot and audit visibility.
-- Documentation and release-prep hardening.
+- Documentation and release hardening.
 
 Out of scope:
 
@@ -45,11 +46,11 @@ Out of scope:
 - Durable queues, retry workers, or background delivery.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
-- Version bump beyond `1.0.0` during release prep.
+- Version bump beyond `1.0.0`.
 
 ## Sprint 1: Encryption Identity and Key Reference Models
 
-Status: implemented on the v1.0 release-prep branch.
+Status: released in v1.0.0.
 
 Goal: define simulator-local records that let mailbox identities reference
 encryption identities without performing cryptography.
@@ -79,7 +80,7 @@ Sprint 1 documentation: `docs/ENCRYPTION_IDENTITIES_v1_0.md`.
 
 ## Sprint 2: Encrypted Envelope Metadata Model
 
-Status: implemented on the v1.0 release-prep branch.
+Status: released in v1.0.0.
 
 Goal: represent encrypted delivery state symbolically, not cryptographically.
 
@@ -108,7 +109,7 @@ Sprint 2 documentation: `docs/ENCRYPTED_ENVELOPES_v1_0.md`.
 
 ## Sprint 3: Mailbox Encryption Policy Helpers
 
-Status: implemented on the v1.0 release-prep branch.
+Status: released in v1.0.0.
 
 Goal: model delivery policy decisions for encrypted-required lanes.
 
@@ -136,7 +137,7 @@ Sprint 3 documentation: `docs/ENCRYPTION_POLICY_v1_0.md`.
 
 ## Sprint 4: RegistryHub-Local Encryption Registry Helpers
 
-Status: implemented on the v1.0 release-prep branch.
+Status: released in v1.0.0.
 
 Goal: store symbolic encryption identities, key bundle references, mailbox
 encryption bindings, and mailbox encryption policies on `RegistryHub` without
@@ -168,7 +169,7 @@ Sprint 4 documentation: `docs/ENCRYPTION_REGISTRY_v1_0.md`.
 
 ## Sprint 5: Scenario DSL and Scenarios for Symbolic Encrypted Delivery
 
-Status: implemented on the v1.0 release-prep branch.
+Status: released in v1.0.0.
 
 Goal: expose symbolic encrypted-delivery decisions only after helper models are
 stable.
@@ -191,13 +192,13 @@ Acceptance targets:
 - Assertions read RegistryHub records or scenario action results and do not
   mutate state.
 - Existing scenarios `001` through `046` continue to pass unchanged, and the
-  current release-prep scenario set is contiguous through `049`.
+  current released scenario set is contiguous through `049`.
 
 Sprint 5 documentation: `docs/SCENARIO_DSL_v0_2.md`.
 
 ## Sprint 6: Audit and Snapshot Visibility
 
-Status: implemented on the v1.0 release-prep branch.
+Status: released in v1.0.0.
 
 Goal: make encrypted mailbox model state inspectable without implying real
 secret handling.
@@ -230,11 +231,9 @@ Sprint 6 documentation:
 
 ## Sprint 7: Docs, Hardening, and Release Prep
 
-Status: implemented on the v1.0 release-prep branch as release-candidate
-hardening; v1.0 remains unreleased and the branch version is
-`darwin-sim 1.0.0`.
+Status: released in v1.0.0.
 
-Goal: polish the v1.0 release-prep line without expanding scope.
+Goal: polish the v1.0 release line without expanding scope.
 
 Candidate work:
 
@@ -250,7 +249,7 @@ Acceptance targets:
 - Scenario set remains contiguous.
 - Docs avoid production secure messaging, custom cryptography, real networking,
   DNS, registrar, public CA, or external-service claims.
-- Version reports `darwin-sim 1.0.0` on the release-prep branch.
+- Version reports `darwin-sim 1.0.0` on `main`.
 
 ## Future Real Crypto Adapter Considerations
 
@@ -280,4 +279,4 @@ visibility depend on them.
 - Durable delivery queues, retry workers, and background services.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
-- Package publication, tagging, or release creation during release prep.
+- Package publication during v1.0 release.

@@ -1,7 +1,8 @@
 # DARWIN Encryption Identities v1.0
 
-Status: release-prep ready on `v1.0/planning`; current package and CLI
-version on this branch report `darwin-sim 1.0.0`.
+Status: released in v1.0.0 on `main`; the annotated tag and GitHub release
+exist, and no package publication was performed. The current package and CLI
+version report `darwin-sim 1.0.0`.
 
 DARWIN v1.0 Sprint 1 adds simulator-local encryption identity and key
 reference records. These records describe how a mailbox, device, or future
@@ -116,7 +117,7 @@ records without mutating delivery state. Sprint 4 adds RegistryHub-local
 registries for identity, key-bundle, binding, and policy records. Sprint 5 adds
 scenario DSL coverage for those symbolic records and policy decisions. These
 layers continue using symbolic profile labels and references. Real
-cryptography remains explicitly out of scope for this release-prep line.
+cryptography remains explicitly out of scope for this release line.
 
 ## Explicit Non-Goals
 
