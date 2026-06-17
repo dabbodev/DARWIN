@@ -171,6 +171,33 @@ STEP_REQUIRED_FIELDS = {
         "sender_id",
         "recipient_address",
     ),
+    "register_encryption_identity": (
+        "registry_hub",
+        "encryption_identity_id",
+        "subject_id",
+        "subject_kind",
+    ),
+    "register_key_bundle_reference": (
+        "registry_hub",
+        "key_bundle_id",
+        "encryption_identity_id",
+    ),
+    "register_mailbox_encryption_binding": (
+        "registry_hub",
+        "mailbox_id",
+        "encryption_identity_id",
+        "key_bundle_id",
+    ),
+    "register_mailbox_encryption_policy": (
+        "registry_hub",
+        "policy_id",
+        "mailbox_id",
+    ),
+    "evaluate_mailbox_encryption_policy": (
+        "registry_hub",
+        "mailbox_id",
+        "lane_signature",
+    ),
     "advance_time": (),
 }
 
@@ -225,6 +252,11 @@ ASSERTION_REQUIRED_FIELDS = {
     "mailbox_supports_lane": ("registry_hub", "mailbox_id", "lane_signature"),
     "message_delivery_result_contains": ("registry_hub",),
     "mailbox_inbox_contains": ("registry_hub", "mailbox_id"),
+    "encryption_identity_registered": ("registry_hub", "encryption_identity_id"),
+    "key_bundle_registered": ("registry_hub", "key_bundle_id"),
+    "mailbox_encryption_binding_registered": ("registry_hub", "mailbox_id"),
+    "mailbox_encryption_policy_registered": ("registry_hub", "policy_id"),
+    "encryption_policy_decision_contains": ("registry_hub",),
 }
 
 
@@ -236,6 +268,7 @@ SUPPORTED_SCENARIO_CATEGORIES = {
     "security",
     "metrics",
     "mailbox",
+    "encryption",
     "preset",
     "visualization",
 }
@@ -584,6 +617,13 @@ def _validate_assertion_type_fields(
     location: str,
     errors: list[ValidationIssue],
 ) -> None:
+    if assertion_type == "encryption_policy_decision_contains":
+        _validate_optional_bool(assertion, "encryption_required", location, errors)
+        _validate_optional_bool(assertion, "envelope_accepted", location, errors)
+        return
+    if assertion_type == "mailbox_encryption_policy_registered":
+        _validate_optional_bool(assertion, "allow_plaintext_fallback", location, errors)
+        return
     if assertion_type != "authority_outcome_history_contains":
         if assertion_type == "mailbox_supports_lane":
             _validate_optional_bool(assertion, "enabled", location, errors)
@@ -642,6 +682,10 @@ def _validate_step_type_fields(
 ) -> None:
     if action == "bind_mailbox_capability":
         _validate_optional_bool(step, "enabled", location, errors)
+    if action == "register_mailbox_encryption_policy":
+        _validate_optional_bool(step, "require_active_identity", location, errors)
+        _validate_optional_bool(step, "require_usable_key_bundle", location, errors)
+        _validate_optional_bool(step, "allow_plaintext_fallback", location, errors)
 
 
 def _validate_optional_bool(

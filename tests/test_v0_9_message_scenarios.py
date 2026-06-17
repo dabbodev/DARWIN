@@ -316,14 +316,14 @@ def test_v0_9_checked_in_message_scenarios_validate_and_run():
     assert not failures
 
 
-def test_scenario_sweep_remains_contiguous_001_through_046():
+def test_scenario_sweep_remains_contiguous_001_through_049():
     scenario_numbers = sorted(
         int(path.name[:3])
         for path in list_scenario_files(SCENARIOS_DIR)
         if path.name[:3].isdigit()
     )
 
-    assert scenario_numbers == list(range(1, 47))
+    assert scenario_numbers == list(range(1, 50))
 
 
 def _load_yaml(path: Path):

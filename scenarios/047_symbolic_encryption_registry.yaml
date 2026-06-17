@@ -1,0 +1,87 @@
+scenario_id: 047_symbolic_encryption_registry
+name: Symbolic encryption registry
+category: encryption
+description: registers symbolic encryption records for a mailbox without cryptography
+tags:
+  - encryption
+  - symbolic
+  - registry
+  - v1.0
+demonstrates:
+  - symbolic encryption identity registration
+  - symbolic key bundle reference registration
+  - mailbox encryption binding and policy registration
+expected_result: symbolic encryption registry records are visible through assertions
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  devices:
+    - device_id: dev_NEO
+      label: neo
+steps:
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    canonical_device_id: dev_NEO
+    local_name: neo
+    scope: global.chat
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+  - action: register_encryption_identity
+    registry_hub: registry_chat_001
+    encryption_identity_id: enc_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+  - action: register_key_bundle_reference
+    registry_hub: registry_chat_001
+    key_bundle_id: kb_mailbox_neo_001
+    encryption_identity_id: enc_mailbox_neo
+    public_ref: symbolic://public/mailbox_neo/001
+  - action: register_mailbox_encryption_binding
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    required_for_lanes:
+      - basic_messaging:v1
+  - action: register_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+    required_for_lanes:
+      - basic_messaging:v1
+assertions:
+  - type: encryption_identity_registered
+    registry_hub: registry_chat_001
+    encryption_identity_id: enc_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+    profile: symbolic_e2ee_v1
+    status: active
+  - type: key_bundle_registered
+    registry_hub: registry_chat_001
+    key_bundle_id: kb_mailbox_neo_001
+    encryption_identity_id: enc_mailbox_neo
+    profile: symbolic_e2ee_v1
+    status: active
+  - type: mailbox_encryption_binding_registered
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    profile: symbolic_e2ee_v1
+    status: active
+    lane_signature: basic_messaging:v1
+  - type: mailbox_encryption_policy_registered
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    profile: symbolic_e2ee_v1
+    allow_plaintext_fallback: false

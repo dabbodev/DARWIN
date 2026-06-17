@@ -146,6 +146,12 @@ Sprint 4 adds RegistryHub-local symbolic encryption registries and a helper
 that evaluates registered mailbox policy state against supplied envelope
 metadata. See `docs/ENCRYPTION_REGISTRY_v1_0.md`.
 
+Sprint 5 exposes supplied symbolic envelope metadata through the
+`evaluate_mailbox_encryption_policy` scenario action. The action evaluates
+policy only; it does not encrypt, decrypt, call message delivery, or enforce
+delivery behavior. See `docs/SCENARIO_DSL_v0_2.md` and
+`scenarios/048_symbolic_encryption_policy_required.yaml`.
+
 ## Explicit Non-Goals
 
 Sprint 2 does not add:

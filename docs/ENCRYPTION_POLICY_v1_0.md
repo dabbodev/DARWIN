@@ -195,6 +195,12 @@ identity, key bundle, binding, and policy records before calling this pure
 evaluator. It remains helper-level only and does not alter delivery behavior.
 See `docs/ENCRYPTION_REGISTRY_v1_0.md`.
 
+Sprint 5 wires registered policy evaluation into scenario YAML through the
+symbolic-only `evaluate_mailbox_encryption_policy` action and
+`encryption_policy_decision_contains` assertion. Decisions are read from
+scenario action results, not retained as delivery outcomes. See
+`docs/SCENARIO_DSL_v0_2.md`.
+
 ## Explicit Non-Goals
 
 Sprint 3 does not add:

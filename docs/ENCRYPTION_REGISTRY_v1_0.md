@@ -99,6 +99,10 @@ do not retain delivery results, and do not change lane fallback behavior.
 The registries are available for future scenario and audit layers, but they are
 not wired into delivery yet.
 
+Sprint 5 adds scenario DSL actions and assertions for these symbolic
+registries and for registered policy decisions. That DSL surface still does
+not call or alter `deliver_message_to_mailbox(...)`.
+
 ## Relationship to Envelopes and Policy Decisions
 
 `evaluate_registered_mailbox_encryption_policy(...)` is a helper-level bridge
@@ -124,6 +128,10 @@ envelope metadata.
 
 Detailed simulator snapshots include compact summaries of the four encryption
 registry dictionaries. Compact `world.snapshot()` remains unchanged.
+
+Scenario policy decisions from Sprint 5 are currently available through
+scenario action results and `encryption_policy_decision_contains`; they are not
+persisted in `RegistryHub`.
 
 ## Explicit Non-Goals
 
@@ -153,5 +161,5 @@ Sprint 4 does not add:
 - message delivery semantic changes;
 - TrafficHub routing changes;
 - canonical identity rewrites;
-- scenario DSL actions or assertions;
-- new scenario YAMLs.
+- delivery enforcement;
+- production audit storage for policy decisions.

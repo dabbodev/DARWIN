@@ -98,8 +98,8 @@ expected_result: The lane returns to active state.
 ```
 
 Supported categories are `registry`, `traffic`, `lane`, `relocation`,
-`security`, `metrics`, `preset`, and `visualization`. Unknown categories warn
-during validation instead of failing.
+`security`, `metrics`, `mailbox`, `encryption`, `preset`, and
+`visualization`. Unknown categories warn during validation instead of failing.
 
 List scenario metadata from the CLI:
 
@@ -588,5 +588,91 @@ Checked-in v0.9 mailbox delivery scenarios:
 - `scenarios/045_mailbox_delivery_failures.yaml`
 - `scenarios/046_mailbox_delivery_fallback_policy.yaml`
 
-The checked-in released scenario set currently covers `001` through `046`,
-with scenarios `044` through `046` covering v0.9 mailbox delivery behavior.
+The v0.9 released scenario set covers `001` through `046`, with scenarios
+`044` through `046` covering v0.9 mailbox delivery behavior.
+
+## v1.0 Symbolic Encryption Registry and Policy Scenarios
+
+The v1.0 planning branch remains at package and CLI version
+`darwin-sim 0.9.0`. It adds scenario DSL coverage for symbolic encryption
+registry records and mailbox encryption policy decisions. This is
+simulator-only policy validation. It is not real cryptography, key generation,
+encryption, decryption, production E2EE, secure messaging, networking, or
+delivery enforcement.
+
+Supported v1.0 symbolic encryption actions:
+
+- `register_encryption_identity`
+  - Required: `registry_hub`, `encryption_identity_id`, `subject_id`,
+    `subject_kind`
+  - Optional: `profile` defaulting to `symbolic_e2ee_v1`, `status`
+    defaulting to `active`, `metadata`
+- `register_key_bundle_reference`
+  - Required: `registry_hub`, `key_bundle_id`, `encryption_identity_id`
+  - Optional: `profile` defaulting to `symbolic_e2ee_v1`, `status`
+    defaulting to `active`, `public_ref`, `created_order`, `rotated_from`,
+    `metadata`
+  - The action stores symbolic public references only. It never generates
+    keys, stores private keys, or adds secret material.
+- `register_mailbox_encryption_binding`
+  - Required: `registry_hub`, `mailbox_id`, `encryption_identity_id`,
+    `key_bundle_id`
+  - Optional: `required_for_lanes`, `profile` defaulting to
+    `symbolic_e2ee_v1`, `status` defaulting to `active`, `metadata`
+- `register_mailbox_encryption_policy`
+  - Required: `registry_hub`, `policy_id`, `mailbox_id`
+  - Optional: `required_for_lanes` defaulting to `basic_messaging:v1`,
+    `allowed_profiles` defaulting to `symbolic_e2ee_v1`,
+    `require_active_identity`, `require_usable_key_bundle`,
+    `allow_plaintext_fallback`, `metadata`
+- `evaluate_mailbox_encryption_policy`
+  - Required: `registry_hub`, `mailbox_id`, `lane_signature`
+  - Optional: `message_id`
+  - Optional symbolic envelope fields: `envelope_id`,
+    `encryption_identity_id`, `key_bundle_id`, `profile`, `state`, `status`,
+    `algorithm_ref`, `ciphertext_ref`, `plaintext_ref`, `metadata`
+  - The action builds `EncryptedEnvelopeMetadata` only when envelope fields
+    are supplied, calls `evaluate_registered_mailbox_encryption_policy(...)`,
+    appends the resulting `EncryptionPolicyDecision` to scenario action
+    results, and logs a deterministic event. It never calls message delivery.
+
+Supported v1.0 symbolic encryption assertions:
+
+- `encryption_identity_registered`
+  - Required: `registry_hub`, `encryption_identity_id`
+  - Optional checks: `subject_id`, `subject_kind`, `profile`, `status`
+- `key_bundle_registered`
+  - Required: `registry_hub`, `key_bundle_id`
+  - Optional checks: `encryption_identity_id`, `profile`, `status`
+- `mailbox_encryption_binding_registered`
+  - Required: `registry_hub`, `mailbox_id`
+  - Optional checks: `encryption_identity_id`, `key_bundle_id`, `profile`,
+    `status`, `lane_signature`
+- `mailbox_encryption_policy_registered`
+  - Required: `registry_hub`, `policy_id`
+  - Optional checks: `mailbox_id`, `lane_signature`, `profile`,
+    `allow_plaintext_fallback`
+- `encryption_policy_decision_contains`
+  - Required: `registry_hub`
+  - Optional filters: `policy_id`, `mailbox_id`, `lane_signature`,
+    `message_id`, `status`, `reason`, `encryption_required`,
+    `envelope_accepted`, `profile`, `encryption_identity_id`,
+    `key_bundle_id`
+  - Optional count checks: `expected_count`, `min_count`
+
+`encryption_policy_decision_contains` scans the scenario action results for
+policy decisions produced by `evaluate_mailbox_encryption_policy`. If neither
+`expected_count` nor `min_count` is supplied, it passes when at least one
+matching decision exists. Count fields must be non-negative integers. Boolean
+filters must be YAML booleans.
+
+Checked-in v1.0 symbolic encryption scenarios:
+
+- `scenarios/047_symbolic_encryption_registry.yaml`
+- `scenarios/048_symbolic_encryption_policy_required.yaml`
+- `scenarios/049_symbolic_encryption_policy_failures.yaml`
+
+The current v1.0 planning scenario set covers `001` through `049`. Scenarios
+`047` through `049` do not deliver messages, mutate inboxes, enforce encrypted
+delivery, alter plaintext delivery behavior, open sockets, perform DNS lookup,
+or import cryptographic libraries.

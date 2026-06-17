@@ -89,6 +89,10 @@ decisions. See `docs/ENCRYPTION_POLICY_v1_0.md`.
 Sprint 4 stores these records in RegistryHub-local symbolic encryption
 registries. See `docs/ENCRYPTION_REGISTRY_v1_0.md`.
 
+Sprint 5 exposes these records through symbolic-only scenario DSL actions and
+read-only assertions. See `docs/SCENARIO_DSL_v0_2.md` and
+`scenarios/047_symbolic_encryption_registry.yaml`.
+
 ## Helpers
 
 Sprint 1 adds pure deterministic helpers:
@@ -109,10 +113,10 @@ simulator state is needed.
 Sprint 2 adds symbolic encrypted-envelope metadata. Sprint 3 adds pure mailbox
 encryption policy helpers that inspect identity, key-bundle, and envelope
 records without mutating delivery state. Sprint 4 adds RegistryHub-local
-registries for identity, key-bundle, binding, and policy records. Future v1.0
-sprints may add scenario DSL coverage. Those layers should continue using
-symbolic profile labels and references until real cryptography is explicitly
-scoped outside this planning line.
+registries for identity, key-bundle, binding, and policy records. Sprint 5 adds
+scenario DSL coverage for those symbolic records and policy decisions. These
+layers continue using symbolic profile labels and references until real
+cryptography is explicitly scoped outside this planning line.
 
 ## Explicit Non-Goals
 

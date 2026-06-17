@@ -1,0 +1,131 @@
+scenario_id: 049_symbolic_encryption_policy_failures
+name: Symbolic encryption policy failures
+category: encryption
+description: evaluates deterministic symbolic mailbox encryption policy failures
+tags:
+  - encryption
+  - symbolic
+  - policy
+  - failure
+  - v1.0
+demonstrates:
+  - missing-envelope rejection for a required lane
+  - unsupported symbolic profile rejection
+  - inactive identity rejection
+expected_result: policy decisions retain deterministic failure statuses and reasons
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  devices:
+    - device_id: dev_NEO
+      label: neo
+steps:
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    canonical_device_id: dev_NEO
+    local_name: neo
+    scope: global.chat
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+  - action: register_encryption_identity
+    registry_hub: registry_chat_001
+    encryption_identity_id: enc_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+  - action: register_key_bundle_reference
+    registry_hub: registry_chat_001
+    key_bundle_id: kb_mailbox_neo_001
+    encryption_identity_id: enc_mailbox_neo
+  - action: register_mailbox_encryption_binding
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    required_for_lanes:
+      - basic_messaging:v1
+  - action: register_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+  - action: evaluate_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    message_id: msg_missing_envelope
+  - action: evaluate_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    message_id: msg_unsupported_profile
+    envelope_id: env_unsupported_profile
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    profile: symbolic_future_profile
+    state: symbolically_encrypted
+    status: ready
+  - action: register_encryption_identity
+    registry_hub: registry_chat_001
+    encryption_identity_id: enc_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+    status: disabled
+  - action: evaluate_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    message_id: msg_inactive_identity
+    envelope_id: env_inactive_identity
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    profile: symbolic_e2ee_v1
+    state: symbolically_encrypted
+    status: ready
+assertions:
+  - type: encryption_policy_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    message_id: msg_missing_envelope
+    status: missing_envelope
+    reason: missing_envelope
+    encryption_required: true
+    envelope_accepted: false
+    expected_count: 1
+  - type: encryption_policy_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    message_id: msg_unsupported_profile
+    status: unsupported_profile
+    reason: unsupported_profile
+    profile: symbolic_future_profile
+    envelope_accepted: false
+    expected_count: 1
+  - type: encryption_policy_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    message_id: msg_inactive_identity
+    status: identity_inactive
+    reason: identity_inactive
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    envelope_accepted: false
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    expected_count: 0
+  - type: mailbox_inbox_contains
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    expected_count: 0

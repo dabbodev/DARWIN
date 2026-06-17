@@ -168,24 +168,32 @@ Sprint 4 documentation: `docs/ENCRYPTION_REGISTRY_v1_0.md`.
 
 ## Sprint 5: Scenario DSL and Scenarios for Symbolic Encrypted Delivery
 
+Status: implemented on the v1.0 planning branch.
+
 Goal: expose symbolic encrypted-delivery decisions only after helper models are
 stable.
 
 Candidate work:
 
 - Add scenario actions/assertions for encryption identities and key bundle
-  references after helper-level models are stable.
+  references after helper-level models are stable. Implemented as
+  symbolic-only scenario DSL actions and read-only assertions.
 - Add scenarios proving encrypted-required delivery succeeds or fails
-  symbolically.
+  symbolically. Implemented as scenarios `047` through `049`.
 - Preserve existing plaintext toy delivery scenarios.
 - Keep scenario outputs deterministic and JSON-safe.
 
 Acceptance targets:
 
-- New scenarios demonstrate encrypted-required success, missing key bundle,
-  stale key bundle, and unsupported profile outcomes.
-- Assertions read retained simulator records and do not mutate state.
-- Existing scenarios `001` through `046` continue to pass unchanged.
+- New scenarios demonstrate symbolic registry setup, encrypted-required
+  success, missing envelope, unsupported profile, and inactive identity
+  outcomes.
+- Assertions read RegistryHub records or scenario action results and do not
+  mutate state.
+- Existing scenarios `001` through `046` continue to pass unchanged, and the
+  current planning scenario set is contiguous through `049`.
+
+Sprint 5 documentation: `docs/SCENARIO_DSL_v0_2.md`.
 
 ## Sprint 6: Audit and Snapshot Visibility
 

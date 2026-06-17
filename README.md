@@ -179,8 +179,10 @@ compact `world.snapshot()` remains unchanged.
 In the v0.9 release, scenarios `044` through `046` add
 simulator-local mailbox message delivery coverage for successful in-memory
 delivery, deterministic failure behavior, and lane fallback policy outcomes.
-The checked-in scenario set is currently `001` through `046`, and the current
-released version is `darwin-sim 0.9.0`.
+The v0.9 released scenario set covers `001` through `046`, and the current
+released version is `darwin-sim 0.9.0`. On the v1.0 planning branch, the
+checked-in scenario set extends to `049` with symbolic encryption registry and
+policy-decision scenarios.
 
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real

@@ -1,0 +1,88 @@
+scenario_id: 048_symbolic_encryption_policy_required
+name: Symbolic encryption policy required
+category: encryption
+description: evaluates a successful symbolic mailbox encryption policy decision
+tags:
+  - encryption
+  - symbolic
+  - policy
+  - v1.0
+demonstrates:
+  - registered mailbox encryption policy evaluation
+  - ready symbolic envelope metadata acceptance
+  - policy decision assertions without message delivery
+expected_result: ready symbolic envelope metadata is accepted by the registered policy
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  devices:
+    - device_id: dev_NEO
+      label: neo
+steps:
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    canonical_device_id: dev_NEO
+    local_name: neo
+    scope: global.chat
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+  - action: register_encryption_identity
+    registry_hub: registry_chat_001
+    encryption_identity_id: enc_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+  - action: register_key_bundle_reference
+    registry_hub: registry_chat_001
+    key_bundle_id: kb_mailbox_neo_001
+    encryption_identity_id: enc_mailbox_neo
+    public_ref: symbolic://public/mailbox_neo/001
+  - action: register_mailbox_encryption_binding
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    required_for_lanes:
+      - basic_messaging:v1
+  - action: register_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+  - action: evaluate_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    message_id: msg_symbolic_001
+    envelope_id: env_msg_symbolic_001
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    profile: symbolic_e2ee_v1
+    state: symbolically_encrypted
+    status: ready
+assertions:
+  - type: encryption_policy_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    message_id: msg_symbolic_001
+    status: accepted
+    encryption_required: true
+    envelope_accepted: true
+    profile: symbolic_e2ee_v1
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    expected_count: 0
+  - type: mailbox_inbox_contains
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    expected_count: 0

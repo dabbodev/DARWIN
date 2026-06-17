@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from darwin.models.encryption import EncryptionPolicyDecision
 from darwin.registry.aliases import resolve_alias
 from darwin.registry.authority_audit import (
     build_authority_audit_trace,
@@ -1070,6 +1071,212 @@ def _mailbox_inbox_contains(
     )
 
 
+def _encryption_identity_registered(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    identity_id = str(assertion.get("encryption_identity_id"))
+    expected = {
+        key: assertion[key]
+        for key in ("subject_id", "subject_kind", "profile", "status")
+        if key in assertion
+    }
+    expected["encryption_identity_id"] = identity_id
+    actual = {
+        "registry_hub": hub_id,
+        "registry_hub_found": hub is not None,
+        "identity_found": False,
+    }
+    if hub is not None:
+        identity = hub.encryption_identities.get(identity_id)
+        if identity is not None:
+            actual.update(identity.to_summary())
+            actual["identity_found"] = True
+
+    passed = _record_matches_expected(actual, expected, "identity_found")
+    return _result(
+        assertion_type,
+        passed,
+        expected,
+        f"encryption identity registered: {identity_id}",
+        actual,
+    )
+
+
+def _key_bundle_registered(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    key_bundle_id = str(assertion.get("key_bundle_id"))
+    expected = {
+        key: assertion[key]
+        for key in ("encryption_identity_id", "profile", "status")
+        if key in assertion
+    }
+    expected["key_bundle_id"] = key_bundle_id
+    actual = {
+        "registry_hub": hub_id,
+        "registry_hub_found": hub is not None,
+        "key_bundle_found": False,
+    }
+    if hub is not None:
+        key_bundle = hub.key_bundle_references.get(key_bundle_id)
+        if key_bundle is not None:
+            actual.update(key_bundle.to_summary())
+            actual["key_bundle_found"] = True
+
+    passed = _record_matches_expected(actual, expected, "key_bundle_found")
+    return _result(
+        assertion_type,
+        passed,
+        expected,
+        f"key bundle registered: {key_bundle_id}",
+        actual,
+    )
+
+
+def _mailbox_encryption_binding_registered(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    mailbox_id = str(assertion.get("mailbox_id"))
+    expected = {
+        key: assertion[key]
+        for key in ("encryption_identity_id", "key_bundle_id", "profile", "status")
+        if key in assertion
+    }
+    expected["mailbox_id"] = mailbox_id
+    if "lane_signature" in assertion:
+        expected["lane_signature"] = str(assertion["lane_signature"])
+    actual = {
+        "registry_hub": hub_id,
+        "registry_hub_found": hub is not None,
+        "binding_found": False,
+    }
+    if hub is not None:
+        binding = hub.mailbox_encryption_bindings.get(mailbox_id)
+        if binding is not None:
+            actual.update(binding.to_summary())
+            actual["binding_found"] = True
+
+    passed = _record_matches_expected(actual, expected, "binding_found")
+    if passed and "lane_signature" in expected:
+        passed = expected["lane_signature"] in actual.get("required_for_lanes", [])
+    return _result(
+        assertion_type,
+        passed,
+        expected,
+        f"mailbox encryption binding registered: {mailbox_id}",
+        actual,
+    )
+
+
+def _mailbox_encryption_policy_registered(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    policy_id = str(assertion.get("policy_id"))
+    expected = {
+        key: assertion[key]
+        for key in ("mailbox_id", "allow_plaintext_fallback")
+        if key in assertion
+    }
+    expected["policy_id"] = policy_id
+    if "lane_signature" in assertion:
+        expected["lane_signature"] = str(assertion["lane_signature"])
+    if "profile" in assertion:
+        expected["profile"] = str(assertion["profile"])
+    actual = {
+        "registry_hub": hub_id,
+        "registry_hub_found": hub is not None,
+        "policy_found": False,
+    }
+    if hub is not None:
+        policy = hub.mailbox_encryption_policies.get(policy_id)
+        if policy is not None:
+            actual.update(policy.to_summary())
+            actual["policy_found"] = True
+
+    direct_expected = {
+        key: value
+        for key, value in expected.items()
+        if key not in {"lane_signature", "profile"}
+    }
+    passed = _record_matches_expected(actual, direct_expected, "policy_found")
+    if passed and "lane_signature" in expected:
+        passed = expected["lane_signature"] in actual.get("required_for_lanes", [])
+    if passed and "profile" in expected:
+        passed = expected["profile"] in actual.get("allowed_profiles", [])
+    return _result(
+        assertion_type,
+        passed,
+        expected,
+        f"mailbox encryption policy registered: {policy_id}",
+        actual,
+    )
+
+
+def _encryption_policy_decision_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = {
+        "registry_hub": hub_id,
+        "policy_id": _optional_filter_str(assertion, "policy_id"),
+        "mailbox_id": _optional_filter_str(assertion, "mailbox_id"),
+        "lane_signature": _optional_filter_str(assertion, "lane_signature"),
+        "message_id": _optional_filter_str(assertion, "message_id"),
+        "status": _optional_filter_str(assertion, "status"),
+        "reason": _optional_filter_str(assertion, "reason"),
+        "encryption_required": _optional_bool_filter(
+            assertion,
+            "encryption_required",
+        ),
+        "envelope_accepted": _optional_bool_filter(assertion, "envelope_accepted"),
+        "profile": _optional_filter_str(assertion, "profile"),
+        "encryption_identity_id": _optional_filter_str(
+            assertion,
+            "encryption_identity_id",
+        ),
+        "key_bundle_id": _optional_filter_str(assertion, "key_bundle_id"),
+    }
+    records = [
+        decision.to_summary()
+        for decision in world.action_results
+        if isinstance(decision, EncryptionPolicyDecision)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_encryption_policy_decision_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"encryption policy decision contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+        },
+    )
+
+
 def _result(
     assertion_type: str,
     passed: bool,
@@ -1269,6 +1476,48 @@ def _matches_message_filters(
     return "payload" not in assertion or record["payload"] == filters["payload"]
 
 
+def _record_matches_expected(
+    actual: dict[str, object],
+    expected: dict[str, object],
+    found_field: str,
+) -> bool:
+    if not actual.get(found_field):
+        return False
+    for field_name, expected_value in expected.items():
+        if field_name == "lane_signature":
+            continue
+        if actual.get(field_name) != expected_value:
+            return False
+    return True
+
+
+def _matches_encryption_policy_decision_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    metadata = record.get("metadata")
+    registry_hub = metadata.get("registry_hub") if isinstance(metadata, dict) else None
+    if registry_hub != filters["registry_hub"]:
+        return False
+    for field_name in (
+        "policy_id",
+        "mailbox_id",
+        "lane_signature",
+        "message_id",
+        "status",
+        "reason",
+        "encryption_required",
+        "envelope_accepted",
+        "profile",
+        "encryption_identity_id",
+        "key_bundle_id",
+    ):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    return True
+
+
 _EVALUATORS = {
     "device_registered": _device_registered,
     "label_maps_to": _label_maps_to,
@@ -1310,4 +1559,11 @@ _EVALUATORS = {
     "mailbox_supports_lane": _mailbox_supports_lane,
     "message_delivery_result_contains": _message_delivery_result_contains,
     "mailbox_inbox_contains": _mailbox_inbox_contains,
+    "encryption_identity_registered": _encryption_identity_registered,
+    "key_bundle_registered": _key_bundle_registered,
+    "mailbox_encryption_binding_registered": (
+        _mailbox_encryption_binding_registered
+    ),
+    "mailbox_encryption_policy_registered": _mailbox_encryption_policy_registered,
+    "encryption_policy_decision_contains": _encryption_policy_decision_contains,
 }

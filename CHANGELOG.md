@@ -37,6 +37,15 @@ Added:
 - Detailed snapshot visibility and documentation for RegistryHub-local
   encryption registries while keeping scenario DSL, real cryptography,
   networking, production E2EE, and delivery integration deferred.
+- v1.0 Sprint 5 scenario DSL actions for registering symbolic encryption
+  identities, key bundle references, mailbox encryption bindings, mailbox
+  encryption policies, and evaluating registered mailbox encryption policy
+  decisions.
+- v1.0 Sprint 5 read-only scenario assertions for symbolic encryption
+  registry records and policy decision action results.
+- v1.0 scenarios `047` through `049` for symbolic encryption registry setup,
+  successful required policy evaluation, and deterministic policy failures,
+  without changing v0.9 plaintext delivery behavior.
 
 ## [0.9.0] - 2026-06-17
 
