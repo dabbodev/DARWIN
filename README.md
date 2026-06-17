@@ -906,6 +906,7 @@ For v1.0 encrypted mailbox model planning, see:
 - `docs/ENCRYPTION_IDENTITIES_v1_0.md`
 - `docs/ENCRYPTED_ENVELOPES_v1_0.md`
 - `docs/ENCRYPTION_POLICY_v1_0.md`
+- `docs/ENCRYPTION_REGISTRY_v1_0.md`
 
 ## What v0.1 Is Not
 

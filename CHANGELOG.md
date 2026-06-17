@@ -28,6 +28,15 @@ Added:
 - v1.0 mailbox encryption policy documentation that keeps real cryptography,
   key generation, encryption/decryption, production E2EE, scenario DSL,
   networking, and external services explicitly deferred.
+- v1.0 Sprint 4 RegistryHub-local symbolic encryption registries for
+  encryption identities, key bundle references, mailbox encryption bindings,
+  and mailbox encryption policies.
+- Registry helper functions to register, retrieve, list, filter, and evaluate
+  registered symbolic mailbox encryption policy state without changing v0.9
+  delivery behavior.
+- Detailed snapshot visibility and documentation for RegistryHub-local
+  encryption registries while keeping scenario DSL, real cryptography,
+  networking, production E2EE, and delivery integration deferred.
 
 ## [0.9.0] - 2026-06-17
 

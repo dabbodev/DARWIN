@@ -18,6 +18,12 @@ if TYPE_CHECKING:
     from darwin.models.alias_authority import AliasAuthorityOutcomeRecord
     from darwin.models.checkpoint import CheckpointState
     from darwin.models.device import Device
+    from darwin.models.encryption import (
+        EncryptionIdentity,
+        KeyBundleReference,
+        MailboxEncryptionBinding,
+        MailboxEncryptionPolicy,
+    )
     from darwin.models.lane import LogicalLane
     from darwin.models.lane_signature import LaneDefinition
     from darwin.models.mailbox import MailboxIdentity
@@ -103,6 +109,14 @@ class RegistryHub:
     lane_registry: dict[str, LaneDefinition] = field(default_factory=dict)
     mailboxes: dict[str, MailboxIdentity] = field(default_factory=dict)
     mailbox_address_index: dict[str, str] = field(default_factory=dict)
+    encryption_identities: dict[str, EncryptionIdentity] = field(default_factory=dict)
+    key_bundle_references: dict[str, KeyBundleReference] = field(default_factory=dict)
+    mailbox_encryption_bindings: dict[str, MailboxEncryptionBinding] = field(
+        default_factory=dict
+    )
+    mailbox_encryption_policies: dict[str, MailboxEncryptionPolicy] = field(
+        default_factory=dict
+    )
     adapter_endpoints: dict[str, AdapterEndpoint] = field(default_factory=dict)
     hub_topology_advertisements: dict[str, HubTopologyAdvertisement] = field(
         default_factory=dict

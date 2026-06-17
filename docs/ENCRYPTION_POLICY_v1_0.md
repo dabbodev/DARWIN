@@ -189,6 +189,12 @@ delivery-policy checks.
 Those layers should continue to treat Sprint 3 decisions as symbolic simulator
 records until production cryptography is separately scoped and reviewed.
 
+Sprint 4 adds RegistryHub-local encryption registry helpers and
+`evaluate_registered_mailbox_encryption_policy(...)`, which resolves stored
+identity, key bundle, binding, and policy records before calling this pure
+evaluator. It remains helper-level only and does not alter delivery behavior.
+See `docs/ENCRYPTION_REGISTRY_v1_0.md`.
+
 ## Explicit Non-Goals
 
 Sprint 3 does not add:

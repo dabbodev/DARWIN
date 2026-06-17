@@ -206,6 +206,30 @@ class World:
                     "mailbox_address_index": dict(
                         sorted(hub.mailbox_address_index.items())
                     ),
+                    "encryption_identities": {
+                        identity_id: identity.to_summary()
+                        for identity_id, identity in sorted(
+                            hub.encryption_identities.items()
+                        )
+                    },
+                    "key_bundle_references": {
+                        key_bundle_id: key_bundle.to_summary()
+                        for key_bundle_id, key_bundle in sorted(
+                            hub.key_bundle_references.items()
+                        )
+                    },
+                    "mailbox_encryption_bindings": {
+                        mailbox_id: binding.to_summary()
+                        for mailbox_id, binding in sorted(
+                            hub.mailbox_encryption_bindings.items()
+                        )
+                    },
+                    "mailbox_encryption_policies": {
+                        policy_id: policy.to_summary()
+                        for policy_id, policy in sorted(
+                            hub.mailbox_encryption_policies.items()
+                        )
+                    },
                     "adapter_endpoints": {
                         endpoint_id: endpoint.to_summary()
                         for endpoint_id, endpoint in sorted(

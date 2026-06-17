@@ -134,7 +134,39 @@ Acceptance targets:
 
 Sprint 3 documentation: `docs/ENCRYPTION_POLICY_v1_0.md`.
 
-## Sprint 4: Scenario DSL and Scenarios for Symbolic Encrypted Delivery
+## Sprint 4: RegistryHub-Local Encryption Registry Helpers
+
+Status: implemented on the v1.0 planning branch.
+
+Goal: store symbolic encryption identities, key bundle references, mailbox
+encryption bindings, and mailbox encryption policies on `RegistryHub` without
+changing delivery behavior.
+
+Candidate work:
+
+- Add RegistryHub-local dictionaries for encryption identity, key bundle,
+  mailbox encryption binding, and mailbox encryption policy records.
+- Add registry helper functions to register, retrieve, list, and filter those
+  records deterministically.
+- Validate small useful cross-references, including registered mailboxes,
+  registered encryption identities, and registered key bundle references.
+- Add helper-level registered policy evaluation that resolves RegistryHub
+  records and calls `evaluate_mailbox_encryption_policy(...)`.
+- Preserve existing v0.9 delivery behavior and avoid scenario DSL changes.
+
+Acceptance targets:
+
+- RegistryHub construction still defaults all encryption registries to empty.
+- Duplicate registration replaces records by deterministic registry key.
+- Registered policy evaluation returns deterministic symbolic decisions
+  without mutating delivery inboxes, retained results, mailbox state, lane
+  registries, adapter endpoints, aliases, TrafficHub state, or canonical
+  identity.
+- Existing scenarios `001` through `046` continue to pass unchanged.
+
+Sprint 4 documentation: `docs/ENCRYPTION_REGISTRY_v1_0.md`.
+
+## Sprint 5: Scenario DSL and Scenarios for Symbolic Encrypted Delivery
 
 Goal: expose symbolic encrypted-delivery decisions only after helper models are
 stable.
@@ -155,7 +187,7 @@ Acceptance targets:
 - Assertions read retained simulator records and do not mutate state.
 - Existing scenarios `001` through `046` continue to pass unchanged.
 
-## Sprint 5: Audit and Snapshot Visibility
+## Sprint 6: Audit and Snapshot Visibility
 
 Goal: make encrypted mailbox model state inspectable without implying real
 secret handling.
@@ -174,7 +206,11 @@ Acceptance targets:
 - Compact `world.snapshot()` remains stable unless explicitly scoped.
 - Output uses symbolic labels and references rather than secret-like values.
 
-## Sprint 6: Docs, Hardening, and Release Prep
+Sprint 4 already adds detailed snapshot visibility for RegistryHub-local
+encryption registries. Future audit work may add retained policy-decision
+visibility after scenario DSL behavior is scoped.
+
+## Sprint 7: Docs, Hardening, and Release Prep
 
 Goal: polish the v1.0 planning line without expanding scope.
 

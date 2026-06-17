@@ -142,6 +142,10 @@ policy outcomes are stable. No new scenario YAMLs are added by Sprint 2.
 Sprint 3 implements the helper-level policy decision layer. See
 `docs/ENCRYPTION_POLICY_v1_0.md`.
 
+Sprint 4 adds RegistryHub-local symbolic encryption registries and a helper
+that evaluates registered mailbox policy state against supplied envelope
+metadata. See `docs/ENCRYPTION_REGISTRY_v1_0.md`.
+
 ## Explicit Non-Goals
 
 Sprint 2 does not add:

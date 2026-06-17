@@ -86,6 +86,9 @@ encrypted-envelope metadata. See `docs/ENCRYPTED_ENVELOPES_v1_0.md`.
 Sprint 3 uses these records in helper-level mailbox encryption policy
 decisions. See `docs/ENCRYPTION_POLICY_v1_0.md`.
 
+Sprint 4 stores these records in RegistryHub-local symbolic encryption
+registries. See `docs/ENCRYPTION_REGISTRY_v1_0.md`.
+
 ## Helpers
 
 Sprint 1 adds pure deterministic helpers:
@@ -97,16 +100,19 @@ Sprint 1 adds pure deterministic helpers:
 - `is_key_bundle_usable(...)`
 
 These helpers create or inspect dataclass records. They do not mutate
-`RegistryHub` or `TrafficHub`.
+`RegistryHub` or `TrafficHub`. Sprint 4 adds separate RegistryHub-local
+registration helpers for storing these records when caller-controlled
+simulator state is needed.
 
 ## Future Work
 
 Sprint 2 adds symbolic encrypted-envelope metadata. Sprint 3 adds pure mailbox
 encryption policy helpers that inspect identity, key-bundle, and envelope
-records without mutating delivery state. Future v1.0 sprints may add scenario
-DSL coverage and audit or snapshot visibility. Those layers should continue
-using symbolic profile labels and references until real cryptography is
-explicitly scoped outside this planning line.
+records without mutating delivery state. Sprint 4 adds RegistryHub-local
+registries for identity, key-bundle, binding, and policy records. Future v1.0
+sprints may add scenario DSL coverage. Those layers should continue using
+symbolic profile labels and references until real cryptography is explicitly
+scoped outside this planning line.
 
 ## Explicit Non-Goals
 
