@@ -17,6 +17,16 @@ from darwin.auth.move_contract import attach_move_auth
 from darwin.models.adapter_endpoint import AdapterEndpoint
 from darwin.models.checkpoint import make_checkpoint_packet
 from darwin.models.device import Device
+from darwin.models.encryption import (
+    DEFAULT_ENCRYPTION_PROFILE,
+    DEFAULT_SYMBOLIC_ENVELOPE_ALGORITHM_REF,
+    EncryptedEnvelopeMetadata,
+    EncryptionIdentity,
+    EncryptionPolicyDecision,
+    KeyBundleReference,
+    MailboxEncryptionBinding,
+    MailboxEncryptionPolicy,
+)
 from darwin.models.hub import LocalDeviceRecord
 from darwin.models.lane_signature import (
     LaneDefinition,
@@ -51,6 +61,21 @@ from darwin.registry.aliases import (
     resolve_alias as resolve_alias_op,
 )
 from darwin.registry.checkpoints import record_checkpoint as record_checkpoint_op
+from darwin.registry.encryption_registry import (
+    evaluate_registered_mailbox_encryption_policy as evaluate_registered_policy_op,
+)
+from darwin.registry.encryption_registry import (
+    register_encryption_identity as register_encryption_identity_op,
+)
+from darwin.registry.encryption_registry import (
+    register_key_bundle_reference as register_key_bundle_reference_op,
+)
+from darwin.registry.encryption_registry import (
+    register_mailbox_encryption_binding as register_mailbox_encryption_binding_op,
+)
+from darwin.registry.encryption_registry import (
+    register_mailbox_encryption_policy as register_mailbox_encryption_policy_op,
+)
 from darwin.registry.lane_registry import (
     register_lane_definition as register_lane_definition_op,
 )
@@ -275,6 +300,13 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         "bind_mailbox_capability": _step_bind_mailbox_capability,
         "register_adapter_endpoint": _step_register_adapter_endpoint,
         "deliver_message": _step_deliver_message,
+        "register_encryption_identity": _step_register_encryption_identity,
+        "register_key_bundle_reference": _step_register_key_bundle_reference,
+        "register_mailbox_encryption_binding": (
+            _step_register_mailbox_encryption_binding
+        ),
+        "register_mailbox_encryption_policy": _step_register_mailbox_encryption_policy,
+        "evaluate_mailbox_encryption_policy": _step_evaluate_mailbox_encryption_policy,
         "advance_time": _step_advance_time,
     }
     try:
@@ -1533,6 +1565,152 @@ def _step_deliver_message(world: World, fields: dict[str, Any]) -> None:
     )
 
 
+def _step_register_encryption_identity(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    identity = EncryptionIdentity(
+        encryption_identity_id=str(fields["encryption_identity_id"]),
+        subject_id=str(fields["subject_id"]),
+        subject_kind=str(fields["subject_kind"]),
+        profile=str(fields.get("profile", DEFAULT_ENCRYPTION_PROFILE)),
+        status=str(fields.get("status", "active")),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    result = register_encryption_identity_op(hub, identity)
+    world.action_results.append(result)
+    world.log(
+        f"registered encryption identity {result.encryption_identity_id} at {hub.hub_id}",
+        event_type="encryption_identity_registered",
+        actor=result.subject_id,
+        target=result.encryption_identity_id,
+        hub_id=hub.hub_id,
+        status=result.status,
+        data=result.to_summary(),
+    )
+
+
+def _step_register_key_bundle_reference(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    key_bundle = KeyBundleReference(
+        key_bundle_id=str(fields["key_bundle_id"]),
+        encryption_identity_id=str(fields["encryption_identity_id"]),
+        profile=str(fields.get("profile", DEFAULT_ENCRYPTION_PROFILE)),
+        status=str(fields.get("status", "active")),
+        public_ref=_optional_str(fields.get("public_ref")),
+        created_order=int(fields.get("created_order", 0)),
+        rotated_from=_optional_str(fields.get("rotated_from")),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    result = register_key_bundle_reference_op(hub, key_bundle)
+    world.action_results.append(result)
+    world.log(
+        f"registered key bundle {result.key_bundle_id} at {hub.hub_id}",
+        event_type="key_bundle_reference_registered",
+        actor=result.encryption_identity_id,
+        target=result.key_bundle_id,
+        hub_id=hub.hub_id,
+        status=result.status.status,
+        data=result.to_summary(),
+    )
+
+
+def _step_register_mailbox_encryption_binding(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    binding = MailboxEncryptionBinding(
+        mailbox_id=str(fields["mailbox_id"]),
+        encryption_identity_id=str(fields["encryption_identity_id"]),
+        key_bundle_id=str(fields["key_bundle_id"]),
+        required_for_lanes=_optional_str_list(fields.get("required_for_lanes")) or [],
+        profile=str(fields.get("profile", DEFAULT_ENCRYPTION_PROFILE)),
+        status=str(fields.get("status", "active")),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    result = register_mailbox_encryption_binding_op(hub, binding)
+    world.action_results.append(result)
+    world.log(
+        f"registered mailbox encryption binding {result.mailbox_id} at {hub.hub_id}",
+        event_type="mailbox_encryption_binding_registered",
+        actor=result.mailbox_id,
+        target=result.encryption_identity_id,
+        hub_id=hub.hub_id,
+        status=result.status,
+        data=result.to_summary(),
+    )
+
+
+def _step_register_mailbox_encryption_policy(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    policy = MailboxEncryptionPolicy(
+        policy_id=str(fields["policy_id"]),
+        mailbox_id=str(fields["mailbox_id"]),
+        required_for_lanes=(
+            _optional_str_list(fields.get("required_for_lanes"))
+            or ["basic_messaging:v1"]
+        ),
+        allowed_profiles=(
+            _optional_str_list(fields.get("allowed_profiles"))
+            or [DEFAULT_ENCRYPTION_PROFILE]
+        ),
+        require_active_identity=_bool_field(fields, "require_active_identity", True),
+        require_usable_key_bundle=_bool_field(
+            fields,
+            "require_usable_key_bundle",
+            True,
+        ),
+        allow_plaintext_fallback=_bool_field(
+            fields,
+            "allow_plaintext_fallback",
+            False,
+        ),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    result = register_mailbox_encryption_policy_op(hub, policy)
+    world.action_results.append(result)
+    world.log(
+        f"registered mailbox encryption policy {result.policy_id} at {hub.hub_id}",
+        event_type="mailbox_encryption_policy_registered",
+        actor=result.mailbox_id,
+        target=result.policy_id,
+        hub_id=hub.hub_id,
+        status="registered",
+        data=result.to_summary(),
+    )
+
+
+def _step_evaluate_mailbox_encryption_policy(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    envelope_metadata = _policy_evaluation_envelope_metadata(fields)
+    result = evaluate_registered_policy_op(
+        hub,
+        mailbox_id=str(fields["mailbox_id"]),
+        lane_signature=str(fields["lane_signature"]),
+        message_id=_optional_str(fields.get("message_id")),
+        envelope_metadata=envelope_metadata,
+    )
+    result = _policy_decision_with_registry_context(result, hub.hub_id)
+    world.action_results.append(result)
+    world.log(
+        (
+            "evaluated mailbox encryption policy for "
+            f"{result.mailbox_id} at {hub.hub_id}: {result.status.status}"
+        ),
+        event_type="mailbox_encryption_policy_evaluated",
+        actor=result.mailbox_id,
+        target=result.policy_id,
+        hub_id=hub.hub_id,
+        status=result.status.status,
+        data=result.to_summary(),
+    )
+
+
 def _step_advance_time(world: World, fields: dict[str, Any]) -> None:
     ticks = int(fields.get("ticks", 1))
     world.advance_time(ticks)
@@ -1589,6 +1767,71 @@ def _optional_dict(value: Any) -> dict[str, object]:
     if not isinstance(value, dict):
         raise TypeError("metadata must be a mapping")
     return dict(value)
+
+
+def _bool_field(fields: dict[str, Any], field_name: str, default: bool) -> bool:
+    value = fields.get(field_name, default)
+    if not isinstance(value, bool):
+        raise TypeError(f"{field_name} must be a boolean")
+    return value
+
+
+def _policy_evaluation_envelope_metadata(
+    fields: dict[str, Any],
+) -> EncryptedEnvelopeMetadata | None:
+    envelope_field_names = {
+        "envelope_id",
+        "encryption_identity_id",
+        "key_bundle_id",
+        "profile",
+        "state",
+        "status",
+        "algorithm_ref",
+        "ciphertext_ref",
+        "plaintext_ref",
+    }
+    if not any(field_name in fields for field_name in envelope_field_names):
+        return None
+
+    message_id = str(fields.get("message_id", "msg_symbolic_encryption_policy"))
+    envelope_id = str(fields.get("envelope_id", f"env_{message_id}"))
+    return EncryptedEnvelopeMetadata(
+        envelope_id=envelope_id,
+        message_id=message_id,
+        encryption_identity_id=_optional_str(fields.get("encryption_identity_id")),
+        key_bundle_id=_optional_str(fields.get("key_bundle_id")),
+        profile=str(fields.get("profile", DEFAULT_ENCRYPTION_PROFILE)),
+        state=str(fields.get("state", "symbolically_encrypted")),
+        status=str(fields.get("status", "ready")),
+        algorithm_ref=_optional_str(
+            fields.get("algorithm_ref", DEFAULT_SYMBOLIC_ENVELOPE_ALGORITHM_REF)
+        ),
+        ciphertext_ref=_optional_str(fields.get("ciphertext_ref")),
+        plaintext_ref=_optional_str(fields.get("plaintext_ref")),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+
+
+def _policy_decision_with_registry_context(
+    decision: EncryptionPolicyDecision,
+    registry_hub_id: str,
+) -> EncryptionPolicyDecision:
+    metadata = dict(decision.metadata or {})
+    metadata["registry_hub"] = registry_hub_id
+    return EncryptionPolicyDecision(
+        policy_id=decision.policy_id,
+        mailbox_id=decision.mailbox_id,
+        lane_signature=decision.lane_signature,
+        message_id=decision.message_id,
+        status=decision.status,
+        reason=decision.reason,
+        encryption_required=decision.encryption_required,
+        envelope_accepted=decision.envelope_accepted,
+        profile=decision.profile,
+        encryption_identity_id=decision.encryption_identity_id,
+        key_bundle_id=decision.key_bundle_id,
+        metadata=metadata,
+    )
 
 
 def _fallback_policy(

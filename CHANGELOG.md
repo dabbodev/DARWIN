@@ -1,8 +1,80 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.0] - Release prep (unreleased)
 
-No unreleased changes.
+DARWIN v1.0.0 release preparation is complete on `v1.0/planning`. It has not
+been merged to `main`, tagged, published as a GitHub release, or published as
+a package.
+
+Added:
+
+- v1.0 Sprint 1 simulator-local encryption identity, symbolic key bundle
+  reference, and mailbox encryption binding models.
+- Pure symbolic helpers for encryption identity creation, key bundle reference
+  creation, mailbox encryption binding, and active/usable status predicates.
+- v1.0 encryption identity documentation that keeps real cryptography,
+  production E2EE, key generation, private key storage, networking, encrypted
+  delivery policy, scenario DSL, and message delivery behavior explicitly
+  deferred.
+- v1.0 Sprint 2 simulator-local encrypted envelope metadata, symbolic
+  encrypted message wrapper, envelope state/status labels, and pure readiness
+  predicates.
+- v1.0 encrypted envelope documentation that keeps real ciphertext,
+  encryption/decryption, crypto libraries, production E2EE, delivery policy,
+  scenario DSL, networking, and external services explicitly deferred.
+- v1.0 Sprint 3 simulator-local mailbox encryption policy records, policy
+  decision records, lane-required predicates, and accepted-decision
+  predicates.
+- Pure mailbox encryption policy evaluation for required lanes, plaintext
+  fallback, missing envelope metadata, unsupported profiles, missing or
+  inactive identities, missing or unusable key bundles, and not-ready
+  envelopes without changing v0.9 delivery behavior.
+- v1.0 mailbox encryption policy documentation that keeps real cryptography,
+  key generation, encryption/decryption, production E2EE, scenario DSL,
+  networking, and external services explicitly deferred.
+- v1.0 Sprint 4 RegistryHub-local symbolic encryption registries for
+  encryption identities, key bundle references, mailbox encryption bindings,
+  and mailbox encryption policies.
+- Registry helper functions to register, retrieve, list, filter, and evaluate
+  registered symbolic mailbox encryption policy state without changing v0.9
+  delivery behavior.
+- Detailed snapshot visibility and documentation for RegistryHub-local
+  encryption registries while keeping scenario DSL, real cryptography,
+  networking, production E2EE, and delivery integration deferred.
+- v1.0 Sprint 5 scenario DSL actions for registering symbolic encryption
+  identities, key bundle references, mailbox encryption bindings, mailbox
+  encryption policies, and evaluating registered mailbox encryption policy
+  decisions.
+- v1.0 Sprint 5 read-only scenario assertions for symbolic encryption
+  registry records and policy decision action results.
+- v1.0 scenarios `047` through `049` for symbolic encryption registry setup,
+  successful required policy evaluation, and deterministic policy failures,
+  without changing v0.9 plaintext delivery behavior.
+- v1.0 Sprint 6 RegistryHub-local retained symbolic encryption policy decision
+  history, read-only decision-history queries, and detailed snapshot visibility.
+- v1.0 encryption policy decision history documentation that keeps real
+  cryptography, key generation, encryption/decryption, production E2EE,
+  delivery enforcement, networking, external services, and private key storage
+  explicitly deferred.
+- v1.0 Sprint 7 hardening for symbolic encryption models, registry behavior,
+  scenario DSL validation, detailed snapshot visibility, scenario index
+  freshness checks, documentation consistency, and draft release-note material.
+- A checked-in scenario index regression that compares `docs/SCENARIO_INDEX.md`
+  with the deterministic scenario metadata renderer for scenarios `001`
+  through `049`.
+
+Compatibility and limits:
+
+- v1.0 remains unreleased release-prep work on `v1.0/planning`; the package
+  and CLI version now report `darwin-sim 1.0.0` on this branch.
+- The checked-in scenario set is expected to run contiguously from `001`
+  through `049`, with scenarios `047` through `049` covering v1.0 symbolic
+  encryption registry and policy-decision behavior.
+- No real cryptography, key generation, private key storage, encryption,
+  decryption, production E2EE, secure messenger behavior, crypto library
+  integration, delivery enforcement, networking, DNS lookup, external
+  services, TrafficHub routing changes, canonical identity rewrites, package
+  publication, tag, or release are added.
 
 ## [0.9.0] - 2026-06-17
 

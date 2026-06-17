@@ -47,7 +47,7 @@ def test_discover_scenario_metadata_lists_checked_in_scenarios():
     assert "011_preset_lane_demo" in scenario_ids
 
 
-def test_discover_scenario_metadata_has_contiguous_001_through_046():
+def test_discover_scenario_metadata_has_contiguous_001_through_049():
     metadata = discover_scenario_metadata(SCENARIOS_DIR)
 
     scenario_numbers = sorted(
@@ -56,7 +56,7 @@ def test_discover_scenario_metadata_has_contiguous_001_through_046():
         if item.scenario_id[:3].isdigit()
     )
 
-    assert scenario_numbers == list(range(1, 47))
+    assert scenario_numbers == list(range(1, 50))
 
 
 def test_describe_scenario_includes_counts_and_validation():
@@ -98,6 +98,16 @@ def test_scenario_index_markdown():
     assert "| Scenario | Category | Description | Tags |" in markdown
     assert "`001_basic_registration` - Basic registration" in markdown
     assert "| registry |" in markdown
+
+
+def test_checked_in_scenario_index_is_current():
+    metadata = discover_scenario_metadata(SCENARIOS_DIR)
+    expected = scenario_index_markdown(metadata)
+    actual = (PROJECT_ROOT / "docs" / "SCENARIO_INDEX.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert actual == expected
 
 
 def test_scenario_index_cli(capsys):

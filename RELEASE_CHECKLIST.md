@@ -398,3 +398,45 @@ python -m darwin.cli.main --version
 python -m darwin.cli.main scenario-index
 python -m darwin.cli.main list-scenarios
 ```
+
+# DARWIN v1.0 Symbolic Encryption Release-Prep Checklist
+
+v1.0.0 is release-prep ready on `v1.0/planning`. It has not been merged to
+`main`, tagged as `v1.0.0`, published as a GitHub release, or published as a
+package.
+
+- [x] Ruff passes with `python -m ruff check .`.
+- [x] Tests pass with `python -m pytest`.
+- [x] All checked-in scenarios `001` through `049` pass with
+  `python scripts/run_all_scenarios.py`.
+- [x] CLI version reports `darwin-sim 1.0.0`.
+- [x] Package version is confirmed as `1.0.0`.
+- [x] Scenario index is current and lists scenarios `001` through `049`
+  without numbering gaps.
+- [x] Scenario metadata regression confirms scenarios `001` through `049` are
+  contiguous and discoverable.
+- [x] v1.0 scenarios `047` through `049` validate and run.
+- [x] v1.0 draft release notes are checked in
+  `docs/RELEASE_NOTES_v1_0_DRAFT.md`.
+- [x] CHANGELOG contains an unreleased release-prep `1.0.0` section.
+- [x] README and v1.0 docs state that symbolic encryption is simulator-only
+  metadata, policy, registry, scenario, and audit modeling.
+- [x] Documentation avoids real cryptography, key generation, private key
+  storage, encryption/decryption, crypto library integration, production E2EE,
+  secure messenger behavior, delivery enforcement, real networking, sockets,
+  HTTP/WebSocket behavior, DNS lookup, external services, durable queues,
+  retry workers, TrafficHub routing changes, canonical identity rewrites, and
+  package-publication claims.
+- [x] Merge, annotated tag, GitHub release, and package publication remain
+  intentionally not performed.
+
+## v1.0 Release-Prep Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main list-scenarios
+```
