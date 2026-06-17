@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import socket
 from pathlib import Path
 
@@ -260,6 +261,35 @@ def test_v0_9_inbox_assertion_passes_and_fails_by_payload():
     assert not failing.passed
     assert failing.actual["count"] == 0
     assert failing.expected["min_count"] == 1
+
+
+def test_v0_9_detailed_snapshot_exposes_message_state_as_json_safe_copies():
+    result = run_scenario(_successful_message_scenario())
+    hub = result.world.registry_hubs["registry_chat_001"]
+    compact_snapshot = result.world.snapshot()
+    snapshot = result.final_snapshot
+
+    json.dumps(snapshot, sort_keys=True)
+    assert "message_inboxes" not in compact_snapshot
+    assert "message_delivery_results" not in compact_snapshot
+
+    hub_snapshot = snapshot["registry_hubs"]["registry_chat_001"]
+    assert hub_snapshot["message_inboxes"]["mailbox_neo"][0]["message_id"] == "msg_001"
+    assert hub_snapshot["message_delivery_results"][0]["status"] == "delivered"
+    assert hub_snapshot["message_delivery_results"][0]["metadata"] == {
+        "simulator_local": True,
+        "networking": False,
+        "dns_lookup": False,
+        "traffic_hub_routing": False,
+        "durable_queue": False,
+        "durable_storage": False,
+    }
+
+    hub_snapshot["message_inboxes"]["mailbox_neo"][0]["payload"] = "mutated"
+    hub_snapshot["message_delivery_results"][0]["metadata"]["networking"] = True
+
+    assert hub.message_inboxes["mailbox_neo"][0].payload == "wake up"
+    assert hub.message_delivery_results[0].metadata["networking"] is False
 
 
 def test_v0_9_checked_in_message_scenarios_validate_and_run():

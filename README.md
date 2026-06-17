@@ -891,6 +891,7 @@ For v0.9 mailbox/chat adapter planning, see:
 - `docs/MAILBOX_REGISTRY_v0_9.md`
 - `docs/ADAPTER_ENDPOINTS_v0_9.md`
 - `docs/MESSAGE_DELIVERY_v0_9.md`
+- `docs/RELEASE_NOTES_v0_9_DRAFT.md`
 
 ## What v0.1 Is Not
 

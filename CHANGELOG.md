@@ -60,6 +60,12 @@ Added:
   support, retained delivery results, and in-memory inbox contents.
 - v0.9 scenarios `044` through `046` for successful in-memory mailbox
   delivery, deterministic failure outcomes, and lane fallback policy behavior.
+- Detailed snapshot visibility for compact v0.9 RegistryHub state summaries,
+  including lane registries, mailboxes, adapter endpoints, message inboxes,
+  and retained delivery results.
+- v0.9 Sprint 8 hardening for mailbox delivery scenario actions, read-only
+  assertions, snapshot visibility, scenario index continuity, documentation,
+  and draft release-note material.
 
 Compatibility and limits:
 

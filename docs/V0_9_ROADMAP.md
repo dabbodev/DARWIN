@@ -286,6 +286,33 @@ Still deferred from release prep:
 - Release notes and checklist updates for an actual v0.9 release.
 - Version bump, tag, merge, GitHub release, or package publication.
 
+## Sprint 8: Hardening and Draft Release Notes
+
+Status: implemented on the v0.9 planning branch. This is a hardening sprint,
+not a feature sprint. The package and CLI version remain `darwin-sim 0.8.0`.
+
+Goal: polish the mailbox/chat adapter foundations without changing runtime
+semantics.
+
+Candidate work:
+
+- Audit v0.9 scenario action and assertion behavior for deterministic,
+  JSON-safe results and read-only assertion semantics.
+- Confirm mailbox delivery scenario actions use the existing simulator-local
+  helper path and do not perform networking, DNS lookup, socket operations,
+  external service calls, durable queueing, retry work, TrafficHub routing, or
+  production chat behavior.
+- Confirm detailed snapshots expose v0.9 RegistryHub state compactly while
+  compact `world.snapshot()` output remains stable.
+- Confirm scenarios `044` through `046` remain clear v0.9 draft scenarios and
+  the scenario set remains contiguous from `001` through `046`.
+- Add draft v0.9 release notes without marking v0.9 as released.
+- Keep all non-goals explicit: no production chat, no production encryption or
+  E2EE, no real networking, no DNS, no registrar integration, no public CA
+  behavior, no production identity proof, no external services, no durable
+  queues, no TrafficHub routing changes, no canonical identity rewrite, and no
+  package publication.
+
 ## Future Encryption Planning
 
 v1.0 may model end-to-end encrypted mailbox delivery, but DARWIN should not
