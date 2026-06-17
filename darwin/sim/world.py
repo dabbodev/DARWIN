@@ -193,6 +193,44 @@ class World:
                         record.to_summary()
                         for record in hub.authority_outcome_history
                     ],
+                    "lane_registry": {
+                        lane_signature: definition.to_summary()
+                        for lane_signature, definition in sorted(
+                            hub.lane_registry.items()
+                        )
+                    },
+                    "mailboxes": {
+                        mailbox_id: mailbox.to_summary()
+                        for mailbox_id, mailbox in sorted(hub.mailboxes.items())
+                    },
+                    "mailbox_address_index": dict(
+                        sorted(hub.mailbox_address_index.items())
+                    ),
+                    "adapter_endpoints": {
+                        endpoint_id: endpoint.to_summary()
+                        for endpoint_id, endpoint in sorted(
+                            hub.adapter_endpoints.items()
+                        )
+                    },
+                    "hub_topology_advertisements": {
+                        advertisement_id: advertisement.to_summary()
+                        for advertisement_id, advertisement in sorted(
+                            hub.hub_topology_advertisements.items()
+                        )
+                    },
+                    "message_inboxes": {
+                        mailbox_id: [
+                            envelope.to_summary()
+                            for envelope in envelopes
+                        ]
+                        for mailbox_id, envelopes in sorted(
+                            hub.message_inboxes.items()
+                        )
+                    },
+                    "message_delivery_results": [
+                        result.to_summary()
+                        for result in hub.message_delivery_results
+                    ],
                     "devices": {
                         device_id: {
                             "label": record.current_label,

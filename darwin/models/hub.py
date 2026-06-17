@@ -14,10 +14,14 @@ from darwin.models.route import LinkMetrics
 from darwin.models.session import LocalAuthSession
 
 if TYPE_CHECKING:
+    from darwin.models.adapter_endpoint import AdapterEndpoint, HubTopologyAdvertisement
     from darwin.models.alias_authority import AliasAuthorityOutcomeRecord
     from darwin.models.checkpoint import CheckpointState
     from darwin.models.device import Device
     from darwin.models.lane import LogicalLane
+    from darwin.models.lane_signature import LaneDefinition
+    from darwin.models.mailbox import MailboxIdentity
+    from darwin.models.message import MessageDeliveryResult, MessageEnvelope
     from darwin.models.route import ForwardingResult, RouteRecord
     from darwin.models.security import QuarantineRecord, SecurityEvent
     from darwin.registry.summaries import SummaryDeviceEntry, UpwardSummary
@@ -96,6 +100,17 @@ class RegistryHub:
     security_events: list[SecurityEvent] = field(default_factory=list)
     quarantines: dict[str, QuarantineRecord] = field(default_factory=dict)
     local_sessions: dict[str, LocalAuthSession] = field(default_factory=dict)
+    lane_registry: dict[str, LaneDefinition] = field(default_factory=dict)
+    mailboxes: dict[str, MailboxIdentity] = field(default_factory=dict)
+    mailbox_address_index: dict[str, str] = field(default_factory=dict)
+    adapter_endpoints: dict[str, AdapterEndpoint] = field(default_factory=dict)
+    hub_topology_advertisements: dict[str, HubTopologyAdvertisement] = field(
+        default_factory=dict
+    )
+    message_inboxes: dict[str, list[MessageEnvelope]] = field(default_factory=dict)
+    message_delivery_results: list[MessageDeliveryResult] = field(
+        default_factory=list
+    )
     metrics: RegistryMetrics = field(default_factory=RegistryMetrics)
     summary_version: int = 0
     child_summaries: dict[str, UpwardSummary] = field(default_factory=dict)

@@ -1,0 +1,89 @@
+scenario_id: 044_mailbox_basic_message_delivery
+name: Mailbox basic message delivery
+category: mailbox
+description: successful simulator-local in-memory delivery over basic_messaging:v1
+tags:
+  - mailbox
+  - message_delivery
+  - in_memory
+  - lane_registry
+  - v0.9
+demonstrates:
+  - mailbox registration and lane capability binding
+  - inert in-memory mailbox adapter endpoint selection
+  - simulator-local message delivery without TrafficHub routing
+expected_result: one basic message is retained in the registered mailbox inbox
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  traffic_hubs:
+    - hub_id: traffic_chat_001
+  devices:
+    - device_id: dev_NEO
+      label: neo
+steps:
+  - action: register_device
+    registry_hub: registry_chat_001
+    device: dev_NEO
+    label: neo
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    canonical_device_id: dev_NEO
+    local_name: neo
+    scope: global.chat
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+  - action: register_adapter_endpoint
+    registry_hub: registry_chat_001
+    endpoint_id: endpoint_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: available
+    lane_signatures:
+      - basic_messaging:v1
+    scope: global.chat
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: msg_neo_001
+    sender_id: dev_TRINITY
+    recipient_address: darwin://global.chat.neo/inbox
+    payload: wake up
+assertions:
+  - type: mailbox_registered
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    address: darwin://global.chat.neo/inbox
+    canonical_device_id: dev_NEO
+    scope: global.chat
+  - type: mailbox_supports_lane
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    enabled: true
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    message_id: msg_neo_001
+    recipient_address: darwin://global.chat.neo/inbox
+    mailbox_id: mailbox_neo
+    status: delivered
+    lane_signature: basic_messaging:v1
+    endpoint_id: endpoint_mailbox_neo
+    expected_count: 1
+  - type: mailbox_inbox_contains
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    message_id: msg_neo_001
+    sender_id: dev_TRINITY
+    recipient_address: darwin://global.chat.neo/inbox
+    lane_signature: basic_messaging:v1
+    payload_kind: text
+    payload: wake up
+    expected_count: 1

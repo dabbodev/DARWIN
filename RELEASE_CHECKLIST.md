@@ -357,3 +357,45 @@ python -m darwin.cli.main --version
 python -m darwin.cli.main scenario-index
 python -m darwin.cli.main list-scenarios
 ```
+
+# DARWIN v0.9 Mailbox Delivery Foundations Release-Prep Checklist
+
+v0.9.0 is unreleased release-prep work on `v0.9/planning`. Do not merge, tag,
+create a GitHub release, or publish packages as part of this checklist.
+
+- [x] Ruff passes with `python -m ruff check .`.
+- [x] Tests pass with `python -m pytest`.
+- [x] All checked-in scenarios `001` through `046` pass with
+  `python scripts/run_all_scenarios.py`.
+- [x] CLI version reports `darwin-sim 0.9.0`.
+- [x] Package version is confirmed as `0.9.0`.
+- [x] Scenario index is current and lists scenarios `001` through `046`
+  without numbering gaps.
+- [x] Scenario metadata regression confirms scenarios `001` through `046` are
+  contiguous and discoverable.
+- [x] v0.9 scenarios `044` through `046` validate and run.
+- [x] v0.9 release notes are checked in
+  `docs/RELEASE_NOTES_v0_9_DRAFT.md`.
+- [x] CHANGELOG reflects v0.9.0 release-prep readiness without claiming
+  release completion.
+- [x] README and v0.9 docs state that mailbox delivery is toy,
+  RegistryHub-local, in-memory simulator behavior only.
+- [x] Documentation avoids production chat, production encryption or E2EE,
+  real networking, sockets, HTTP/WebSocket server/client behavior, DNS lookup
+  or DNS replacement, registrar integration, public CA behavior, production
+  identity proof, external services, durable queues, retry workers, TrafficHub
+  routing changes, canonical identity rewrites, and package-publication
+  claims.
+- [x] Merge, annotated tag, GitHub release creation, and package publication
+  remain intentionally unperformed.
+
+## v0.9 Release-Prep Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main list-scenarios
+```

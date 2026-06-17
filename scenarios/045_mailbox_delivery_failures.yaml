@@ -1,0 +1,112 @@
+scenario_id: 045_mailbox_delivery_failures
+name: Mailbox delivery failures
+category: mailbox
+description: deterministic simulator-local mailbox delivery failure outcomes
+tags:
+  - mailbox
+  - message_delivery
+  - failure
+  - in_memory
+  - v0.9
+demonstrates:
+  - unknown mailbox addresses use the lane fallback policy
+  - missing mailbox lane capabilities reject delivery
+  - missing and unavailable in-memory endpoints do not append inbox messages
+expected_result: failed delivery attempts retain deterministic statuses and reasons
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  devices:
+    - device_id: dev_TRINITY
+      label: trinity
+steps:
+  - action: register_device
+    registry_hub: registry_chat_001
+    device: dev_TRINITY
+    label: trinity
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: basic_messaging:v1
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: msg_unknown_001
+    sender_id: dev_NEO
+    recipient_address: darwin://global.chat.missing/inbox
+    payload: hello?
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_trinity
+    canonical_device_id: dev_TRINITY
+    local_name: trinity
+    scope: global.chat
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: msg_missing_capability_001
+    sender_id: dev_NEO
+    recipient_address: darwin://global.chat.trinity/inbox
+    payload: operator
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_trinity
+    lane_signature: basic_messaging:v1
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: msg_missing_endpoint_001
+    sender_id: dev_NEO
+    recipient_address: darwin://global.chat.trinity/inbox
+    payload: are you there
+  - action: register_adapter_endpoint
+    registry_hub: registry_chat_001
+    endpoint_id: endpoint_mailbox_trinity
+    subject_id: mailbox_trinity
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: stale
+    lane_signatures:
+      - basic_messaging:v1
+    scope: global.chat
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: msg_unavailable_endpoint_001
+    sender_id: dev_NEO
+    recipient_address: darwin://global.chat.trinity/inbox
+    payload: follow the white rabbit
+assertions:
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    message_id: msg_unknown_001
+    recipient_address: darwin://global.chat.missing/inbox
+    status: bounced
+    reason: mailbox_not_found
+    fallback_action: bounce
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    message_id: msg_missing_capability_001
+    mailbox_id: mailbox_trinity
+    status: rejected
+    reason: mailbox_missing_capability
+    fallback_action: reject
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    message_id: msg_missing_endpoint_001
+    mailbox_id: mailbox_trinity
+    status: queued
+    reason: endpoint_not_found
+    fallback_action: queue_with_retry
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    message_id: msg_unavailable_endpoint_001
+    mailbox_id: mailbox_trinity
+    status: queued
+    reason: endpoint_unavailable
+    endpoint_id: endpoint_mailbox_trinity
+    fallback_action: queue_with_retry
+    expected_count: 1
+  - type: mailbox_inbox_contains
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_trinity
+    expected_count: 0

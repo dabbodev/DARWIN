@@ -1,5 +1,13 @@
 """Public registry helpers for DARWIN v0.1."""
 
+from darwin.registry.adapter_endpoints import (
+    get_adapter_endpoint,
+    get_hub_topology_advertisement,
+    list_adapter_endpoints,
+    list_hub_topology_advertisements,
+    register_adapter_endpoint,
+    register_hub_topology_advertisement,
+)
 from darwin.registry.alias_authority import (
     can_continue_alias_upward,
     claim_alias_through_authority_chain,
@@ -42,6 +50,28 @@ from darwin.registry.history_queries import (
     query_authority_outcomes,
     query_quarantine_events,
 )
+from darwin.registry.lane_registry import (
+    can_discover_lane_definition,
+    get_lane_definition,
+    list_discoverable_lane_definitions,
+    list_lane_definitions,
+    register_lane_definition,
+)
+from darwin.registry.mailbox_registry import (
+    bind_mailbox_capability,
+    get_mailbox,
+    list_mailbox_capabilities,
+    list_mailboxes,
+    mailbox_supports_lane,
+    make_basic_messaging_mailbox,
+    register_mailbox,
+    resolve_mailbox_address,
+)
+from darwin.registry.message_delivery import (
+    deliver_message_to_mailbox,
+    get_mailbox_inbox,
+    list_message_delivery_results,
+)
 from darwin.registry.operations import (
     assign_temp_label,
     register_device,
@@ -63,7 +93,9 @@ __all__ = [
     "AuthorityDecisionQueryResult",
     "AuthorityOutcomeQueryResult",
     "build_authority_audit_trace",
+    "can_discover_lane_definition",
     "assign_temp_label",
+    "bind_mailbox_capability",
     "claim_alias",
     "claim_alias_through_authority_chain",
     "claim_bundle_alias",
@@ -71,6 +103,7 @@ __all__ = [
     "can_continue_alias_upward",
     "create_alias_bundle",
     "detect_checkpoint_timeouts",
+    "deliver_message_to_mailbox",
     "evaluate_alias_authority_chain",
     "evaluate_alias_authority_step",
     "explain_alias_conflict_entry",
@@ -79,8 +112,22 @@ __all__ = [
     "explain_authority_traces",
     "explain_quarantine_event_entry",
     "fallback_alias_for_scope",
+    "get_adapter_endpoint",
     "get_checkpoint_state",
+    "get_hub_topology_advertisement",
+    "get_lane_definition",
+    "get_mailbox",
+    "get_mailbox_inbox",
     "is_alias_within_scope",
+    "list_adapter_endpoints",
+    "list_discoverable_lane_definitions",
+    "list_hub_topology_advertisements",
+    "list_lane_definitions",
+    "list_mailbox_capabilities",
+    "list_mailboxes",
+    "list_message_delivery_results",
+    "mailbox_supports_lane",
+    "make_basic_messaging_mailbox",
     "QuarantineEventQueryResult",
     "query_alias_conflicts",
     "query_alias_history",
@@ -88,8 +135,13 @@ __all__ = [
     "query_authority_outcomes",
     "query_quarantine_events",
     "record_checkpoint",
+    "register_adapter_endpoint",
     "register_device",
+    "register_hub_topology_advertisement",
+    "register_lane_definition",
+    "register_mailbox",
     "release_alias",
+    "resolve_mailbox_address",
     "resolve_device_id",
     "resolve_alias",
     "resolve_bundle_alias",

@@ -1,0 +1,74 @@
+scenario_id: 046_mailbox_delivery_fallback_policy
+name: Mailbox delivery fallback policy
+category: mailbox
+description: lane fallback policy fields shape simulator-local message delivery results
+tags:
+  - mailbox
+  - message_delivery
+  - fallback_policy
+  - lane_registry
+  - v0.9
+demonstrates:
+  - unknown-recipient fallback action mapping
+  - adapter-unavailable fallback action mapping
+expected_result: custom lane fallback policy actions are retained on delivery results
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  devices:
+    - device_id: dev_MORPHEUS
+      label: morpheus
+steps:
+  - action: register_device
+    registry_hub: registry_chat_001
+    device: dev_MORPHEUS
+    label: morpheus
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: basic_messaging:v1
+    fallback_policy:
+      unknown_recipient: reject
+      adapter_unavailable: manual_resolution_required
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: msg_policy_unknown_001
+    sender_id: dev_NEO
+    recipient_address: darwin://global.chat.oracle/inbox
+    payload: knock knock
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_morpheus
+    canonical_device_id: dev_MORPHEUS
+    local_name: morpheus
+    scope: global.chat
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_morpheus
+    lane_signature: basic_messaging:v1
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: msg_policy_endpoint_001
+    sender_id: dev_NEO
+    recipient_address: darwin://global.chat.morpheus/inbox
+    payload: the line was traced
+assertions:
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    message_id: msg_policy_unknown_001
+    status: rejected
+    reason: mailbox_not_found
+    fallback_action: reject
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    message_id: msg_policy_endpoint_001
+    mailbox_id: mailbox_morpheus
+    status: held
+    reason: endpoint_not_found
+    fallback_action: manual_resolution_required
+    expected_count: 1
+  - type: mailbox_inbox_contains
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_morpheus
+    expected_count: 0

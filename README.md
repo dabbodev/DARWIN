@@ -14,6 +14,10 @@ publication was performed. The v0.8 release extends simulator-only retained
 authority outcome history while keeping canonical identity, TrafficHub routing,
 and v0.7 registry history, audit, and trace explainability behavior unchanged.
 
+The `v0.9/planning` branch is unreleased release-prep work for
+`darwin-sim 0.9.0`. It has not been merged, tagged, published as a GitHub
+release, or published as a package.
+
 The v0.1 simulator answers questions like:
 
 - Can a device register under a scoped Registry Hub?
@@ -174,9 +178,20 @@ proof, external services, scenario actions, TrafficHub routing changes, or
 canonical identity rewrites. Retained authority outcome history is
 simulator-local introspection on the requesting `RegistryHub`; detailed
 snapshots and JSON result exports expose compact retained summaries, while
-compact `world.snapshot()` remains unchanged. The checked-in scenario set is
-currently `001` through `043`, and the current branch version reports
-`darwin-sim 0.8.0`.
+compact `world.snapshot()` remains unchanged.
+
+On the v0.9 planning branch, scenarios `044` through `046` add
+simulator-local mailbox message delivery coverage for successful in-memory
+delivery, deterministic failure behavior, and lane fallback policy outcomes.
+The checked-in scenario set is currently `001` through `046`, and the current
+branch version is `darwin-sim 0.9.0`.
+
+v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
+It does not add production chat behavior, production encryption or E2EE, real
+networking, sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar
+integration, public CA behavior, production identity proof, external services,
+durable queues, retry workers, TrafficHub routing changes, or canonical
+identity rewrites.
 
 ## What v0.1 Supports
 
@@ -877,6 +892,17 @@ For v0.8 retained authority outcome behavior, see:
 - `docs/AUTHORITY_OUTCOME_RETENTION_v0_8.md`
 - `docs/AUTHORITY_OUTCOME_QUERIES_v0_8.md`
 - `docs/RELEASE_NOTES_v0_8_DRAFT.md`
+
+For v0.9 mailbox/chat adapter planning, see:
+
+- `docs/V0_9_ROADMAP.md`
+- `docs/LANE_SIGNATURES_v0_9.md`
+- `docs/LANE_REGISTRY_v0_9.md`
+- `docs/MAILBOX_ADDRESSING_v0_9.md`
+- `docs/MAILBOX_REGISTRY_v0_9.md`
+- `docs/ADAPTER_ENDPOINTS_v0_9.md`
+- `docs/MESSAGE_DELIVERY_v0_9.md`
+- `docs/RELEASE_NOTES_v0_9_DRAFT.md`
 
 ## What v0.1 Is Not
 

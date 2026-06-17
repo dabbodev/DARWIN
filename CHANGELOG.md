@@ -2,7 +2,88 @@
 
 ## [Unreleased]
 
-No post-v0.8 release changes yet.
+Release-prep target: [0.9.0]. This work is release-prep ready on
+`v0.9/planning`, but v0.9.0 has not been merged, tagged, published as a
+GitHub release, or published as a package.
+
+Added:
+
+- v0.9 Sprint 1 simulator-local lane signature, lane intent advertisement,
+  visibility tier, and trust context models for typed lane intent discovery.
+- Pure lane signature formatting/parsing and lane intent discovery helpers,
+  keeping discovery visibility separate from future lane-use authorization.
+- v0.9 lane signature documentation and revised roadmap ordering that places
+  mailbox identity, registration, adapter records, and message delivery after
+  lane intent foundations.
+- v0.9 Sprint 2 simulator-local mailbox address, mailbox identity, and mailbox
+  capability models for future DARWIN-addressed mailbox demos.
+- Pure mailbox address formatting/parsing helpers for deterministic
+  `darwin://scope.mailbox/resource` simulator strings.
+- v0.9 mailbox addressing documentation that keeps registration, lane binding,
+  adapter endpoints, delivery, networking, production chat, and production
+  encryption explicitly deferred.
+- v0.9 Sprint 3 simulator-local scoped lane definition, fallback policy, and
+  lane registry status models for RegistryHub-local lane catalogs.
+- RegistryHub lane registry storage plus pure helper functions to register,
+  retrieve, list, filter, and discover scoped lane definitions.
+- Deterministic `basic_messaging:v1` lane definition constructor and scoped
+  lane registry documentation.
+- v0.9 Sprint 4 RegistryHub-local mailbox registry storage and helper
+  functions to register, retrieve, resolve, list, and filter mailbox
+  identities.
+- Strict mailbox capability binding helpers that require registered lane
+  definitions, report enabled lane support, keep disabled capabilities from
+  counting as supported, and replace duplicate capability IDs
+  deterministically.
+- v0.9 mailbox registry documentation that keeps mailbox registration and lane
+  binding explicitly separate from adapters, delivery, networking, production
+  chat, and production encryption.
+- v0.9 Sprint 5 simulator-local adapter endpoint and hub topology
+  advertisement models for inert adapter-shaped availability metadata.
+- RegistryHub endpoint and topology storage plus helper functions to register,
+  retrieve, list, and filter endpoint/topology records deterministically.
+- Pure endpoint constructors for in-memory mailbox endpoints and domain-hint
+  hub endpoints that construct records only.
+- v0.9 adapter endpoint documentation that keeps domain, host, port, and path
+  hints explicitly separate from networking, DNS lookup, sockets, deployment,
+  delivery, and production chat behavior.
+- v0.9 Sprint 6 simulator-local message envelope and retained delivery result
+  models for toy `basic_messaging:v1` delivery.
+- RegistryHub in-memory inbox/result storage plus helper functions to deliver
+  to a registered mailbox, read mailbox inboxes, and filter retained delivery
+  results in deterministic append order.
+- Pure `make_basic_message_envelope(...)` constructor for symbolic plaintext
+  test messages.
+- v0.9 message delivery documentation that keeps in-memory delivery separate
+  from networking, DNS lookup, sockets, production chat, production encryption,
+  background retries, durable queues, and TrafficHub routing.
+- v0.9 Sprint 7 scenario DSL actions for registering lane definitions,
+  mailboxes, mailbox lane capabilities, inert adapter endpoints, and toy
+  in-memory messages.
+- v0.9 Sprint 7 scenario assertions for registered mailboxes, mailbox lane
+  support, retained delivery results, and in-memory inbox contents.
+- v0.9 scenarios `044` through `046` for successful in-memory mailbox
+  delivery, deterministic failure outcomes, and lane fallback policy behavior.
+- Detailed snapshot visibility for compact v0.9 RegistryHub state summaries,
+  including lane registries, mailboxes, adapter endpoints, message inboxes,
+  and retained delivery results.
+- v0.9 Sprint 8 hardening for mailbox delivery scenario actions, read-only
+  assertions, snapshot visibility, scenario index continuity, documentation,
+  and draft release-note material.
+
+Compatibility and limits:
+
+- The package and CLI version now report `darwin-sim 0.9.0` on the
+  `v0.9/planning` release-prep branch.
+- The checked-in scenario set is expected to run contiguously from `001`
+  through `046`, with scenarios `044` through `046` covering v0.9 mailbox
+  delivery.
+- No real networking, sockets, DNS lookup, external services, TrafficHub
+  routing changes, canonical identity changes, alias behavior changes,
+  production chat behavior, production encryption, background retries, durable
+  queues, or production message delivery are added.
+- Merge, tag, GitHub release creation, and package publication have not been
+  performed.
 
 ## [0.8.0] - 2026-06-14
 

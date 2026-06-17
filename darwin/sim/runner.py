@@ -14,10 +14,21 @@ from darwin.auth.hmac_bridge import (
 )
 from darwin.auth.modes import AUTH_MODE_HMAC_SHA256_EXPERIMENTAL, AUTH_MODE_SYMBOLIC
 from darwin.auth.move_contract import attach_move_auth
+from darwin.models.adapter_endpoint import AdapterEndpoint
 from darwin.models.checkpoint import make_checkpoint_packet
 from darwin.models.device import Device
 from darwin.models.hub import LocalDeviceRecord
+from darwin.models.lane_signature import (
+    LaneDefinition,
+    LaneDeliveryFallbackPolicy,
+    make_basic_messaging_lane_definition,
+)
+from darwin.models.mailbox import MailboxCapability, MailboxIdentity, format_mailbox_address
+from darwin.models.message import MessageEnvelope
 from darwin.models.route import LinkMetrics
+from darwin.registry.adapter_endpoints import (
+    register_adapter_endpoint as register_adapter_endpoint_op,
+)
 from darwin.registry.alias_authority import (
     claim_alias_through_authority_chain as claim_alias_through_authority_chain_op,
 )
@@ -40,6 +51,18 @@ from darwin.registry.aliases import (
     resolve_alias as resolve_alias_op,
 )
 from darwin.registry.checkpoints import record_checkpoint as record_checkpoint_op
+from darwin.registry.lane_registry import (
+    register_lane_definition as register_lane_definition_op,
+)
+from darwin.registry.mailbox_registry import (
+    bind_mailbox_capability as bind_mailbox_capability_op,
+)
+from darwin.registry.mailbox_registry import (
+    register_mailbox as register_mailbox_op,
+)
+from darwin.registry.message_delivery import (
+    deliver_message_to_mailbox as deliver_message_to_mailbox_op,
+)
 from darwin.registry.operations import (
     register_device as register_device_op,
 )
@@ -247,6 +270,11 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         "verify_hmac_session_proof": _step_verify_hmac_session_proof,
         "record_cross_tree_packet": _step_record_cross_tree_packet,
         "recommend_traffic_bridge": _step_recommend_traffic_bridge,
+        "register_lane_definition": _step_register_lane_definition,
+        "register_mailbox": _step_register_mailbox,
+        "bind_mailbox_capability": _step_bind_mailbox_capability,
+        "register_adapter_endpoint": _step_register_adapter_endpoint,
+        "deliver_message": _step_deliver_message,
         "advance_time": _step_advance_time,
     }
     try:
@@ -1329,6 +1357,182 @@ def _step_recommend_traffic_bridge(world: World, fields: dict[str, Any]) -> None
     )
 
 
+def _step_register_lane_definition(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    lane_signature = str(fields["lane_signature"])
+    scope = str(fields.get("scope", hub.scope_path))
+
+    if lane_signature == "basic_messaging:v1":
+        base = make_basic_messaging_lane_definition(scope)
+        lane_definition = LaneDefinition(
+            lane_signature=base.lane_signature,
+            scope=scope,
+            description=str(fields.get("description", base.description)),
+            payload_kind=_optional_str(fields.get("payload_kind", base.payload_kind)),
+            schema_ref=_optional_str(fields.get("schema_ref", base.schema_ref)),
+            protocol_ref=_optional_str(fields.get("protocol_ref", base.protocol_ref)),
+            visibility_tier=int(fields.get("visibility_tier", base.visibility_tier.tier)),
+            authority_scope=base.authority_scope,
+            adapter_kinds=_optional_str_list(fields.get("adapter_kinds"))
+            or list(base.adapter_kinds),
+            status=str(fields.get("status", base.status.status)),
+            fallback_policy=_fallback_policy(fields.get("fallback_policy"), base),
+            metadata=dict(base.metadata or {}),
+        )
+    else:
+        lane_definition = LaneDefinition(
+            lane_signature=lane_signature,
+            scope=scope,
+            description=str(fields.get("description", "")),
+            payload_kind=_optional_str(fields.get("payload_kind")),
+            schema_ref=_optional_str(fields.get("schema_ref")),
+            protocol_ref=_optional_str(fields.get("protocol_ref")),
+            visibility_tier=int(fields.get("visibility_tier", 0)),
+            adapter_kinds=_optional_str_list(fields.get("adapter_kinds")) or (),
+            status=str(fields.get("status", "active")),
+            fallback_policy=_fallback_policy(fields.get("fallback_policy"), None),
+        )
+
+    result = register_lane_definition_op(hub, lane_definition)
+    world.action_results.append(result)
+    world.log(
+        f"registered lane {result.lane_signature.signature} at {hub.hub_id}",
+        event_type="lane_definition_registered",
+        actor=hub.hub_id,
+        target=result.lane_signature.signature,
+        hub_id=hub.hub_id,
+        status=result.status.status,
+        data=result.to_summary(),
+    )
+
+
+def _step_register_mailbox(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    scope = str(fields["scope"])
+    local_name = str(fields["local_name"])
+    address = str(
+        fields.get(
+            "address",
+            format_mailbox_address(
+                scope=scope,
+                mailbox=local_name,
+                resource=str(fields.get("resource", "inbox")),
+            ),
+        )
+    )
+    mailbox = MailboxIdentity(
+        mailbox_id=str(fields["mailbox_id"]),
+        canonical_device_id=str(fields["canonical_device_id"]),
+        local_name=local_name,
+        scope=scope,
+        address=address,
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    result = register_mailbox_op(hub, mailbox)
+    world.action_results.append(result)
+    world.log(
+        f"registered mailbox {result.mailbox_id} at {hub.hub_id}",
+        event_type="mailbox_registered",
+        actor=result.canonical_device_id,
+        target=result.mailbox_id,
+        device_id=result.canonical_device_id,
+        hub_id=hub.hub_id,
+        status="registered",
+        data=result.to_summary(),
+    )
+
+
+def _step_bind_mailbox_capability(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    lane_signature = str(fields["lane_signature"])
+    capability = MailboxCapability(
+        capability_id=str(
+            fields.get("capability_id", f"cap_{lane_signature.replace(':', '_')}")
+        ),
+        lane_signature=lane_signature,
+        direction=str(fields.get("direction", "receive")),
+        enabled=bool(fields.get("enabled", True)),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    result = bind_mailbox_capability_op(
+        hub,
+        str(fields["mailbox_id"]),
+        capability,
+    )
+    world.action_results.append(result)
+    world.log(
+        f"bound mailbox {result.mailbox_id} to lane {lane_signature} at {hub.hub_id}",
+        event_type="mailbox_capability_bound",
+        actor=result.mailbox_id,
+        target=lane_signature,
+        device_id=result.canonical_device_id,
+        hub_id=hub.hub_id,
+        status="enabled" if capability.enabled else "disabled",
+        data={
+            "mailbox_id": result.mailbox_id,
+            "capability": capability.to_summary(),
+        },
+    )
+
+
+def _step_register_adapter_endpoint(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    endpoint = AdapterEndpoint(
+        endpoint_id=str(fields["endpoint_id"]),
+        subject_id=str(fields["subject_id"]),
+        subject_kind=str(fields["subject_kind"]),
+        adapter_kind=str(fields["adapter_kind"]),
+        status=str(fields.get("status", "unknown")),
+        lane_signatures=_optional_str_list(fields.get("lane_signatures")) or (),
+        scope=str(fields.get("scope", hub.scope_path)),
+        host_hint=_optional_str(fields.get("host_hint")),
+        port_hint=fields.get("port_hint"),
+        path_hint=_optional_str(fields.get("path_hint")),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    result = register_adapter_endpoint_op(hub, endpoint)
+    world.action_results.append(result)
+    world.log(
+        f"registered adapter endpoint {result.endpoint_id} at {hub.hub_id}",
+        event_type="adapter_endpoint_registered",
+        actor=result.subject_id,
+        target=result.endpoint_id,
+        hub_id=hub.hub_id,
+        status=result.status.status,
+        data=result.to_summary(),
+    )
+
+
+def _step_deliver_message(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    envelope = MessageEnvelope(
+        message_id=str(fields["message_id"]),
+        sender_id=str(fields["sender_id"]),
+        recipient_address=str(fields["recipient_address"]),
+        lane_signature=str(fields.get("lane_signature", "basic_messaging:v1")),
+        payload_kind=str(fields.get("payload_kind", "text")),
+        payload=fields.get("payload", ""),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    result = deliver_message_to_mailbox_op(hub, envelope)
+    world.action_results.append(result)
+    event_type = (
+        "message_delivered"
+        if result.status.status == "delivered"
+        else "message_delivery_failed"
+    )
+    world.log(
+        f"{event_type} {result.message_id} at {hub.hub_id}",
+        event_type=event_type,
+        actor=envelope.sender_id,
+        target=result.resolved_mailbox_id or envelope.recipient_address,
+        device_id=result.target_device_id,
+        hub_id=hub.hub_id,
+        status=result.status.status,
+        data=result.to_summary(),
+    )
+
+
 def _step_advance_time(world: World, fields: dict[str, Any]) -> None:
     ticks = int(fields.get("ticks", 1))
     world.advance_time(ticks)
@@ -1377,6 +1581,29 @@ def _optional_policy(value: Any) -> dict[str, object]:
     if not isinstance(value, dict):
         raise TypeError("alias_authority_policy must be a mapping")
     return dict(value)
+
+
+def _optional_dict(value: Any) -> dict[str, object]:
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise TypeError("metadata must be a mapping")
+    return dict(value)
+
+
+def _fallback_policy(
+    value: Any,
+    base: LaneDefinition | None,
+) -> LaneDeliveryFallbackPolicy:
+    if value is None:
+        return (
+            base.fallback_policy
+            if base is not None
+            else LaneDeliveryFallbackPolicy()
+        )
+    if not isinstance(value, dict):
+        raise TypeError("fallback_policy must be a mapping")
+    return LaneDeliveryFallbackPolicy(**dict(value))
 
 
 def _link_metrics(link_config: dict[str, Any]) -> LinkMetrics:
