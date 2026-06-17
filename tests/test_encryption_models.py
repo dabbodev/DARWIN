@@ -1,6 +1,7 @@
 import inspect
 import json
 import socket
+from copy import deepcopy
 from dataclasses import fields
 
 import pytest
@@ -8,8 +9,12 @@ import pytest
 import darwin.models.encryption as encryption_models
 from darwin.models import (
     DEFAULT_ENCRYPTION_PROFILE,
+    DEFAULT_SYMBOLIC_ENVELOPE_ALGORITHM_REF,
+    EncryptedEnvelopeMetadata,
+    EncryptionEnvelopeStatus,
     EncryptionIdentity,
     EncryptionProfile,
+    EncryptionState,
     KeyBundleReference,
     KeyBundleStatus,
     LocalDeviceRecord,
@@ -17,16 +22,22 @@ from darwin.models import (
     MailboxEncryptionBinding,
     MailboxIdentity,
     RegistryHub,
+    SymbolicEncryptedMessageEnvelope,
     TrafficHub,
     bind_mailbox_encryption_identity,
     format_mailbox_address,
     is_encryption_identity_active,
+    is_encryption_profile_supported,
+    is_envelope_ready_for_delivery,
+    is_envelope_symbolically_encrypted,
     is_key_bundle_usable,
     make_basic_message_envelope,
     make_basic_messaging_lane_definition,
     make_in_memory_mailbox_endpoint,
+    make_symbolic_encrypted_envelope_metadata,
     make_symbolic_encryption_identity,
     make_symbolic_key_bundle_reference,
+    wrap_message_symbolically,
 )
 from darwin.registry import (
     bind_mailbox_capability,
@@ -105,6 +116,239 @@ def test_default_profile_is_symbolic_e2ee_v1():
     )
 
 
+def test_create_symbolic_encrypted_envelope_metadata():
+    metadata = make_symbolic_encrypted_envelope_metadata(
+        envelope_id="env_msg_001",
+        message_id="msg_001",
+        encryption_identity_id="enc_mailbox_neo",
+        key_bundle_id="kb_mailbox_neo_001",
+    )
+
+    assert metadata == EncryptedEnvelopeMetadata(
+        envelope_id="env_msg_001",
+        message_id="msg_001",
+        encryption_identity_id="enc_mailbox_neo",
+        key_bundle_id="kb_mailbox_neo_001",
+        profile=DEFAULT_ENCRYPTION_PROFILE,
+        state=EncryptionState("symbolically_encrypted"),
+        status=EncryptionEnvelopeStatus("ready"),
+        algorithm_ref=DEFAULT_SYMBOLIC_ENVELOPE_ALGORITHM_REF,
+        ciphertext_ref="symbolic://ciphertext/env_msg_001",
+        plaintext_ref=None,
+        metadata={
+            "simulator_local": True,
+            "symbolic_envelope": True,
+            "real_ciphertext": False,
+        },
+    )
+
+
+def test_symbolic_encrypted_envelope_defaults_are_symbolic_only():
+    metadata = make_symbolic_encrypted_envelope_metadata(
+        envelope_id="env_msg_001",
+        message_id="msg_001",
+        encryption_identity_id="enc_mailbox_neo",
+        key_bundle_id="kb_mailbox_neo_001",
+        ciphertext_ref="symbolic://ciphertext/custom",
+    )
+
+    assert metadata.profile == "symbolic_e2ee_v1"
+    assert metadata.algorithm_ref == "symbolic-envelope"
+    assert metadata.ciphertext_ref == "symbolic://ciphertext/custom"
+    assert metadata.metadata["real_ciphertext"] is False
+
+
+def test_plaintext_envelope_metadata_can_be_represented():
+    metadata = EncryptedEnvelopeMetadata(
+        envelope_id="env_msg_001_plaintext",
+        message_id="msg_001",
+        state="plaintext",
+        status="ready",
+        plaintext_ref="symbolic://plaintext/msg_001",
+        metadata={"simulator_local": True},
+    )
+
+    assert metadata.encryption_identity_id is None
+    assert metadata.key_bundle_id is None
+    assert metadata.algorithm_ref is None
+    assert metadata.ciphertext_ref is None
+    assert metadata.plaintext_ref == "symbolic://plaintext/msg_001"
+    assert is_envelope_symbolically_encrypted(metadata) is False
+    assert is_envelope_ready_for_delivery(metadata) is True
+
+
+def test_wrap_existing_message_symbolically():
+    message = make_basic_message_envelope(
+        message_id="msg_001",
+        sender_id="dev_sender",
+        recipient_address="darwin://global.chat.neo/inbox",
+        payload="hello",
+    )
+    metadata = make_symbolic_encrypted_envelope_metadata(
+        envelope_id="env_msg_001",
+        message_id="msg_001",
+        encryption_identity_id="enc_mailbox_neo",
+        key_bundle_id="kb_mailbox_neo_001",
+    )
+
+    wrapped = wrap_message_symbolically(message, metadata)
+
+    assert wrapped == SymbolicEncryptedMessageEnvelope(
+        message_id="msg_001",
+        base_message=message,
+        encryption_metadata=metadata,
+        metadata={"simulator_local": True, "message_mutated": False},
+    )
+    assert wrapped.base_message is message
+    assert wrapped.encryption_metadata is metadata
+
+
+def test_symbolic_wrap_does_not_mutate_original_message_envelope():
+    message = make_basic_message_envelope(
+        message_id="msg_001",
+        sender_id="dev_sender",
+        recipient_address="darwin://global.chat.neo/inbox",
+        payload="hello",
+    )
+    before = deepcopy(message.to_summary())
+    metadata = make_symbolic_encrypted_envelope_metadata(
+        envelope_id="env_msg_001",
+        message_id="msg_001",
+        encryption_identity_id="enc_mailbox_neo",
+        key_bundle_id="kb_mailbox_neo_001",
+    )
+
+    wrap_message_symbolically(message, metadata)
+
+    assert message.to_summary() == before
+
+
+def test_encrypted_envelope_metadata_summary_is_json_safe():
+    metadata = make_symbolic_encrypted_envelope_metadata(
+        envelope_id="env_msg_001",
+        message_id="msg_001",
+        encryption_identity_id="enc_mailbox_neo",
+        key_bundle_id="kb_mailbox_neo_001",
+    )
+
+    summary = metadata.to_summary()
+
+    assert summary == {
+        "envelope_id": "env_msg_001",
+        "message_id": "msg_001",
+        "encryption_identity_id": "enc_mailbox_neo",
+        "key_bundle_id": "kb_mailbox_neo_001",
+        "profile": "symbolic_e2ee_v1",
+        "state": "symbolically_encrypted",
+        "status": "ready",
+        "algorithm_ref": "symbolic-envelope",
+        "ciphertext_ref": "symbolic://ciphertext/env_msg_001",
+        "plaintext_ref": None,
+        "metadata": {
+            "simulator_local": True,
+            "symbolic_envelope": True,
+            "real_ciphertext": False,
+        },
+    }
+    assert metadata.to_dict() == summary
+    json.dumps(summary)
+
+
+def test_symbolic_encrypted_message_envelope_summary_is_json_safe():
+    message = make_basic_message_envelope(
+        message_id="msg_001",
+        sender_id="dev_sender",
+        recipient_address="darwin://global.chat.neo/inbox",
+        payload="hello",
+    )
+    metadata = make_symbolic_encrypted_envelope_metadata(
+        envelope_id="env_msg_001",
+        message_id="msg_001",
+        encryption_identity_id="enc_mailbox_neo",
+        key_bundle_id="kb_mailbox_neo_001",
+    )
+    wrapped = wrap_message_symbolically(message, metadata)
+
+    summary = wrapped.to_summary()
+
+    assert summary == {
+        "message_id": "msg_001",
+        "base_message": message.to_summary(),
+        "encryption_metadata": metadata.to_summary(),
+        "metadata": {"simulator_local": True, "message_mutated": False},
+    }
+    assert wrapped.to_dict() == summary
+    json.dumps(summary)
+
+
+def test_symbolic_encrypted_envelope_predicates():
+    encrypted = make_symbolic_encrypted_envelope_metadata(
+        envelope_id="env_msg_001",
+        message_id="msg_001",
+        encryption_identity_id="enc_mailbox_neo",
+        key_bundle_id="kb_mailbox_neo_001",
+    )
+    plaintext = EncryptedEnvelopeMetadata(
+        envelope_id="env_msg_001_plaintext",
+        message_id="msg_001",
+        state="plaintext",
+        status="ready",
+    )
+    wrapped = wrap_message_symbolically(
+        make_basic_message_envelope(
+            message_id="msg_001",
+            sender_id="dev_sender",
+            recipient_address="darwin://global.chat.neo/inbox",
+            payload="hello",
+        ),
+        encrypted,
+    )
+
+    assert is_envelope_symbolically_encrypted(encrypted) is True
+    assert is_envelope_symbolically_encrypted(wrapped) is True
+    assert is_envelope_symbolically_encrypted(plaintext) is False
+    assert is_envelope_ready_for_delivery(encrypted) is True
+    assert is_envelope_ready_for_delivery(plaintext) is True
+
+
+def test_unsupported_profile_envelope_is_not_ready_for_delivery():
+    metadata = make_symbolic_encrypted_envelope_metadata(
+        envelope_id="env_msg_unsupported",
+        message_id="msg_001",
+        encryption_identity_id="enc_mailbox_neo",
+        key_bundle_id="kb_mailbox_neo_001",
+        profile="future_symbolic_profile",
+    )
+
+    assert metadata.status.status == "unsupported_profile"
+    assert is_encryption_profile_supported("future_symbolic_profile") is False
+    assert is_envelope_ready_for_delivery(metadata) is False
+
+
+@pytest.mark.parametrize(
+    "status",
+    [
+        "missing_key_bundle",
+        "stale_key_bundle",
+        "disabled_identity",
+        "unsupported_profile",
+    ],
+)
+def test_non_ready_envelope_statuses_are_not_ready_for_delivery(status):
+    metadata = EncryptedEnvelopeMetadata(
+        envelope_id=f"env_msg_001_{status}",
+        message_id="msg_001",
+        encryption_identity_id="enc_mailbox_neo",
+        key_bundle_id="kb_mailbox_neo_001",
+        state="symbolically_encrypted",
+        status=status,
+        algorithm_ref="symbolic-envelope",
+        ciphertext_ref=f"symbolic://ciphertext/{status}",
+    )
+
+    assert is_envelope_ready_for_delivery(metadata) is False
+
+
 def test_encryption_identity_summary_is_json_safe():
     identity = EncryptionIdentity(
         encryption_identity_id="enc_mailbox_neo",
@@ -181,7 +425,13 @@ def test_mailbox_encryption_binding_summary_is_json_safe():
 def test_no_private_key_material_fields_exist():
     model_fields = {
         field.name
-        for model in (EncryptionIdentity, KeyBundleReference, MailboxEncryptionBinding)
+        for model in (
+            EncryptionIdentity,
+            KeyBundleReference,
+            MailboxEncryptionBinding,
+            EncryptedEnvelopeMetadata,
+            SymbolicEncryptedMessageEnvelope,
+        )
         for field in fields(model)
     }
 

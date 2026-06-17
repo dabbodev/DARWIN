@@ -77,8 +77,11 @@ that can be attached to mailbox IDs in future policy layers without rewriting
 canonical identity.
 
 The v0.9 message delivery helper remains plaintext and toy-only. Sprint 1 does
-not add encrypted delivery policy, encrypted envelope metadata, scenario DSL
-actions, scenario DSL assertions, or new scenario YAMLs.
+not add encrypted delivery policy, scenario DSL actions, scenario DSL
+assertions, or new scenario YAMLs.
+
+Sprint 2 builds on these identity and key-bundle references with symbolic
+encrypted-envelope metadata. See `docs/ENCRYPTED_ENVELOPES_v1_0.md`.
 
 ## Helpers
 
@@ -95,11 +98,11 @@ These helpers create or inspect dataclass records. They do not mutate
 
 ## Future Work
 
-Future v1.0 sprints may add symbolic encrypted-envelope metadata, mailbox
-encryption policy helpers, scenario DSL coverage, and audit or snapshot
-visibility. Those layers should continue using symbolic profile labels and
-references until real cryptography is explicitly scoped outside this planning
-line.
+Sprint 2 adds symbolic encrypted-envelope metadata. Future v1.0 sprints may
+add mailbox encryption policy helpers, scenario DSL coverage, and audit or
+snapshot visibility. Those layers should continue using symbolic profile labels
+and references until real cryptography is explicitly scoped outside this
+planning line.
 
 ## Explicit Non-Goals
 

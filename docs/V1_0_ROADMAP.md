@@ -79,13 +79,19 @@ Sprint 1 documentation: `docs/ENCRYPTION_IDENTITIES_v1_0.md`.
 
 ## Sprint 2: Encrypted Envelope Metadata Model
 
+Status: implemented on the v1.0 planning branch.
+
 Goal: represent encrypted delivery state symbolically, not cryptographically.
 
 Candidate work:
 
-- Add symbolic encrypted message envelope records.
-- Track plaintext versus ciphertext state symbolically.
-- Model algorithm/profile labels, such as `symbolic_e2ee_v1`.
+- Add symbolic encrypted message envelope records. Implemented as
+  `SymbolicEncryptedMessageEnvelope`.
+- Track plaintext versus ciphertext state symbolically. Implemented as
+  `EncryptedEnvelopeMetadata` with controlled `EncryptionState` labels.
+- Model algorithm/profile labels, such as `symbolic_e2ee_v1`. Implemented with
+  symbolic `profile`, `algorithm_ref`, `ciphertext_ref`, and optional
+  `plaintext_ref` fields.
 - Keep payload fields test-only and clearly non-secret.
 - Do not implement encryption algorithms.
 
@@ -97,6 +103,8 @@ Acceptance targets:
 - No helper produces real ciphertext, keys, signatures, or authentication
   tags.
 - Existing plaintext toy delivery scenarios remain valid.
+
+Sprint 2 documentation: `docs/ENCRYPTED_ENVELOPES_v1_0.md`.
 
 ## Sprint 3: Mailbox Encryption Policy Helpers
 

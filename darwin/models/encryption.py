@@ -1,4 +1,4 @@
-"""Simulator-local encryption identity and key reference models for v1.0."""
+"""Simulator-local encryption identity, key, and envelope models for v1.0."""
 
 from __future__ import annotations
 
@@ -6,8 +6,10 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from darwin.models.lane_signature import is_lane_signature
+from darwin.models.message import MessageEnvelope
 
 DEFAULT_ENCRYPTION_PROFILE = "symbolic_e2ee_v1"
+DEFAULT_SYMBOLIC_ENVELOPE_ALGORITHM_REF = "symbolic-envelope"
 
 ENCRYPTION_SUBJECT_KINDS: tuple[str, ...] = (
     "mailbox",
@@ -20,6 +22,21 @@ ENCRYPTION_RECORD_STATUSES: tuple[str, ...] = (
     "stale",
     "revoked",
     "disabled",
+)
+
+ENCRYPTION_STATES: tuple[str, ...] = (
+    "plaintext",
+    "symbolically_encrypted",
+    "encryption_required",
+    "encryption_failed",
+)
+
+ENCRYPTION_ENVELOPE_STATUSES: tuple[str, ...] = (
+    "ready",
+    "missing_key_bundle",
+    "unsupported_profile",
+    "stale_key_bundle",
+    "disabled_identity",
 )
 
 
@@ -42,6 +59,42 @@ class EncryptionProfile:
 
 
 @dataclass(frozen=True, slots=True)
+class EncryptionState:
+    """Controlled simulator-local encrypted envelope state."""
+
+    state: str = "plaintext"
+
+    def __post_init__(self) -> None:
+        _validate_encryption_state(self.state)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe state summary."""
+        return {"state": self.state}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class EncryptionEnvelopeStatus:
+    """Controlled simulator-local encrypted envelope readiness status."""
+
+    status: str = "ready"
+
+    def __post_init__(self) -> None:
+        _validate_envelope_status(self.status)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe status summary."""
+        return {"status": self.status}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
 class KeyBundleStatus:
     """Controlled simulator-local key bundle lifecycle status."""
 
@@ -53,6 +106,123 @@ class KeyBundleStatus:
     def to_summary(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe status summary."""
         return {"status": self.status}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class EncryptedEnvelopeMetadata:
+    """Symbolic metadata for plaintext or simulator-local encrypted envelopes."""
+
+    envelope_id: str
+    message_id: str
+    encryption_identity_id: str | None = None
+    key_bundle_id: str | None = None
+    profile: EncryptionProfile | str = DEFAULT_ENCRYPTION_PROFILE
+    state: EncryptionState | str = "plaintext"
+    status: EncryptionEnvelopeStatus | str = "ready"
+    algorithm_ref: str | None = None
+    ciphertext_ref: str | None = None
+    plaintext_ref: str | None = None
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.envelope_id, "envelope_id")
+        _validate_required_string(self.message_id, "message_id")
+        _validate_optional_string(
+            self.encryption_identity_id,
+            "encryption_identity_id",
+        )
+        _validate_optional_string(self.key_bundle_id, "key_bundle_id")
+        object.__setattr__(self, "profile", _profile_label(self.profile))
+
+        state = self.state
+        if isinstance(state, str):
+            state = EncryptionState(state)
+        if not isinstance(state, EncryptionState):
+            raise TypeError("state must be an EncryptionState or string")
+        object.__setattr__(self, "state", state)
+
+        status = self.status
+        if isinstance(status, str):
+            status = EncryptionEnvelopeStatus(status)
+        if not isinstance(status, EncryptionEnvelopeStatus):
+            raise TypeError("status must be an EncryptionEnvelopeStatus or string")
+        object.__setattr__(self, "status", status)
+
+        _validate_optional_string(self.algorithm_ref, "algorithm_ref")
+        _validate_optional_string(self.ciphertext_ref, "ciphertext_ref")
+        _validate_optional_string(self.plaintext_ref, "plaintext_ref")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe encrypted envelope metadata summary."""
+        return {
+            "envelope_id": self.envelope_id,
+            "message_id": self.message_id,
+            "encryption_identity_id": self.encryption_identity_id,
+            "key_bundle_id": self.key_bundle_id,
+            "profile": self.profile,
+            "state": self.state.state,
+            "status": self.status.status,
+            "algorithm_ref": self.algorithm_ref,
+            "ciphertext_ref": self.ciphertext_ref,
+            "plaintext_ref": self.plaintext_ref,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class SymbolicEncryptedMessageEnvelope:
+    """A message envelope wrapped with symbolic encrypted-envelope metadata."""
+
+    message_id: str
+    base_message: MessageEnvelope | dict[str, Any]
+    encryption_metadata: EncryptedEnvelopeMetadata
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.message_id, "message_id")
+        if not isinstance(self.base_message, MessageEnvelope | dict):
+            raise TypeError("base_message must be a MessageEnvelope or dict")
+        if isinstance(self.base_message, dict):
+            object.__setattr__(
+                self,
+                "base_message",
+                _json_safe_copy(self.base_message),
+            )
+        if not isinstance(self.encryption_metadata, EncryptedEnvelopeMetadata):
+            raise TypeError(
+                "encryption_metadata must be an EncryptedEnvelopeMetadata"
+            )
+        if self.encryption_metadata.message_id != self.message_id:
+            raise ValueError("encryption_metadata message_id must match message_id")
+        if isinstance(self.base_message, MessageEnvelope):
+            if self.base_message.message_id != self.message_id:
+                raise ValueError("base_message message_id must match message_id")
+        elif self.base_message.get("message_id") != self.message_id:
+            raise ValueError("base_message message_id must match message_id")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe symbolic envelope summary."""
+        base_message = self.base_message
+        if isinstance(base_message, MessageEnvelope):
+            base_message = base_message.to_summary()
+        else:
+            base_message = _json_safe_copy(base_message)
+        return {
+            "message_id": self.message_id,
+            "base_message": base_message,
+            "encryption_metadata": self.encryption_metadata.to_summary(),
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
 
     def to_dict(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe representation."""
@@ -252,6 +422,94 @@ def bind_mailbox_encryption_identity(
     )
 
 
+def make_symbolic_encrypted_envelope_metadata(
+    *,
+    envelope_id: str,
+    message_id: str,
+    encryption_identity_id: str,
+    key_bundle_id: str,
+    profile: str = DEFAULT_ENCRYPTION_PROFILE,
+    algorithm_ref: str = DEFAULT_SYMBOLIC_ENVELOPE_ALGORITHM_REF,
+    ciphertext_ref: str | None = None,
+) -> EncryptedEnvelopeMetadata:
+    """Return pure symbolic encrypted-envelope metadata without encryption."""
+    if ciphertext_ref is None:
+        ciphertext_ref = f"symbolic://ciphertext/{envelope_id}"
+    return EncryptedEnvelopeMetadata(
+        envelope_id=envelope_id,
+        message_id=message_id,
+        encryption_identity_id=encryption_identity_id,
+        key_bundle_id=key_bundle_id,
+        profile=profile,
+        state="symbolically_encrypted",
+        status=(
+            "ready"
+            if is_encryption_profile_supported(profile)
+            else "unsupported_profile"
+        ),
+        algorithm_ref=algorithm_ref,
+        ciphertext_ref=ciphertext_ref,
+        plaintext_ref=None,
+        metadata={
+            "simulator_local": True,
+            "symbolic_envelope": True,
+            "real_ciphertext": False,
+        },
+    )
+
+
+def wrap_message_symbolically(
+    message_envelope: MessageEnvelope,
+    encryption_metadata: EncryptedEnvelopeMetadata,
+) -> SymbolicEncryptedMessageEnvelope:
+    """Wrap a message envelope with symbolic metadata without mutating it."""
+    if not isinstance(message_envelope, MessageEnvelope):
+        raise TypeError("message_envelope must be a MessageEnvelope")
+    if not isinstance(encryption_metadata, EncryptedEnvelopeMetadata):
+        raise TypeError("encryption_metadata must be an EncryptedEnvelopeMetadata")
+    if encryption_metadata.message_id != message_envelope.message_id:
+        raise ValueError("encryption_metadata message_id must match message envelope")
+    return SymbolicEncryptedMessageEnvelope(
+        message_id=message_envelope.message_id,
+        base_message=message_envelope,
+        encryption_metadata=encryption_metadata,
+        metadata={"simulator_local": True, "message_mutated": False},
+    )
+
+
+def is_envelope_symbolically_encrypted(
+    envelope_or_metadata: (
+        SymbolicEncryptedMessageEnvelope | EncryptedEnvelopeMetadata
+    ),
+) -> bool:
+    """Return whether an envelope carries symbolic encrypted state."""
+    if isinstance(envelope_or_metadata, SymbolicEncryptedMessageEnvelope):
+        envelope_or_metadata = envelope_or_metadata.encryption_metadata
+    if not isinstance(envelope_or_metadata, EncryptedEnvelopeMetadata):
+        raise TypeError(
+            "envelope_or_metadata must be an encrypted envelope or metadata"
+        )
+    return envelope_or_metadata.state.state == "symbolically_encrypted"
+
+
+def is_encryption_profile_supported(profile: EncryptionProfile | str) -> bool:
+    """Return whether a symbolic encryption profile is supported locally."""
+    return _profile_label(profile) == DEFAULT_ENCRYPTION_PROFILE
+
+
+def is_envelope_ready_for_delivery(
+    metadata: EncryptedEnvelopeMetadata,
+) -> bool:
+    """Return whether symbolic envelope metadata is ready for future policy use."""
+    if not isinstance(metadata, EncryptedEnvelopeMetadata):
+        raise TypeError("metadata must be an EncryptedEnvelopeMetadata")
+    return (
+        metadata.status.status == "ready"
+        and metadata.state.state in {"plaintext", "symbolically_encrypted"}
+        and is_encryption_profile_supported(metadata.profile)
+    )
+
+
 def is_encryption_identity_active(identity: EncryptionIdentity) -> bool:
     """Return whether a symbolic encryption identity is active."""
     if not isinstance(identity, EncryptionIdentity):
@@ -264,6 +522,23 @@ def is_key_bundle_usable(key_bundle: KeyBundleReference) -> bool:
     if not isinstance(key_bundle, KeyBundleReference):
         raise TypeError("key_bundle must be a KeyBundleReference")
     return key_bundle.status.status == "active"
+
+
+def _validate_encryption_state(value: str) -> None:
+    _validate_required_string(value, "encryption state")
+    if value not in ENCRYPTION_STATES:
+        raise ValueError(
+            f"encryption state must be one of {', '.join(ENCRYPTION_STATES)}"
+        )
+
+
+def _validate_envelope_status(value: str) -> None:
+    _validate_required_string(value, "encryption envelope status")
+    if value not in ENCRYPTION_ENVELOPE_STATUSES:
+        raise ValueError(
+            "encryption envelope status must be one of "
+            f"{', '.join(ENCRYPTION_ENVELOPE_STATUSES)}"
+        )
 
 
 def _profile_label(profile: EncryptionProfile | str) -> str:

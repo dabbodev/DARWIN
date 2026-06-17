@@ -12,6 +12,12 @@ Added:
   production E2EE, key generation, private key storage, networking, encrypted
   delivery policy, scenario DSL, and message delivery behavior explicitly
   deferred.
+- v1.0 Sprint 2 simulator-local encrypted envelope metadata, symbolic
+  encrypted message wrapper, envelope state/status labels, and pure readiness
+  predicates.
+- v1.0 encrypted envelope documentation that keeps real ciphertext,
+  encryption/decryption, crypto libraries, production E2EE, delivery policy,
+  scenario DSL, networking, and external services explicitly deferred.
 
 ## [0.9.0] - 2026-06-17
 
