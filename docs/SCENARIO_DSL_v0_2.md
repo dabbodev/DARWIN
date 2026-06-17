@@ -489,8 +489,8 @@ Checked-in v0.8 authority outcome scenarios:
 - `scenarios/042_authority_outcome_history_success.yaml`
 - `scenarios/043_authority_outcome_history_denials.yaml`
 
-The checked-in scenario set currently covers `001` through `043`, with
-scenarios `042` and `043` marked as v0.8 scenarios.
+The v0.8 scenario slice added scenarios `042` and `043` for retained
+authority outcome assertions.
 
 These are simulator-local retained-record assertions only. They are not
 production audit or compliance guarantees, do not add scenario actions, and do
@@ -504,3 +504,88 @@ order on the requesting hub. Existing JSON snapshot and scenario-result
 exports include this field because they write the final detailed snapshot.
 Compact `world.snapshot()` output remains an ID-only overview and does not
 include retained outcome history.
+
+## v0.9 Mailbox Message Delivery Scenarios
+
+The v0.9 planning branch adds simulator-local scenario actions and assertions
+for toy in-memory mailbox message delivery. These actions call the existing
+v0.9 helper modules for lane definitions, mailbox registration, adapter
+endpoint records, and message delivery results.
+
+This DSL surface remains simulator-only. It does not add real networking,
+sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar integration,
+public CA behavior, external services, production chat behavior, production
+encryption or E2EE, production identity proof, durable queues, retry workers,
+TrafficHub routing changes, canonical identity rewrites, or alias/authority
+behavior changes.
+
+Supported v0.9 mailbox delivery actions:
+
+- `register_lane_definition`
+  - Required: `registry_hub`, `lane_signature`
+  - Optional: `scope`, `description`, `visibility_tier`, `status`,
+    `payload_kind`, `schema_ref`, `protocol_ref`, `adapter_kinds`,
+    `fallback_policy`
+  - `basic_messaging:v1` uses the deterministic basic messaging lane
+    definition before applying supplied overrides.
+- `register_mailbox`
+  - Required: `registry_hub`, `mailbox_id`, `canonical_device_id`,
+    `local_name`, `scope`
+  - Optional: `resource`, `address`, `metadata`
+  - If `address` is omitted, the runner formats
+    `darwin://{scope}.{local_name}/{resource}` with `resource: inbox` by
+    default.
+- `bind_mailbox_capability`
+  - Required: `registry_hub`, `mailbox_id`, `lane_signature`
+  - Optional: `capability_id`, `direction`, `enabled`, `metadata`
+  - The lane signature must already be registered on the referenced
+    `RegistryHub`.
+- `register_adapter_endpoint`
+  - Required: `registry_hub`, `endpoint_id`, `subject_id`, `subject_kind`,
+    `adapter_kind`
+  - Optional: `status`, `lane_signatures`, `scope`, `host_hint`, `port_hint`,
+    `path_hint`, `metadata`
+  - Successful in-memory delivery uses `subject_kind: mailbox`,
+    `adapter_kind: in_memory`, `status: available`, and a matching lane
+    signature.
+- `deliver_message`
+  - Required: `registry_hub`, `message_id`, `sender_id`,
+    `recipient_address`
+  - Optional: `lane_signature` defaulting to `basic_messaging:v1`,
+    `payload_kind` defaulting to `text`, `payload`, `metadata`
+  - The action builds a `MessageEnvelope`, calls
+    `deliver_message_to_mailbox(...)`, retains the result, and logs a
+    simulator event. It never performs network I/O.
+
+Supported v0.9 mailbox delivery assertions:
+
+- `mailbox_registered`
+  - Required: `registry_hub`, `mailbox_id`
+  - Optional checks: `address`, `canonical_device_id`, `scope`
+- `mailbox_supports_lane`
+  - Required: `registry_hub`, `mailbox_id`, `lane_signature`
+  - Optional check: `enabled`
+- `message_delivery_result_contains`
+  - Required: `registry_hub`
+  - Optional filters: `message_id`, `recipient_address`, `mailbox_id`,
+    `status`, `reason`, `lane_signature`, `endpoint_id`, `fallback_action`
+  - Optional count checks: `expected_count`, `min_count`
+- `mailbox_inbox_contains`
+  - Required: `registry_hub`, `mailbox_id`
+  - Optional filters: `message_id`, `sender_id`, `recipient_address`,
+    `lane_signature`, `payload_kind`, `payload`
+  - Optional count checks: `expected_count`, `min_count`
+
+If neither `expected_count` nor `min_count` is supplied, count-style
+assertions pass when at least one matching record exists. `expected_count`
+requires an exact match count. `min_count` requires at least that many matches.
+Count fields must be non-negative integers.
+
+Checked-in v0.9 mailbox delivery scenarios:
+
+- `scenarios/044_mailbox_basic_message_delivery.yaml`
+- `scenarios/045_mailbox_delivery_failures.yaml`
+- `scenarios/046_mailbox_delivery_fallback_policy.yaml`
+
+The checked-in scenario set currently covers `001` through `046`, with
+scenarios `044` through `046` marked as v0.9 planning scenarios.

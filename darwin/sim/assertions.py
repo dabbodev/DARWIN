@@ -16,6 +16,11 @@ from darwin.registry.history_queries import (
     query_authority_outcomes,
     query_quarantine_events,
 )
+from darwin.registry.mailbox_registry import get_mailbox, list_mailbox_capabilities
+from darwin.registry.message_delivery import (
+    get_mailbox_inbox,
+    list_message_delivery_results,
+)
 from darwin.registry.trace_explain import explain_authority_trace
 from darwin.sim.world import World
 
@@ -876,6 +881,195 @@ def _canonical_identity_unchanged(
     )
 
 
+def _mailbox_registered(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    mailbox_id = str(assertion.get("mailbox_id"))
+    expected = {
+        key: assertion[key]
+        for key in ("address", "canonical_device_id", "scope")
+        if key in assertion
+    }
+    expected["mailbox_id"] = mailbox_id
+    actual = {
+        "registry_hub": hub_id,
+        "registry_hub_found": hub is not None,
+        "mailbox_found": False,
+    }
+    if hub is not None:
+        mailbox = get_mailbox(hub, mailbox_id)
+        if mailbox is not None:
+            actual.update(
+                {
+                    "mailbox_found": True,
+                    "mailbox_id": mailbox.mailbox_id,
+                    "address": mailbox.address.raw,
+                    "canonical_device_id": mailbox.canonical_device_id,
+                    "scope": mailbox.scope,
+                }
+            )
+
+    passed = bool(actual["mailbox_found"])
+    if passed and "address" in assertion:
+        passed = actual["address"] == str(assertion["address"])
+    if passed and "canonical_device_id" in assertion:
+        passed = actual["canonical_device_id"] == str(assertion["canonical_device_id"])
+    if passed and "scope" in assertion:
+        passed = actual["scope"] == str(assertion["scope"])
+    return _result(
+        assertion_type,
+        passed,
+        expected,
+        f"mailbox registered: {mailbox_id}",
+        actual,
+    )
+
+
+def _mailbox_supports_lane(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    mailbox_id = str(assertion.get("mailbox_id"))
+    lane_signature = str(assertion.get("lane_signature"))
+    enabled_filter = _optional_bool_filter(assertion, "enabled")
+    expected = {
+        "mailbox_id": mailbox_id,
+        "lane_signature": lane_signature,
+        "enabled": enabled_filter,
+    }
+    capabilities = []
+    actual = {
+        "registry_hub": hub_id,
+        "registry_hub_found": hub is not None,
+        "capabilities": capabilities,
+    }
+    if hub is not None:
+        capabilities = [
+            capability.to_summary()
+            for capability in list_mailbox_capabilities(hub, mailbox_id)
+            if capability.lane_signature == lane_signature
+        ]
+        actual["capabilities"] = capabilities
+
+    if enabled_filter is None:
+        passed = bool(capabilities)
+    else:
+        passed = any(capability["enabled"] is enabled_filter for capability in capabilities)
+    return _result(
+        assertion_type,
+        passed,
+        expected,
+        f"mailbox {mailbox_id} supports lane {lane_signature}",
+        actual,
+    )
+
+
+def _message_delivery_result_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    filters = {
+        "message_id": _optional_filter_str(assertion, "message_id"),
+        "recipient_address": _optional_filter_str(assertion, "recipient_address"),
+        "mailbox_id": _optional_filter_str(assertion, "mailbox_id"),
+        "status": _optional_filter_str(assertion, "status"),
+        "reason": _optional_filter_str(assertion, "reason"),
+        "lane_signature": _optional_filter_str(assertion, "lane_signature"),
+        "endpoint_id": _optional_filter_str(assertion, "endpoint_id"),
+        "fallback_action": _optional_filter_str(assertion, "fallback_action"),
+    }
+    records = []
+    actual_context = {
+        "registry_hub": hub_id,
+        "registry_hub_found": hub is not None,
+    }
+    if hub is not None:
+        records = [
+            result.to_summary()
+            for result in list_message_delivery_results(
+                hub,
+                message_id=filters["message_id"],
+                recipient_address=filters["recipient_address"],
+                mailbox_id=filters["mailbox_id"],
+                status=filters["status"],
+                reason=filters["reason"],
+                lane_signature=filters["lane_signature"],
+            )
+        ]
+        records = [
+            record
+            for record in records
+            if (
+                filters["endpoint_id"] is None
+                or record["endpoint_id"] == filters["endpoint_id"]
+            )
+            and (
+                filters["fallback_action"] is None
+                or record["fallback_action"] == filters["fallback_action"]
+            )
+        ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"message delivery result contains {filters}",
+        expected_context={"filters": filters},
+        actual_context=actual_context,
+    )
+
+
+def _mailbox_inbox_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    mailbox_id = str(assertion.get("mailbox_id"))
+    filters = {
+        "message_id": _optional_filter_str(assertion, "message_id"),
+        "sender_id": _optional_filter_str(assertion, "sender_id"),
+        "recipient_address": _optional_filter_str(assertion, "recipient_address"),
+        "lane_signature": _optional_filter_str(assertion, "lane_signature"),
+        "payload_kind": _optional_filter_str(assertion, "payload_kind"),
+        "payload": assertion.get("payload") if "payload" in assertion else None,
+    }
+    records = []
+    actual_context = {
+        "registry_hub": hub_id,
+        "registry_hub_found": hub is not None,
+        "mailbox_id": mailbox_id,
+    }
+    if hub is not None:
+        records = [
+            envelope.to_summary()
+            for envelope in get_mailbox_inbox(hub, mailbox_id)
+        ]
+        records = [
+            record
+            for record in records
+            if _matches_message_filters(record, assertion, filters)
+        ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"mailbox inbox contains {filters}",
+        expected_context={"filters": filters},
+        actual_context=actual_context,
+    )
+
+
 def _result(
     assertion_type: str,
     passed: bool,
@@ -1057,6 +1251,24 @@ def _optional_int_field(assertion: dict[str, Any], field_name: str) -> int | Non
     return int(assertion[field_name])
 
 
+def _matches_message_filters(
+    record: dict[str, object],
+    assertion: dict[str, Any],
+    filters: dict[str, object],
+) -> bool:
+    for field_name in (
+        "message_id",
+        "sender_id",
+        "recipient_address",
+        "lane_signature",
+        "payload_kind",
+    ):
+        value = filters[field_name]
+        if value is not None and record[field_name] != value:
+            return False
+    return "payload" not in assertion or record["payload"] == filters["payload"]
+
+
 _EVALUATORS = {
     "device_registered": _device_registered,
     "label_maps_to": _label_maps_to,
@@ -1094,4 +1306,8 @@ _EVALUATORS = {
     "quarantine_history_contains": _quarantine_history_contains,
     "alias_not_resolved": _alias_not_resolved,
     "canonical_identity_unchanged": _canonical_identity_unchanged,
+    "mailbox_registered": _mailbox_registered,
+    "mailbox_supports_lane": _mailbox_supports_lane,
+    "message_delivery_result_contains": _message_delivery_result_contains,
+    "mailbox_inbox_contains": _mailbox_inbox_contains,
 }

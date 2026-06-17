@@ -144,7 +144,10 @@ Sprint 4 uses that catalog for strict mailbox capability binding. Sprint 5
 adds inert adapter endpoint records and hub topology advertisements,
 documented in `docs/ADAPTER_ENDPOINTS_v0_9.md`. Sprint 6 adds toy,
 RegistryHub-local in-memory message delivery over registered mailbox, lane, and
-endpoint records, documented in `docs/MESSAGE_DELIVERY_v0_9.md`.
+endpoint records, documented in `docs/MESSAGE_DELIVERY_v0_9.md`. Sprint 7
+adds scenario DSL coverage for registering lane definitions and asserting
+delivery outcomes; see `docs/SCENARIO_DSL_v0_2.md` and scenarios `044`
+through `046`.
 
 Those later behaviors should continue to preserve canonical identity truth,
 existing alias authority behavior, retained authority outcomes, audit traces,

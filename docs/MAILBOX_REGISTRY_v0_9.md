@@ -135,6 +135,9 @@ results, documented in `docs/MESSAGE_DELIVERY_v0_9.md`. Mailbox registration
 remains separate: delivery requires a registered mailbox, registered lane,
 enabled mailbox capability, and available in-memory endpoint.
 
+Sprint 7 adds scenario DSL actions and assertions for this setup and delivery
+path. See `docs/SCENARIO_DSL_v0_2.md` and scenarios `044` through `046`.
+
 Future delivery authorization may decide whether a requester can use a mailbox
 lane. Sprint 4 lane support does not imply delivery authorization.
 

@@ -173,7 +173,9 @@ explain adapter availability or stale endpoints. Sprint 6 adds toy,
 RegistryHub-local in-memory delivery results and inbox append behavior,
 documented in `docs/MESSAGE_DELIVERY_v0_9.md`. Endpoint records still do not
 open transports, contact hosts, authorize lane use by themselves, or create
-durable queues.
+durable queues. Sprint 7 adds scenario DSL actions and assertions that can
+register inert endpoints and assert delivery outcomes; see
+`docs/SCENARIO_DSL_v0_2.md` and scenarios `044` through `046`.
 
 ## Non-Goals
 
@@ -189,10 +191,10 @@ Adapter endpoint records do not add:
 - production chat system behavior;
 - production encryption or E2EE;
 - external services;
-- message delivery;
+- production message delivery;
 - message queues;
 - TrafficHub routing changes;
-- scenario DSL actions or assertions.
+- live scenario transports.
 
 Endpoint and topology records remain deterministic, simulator-local
 RegistryHub bookkeeping until future work explicitly scopes additional

@@ -149,6 +149,28 @@ STEP_REQUIRED_FIELDS = {
     ),
     "record_cross_tree_packet": ("traffic_hub", "from_branch", "to_branch"),
     "recommend_traffic_bridge": ("traffic_hub",),
+    "register_lane_definition": ("registry_hub", "lane_signature"),
+    "register_mailbox": (
+        "registry_hub",
+        "mailbox_id",
+        "canonical_device_id",
+        "local_name",
+        "scope",
+    ),
+    "bind_mailbox_capability": ("registry_hub", "mailbox_id", "lane_signature"),
+    "register_adapter_endpoint": (
+        "registry_hub",
+        "endpoint_id",
+        "subject_id",
+        "subject_kind",
+        "adapter_kind",
+    ),
+    "deliver_message": (
+        "registry_hub",
+        "message_id",
+        "sender_id",
+        "recipient_address",
+    ),
     "advance_time": (),
 }
 
@@ -199,6 +221,10 @@ ASSERTION_REQUIRED_FIELDS = {
     "session_state": ("registry_hub", "session_id", "expected"),
     "session_counter": ("registry_hub", "session_id", "expected"),
     "checkpoint_state": ("registry_hub", "device", "expected"),
+    "mailbox_registered": ("registry_hub", "mailbox_id"),
+    "mailbox_supports_lane": ("registry_hub", "mailbox_id", "lane_signature"),
+    "message_delivery_result_contains": ("registry_hub",),
+    "mailbox_inbox_contains": ("registry_hub", "mailbox_id"),
 }
 
 
@@ -209,6 +235,7 @@ SUPPORTED_SCENARIO_CATEGORIES = {
     "relocation",
     "security",
     "metrics",
+    "mailbox",
     "preset",
     "visualization",
 }
@@ -453,6 +480,7 @@ def _validate_steps(data: dict[str, Any], errors: list[ValidationIssue]) -> None
 
         _validate_required_fields(step, required_fields, location, "step", errors)
         _validate_step_auth_fields(step, location, errors)
+        _validate_step_type_fields(action, step, location, errors)
 
 
 def _validate_assertions(data: dict[str, Any], errors: list[ValidationIssue]) -> None:
@@ -557,6 +585,8 @@ def _validate_assertion_type_fields(
     errors: list[ValidationIssue],
 ) -> None:
     if assertion_type != "authority_outcome_history_contains":
+        if assertion_type == "mailbox_supports_lane":
+            _validate_optional_bool(assertion, "enabled", location, errors)
         return
 
     for field_name in (
@@ -602,6 +632,16 @@ def _validate_step_auth_fields(
     _validate_optional_bool(step, "tamper_nonce", location, errors)
     _validate_optional_bool(step, "tamper_secret", location, errors)
     _validate_optional_bool(step, "fallback_allowed", location, errors)
+
+
+def _validate_step_type_fields(
+    action: str,
+    step: dict[str, Any],
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    if action == "bind_mailbox_capability":
+        _validate_optional_bool(step, "enabled", location, errors)
 
 
 def _validate_optional_bool(

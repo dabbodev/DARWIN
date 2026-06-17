@@ -174,9 +174,13 @@ proof, external services, scenario actions, TrafficHub routing changes, or
 canonical identity rewrites. Retained authority outcome history is
 simulator-local introspection on the requesting `RegistryHub`; detailed
 snapshots and JSON result exports expose compact retained summaries, while
-compact `world.snapshot()` remains unchanged. The checked-in scenario set is
-currently `001` through `043`, and the current branch version reports
-`darwin-sim 0.8.0`.
+compact `world.snapshot()` remains unchanged.
+
+On the v0.9 planning branch, scenarios `044` through `046` add
+simulator-local mailbox message delivery coverage for successful in-memory
+delivery, deterministic failure behavior, and lane fallback policy outcomes.
+The checked-in scenario set is currently `001` through `046`, and the current
+branch version remains `darwin-sim 0.8.0`.
 
 ## What v0.1 Supports
 
@@ -886,6 +890,7 @@ For v0.9 mailbox/chat adapter planning, see:
 - `docs/MAILBOX_ADDRESSING_v0_9.md`
 - `docs/MAILBOX_REGISTRY_v0_9.md`
 - `docs/ADAPTER_ENDPOINTS_v0_9.md`
+- `docs/MESSAGE_DELIVERY_v0_9.md`
 
 ## What v0.1 Is Not
 

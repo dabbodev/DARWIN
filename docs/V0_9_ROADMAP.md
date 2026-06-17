@@ -219,7 +219,7 @@ Acceptance targets:
 
 Status: implemented on the v0.9 planning branch for toy, RegistryHub-local
 message envelopes, retained delivery results, and in-memory inbox append
-helpers. Scenario DSL support remains deferred.
+helpers. Sprint 7 adds scenario DSL support for this helper path.
 
 Goal: add a toy delivery path that proves address resolution and adapter
 selection without production transport.
@@ -244,25 +244,31 @@ Acceptance targets:
   lookup, TrafficHub routing, canonical identity mutation, background retries,
   durable queues, or production encryption.
 
-## Sprint 7: Delivery Audit, Docs, Hardening, and Release Prep
+## Sprint 7: Scenario DSL Message Delivery Coverage
 
-Goal: make delivery decisions explainable in scenario output and prepare a
-clean release candidate only after the simulator slices are implemented and
-tested.
+Status: implemented on the v0.9 planning branch for simulator-local scenario
+actions, assertions, and scenarios `044` through `046`. Release prep remains
+deferred.
 
-Candidate work:
+Goal: make delivery decisions explainable in scenario output without changing
+the release version or crossing simulator-only boundaries.
 
-- Expose delivery result records in scenario output once scenario DSL delivery
-  actions and assertions are explicitly scoped.
-- Add scenarios for successful delivery, unresolved mailbox, alias conflict or
-  stale endpoint, and delivery audit.
+Implemented work:
+
+- Expose delivery result records in scenario output through scenario actions
+  and detailed snapshots.
+- Add scenario actions for lane definition registration, mailbox registration,
+  mailbox capability binding, inert adapter endpoint registration, and toy
+  message delivery.
+- Add scenario assertions for registered mailboxes, mailbox lane support,
+  retained delivery results, and in-memory inbox contents.
+- Add scenarios for successful delivery, deterministic failure behavior, and
+  fallback policy behavior.
 - Keep simulator-only framing clear.
 - Avoid production audit/compliance claims.
 - Regression tests for mailbox registration, adapter records, delivery, and
   delivery explainability.
 - Documentation polish and scenario index checks.
-- Release notes and checklist updates.
-- Version bump only during release prep.
 
 Acceptance targets:
 
@@ -274,6 +280,11 @@ Acceptance targets:
 - Scenario documentation distinguishes local adapter simulation from real
   networking.
 - Release-facing docs state that v0.9 remains simulator-only.
+
+Still deferred from release prep:
+
+- Release notes and checklist updates for an actual v0.9 release.
+- Version bump, tag, merge, GitHub release, or package publication.
 
 ## Future Encryption Planning
 

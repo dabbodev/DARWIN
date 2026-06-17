@@ -47,7 +47,7 @@ def test_discover_scenario_metadata_lists_checked_in_scenarios():
     assert "011_preset_lane_demo" in scenario_ids
 
 
-def test_discover_scenario_metadata_has_contiguous_001_through_043():
+def test_discover_scenario_metadata_has_contiguous_001_through_046():
     metadata = discover_scenario_metadata(SCENARIOS_DIR)
 
     scenario_numbers = sorted(
@@ -56,7 +56,7 @@ def test_discover_scenario_metadata_has_contiguous_001_through_043():
         if item.scenario_id[:3].isdigit()
     )
 
-    assert scenario_numbers == list(range(1, 44))
+    assert scenario_numbers == list(range(1, 47))
 
 
 def test_describe_scenario_includes_counts_and_validation():

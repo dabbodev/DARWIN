@@ -1,7 +1,8 @@
 # DARWIN In-Memory Message Delivery v0.9
 
 DARWIN v0.9 Sprint 6 adds toy, simulator-local message envelopes and delivery
-results for `basic_messaging:v1`. The delivery helper proves that a DARWIN
+results for `basic_messaging:v1`. Sprint 7 exposes that helper path through
+scenario DSL actions and assertions. The delivery helper proves that a DARWIN
 mailbox address can resolve through `RegistryHub`, match a registered lane and
 mailbox capability, select an inert in-memory endpoint, and append a message
 to a local inbox.
@@ -84,6 +85,23 @@ Delivery result listing preserves append order and supports additive filters
 for message ID, recipient address, mailbox ID, status, reason, and lane
 signature.
 
+## Scenario DSL Coverage
+
+Sprint 7 adds scenario actions for registering lane definitions, mailboxes,
+mailbox capabilities, inert adapter endpoints, and toy message envelopes. It
+also adds assertions for registered mailboxes, mailbox lane support, retained
+delivery results, and in-memory inbox contents.
+
+Checked-in scenarios:
+
+- `scenarios/044_mailbox_basic_message_delivery.yaml`
+- `scenarios/045_mailbox_delivery_failures.yaml`
+- `scenarios/046_mailbox_delivery_fallback_policy.yaml`
+
+These scenarios use the same process-local helper path. They do not perform
+network I/O, DNS lookup, external service calls, encryption, durable queueing,
+retry scheduling, or TrafficHub routing.
+
 ## Fallback Policy Use
 
 When a lane definition exists, delivery failures use that lane definition's
@@ -142,9 +160,7 @@ Sprint 6 does not add:
 - durable queues;
 - TrafficHub routing changes;
 - canonical identity rewrites;
-- scenario DSL actions or assertions.
 
-Future work may expose delivery results in scenario output, add scenario DSL
-assertions, and build demo-app views over the local inbox and retained result
+Future work may build demo-app views over the local inbox and retained result
 records. Those future layers should keep the same simulator-only boundary until
 explicitly scoped otherwise.

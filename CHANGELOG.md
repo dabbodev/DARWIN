@@ -52,16 +52,22 @@ Added:
   test messages.
 - v0.9 message delivery documentation that keeps in-memory delivery separate
   from networking, DNS lookup, sockets, production chat, production encryption,
-  background retries, durable queues, TrafficHub routing, and scenario DSL
-  behavior.
+  background retries, durable queues, and TrafficHub routing.
+- v0.9 Sprint 7 scenario DSL actions for registering lane definitions,
+  mailboxes, mailbox lane capabilities, inert adapter endpoints, and toy
+  in-memory messages.
+- v0.9 Sprint 7 scenario assertions for registered mailboxes, mailbox lane
+  support, retained delivery results, and in-memory inbox contents.
+- v0.9 scenarios `044` through `046` for successful in-memory mailbox
+  delivery, deterministic failure outcomes, and lane fallback policy behavior.
 
 Compatibility and limits:
 
 - The package and CLI version remain `darwin-sim 0.8.0`.
-- No real networking, sockets, DNS lookup, external services, scenario DSL
-  actions, TrafficHub routing changes, canonical identity changes, alias
-  behavior changes, production chat behavior, production encryption, background
-  retries, durable queues, or production message delivery are added.
+- No real networking, sockets, DNS lookup, external services, TrafficHub
+  routing changes, canonical identity changes, alias behavior changes,
+  production chat behavior, production encryption, background retries, durable
+  queues, or production message delivery are added.
 
 ## [0.8.0] - 2026-06-14
 
