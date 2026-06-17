@@ -903,6 +903,7 @@ For v0.9 mailbox/chat adapter planning, see:
 For v1.0 encrypted mailbox model planning, see:
 
 - `docs/V1_0_ROADMAP.md`
+- `docs/ENCRYPTION_IDENTITIES_v1_0.md`
 
 ## What v0.1 Is Not
 

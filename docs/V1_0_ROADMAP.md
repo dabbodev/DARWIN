@@ -49,14 +49,19 @@ Out of scope:
 
 ## Sprint 1: Encryption Identity and Key Reference Models
 
+Status: implemented on the v1.0 planning branch.
+
 Goal: define simulator-local records that let mailbox identities reference
 encryption identities without performing cryptography.
 
 Candidate work:
 
-- Add simulator-local encryption identity records.
-- Add key bundle reference models.
-- Bind mailbox identity to encryption identity.
+- Add simulator-local encryption identity records. Implemented in
+  `darwin.models.encryption`.
+- Add key bundle reference models. Implemented in
+  `darwin.models.encryption`.
+- Bind mailbox identity to encryption identity. Implemented as a pure
+  `MailboxEncryptionBinding` model and helper, without RegistryHub mutation.
 - Use symbolic key material only.
 - Keep key IDs, bundle IDs, and profile names deterministic and JSON-safe.
 - Do not implement encryption algorithms.
@@ -69,6 +74,8 @@ Acceptance targets:
   private key handling.
 - Duplicate, missing, disabled, or stale key bundle cases are deterministic.
 - Tests prove records are simulator-local data only.
+
+Sprint 1 documentation: `docs/ENCRYPTION_IDENTITIES_v1_0.md`.
 
 ## Sprint 2: Encrypted Envelope Metadata Model
 

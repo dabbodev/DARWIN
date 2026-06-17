@@ -32,6 +32,21 @@ from darwin.models.alias_authority import (
 )
 from darwin.models.checkpoint import CheckpointPacket, CheckpointState
 from darwin.models.device import Device
+from darwin.models.encryption import (
+    DEFAULT_ENCRYPTION_PROFILE,
+    ENCRYPTION_RECORD_STATUSES,
+    ENCRYPTION_SUBJECT_KINDS,
+    EncryptionIdentity,
+    EncryptionProfile,
+    KeyBundleReference,
+    KeyBundleStatus,
+    MailboxEncryptionBinding,
+    bind_mailbox_encryption_identity,
+    is_encryption_identity_active,
+    is_key_bundle_usable,
+    make_symbolic_encryption_identity,
+    make_symbolic_key_bundle_reference,
+)
 from darwin.models.hub import LocalDeviceRecord, RegistryHub, TrafficHub
 from darwin.models.lane import LogicalLane
 from darwin.models.lane_signature import (
@@ -104,7 +119,12 @@ __all__ = [
     "CheckpointState",
     "DarwinMailboxAddress",
     "DarwinPacket",
+    "DEFAULT_ENCRYPTION_PROFILE",
     "Device",
+    "ENCRYPTION_RECORD_STATUSES",
+    "ENCRYPTION_SUBJECT_KINDS",
+    "EncryptionIdentity",
+    "EncryptionProfile",
     "ForwardingResult",
     "HUB_TOPOLOGY_KINDS",
     "HubTopologyAdvertisement",
@@ -122,6 +142,7 @@ __all__ = [
     "LocalDeviceRecord",
     "LogicalLane",
     "MailboxCapability",
+    "MailboxEncryptionBinding",
     "MailboxIdentity",
     "MESSAGE_DELIVERY_FAILURE_REASONS",
     "MESSAGE_DELIVERY_STATUSES",
@@ -137,16 +158,23 @@ __all__ = [
     "RouteRecord",
     "RoutingPolicy",
     "TrafficHub",
+    "KeyBundleReference",
+    "KeyBundleStatus",
+    "bind_mailbox_encryption_identity",
     "can_discover_lane_intent",
     "filter_discoverable_lane_intents",
     "format_mailbox_address",
     "format_lane_signature",
     "is_lane_signature",
+    "is_encryption_identity_active",
+    "is_key_bundle_usable",
     "is_mailbox_address",
     "make_basic_messaging_lane_definition",
     "make_basic_message_envelope",
     "make_domain_hint_hub_endpoint",
     "make_in_memory_mailbox_endpoint",
+    "make_symbolic_encryption_identity",
+    "make_symbolic_key_bundle_reference",
     "parse_lane_signature",
     "parse_mailbox_address",
 ]

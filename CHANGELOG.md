@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-No unreleased changes.
+Added:
+
+- v1.0 Sprint 1 simulator-local encryption identity, symbolic key bundle
+  reference, and mailbox encryption binding models.
+- Pure symbolic helpers for encryption identity creation, key bundle reference
+  creation, mailbox encryption binding, and active/usable status predicates.
+- v1.0 encryption identity documentation that keeps real cryptography,
+  production E2EE, key generation, private key storage, networking, encrypted
+  delivery policy, scenario DSL, and message delivery behavior explicitly
+  deferred.
 
 ## [0.9.0] - 2026-06-17
 
