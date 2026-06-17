@@ -1,7 +1,7 @@
 # DARWIN Encryption Registry v1.0
 
-Status: v1.0 planning on `v1.0/planning`; current package and CLI version
-on this branch report `darwin-sim 1.0.0`.
+Status: release-prep ready on `v1.0/planning`; current package and CLI
+version on this branch report `darwin-sim 1.0.0`.
 
 DARWIN v1.0 Sprint 4 adds RegistryHub-local symbolic encryption registries.
 These registries store encryption identities, key bundle references, mailbox

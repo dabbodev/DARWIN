@@ -593,7 +593,7 @@ The v0.9 released scenario set covers `001` through `046`, with scenarios
 
 ## v1.0 Symbolic Encryption Registry and Policy Scenarios
 
-The v1.0 planning branch reports package and CLI version
+The v1.0 release-prep branch reports package and CLI version
 `darwin-sim 1.0.0` for release-prep validation. It adds scenario DSL coverage
 for symbolic encryption registry records and mailbox encryption policy
 decisions. This is
@@ -676,7 +676,7 @@ Checked-in v1.0 symbolic encryption scenarios:
 - `scenarios/048_symbolic_encryption_policy_required.yaml`
 - `scenarios/049_symbolic_encryption_policy_failures.yaml`
 
-The current v1.0 planning scenario set covers `001` through `049`. Scenarios
+The current v1.0 release-prep scenario set covers `001` through `049`. Scenarios
 `047` through `049` do not deliver messages, mutate inboxes, enforce encrypted
 delivery, alter plaintext delivery behavior, open sockets, perform DNS lookup,
 or import cryptographic libraries.

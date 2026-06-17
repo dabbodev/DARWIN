@@ -1,8 +1,8 @@
 # DARWIN v1.0 Roadmap: Encrypted Mailbox Model Foundations
 
-DARWIN v1.0 planning starts from the released v0.9.0 simulator on `main`.
-The planning branch is `v1.0/planning`. The current package and CLI version
-on this branch report `darwin-sim 1.0.0` for release-prep validation.
+DARWIN v1.0 release prep starts from the released v0.9.0 simulator on `main`.
+The release-prep branch is `v1.0/planning`. The current package and CLI
+version on this branch report `darwin-sim 1.0.0` for release-prep validation.
 
 Recommended theme: Encrypted Mailbox Model Foundations.
 
@@ -49,7 +49,7 @@ Out of scope:
 
 ## Sprint 1: Encryption Identity and Key Reference Models
 
-Status: implemented on the v1.0 planning branch.
+Status: implemented on the v1.0 release-prep branch.
 
 Goal: define simulator-local records that let mailbox identities reference
 encryption identities without performing cryptography.
@@ -79,7 +79,7 @@ Sprint 1 documentation: `docs/ENCRYPTION_IDENTITIES_v1_0.md`.
 
 ## Sprint 2: Encrypted Envelope Metadata Model
 
-Status: implemented on the v1.0 planning branch.
+Status: implemented on the v1.0 release-prep branch.
 
 Goal: represent encrypted delivery state symbolically, not cryptographically.
 
@@ -108,7 +108,7 @@ Sprint 2 documentation: `docs/ENCRYPTED_ENVELOPES_v1_0.md`.
 
 ## Sprint 3: Mailbox Encryption Policy Helpers
 
-Status: implemented on the v1.0 planning branch.
+Status: implemented on the v1.0 release-prep branch.
 
 Goal: model delivery policy decisions for encrypted-required lanes.
 
@@ -136,7 +136,7 @@ Sprint 3 documentation: `docs/ENCRYPTION_POLICY_v1_0.md`.
 
 ## Sprint 4: RegistryHub-Local Encryption Registry Helpers
 
-Status: implemented on the v1.0 planning branch.
+Status: implemented on the v1.0 release-prep branch.
 
 Goal: store symbolic encryption identities, key bundle references, mailbox
 encryption bindings, and mailbox encryption policies on `RegistryHub` without
@@ -168,7 +168,7 @@ Sprint 4 documentation: `docs/ENCRYPTION_REGISTRY_v1_0.md`.
 
 ## Sprint 5: Scenario DSL and Scenarios for Symbolic Encrypted Delivery
 
-Status: implemented on the v1.0 planning branch.
+Status: implemented on the v1.0 release-prep branch.
 
 Goal: expose symbolic encrypted-delivery decisions only after helper models are
 stable.
@@ -191,13 +191,13 @@ Acceptance targets:
 - Assertions read RegistryHub records or scenario action results and do not
   mutate state.
 - Existing scenarios `001` through `046` continue to pass unchanged, and the
-  current planning scenario set is contiguous through `049`.
+  current release-prep scenario set is contiguous through `049`.
 
 Sprint 5 documentation: `docs/SCENARIO_DSL_v0_2.md`.
 
 ## Sprint 6: Audit and Snapshot Visibility
 
-Status: implemented on the v1.0 planning branch.
+Status: implemented on the v1.0 release-prep branch.
 
 Goal: make encrypted mailbox model state inspectable without implying real
 secret handling.
@@ -230,11 +230,11 @@ Sprint 6 documentation:
 
 ## Sprint 7: Docs, Hardening, and Release Prep
 
-Status: implemented on the v1.0 planning branch as release-candidate
+Status: implemented on the v1.0 release-prep branch as release-candidate
 hardening; v1.0 remains unreleased and the branch version is
 `darwin-sim 1.0.0`.
 
-Goal: polish the v1.0 planning line without expanding scope.
+Goal: polish the v1.0 release-prep line without expanding scope.
 
 Candidate work:
 
@@ -280,4 +280,4 @@ visibility depend on them.
 - Durable delivery queues, retry workers, and background services.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
-- Package publication, tagging, or release creation during planning.
+- Package publication, tagging, or release creation during release prep.

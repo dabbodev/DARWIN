@@ -1,7 +1,7 @@
 # DARWIN Mailbox Encryption Policy v1.0
 
-Status: v1.0 planning on `v1.0/planning`; current package and CLI version
-on this branch report `darwin-sim 1.0.0`.
+Status: release-prep ready on `v1.0/planning`; current package and CLI
+version on this branch report `darwin-sim 1.0.0`.
 
 DARWIN v1.0 Sprint 3 adds simulator-local mailbox encryption policy helpers.
 These helpers decide whether a mailbox lane requires symbolic encrypted
@@ -180,11 +180,11 @@ Policy helpers do not mutate:
 - in-memory inboxes;
 - retained delivery results.
 
-## Future Integration
+## Release-Prep Integration
 
-Future v1.0 sprints may wire these decisions into scenario DSL actions,
-scenario assertions, retained audit visibility, snapshots, or explicit
-delivery-policy checks.
+Subsequent v1.0 sprints wire these decisions into scenario DSL actions,
+scenario assertions, retained audit visibility, and snapshots while keeping
+explicit delivery-policy enforcement out of scope.
 
 Those layers should continue to treat Sprint 3 decisions as symbolic simulator
 records until production cryptography is separately scoped and reviewed.

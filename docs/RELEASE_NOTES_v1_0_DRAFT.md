@@ -1,9 +1,9 @@
 # DARWIN v1.0.0 Draft Release Notes
 
-Status: unreleased draft work on `v1.0/planning`. The current package and CLI
-version on this branch is `darwin-sim 1.0.0`. Do not treat v1.0.0 as released
-until it is merged, tagged, and published as a GitHub release. No package
-publication has been performed.
+Status: unreleased release-prep draft on `v1.0/planning`. The current package
+and CLI version on this branch is `darwin-sim 1.0.0`. Do not treat v1.0.0 as
+released until it is merged, tagged, and published as a GitHub release. No
+package publication has been performed.
 
 DARWIN v1.0 is scoped as symbolic encrypted mailbox model foundations. It
 adds model, registry, policy, scenario, audit, and documentation coverage for
@@ -48,9 +48,9 @@ cryptography or changing v0.9 message delivery behavior.
   - `mailbox_encryption_binding_registered`
   - `mailbox_encryption_policy_registered`
   - `encryption_policy_decision_contains`
-- v1.0 draft scenarios `047` through `049` for symbolic encryption registry
-  setup, successful required policy evaluation, and deterministic policy
-  failure outcomes.
+- v1.0 release-prep scenarios `047` through `049` for symbolic encryption
+  registry setup, successful required policy evaluation, and deterministic
+  policy failure outcomes.
 - Detailed snapshot visibility for RegistryHub encryption registries and
   retained encryption policy decision history. Compact `world.snapshot()`
   remains unchanged.
@@ -63,20 +63,20 @@ cryptography or changing v0.9 message delivery behavior.
 
 ## Scenario Coverage
 
-The current checked-in planning scenario set is `001` through `049`.
+The current checked-in release-prep scenario set is `001` through `049`.
 
 - `047_symbolic_encryption_registry.yaml`
 - `048_symbolic_encryption_policy_required.yaml`
 - `049_symbolic_encryption_policy_failures.yaml`
 
-Scenarios `047` through `049` are v1.0 draft scenarios. They are simulator-only
-and do not deliver messages, mutate inboxes, enforce encrypted delivery, open
-sockets, perform DNS lookup, or import cryptographic libraries.
+Scenarios `047` through `049` are v1.0 release-prep scenarios. They are
+simulator-only and do not deliver messages, mutate inboxes, enforce encrypted
+delivery, open sockets, perform DNS lookup, or import cryptographic libraries.
 
 ## Compatibility Notes
 
 - v0.9 released scenarios `001` through `046` remain valid.
-- v1.0 draft scenarios `047` through `049` run on `v1.0/planning`.
+- v1.0 release-prep scenarios `047` through `049` run on `v1.0/planning`.
 - The package and CLI version now report `darwin-sim 1.0.0` on this branch.
 - TrafficHub routing and canonical identity behavior are unchanged.
 - Existing plaintext mailbox delivery semantics are unchanged.
@@ -85,7 +85,7 @@ sockets, perform DNS lookup, or import cryptographic libraries.
 
 ## Explicit Non-Goals
 
-v1.0 draft symbolic encryption work does not add:
+v1.0 release-prep symbolic encryption work does not add:
 
 - real cryptography;
 - key generation;

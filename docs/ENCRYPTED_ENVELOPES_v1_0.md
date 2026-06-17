@@ -1,7 +1,7 @@
 # DARWIN Encrypted Envelopes v1.0
 
-Status: v1.0 planning on `v1.0/planning`; current package and CLI version
-on this branch report `darwin-sim 1.0.0`.
+Status: release-prep ready on `v1.0/planning`; current package and CLI
+version on this branch report `darwin-sim 1.0.0`.
 
 DARWIN v1.0 Sprint 2 adds simulator-local encrypted-envelope metadata. These
 records describe whether a message is plaintext or symbolically encrypted, what
@@ -120,7 +120,7 @@ results, lane definitions, mailbox records, adapter endpoints, or scenarios.
 
 ## Why No Encryption Happens
 
-DARWIN remains simulator-first. The v1.0 planning line models the shape of
+DARWIN remains simulator-first. The v1.0 release-prep line models the shape of
 encrypted mailbox metadata before any production security implementation is
 scoped.
 
@@ -131,13 +131,12 @@ and keeps envelope records as deterministic simulator data.
 
 ## Future Policy Relationship
 
-Future v1.0 sprints may use envelope metadata with mailbox encryption policy
-helpers. Those helpers may decide whether a lane requires symbolic encrypted
-metadata and how missing, stale, disabled, or unsupported setup should be
-reported.
+Subsequent v1.0 sprints use envelope metadata with mailbox encryption policy
+helpers. Those helpers decide whether a lane requires symbolic encrypted
+metadata and how missing, stale, disabled, or unsupported setup is reported.
 
-Scenario DSL actions and assertions should wait until helper-level models and
-policy outcomes are stable. No new scenario YAMLs are added by Sprint 2.
+Scenario DSL actions and assertions were added after helper-level models and
+policy outcomes stabilized. No new scenario YAMLs are added by Sprint 2.
 
 Sprint 3 implements the helper-level policy decision layer. See
 `docs/ENCRYPTION_POLICY_v1_0.md`.
