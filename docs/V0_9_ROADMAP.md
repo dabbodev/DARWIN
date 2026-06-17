@@ -1,7 +1,9 @@
 # DARWIN v0.9 Roadmap: Mailbox / Chat Adapter Foundations
 
 DARWIN v0.9 planning starts from the released v0.8.0 simulator on `main`.
-The planning branch is `v0.9/planning`.
+The planning branch is `v0.9/planning`. It is now unreleased release-prep work
+for `darwin-sim 0.9.0`; v0.9.0 has not been merged, tagged, published as a
+GitHub release, or published as a package.
 
 Recommended theme: DARWIN Mailbox / Chat Adapter Foundations.
 
@@ -57,7 +59,7 @@ Out of scope:
   cryptography.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
-- Version bump beyond `0.8.0` until release prep.
+- Version bump beyond `0.9.0`.
 
 ## Sprint 1: Lane Signature and Lane Intent Discovery Models
 
@@ -281,15 +283,14 @@ Acceptance targets:
   networking.
 - Release-facing docs state that v0.9 remains simulator-only.
 
-Still deferred from release prep:
+Still deferred after release prep:
 
-- Release notes and checklist updates for an actual v0.9 release.
-- Version bump, tag, merge, GitHub release, or package publication.
+- Merge, tag, GitHub release, and package publication.
 
 ## Sprint 8: Hardening and Draft Release Notes
 
 Status: implemented on the v0.9 planning branch. This is a hardening sprint,
-not a feature sprint. The package and CLI version remain `darwin-sim 0.8.0`.
+not a feature sprint.
 
 Goal: polish the mailbox/chat adapter foundations without changing runtime
 semantics.
@@ -312,6 +313,20 @@ Candidate work:
   behavior, no production identity proof, no external services, no durable
   queues, no TrafficHub routing changes, no canonical identity rewrite, and no
   package publication.
+
+## Release Prep
+
+Status: completed release-prep work on `v0.9/planning` for
+`darwin-sim 0.9.0`.
+
+Release prep finalizes release-facing docs, keeps the checked-in scenario set
+at `001` through `046`, and validates Ruff, pytest, the scenario runner,
+scenario index output, and CLI version reporting. This release-prep step does
+not add features, scenarios, scenario actions, scenario assertions, runtime
+behavior, networking, production chat behavior, encryption, durable queueing,
+TrafficHub routing changes, or canonical identity changes.
+
+Merge, tag, GitHub release creation, and package publication remain deferred.
 
 ## Future Encryption Planning
 

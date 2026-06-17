@@ -507,10 +507,11 @@ include retained outcome history.
 
 ## v0.9 Mailbox Message Delivery Scenarios
 
-The v0.9 planning branch adds simulator-local scenario actions and assertions
-for toy in-memory mailbox message delivery. These actions call the existing
-v0.9 helper modules for lane definitions, mailbox registration, adapter
-endpoint records, and message delivery results.
+The v0.9 planning branch is unreleased release-prep work for
+`darwin-sim 0.9.0`. It adds simulator-local scenario actions and assertions for
+toy in-memory mailbox message delivery. These actions call the existing v0.9
+helper modules for lane definitions, mailbox registration, adapter endpoint
+records, and message delivery results.
 
 This DSL surface remains simulator-only. It does not add real networking,
 sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar integration,

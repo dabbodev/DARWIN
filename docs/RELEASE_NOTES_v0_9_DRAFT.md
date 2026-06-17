@@ -1,10 +1,12 @@
 # DARWIN v0.9 Draft Release Notes
 
-Status: unreleased draft work on `v0.9/planning`.
+Status: unreleased release-prep work on `v0.9/planning`.
 
-The package and CLI version remain `darwin-sim 0.8.0`. These notes describe
-planning-branch work only. v0.9 has not been merged, tagged, released, or
-published.
+Current branch package and CLI version: `darwin-sim 0.9.0`.
+
+These notes are release-ready draft notes for the planning branch only.
+v0.9.0 has not been merged, tagged, published as a GitHub release, or
+published as a package.
 
 ## Added
 
@@ -32,7 +34,7 @@ published.
   retained delivery result contents, and in-memory inbox contents:
   `mailbox_registered`, `mailbox_supports_lane`,
   `message_delivery_result_contains`, and `mailbox_inbox_contains`.
-- v0.9 draft scenarios `044` through `046`:
+- v0.9 scenarios `044` through `046`:
   `044_mailbox_basic_message_delivery`,
   `045_mailbox_delivery_failures`, and
   `046_mailbox_delivery_fallback_policy`.
@@ -43,6 +45,9 @@ published.
 - Tests and documentation hardening for scenario validation, read-only
   assertions, snapshot/export visibility, scenario index continuity, and
   simulator-only boundaries.
+- Scenario index and snapshot regression hardening to keep scenarios `001`
+  through `046` discoverable, contiguous, and reflected in detailed
+  RegistryHub state snapshots.
 
 ## Scenario Coverage
 
@@ -59,7 +64,8 @@ The checked-in scenario set is currently `001` through `046`.
 
 ## Compatibility
 
-- The package and CLI version remain `darwin-sim 0.8.0`.
+- The package and CLI version now report `darwin-sim 0.9.0` on
+  `v0.9/planning`.
 - Compact `world.snapshot()` output remains an ID-only overview.
 - Detailed snapshots and JSON result exports expose compact v0.9 RegistryHub
   state summaries.

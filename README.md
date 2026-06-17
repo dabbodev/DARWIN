@@ -14,6 +14,10 @@ publication was performed. The v0.8 release extends simulator-only retained
 authority outcome history while keeping canonical identity, TrafficHub routing,
 and v0.7 registry history, audit, and trace explainability behavior unchanged.
 
+The `v0.9/planning` branch is unreleased release-prep work for
+`darwin-sim 0.9.0`. It has not been merged, tagged, published as a GitHub
+release, or published as a package.
+
 The v0.1 simulator answers questions like:
 
 - Can a device register under a scoped Registry Hub?
@@ -180,7 +184,14 @@ On the v0.9 planning branch, scenarios `044` through `046` add
 simulator-local mailbox message delivery coverage for successful in-memory
 delivery, deterministic failure behavior, and lane fallback policy outcomes.
 The checked-in scenario set is currently `001` through `046`, and the current
-branch version remains `darwin-sim 0.8.0`.
+branch version is `darwin-sim 0.9.0`.
+
+v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
+It does not add production chat behavior, production encryption or E2EE, real
+networking, sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar
+integration, public CA behavior, production identity proof, external services,
+durable queues, retry workers, TrafficHub routing changes, or canonical
+identity rewrites.
 
 ## What v0.1 Supports
 

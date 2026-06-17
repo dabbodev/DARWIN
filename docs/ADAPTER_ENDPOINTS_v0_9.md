@@ -1,5 +1,8 @@
 # DARWIN Adapter Endpoint Records v0.9
 
+Status: unreleased v0.9 release-prep work on `v0.9/planning`; current branch
+version is `darwin-sim 0.9.0`.
+
 DARWIN v0.9 Sprint 5 adds simulator-local adapter endpoint and hub topology
 advertisement records. These records describe adapter-shaped availability that
 future mailbox delivery planning can reference, but they remain inert

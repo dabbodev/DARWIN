@@ -1,5 +1,8 @@
 # DARWIN In-Memory Message Delivery v0.9
 
+Status: unreleased v0.9 release-prep work on `v0.9/planning`; current branch
+version is `darwin-sim 0.9.0`.
+
 DARWIN v0.9 Sprint 6 adds toy, simulator-local message envelopes and delivery
 results for `basic_messaging:v1`. Sprint 7 exposes that helper path through
 scenario DSL actions and assertions. The delivery helper proves that a DARWIN
@@ -144,7 +147,7 @@ inbox. Other adapter kinds remain descriptive and do not open transports.
 
 ## Limitations
 
-Sprint 6 does not add:
+v0.9 message delivery does not add:
 
 - real networking;
 - sockets;
@@ -160,6 +163,7 @@ Sprint 6 does not add:
 - durable queues;
 - TrafficHub routing changes;
 - canonical identity rewrites;
+- package publication.
 
 Future work may build demo-app views over the local inbox and retained result
 records. Those future layers should keep the same simulator-only boundary until

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+Release-prep target: [0.9.0]. This work is release-prep ready on
+`v0.9/planning`, but v0.9.0 has not been merged, tagged, published as a
+GitHub release, or published as a package.
+
 Added:
 
 - v0.9 Sprint 1 simulator-local lane signature, lane intent advertisement,
@@ -69,11 +73,17 @@ Added:
 
 Compatibility and limits:
 
-- The package and CLI version remain `darwin-sim 0.8.0`.
+- The package and CLI version now report `darwin-sim 0.9.0` on the
+  `v0.9/planning` release-prep branch.
+- The checked-in scenario set is expected to run contiguously from `001`
+  through `046`, with scenarios `044` through `046` covering v0.9 mailbox
+  delivery.
 - No real networking, sockets, DNS lookup, external services, TrafficHub
   routing changes, canonical identity changes, alias behavior changes,
   production chat behavior, production encryption, background retries, durable
   queues, or production message delivery are added.
+- Merge, tag, GitHub release creation, and package publication have not been
+  performed.
 
 ## [0.8.0] - 2026-06-14
 
