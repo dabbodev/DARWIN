@@ -633,8 +633,10 @@ Supported v1.0 symbolic encryption actions:
     `algorithm_ref`, `ciphertext_ref`, `plaintext_ref`, `metadata`
   - The action builds `EncryptedEnvelopeMetadata` only when envelope fields
     are supplied, calls `evaluate_registered_mailbox_encryption_policy(...)`,
-    appends the resulting `EncryptionPolicyDecision` to scenario action
-    results, and logs a deterministic event. It never calls message delivery.
+    retains the resulting `EncryptionPolicyDecision` in
+    `RegistryHub.encryption_policy_decision_history`, appends the decision to
+    scenario action results, and logs a deterministic event. It never calls
+    message delivery.
 
 Supported v1.0 symbolic encryption assertions:
 
@@ -660,11 +662,12 @@ Supported v1.0 symbolic encryption assertions:
     `key_bundle_id`
   - Optional count checks: `expected_count`, `min_count`
 
-`encryption_policy_decision_contains` scans the scenario action results for
-policy decisions produced by `evaluate_mailbox_encryption_policy`. If neither
-`expected_count` nor `min_count` is supplied, it passes when at least one
-matching decision exists. Count fields must be non-negative integers. Boolean
-filters must be YAML booleans.
+`encryption_policy_decision_contains` first scans retained
+`RegistryHub.encryption_policy_decision_history` records for decisions produced
+by `evaluate_mailbox_encryption_policy`, then falls back to scenario action
+results for compatibility. If neither `expected_count` nor `min_count` is
+supplied, it passes when at least one matching decision exists. Count fields
+must be non-negative integers. Boolean filters must be YAML booleans.
 
 Checked-in v1.0 symbolic encryption scenarios:
 

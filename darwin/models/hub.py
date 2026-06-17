@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from darwin.models.device import Device
     from darwin.models.encryption import (
         EncryptionIdentity,
+        EncryptionPolicyDecision,
         KeyBundleReference,
         MailboxEncryptionBinding,
         MailboxEncryptionPolicy,
@@ -116,6 +117,9 @@ class RegistryHub:
     )
     mailbox_encryption_policies: dict[str, MailboxEncryptionPolicy] = field(
         default_factory=dict
+    )
+    encryption_policy_decision_history: list[EncryptionPolicyDecision] = field(
+        default_factory=list
     )
     adapter_endpoints: dict[str, AdapterEndpoint] = field(default_factory=dict)
     hub_topology_advertisements: dict[str, HubTopologyAdvertisement] = field(

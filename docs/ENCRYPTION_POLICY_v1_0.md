@@ -197,9 +197,16 @@ See `docs/ENCRYPTION_REGISTRY_v1_0.md`.
 
 Sprint 5 wires registered policy evaluation into scenario YAML through the
 symbolic-only `evaluate_mailbox_encryption_policy` action and
-`encryption_policy_decision_contains` assertion. Decisions are read from
-scenario action results, not retained as delivery outcomes. See
+`encryption_policy_decision_contains` assertion. See
 `docs/SCENARIO_DSL_v0_2.md`.
+
+Sprint 6 retains compact symbolic decisions from registered policy evaluation
+on `RegistryHub.encryption_policy_decision_history` and exposes
+`query_encryption_policy_decisions(...)`. This retention belongs to the
+registered RegistryHub helper only. The pure
+`evaluate_mailbox_encryption_policy(...)` function remains non-mutating and
+does not store audit history. See
+`docs/ENCRYPTION_POLICY_DECISIONS_v1_0.md`.
 
 ## Explicit Non-Goals
 
@@ -217,7 +224,6 @@ Sprint 3 does not add:
 - production identity proof;
 - message delivery semantic changes;
 - scenario DSL actions or assertions;
-- new scenario YAMLs;
 - networking;
 - sockets;
 - HTTP or WebSocket behavior;

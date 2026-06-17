@@ -230,6 +230,10 @@ class World:
                             hub.mailbox_encryption_policies.items()
                         )
                     },
+                    "encryption_policy_decision_history": [
+                        decision.to_summary()
+                        for decision in hub.encryption_policy_decision_history
+                    ],
                     "adapter_endpoints": {
                         endpoint_id: endpoint.to_summary()
                         for endpoint_id, endpoint in sorted(

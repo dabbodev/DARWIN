@@ -11,6 +11,7 @@ from darwin.registry.authority_audit import (
     build_authority_audit_trace,
     summarize_authority_path,
 )
+from darwin.registry.encryption_registry import query_encryption_policy_decisions
 from darwin.registry.history_queries import (
     query_alias_conflicts,
     query_alias_history,
@@ -1234,6 +1235,7 @@ def _encryption_policy_decision_contains(
     assertion: dict[str, Any],
 ) -> AssertionResult:
     hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
     filters = {
         "registry_hub": hub_id,
         "policy_id": _optional_filter_str(assertion, "policy_id"),
@@ -1254,16 +1256,30 @@ def _encryption_policy_decision_contains(
         ),
         "key_bundle_id": _optional_filter_str(assertion, "key_bundle_id"),
     }
-    records = [
-        decision.to_summary()
-        for decision in world.action_results
-        if isinstance(decision, EncryptionPolicyDecision)
-    ]
-    records = [
-        record
-        for record in records
-        if _matches_encryption_policy_decision_filters(record, filters)
-    ]
+    query_filters = {
+        key: value
+        for key, value in filters.items()
+        if key != "registry_hub"
+    }
+    records = []
+    source = "retained_history"
+    if hub is not None:
+        records = [
+            decision.to_summary()
+            for decision in query_encryption_policy_decisions(hub, **query_filters)
+        ]
+    if not records:
+        source = "action_results"
+        records = [
+            decision.to_summary()
+            for decision in world.action_results
+            if isinstance(decision, EncryptionPolicyDecision)
+        ]
+        records = [
+            record
+            for record in records
+            if _matches_encryption_policy_decision_filters(record, filters)
+        ]
     return _count_result(
         assertion_type,
         assertion,
@@ -1273,6 +1289,7 @@ def _encryption_policy_decision_contains(
         actual_context={
             "registry_hub": hub_id,
             "registry_hub_found": hub_id in world.registry_hubs,
+            "source": source,
         },
     )
 

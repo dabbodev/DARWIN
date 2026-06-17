@@ -197,26 +197,36 @@ Sprint 5 documentation: `docs/SCENARIO_DSL_v0_2.md`.
 
 ## Sprint 6: Audit and Snapshot Visibility
 
+Status: implemented on the v1.0 planning branch.
+
 Goal: make encrypted mailbox model state inspectable without implying real
 secret handling.
 
 Candidate work:
 
-- Add compact visibility for encryption identity records.
-- Add compact visibility for envelope metadata and policy decisions.
+- Add compact visibility for encryption identity records. Implemented for
+  RegistryHub-local encryption registry records in Sprint 4.
+- Add compact visibility for policy decisions. Implemented as
+  `RegistryHub.encryption_policy_decision_history`.
+- Add read-only retained decision queries. Implemented as
+  `query_encryption_policy_decisions(...)`.
 - Do not expose fake secrets as real secrets.
 - Keep output JSON-safe and deterministic.
 
 Acceptance targets:
 
-- Detailed snapshots expose encryption identity, key bundle, envelope metadata,
-  and policy-decision summaries.
+- Detailed snapshots expose encryption identity, key bundle, mailbox
+  encryption binding, mailbox encryption policy, and retained policy-decision
+  summaries.
 - Compact `world.snapshot()` remains stable unless explicitly scoped.
 - Output uses symbolic labels and references rather than secret-like values.
 
 Sprint 4 already adds detailed snapshot visibility for RegistryHub-local
-encryption registries. Future audit work may add retained policy-decision
-visibility after scenario DSL behavior is scoped.
+encryption registries. Sprint 6 adds retained policy-decision visibility after
+scenario DSL behavior is scoped.
+
+Sprint 6 documentation:
+`docs/ENCRYPTION_POLICY_DECISIONS_v1_0.md`.
 
 ## Sprint 7: Docs, Hardening, and Release Prep
 

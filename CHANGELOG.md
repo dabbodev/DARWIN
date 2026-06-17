@@ -46,6 +46,12 @@ Added:
 - v1.0 scenarios `047` through `049` for symbolic encryption registry setup,
   successful required policy evaluation, and deterministic policy failures,
   without changing v0.9 plaintext delivery behavior.
+- v1.0 Sprint 6 RegistryHub-local retained symbolic encryption policy decision
+  history, read-only decision-history queries, and detailed snapshot visibility.
+- v1.0 encryption policy decision history documentation that keeps real
+  cryptography, key generation, encryption/decryption, production E2EE,
+  delivery enforcement, networking, external services, and private key storage
+  explicitly deferred.
 
 ## [0.9.0] - 2026-06-17
 

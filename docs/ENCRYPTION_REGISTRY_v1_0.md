@@ -27,8 +27,12 @@ changing message delivery behavior.
   `MailboxEncryptionBinding`.
 - `mailbox_encryption_policies`: maps `policy_id` to
   `MailboxEncryptionPolicy`.
+- `encryption_policy_decision_history`: append-ordered symbolic
+  `EncryptionPolicyDecision` records retained by registered policy
+  evaluation.
 
-Each dictionary defaults to empty, preserving existing hub construction.
+Each dictionary and history list defaults to empty, preserving existing hub
+construction.
 
 ## Stored Records
 
@@ -66,6 +70,7 @@ through `darwin.registry`:
 - `get_mailbox_encryption_policy_for_mailbox(...)`
 - `list_mailbox_encryption_policies(...)`
 - `evaluate_registered_mailbox_encryption_policy(...)`
+- `query_encryption_policy_decisions(...)`
 
 Registration replaces records by deterministic registry key, matching existing
 RegistryHub helper conventions.
@@ -106,7 +111,9 @@ not call or alter `deliver_message_to_mailbox(...)`.
 ## Relationship to Envelopes and Policy Decisions
 
 `evaluate_registered_mailbox_encryption_policy(...)` is a helper-level bridge
-from RegistryHub storage to the existing pure policy evaluator.
+from RegistryHub storage to the existing pure policy evaluator. The lower-level
+`evaluate_mailbox_encryption_policy(...)` remains pure and does not retain
+history.
 
 The helper:
 
@@ -114,24 +121,50 @@ The helper:
 2. Finds the mailbox encryption binding for that mailbox.
 3. Resolves the binding's encryption identity and key bundle from the hub.
 4. Calls `evaluate_mailbox_encryption_policy(...)`.
-5. Returns an `EncryptionPolicyDecision`.
+5. Appends the resulting `EncryptionPolicyDecision` to
+   `registry_hub.encryption_policy_decision_history` by default.
+6. Returns the retained `EncryptionPolicyDecision`.
 
 If no policy is registered for the mailbox, the helper returns a deterministic
 `plaintext_allowed` decision with `policy_id` set to
 `no_registered_policy`.
 
-The helper does not mutate `RegistryHub`, `TrafficHub`, mailboxes, inboxes,
-delivery results, aliases, lane registries, adapter endpoints, messages, or
-envelope metadata.
+Callers may pass `retain=False` to compute through registered records without
+appending to decision history. Either way, the helper does not mutate
+`TrafficHub`, mailboxes, inboxes, delivery results, aliases, lane registries,
+adapter endpoints, messages, envelope metadata, or delivery behavior.
+
+## Decision History Queries
+
+`query_encryption_policy_decisions(...)` reads
+`registry_hub.encryption_policy_decision_history` without mutation. Filters are
+additive and preserve append order:
+
+- `policy_id`
+- `mailbox_id`
+- `lane_signature`
+- `message_id`
+- `status`
+- `reason`
+- `encryption_required`
+- `envelope_accepted`
+- `profile`
+- `encryption_identity_id`
+- `key_bundle_id`
+
+The helper returns retained `EncryptionPolicyDecision` objects. Their
+`to_summary()` values are deterministic and JSON-safe.
 
 ## Snapshot Visibility
 
 Detailed simulator snapshots include compact summaries of the four encryption
-registry dictionaries. Compact `world.snapshot()` remains unchanged.
+registry dictionaries and the append-ordered
+`encryption_policy_decision_history` list. Compact `world.snapshot()` remains
+unchanged.
 
-Scenario policy decisions from Sprint 5 are currently available through
-scenario action results and `encryption_policy_decision_contains`; they are not
-persisted in `RegistryHub`.
+Scenario policy decisions remain visible through scenario action results.
+`encryption_policy_decision_contains` now prefers retained RegistryHub history
+and falls back to action results for compatibility.
 
 ## Explicit Non-Goals
 
@@ -162,4 +195,5 @@ Sprint 4 does not add:
 - TrafficHub routing changes;
 - canonical identity rewrites;
 - delivery enforcement;
-- production audit storage for policy decisions.
+- production audit storage for policy decisions beyond compact simulator-local
+  symbolic history.

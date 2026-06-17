@@ -218,6 +218,7 @@ def test_v1_0_successful_policy_action_path_does_not_deliver_or_use_network(
     assert decisions[-1].status.status == "accepted"
     assert decisions[-1].metadata["registry_hub"] == "registry_chat_001"
     assert decisions[-1].metadata["delivery_behavior_changed"] is False
+    assert hub.encryption_policy_decision_history[-1].status.status == "accepted"
     assert hub.message_delivery_results == []
     assert hub.message_inboxes == {}
 
@@ -289,6 +290,7 @@ def test_v1_0_policy_decision_assertion_passes_and_fails_by_count():
     )
 
     assert passing.passed
+    assert passing.actual["source"] == "retained_history"
     assert passing.actual["records"][0]["metadata"]["registry_hub"] == (
         "registry_chat_001"
     )

@@ -1,4 +1,5 @@
 import inspect
+import json
 from copy import deepcopy
 
 import pytest
@@ -12,6 +13,7 @@ from darwin.models import (
     MailboxEncryptionBinding,
     MailboxEncryptionPolicy,
     RegistryHub,
+    evaluate_mailbox_encryption_policy,
     make_mailbox_encryption_policy,
     make_symbolic_encrypted_envelope_metadata,
     make_symbolic_encryption_identity,
@@ -29,6 +31,7 @@ from darwin.registry import (
     list_mailbox_encryption_bindings,
     list_mailbox_encryption_policies,
     make_basic_messaging_mailbox,
+    query_encryption_policy_decisions,
     register_encryption_identity,
     register_key_bundle_reference,
     register_mailbox,
@@ -45,6 +48,7 @@ def test_registry_hub_encryption_registries_default_empty():
     assert hub.key_bundle_references == {}
     assert hub.mailbox_encryption_bindings == {}
     assert hub.mailbox_encryption_policies == {}
+    assert hub.encryption_policy_decision_history == []
 
 
 def test_register_get_and_list_encryption_identity():
@@ -282,6 +286,61 @@ def test_registered_policy_evaluation_accepts_ready_symbolic_envelope():
     assert decision.envelope_accepted is True
     assert decision.encryption_identity_id == "enc_mailbox_neo"
     assert decision.key_bundle_id == "kb_mailbox_neo_001"
+    assert hub.encryption_policy_decision_history == [decision]
+    assert decision.metadata["retained_in_registry_hub"] is True
+
+
+def test_registered_policy_evaluation_can_skip_retention():
+    hub = _prepared_hub_with_binding_and_policy()
+
+    decision = evaluate_registered_mailbox_encryption_policy(
+        hub,
+        mailbox_id="mailbox_neo",
+        lane_signature="basic_messaging:v1",
+        envelope_metadata=_ready_envelope(),
+        retain=False,
+    )
+
+    assert decision.status.status == "accepted"
+    assert decision.metadata["retained_in_registry_hub"] is False
+    assert hub.encryption_policy_decision_history == []
+
+
+def test_registered_policy_evaluation_preserves_decision_append_order():
+    hub = _prepared_hub_with_binding_and_policy()
+
+    first = evaluate_registered_mailbox_encryption_policy(
+        hub,
+        mailbox_id="mailbox_neo",
+        lane_signature="basic_messaging:v1",
+        message_id="msg_001",
+    )
+    second = evaluate_registered_mailbox_encryption_policy(
+        hub,
+        mailbox_id="mailbox_neo",
+        lane_signature="basic_messaging:v1",
+        envelope_metadata=_ready_envelope("msg_002"),
+    )
+
+    assert hub.encryption_policy_decision_history == [first, second]
+    assert [
+        decision.message_id for decision in hub.encryption_policy_decision_history
+    ] == ["msg_001", "msg_002"]
+
+
+def test_pure_policy_evaluation_does_not_mutate_decision_history():
+    hub = _prepared_hub_with_binding_and_policy()
+    before_history = list(hub.encryption_policy_decision_history)
+
+    evaluate_mailbox_encryption_policy(
+        _policy(),
+        lane_signature="basic_messaging:v1",
+        envelope_metadata=_ready_envelope(),
+        encryption_identity=_identity(),
+        key_bundle=_key_bundle(),
+    )
+
+    assert hub.encryption_policy_decision_history == before_history
 
 
 def test_registered_policy_evaluation_rejects_missing_envelope_for_required_lane():
@@ -298,6 +357,59 @@ def test_registered_policy_evaluation_rejects_missing_envelope_for_required_lane
     assert decision.reason.reason == "missing_envelope"
     assert decision.encryption_required is True
     assert decision.envelope_accepted is False
+
+
+def test_query_encryption_policy_decisions_filters_retained_history():
+    hub = _prepared_hub_with_binding_and_policy()
+    missing = evaluate_registered_mailbox_encryption_policy(
+        hub,
+        mailbox_id="mailbox_neo",
+        lane_signature="basic_messaging:v1",
+        message_id="msg_missing",
+    )
+    accepted = evaluate_registered_mailbox_encryption_policy(
+        hub,
+        mailbox_id="mailbox_neo",
+        lane_signature="basic_messaging:v1",
+        envelope_metadata=_ready_envelope("msg_accepted"),
+    )
+    before_history = list(hub.encryption_policy_decision_history)
+
+    assert query_encryption_policy_decisions(hub, policy_id="policy_mailbox_neo") == [
+        missing,
+        accepted,
+    ]
+    assert query_encryption_policy_decisions(hub, mailbox_id="mailbox_neo") == [
+        missing,
+        accepted,
+    ]
+    assert query_encryption_policy_decisions(
+        hub,
+        lane_signature="basic_messaging:v1",
+    ) == [missing, accepted]
+    assert query_encryption_policy_decisions(hub, message_id="msg_missing") == [
+        missing
+    ]
+    assert query_encryption_policy_decisions(
+        hub,
+        status="missing_envelope",
+        reason="missing_envelope",
+    ) == [missing]
+    assert query_encryption_policy_decisions(
+        hub,
+        encryption_required=True,
+        envelope_accepted=True,
+        profile=DEFAULT_ENCRYPTION_PROFILE,
+        encryption_identity_id="enc_mailbox_neo",
+        key_bundle_id="kb_mailbox_neo_001",
+    ) == [accepted]
+    assert query_encryption_policy_decisions(
+        hub,
+        mailbox_id="mailbox_neo",
+        status="accepted",
+        message_id="msg_missing",
+    ) == []
+    assert hub.encryption_policy_decision_history == before_history
 
 
 def test_registered_policy_evaluation_rejects_inactive_identity():
@@ -358,6 +470,7 @@ def test_registered_policy_no_policy_behavior_is_deterministic_plaintext_allowed
     assert decision.envelope_accepted is False
     assert decision.message_id == "msg_001"
     assert decision.metadata["delivery_behavior_changed"] is False
+    assert hub.encryption_policy_decision_history == [decision]
 
 
 def test_registered_policy_evaluation_does_not_mutate_delivery_or_existing_registries():
@@ -373,9 +486,10 @@ def test_registered_policy_evaluation_does_not_mutate_delivery_or_existing_regis
         "message_delivery_results": deepcopy(hub.message_delivery_results),
         "aliases": deepcopy(hub.aliases),
         "devices": deepcopy(hub.devices),
+        "decision_history_length": len(hub.encryption_policy_decision_history),
     }
 
-    evaluate_registered_mailbox_encryption_policy(
+    decision = evaluate_registered_mailbox_encryption_policy(
         hub,
         mailbox_id="mailbox_neo",
         lane_signature="basic_messaging:v1",
@@ -392,11 +506,21 @@ def test_registered_policy_evaluation_does_not_mutate_delivery_or_existing_regis
     assert hub.message_delivery_results == before["message_delivery_results"]
     assert hub.aliases == before["aliases"]
     assert hub.devices == before["devices"]
+    assert hub.encryption_policy_decision_history == [decision]
+    assert len(hub.encryption_policy_decision_history) == (
+        before["decision_history_length"] + 1
+    )
 
 
 def test_detailed_snapshot_includes_encryption_registry_summaries():
     world = World()
     hub = _prepared_hub_with_binding_and_policy()
+    decision = evaluate_registered_mailbox_encryption_policy(
+        hub,
+        mailbox_id="mailbox_neo",
+        lane_signature="basic_messaging:v1",
+        envelope_metadata=_ready_envelope(),
+    )
     world.add_registry_hub(hub)
 
     snapshot = world.detailed_snapshot()
@@ -414,7 +538,35 @@ def test_detailed_snapshot_includes_encryption_registry_summaries():
     assert hub_snapshot["mailbox_encryption_policies"] == {
         "policy_mailbox_neo": _policy().to_summary()
     }
+    assert hub_snapshot["encryption_policy_decision_history"] == [
+        decision.to_summary()
+    ]
+    json.dumps(snapshot, sort_keys=True)
     assert "encryption_identities" not in world.snapshot()
+    assert "encryption_policy_decision_history" not in world.snapshot()
+
+
+def test_detailed_snapshot_decision_history_is_a_json_safe_copy():
+    world = World()
+    hub = _prepared_hub_with_binding_and_policy()
+    decision = evaluate_registered_mailbox_encryption_policy(
+        hub,
+        mailbox_id="mailbox_neo",
+        lane_signature="basic_messaging:v1",
+        envelope_metadata=_ready_envelope(),
+    )
+    world.add_registry_hub(hub)
+
+    snapshot = world.snapshot(detailed=True)
+    history = snapshot["registry_hubs"]["hub_chat_001"][
+        "encryption_policy_decision_history"
+    ]
+    history[0]["metadata"]["retained_in_registry_hub"] = "mutated_snapshot_copy"
+
+    assert hub.encryption_policy_decision_history == [decision]
+    assert hub.encryption_policy_decision_history[0].metadata[
+        "retained_in_registry_hub"
+    ] is True
 
 
 def test_encryption_registry_module_does_not_import_crypto_libraries():
@@ -475,10 +627,10 @@ def _policy() -> MailboxEncryptionPolicy:
     )
 
 
-def _ready_envelope():
+def _ready_envelope(message_id: str = "msg_001"):
     return make_symbolic_encrypted_envelope_metadata(
-        envelope_id="env_msg_001",
-        message_id="msg_001",
+        envelope_id=f"env_{message_id}",
+        message_id=message_id,
         encryption_identity_id="enc_mailbox_neo",
         key_bundle_id="kb_mailbox_neo_001",
     )
