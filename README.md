@@ -923,6 +923,10 @@ For v1.0 encrypted mailbox model planning, see:
 - `docs/ENCRYPTION_POLICY_DECISIONS_v1_0.md`
 - `docs/RELEASE_NOTES_v1_0_DRAFT.md`
 
+For v1.1 symbolic encrypted delivery policy integration planning, see:
+
+- `docs/V1_1_ROADMAP.md`
+
 ## What v0.1 Is Not
 
 DARWIN simulator v0.1 is not:
