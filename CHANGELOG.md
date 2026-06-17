@@ -52,6 +52,22 @@ Added:
   cryptography, key generation, encryption/decryption, production E2EE,
   delivery enforcement, networking, external services, and private key storage
   explicitly deferred.
+- v1.0 Sprint 7 hardening for symbolic encryption models, registry behavior,
+  scenario DSL validation, detailed snapshot visibility, scenario index
+  freshness checks, documentation consistency, and draft release-note material.
+- A checked-in scenario index regression that compares `docs/SCENARIO_INDEX.md`
+  with the deterministic scenario metadata renderer for scenarios `001`
+  through `049`.
+
+Compatibility and limits:
+
+- v1.0 remains unreleased draft work on `v1.0/planning`; the package and CLI
+  version remain `darwin-sim 0.9.0`.
+- No real cryptography, key generation, private key storage, encryption,
+  decryption, production E2EE, secure messenger behavior, crypto library
+  integration, delivery enforcement, networking, DNS lookup, external
+  services, TrafficHub routing changes, canonical identity rewrites, package
+  publication, tag, or release are added.
 
 ## [0.9.0] - 2026-06-17
 

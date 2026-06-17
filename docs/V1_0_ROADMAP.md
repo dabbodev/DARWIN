@@ -230,6 +230,10 @@ Sprint 6 documentation:
 
 ## Sprint 7: Docs, Hardening, and Release Prep
 
+Status: implemented on the v1.0 planning branch as release-candidate
+hardening; v1.0 remains unreleased and the version remains
+`darwin-sim 0.9.0`.
+
 Goal: polish the v1.0 planning line without expanding scope.
 
 Candidate work:
@@ -237,8 +241,8 @@ Candidate work:
 - Regression tests for new records, helpers, scenario actions, and assertions.
 - Docs polish for simulator-only encrypted mailbox modeling.
 - Scenario index checks and scenario coverage validation.
-- Release notes and checklist updates.
-- Version bump only during release prep.
+- Draft release notes in `docs/RELEASE_NOTES_v1_0_DRAFT.md`.
+- Version bump only during explicit future release prep.
 
 Acceptance targets:
 

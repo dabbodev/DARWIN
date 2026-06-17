@@ -100,6 +100,16 @@ def test_scenario_index_markdown():
     assert "| registry |" in markdown
 
 
+def test_checked_in_scenario_index_is_current():
+    metadata = discover_scenario_metadata(SCENARIOS_DIR)
+    expected = scenario_index_markdown(metadata)
+    actual = (PROJECT_ROOT / "docs" / "SCENARIO_INDEX.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert actual == expected
+
+
 def test_scenario_index_cli(capsys):
     exit_code = main(["scenario-index"])
 
