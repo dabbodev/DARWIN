@@ -18,6 +18,16 @@ Added:
 - v1.0 encrypted envelope documentation that keeps real ciphertext,
   encryption/decryption, crypto libraries, production E2EE, delivery policy,
   scenario DSL, networking, and external services explicitly deferred.
+- v1.0 Sprint 3 simulator-local mailbox encryption policy records, policy
+  decision records, lane-required predicates, and accepted-decision
+  predicates.
+- Pure mailbox encryption policy evaluation for required lanes, plaintext
+  fallback, missing envelope metadata, unsupported profiles, missing or
+  inactive identities, missing or unusable key bundles, and not-ready
+  envelopes without changing v0.9 delivery behavior.
+- v1.0 mailbox encryption policy documentation that keeps real cryptography,
+  key generation, encryption/decryption, production E2EE, scenario DSL,
+  networking, and external services explicitly deferred.
 
 ## [0.9.0] - 2026-06-17
 

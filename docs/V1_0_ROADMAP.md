@@ -108,25 +108,31 @@ Sprint 2 documentation: `docs/ENCRYPTED_ENVELOPES_v1_0.md`.
 
 ## Sprint 3: Mailbox Encryption Policy Helpers
 
+Status: implemented on the v1.0 planning branch.
+
 Goal: model delivery policy decisions for encrypted-required lanes.
 
 Candidate work:
 
-- Model whether a mailbox requires encrypted delivery for a lane.
-- Add policy outcomes for missing key bundle, stale key bundle, or unsupported
-  encryption profile.
-- Keep delivery helper behavior simulator-local.
-- Preserve v0.9 mailbox delivery semantics for plaintext toy paths unless an
-  encrypted-required policy explicitly changes a symbolic outcome.
+- Model whether a mailbox requires encrypted delivery for a lane. Implemented
+  as pure `MailboxEncryptionPolicy` records and lane-required predicates.
+- Add policy outcomes for missing envelope metadata, missing or inactive
+  identity, missing or unusable key bundle, unsupported profile, plaintext
+  fallback, and not-ready envelope metadata.
+- Keep delivery helper behavior simulator-local. Sprint 3 does not call or
+  alter `deliver_message_to_mailbox(...)`.
+- Preserve v0.9 mailbox delivery semantics for plaintext toy paths.
 
 Acceptance targets:
 
-- Policy helpers return deterministic success, reject, bounce, hold, or manual
-  resolution outcomes.
+- Policy helpers return deterministic accepted, plaintext-allowed, or rejected
+  symbolic outcomes.
 - Missing, stale, disabled, or unsupported encryption setup is visible in
-  retained delivery results.
+  `EncryptionPolicyDecision` summaries.
 - No networking, retry worker, durable queue, or production encryption behavior
   is introduced.
+
+Sprint 3 documentation: `docs/ENCRYPTION_POLICY_v1_0.md`.
 
 ## Sprint 4: Scenario DSL and Scenarios for Symbolic Encrypted Delivery
 

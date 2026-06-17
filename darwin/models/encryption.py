@@ -39,6 +39,32 @@ ENCRYPTION_ENVELOPE_STATUSES: tuple[str, ...] = (
     "disabled_identity",
 )
 
+ENCRYPTION_POLICY_DECISION_STATUSES: tuple[str, ...] = (
+    "accepted",
+    "plaintext_allowed",
+    "rejected",
+    "needs_encryption",
+    "missing_envelope",
+    "missing_identity",
+    "missing_key_bundle",
+    "unsupported_profile",
+    "identity_inactive",
+    "key_bundle_unusable",
+    "envelope_not_ready",
+)
+
+ENCRYPTION_POLICY_FAILURE_REASONS: tuple[str, ...] = (
+    "plaintext_fallback_allowed",
+    "needs_encryption",
+    "missing_envelope",
+    "missing_identity",
+    "missing_key_bundle",
+    "unsupported_profile",
+    "identity_inactive",
+    "key_bundle_unusable",
+    "envelope_not_ready",
+)
+
 
 @dataclass(frozen=True, slots=True)
 class EncryptionProfile:
@@ -88,6 +114,42 @@ class EncryptionEnvelopeStatus:
     def to_summary(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe status summary."""
         return {"status": self.status}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class EncryptionPolicyDecisionStatus:
+    """Controlled simulator-local mailbox encryption policy decision status."""
+
+    status: str
+
+    def __post_init__(self) -> None:
+        _validate_policy_decision_status(self.status)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe decision status summary."""
+        return {"status": self.status}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class EncryptionPolicyFailureReason:
+    """Controlled simulator-local mailbox encryption policy failure reason."""
+
+    reason: str
+
+    def __post_init__(self) -> None:
+        _validate_policy_failure_reason(self.reason)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe policy failure reason summary."""
+        return {"reason": self.reason}
 
     def to_dict(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe representation."""
@@ -366,6 +428,136 @@ class MailboxEncryptionBinding:
         return self.to_summary()
 
 
+@dataclass(frozen=True, slots=True)
+class MailboxEncryptionPolicy:
+    """Simulator-local policy for lane-specific symbolic encryption checks."""
+
+    policy_id: str
+    mailbox_id: str
+    required_for_lanes: tuple[str, ...] | list[str] = ("basic_messaging:v1",)
+    allowed_profiles: tuple[str, ...] | list[str] = (DEFAULT_ENCRYPTION_PROFILE,)
+    require_active_identity: bool = True
+    require_usable_key_bundle: bool = True
+    allow_plaintext_fallback: bool = False
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.policy_id, "policy_id")
+        _validate_required_string(self.mailbox_id, "mailbox_id")
+        object.__setattr__(
+            self,
+            "required_for_lanes",
+            _lane_signature_tuple(self.required_for_lanes),
+        )
+        object.__setattr__(
+            self,
+            "allowed_profiles",
+            _profile_label_tuple(self.allowed_profiles),
+        )
+        if not isinstance(self.require_active_identity, bool):
+            raise TypeError("require_active_identity must be a boolean")
+        if not isinstance(self.require_usable_key_bundle, bool):
+            raise TypeError("require_usable_key_bundle must be a boolean")
+        if not isinstance(self.allow_plaintext_fallback, bool):
+            raise TypeError("allow_plaintext_fallback must be a boolean")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe mailbox encryption policy summary."""
+        return {
+            "policy_id": self.policy_id,
+            "mailbox_id": self.mailbox_id,
+            "required_for_lanes": list(self.required_for_lanes),
+            "allowed_profiles": list(self.allowed_profiles),
+            "require_active_identity": self.require_active_identity,
+            "require_usable_key_bundle": self.require_usable_key_bundle,
+            "allow_plaintext_fallback": self.allow_plaintext_fallback,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class EncryptionPolicyDecision:
+    """Result of a pure symbolic mailbox encryption policy evaluation."""
+
+    policy_id: str
+    mailbox_id: str
+    lane_signature: str
+    message_id: str | None
+    status: EncryptionPolicyDecisionStatus | str
+    reason: EncryptionPolicyFailureReason | str | None
+    encryption_required: bool
+    envelope_accepted: bool
+    profile: EncryptionProfile | str | None = None
+    encryption_identity_id: str | None = None
+    key_bundle_id: str | None = None
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.policy_id, "policy_id")
+        _validate_required_string(self.mailbox_id, "mailbox_id")
+        object.__setattr__(
+            self,
+            "lane_signature",
+            _lane_signature_key(self.lane_signature),
+        )
+        _validate_optional_string(self.message_id, "message_id")
+
+        status = self.status
+        if isinstance(status, str):
+            status = EncryptionPolicyDecisionStatus(status)
+        if not isinstance(status, EncryptionPolicyDecisionStatus):
+            raise TypeError("status must be an EncryptionPolicyDecisionStatus or string")
+        object.__setattr__(self, "status", status)
+
+        reason = self.reason
+        if isinstance(reason, str):
+            reason = EncryptionPolicyFailureReason(reason)
+        if reason is not None and not isinstance(reason, EncryptionPolicyFailureReason):
+            raise TypeError(
+                "reason must be an EncryptionPolicyFailureReason, string, or None"
+            )
+        object.__setattr__(self, "reason", reason)
+
+        if not isinstance(self.encryption_required, bool):
+            raise TypeError("encryption_required must be a boolean")
+        if not isinstance(self.envelope_accepted, bool):
+            raise TypeError("envelope_accepted must be a boolean")
+        if self.profile is not None:
+            object.__setattr__(self, "profile", _profile_label(self.profile))
+        _validate_optional_string(
+            self.encryption_identity_id,
+            "encryption_identity_id",
+        )
+        _validate_optional_string(self.key_bundle_id, "key_bundle_id")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe policy decision summary."""
+        return {
+            "policy_id": self.policy_id,
+            "mailbox_id": self.mailbox_id,
+            "lane_signature": self.lane_signature,
+            "message_id": self.message_id,
+            "status": self.status.status,
+            "reason": None if self.reason is None else self.reason.reason,
+            "encryption_required": self.encryption_required,
+            "envelope_accepted": self.envelope_accepted,
+            "profile": self.profile,
+            "encryption_identity_id": self.encryption_identity_id,
+            "key_bundle_id": self.key_bundle_id,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
 def make_symbolic_encryption_identity(
     *,
     encryption_identity_id: str,
@@ -418,6 +610,29 @@ def bind_mailbox_encryption_identity(
         required_for_lanes=required_for_lanes,
         profile=profile,
         status="active",
+        metadata={"simulator_local": True},
+    )
+
+
+def make_mailbox_encryption_policy(
+    *,
+    policy_id: str,
+    mailbox_id: str,
+    required_for_lanes: tuple[str, ...] = ("basic_messaging:v1",),
+    allowed_profiles: tuple[str, ...] = (DEFAULT_ENCRYPTION_PROFILE,),
+    require_active_identity: bool = True,
+    require_usable_key_bundle: bool = True,
+    allow_plaintext_fallback: bool = False,
+) -> MailboxEncryptionPolicy:
+    """Return a pure simulator-local mailbox encryption policy record."""
+    return MailboxEncryptionPolicy(
+        policy_id=policy_id,
+        mailbox_id=mailbox_id,
+        required_for_lanes=required_for_lanes,
+        allowed_profiles=allowed_profiles,
+        require_active_identity=require_active_identity,
+        require_usable_key_bundle=require_usable_key_bundle,
+        allow_plaintext_fallback=allow_plaintext_fallback,
         metadata={"simulator_local": True},
     )
 
@@ -510,6 +725,180 @@ def is_envelope_ready_for_delivery(
     )
 
 
+def evaluate_mailbox_encryption_policy(
+    policy: MailboxEncryptionPolicy,
+    *,
+    lane_signature: str,
+    message_id: str | None = None,
+    envelope_metadata: (
+        EncryptedEnvelopeMetadata | SymbolicEncryptedMessageEnvelope | None
+    ) = None,
+    encryption_identity: EncryptionIdentity | None = None,
+    key_bundle: KeyBundleReference | None = None,
+) -> EncryptionPolicyDecision:
+    """Evaluate a pure symbolic mailbox encryption policy decision."""
+    if not isinstance(policy, MailboxEncryptionPolicy):
+        raise TypeError("policy must be a MailboxEncryptionPolicy")
+    lane_signature = _lane_signature_key(lane_signature)
+    _validate_optional_string(message_id, "message_id")
+
+    metadata = envelope_metadata
+    if isinstance(metadata, SymbolicEncryptedMessageEnvelope):
+        metadata = metadata.encryption_metadata
+    if metadata is not None and not isinstance(metadata, EncryptedEnvelopeMetadata):
+        raise TypeError(
+            "envelope_metadata must be encrypted metadata, a symbolic envelope, or None"
+        )
+    if metadata is not None:
+        if message_id is None:
+            message_id = metadata.message_id
+        elif message_id != metadata.message_id:
+            raise ValueError("message_id must match envelope metadata")
+
+    encryption_required = is_lane_encryption_required(policy, lane_signature)
+    if not encryption_required:
+        return _make_policy_decision(
+            policy,
+            lane_signature=lane_signature,
+            message_id=message_id,
+            status="plaintext_allowed",
+            reason=None,
+            encryption_required=False,
+            envelope_accepted=False,
+            envelope_metadata=metadata,
+            note="lane_not_required",
+        )
+
+    if metadata is None:
+        if policy.allow_plaintext_fallback:
+            return _make_policy_decision(
+                policy,
+                lane_signature=lane_signature,
+                message_id=message_id,
+                status="plaintext_allowed",
+                reason="plaintext_fallback_allowed",
+                encryption_required=True,
+                envelope_accepted=False,
+                note="plaintext_fallback_allowed",
+            )
+        return _make_policy_decision(
+            policy,
+            lane_signature=lane_signature,
+            message_id=message_id,
+            status="missing_envelope",
+            reason="missing_envelope",
+            encryption_required=True,
+            envelope_accepted=False,
+        )
+
+    if metadata.profile not in policy.allowed_profiles:
+        return _make_policy_decision(
+            policy,
+            lane_signature=lane_signature,
+            message_id=message_id,
+            status="unsupported_profile",
+            reason="unsupported_profile",
+            encryption_required=True,
+            envelope_accepted=False,
+            envelope_metadata=metadata,
+        )
+
+    if not is_envelope_symbolically_encrypted(metadata):
+        return _make_policy_decision(
+            policy,
+            lane_signature=lane_signature,
+            message_id=message_id,
+            status="needs_encryption",
+            reason="needs_encryption",
+            encryption_required=True,
+            envelope_accepted=False,
+            envelope_metadata=metadata,
+        )
+
+    if policy.require_active_identity:
+        if encryption_identity is None:
+            return _make_policy_decision(
+                policy,
+                lane_signature=lane_signature,
+                message_id=message_id,
+                status="missing_identity",
+                reason="missing_identity",
+                encryption_required=True,
+                envelope_accepted=False,
+                envelope_metadata=metadata,
+            )
+        if not isinstance(encryption_identity, EncryptionIdentity):
+            raise TypeError("encryption_identity must be an EncryptionIdentity or None")
+        if not is_encryption_identity_active(encryption_identity):
+            return _make_policy_decision(
+                policy,
+                lane_signature=lane_signature,
+                message_id=message_id,
+                status="identity_inactive",
+                reason="identity_inactive",
+                encryption_required=True,
+                envelope_accepted=False,
+                envelope_metadata=metadata,
+                encryption_identity=encryption_identity,
+            )
+
+    if policy.require_usable_key_bundle:
+        if key_bundle is None:
+            return _make_policy_decision(
+                policy,
+                lane_signature=lane_signature,
+                message_id=message_id,
+                status="missing_key_bundle",
+                reason="missing_key_bundle",
+                encryption_required=True,
+                envelope_accepted=False,
+                envelope_metadata=metadata,
+                encryption_identity=encryption_identity,
+            )
+        if not isinstance(key_bundle, KeyBundleReference):
+            raise TypeError("key_bundle must be a KeyBundleReference or None")
+        if not is_key_bundle_usable(key_bundle):
+            return _make_policy_decision(
+                policy,
+                lane_signature=lane_signature,
+                message_id=message_id,
+                status="key_bundle_unusable",
+                reason="key_bundle_unusable",
+                encryption_required=True,
+                envelope_accepted=False,
+                envelope_metadata=metadata,
+                encryption_identity=encryption_identity,
+                key_bundle=key_bundle,
+            )
+
+    if not is_envelope_ready_for_delivery(metadata):
+        return _make_policy_decision(
+            policy,
+            lane_signature=lane_signature,
+            message_id=message_id,
+            status="envelope_not_ready",
+            reason="envelope_not_ready",
+            encryption_required=True,
+            envelope_accepted=False,
+            envelope_metadata=metadata,
+            encryption_identity=encryption_identity,
+            key_bundle=key_bundle,
+        )
+
+    return _make_policy_decision(
+        policy,
+        lane_signature=lane_signature,
+        message_id=message_id,
+        status="accepted",
+        reason=None,
+        encryption_required=True,
+        envelope_accepted=True,
+        envelope_metadata=metadata,
+        encryption_identity=encryption_identity,
+        key_bundle=key_bundle,
+    )
+
+
 def is_encryption_identity_active(identity: EncryptionIdentity) -> bool:
     """Return whether a symbolic encryption identity is active."""
     if not isinstance(identity, EncryptionIdentity):
@@ -522,6 +911,95 @@ def is_key_bundle_usable(key_bundle: KeyBundleReference) -> bool:
     if not isinstance(key_bundle, KeyBundleReference):
         raise TypeError("key_bundle must be a KeyBundleReference")
     return key_bundle.status.status == "active"
+
+
+def is_lane_encryption_required(
+    policy: MailboxEncryptionPolicy,
+    lane_signature: str,
+) -> bool:
+    """Return whether a policy requires symbolic encryption for a lane."""
+    if not isinstance(policy, MailboxEncryptionPolicy):
+        raise TypeError("policy must be a MailboxEncryptionPolicy")
+    return _lane_signature_key(lane_signature) in policy.required_for_lanes
+
+
+def is_encryption_policy_decision_accepted(
+    decision: EncryptionPolicyDecision,
+) -> bool:
+    """Return whether a policy decision allows the message path to proceed."""
+    if not isinstance(decision, EncryptionPolicyDecision):
+        raise TypeError("decision must be an EncryptionPolicyDecision")
+    return decision.status.status in {"accepted", "plaintext_allowed"}
+
+
+def _make_policy_decision(
+    policy: MailboxEncryptionPolicy,
+    *,
+    lane_signature: str,
+    message_id: str | None,
+    status: str,
+    reason: str | None,
+    encryption_required: bool,
+    envelope_accepted: bool,
+    envelope_metadata: EncryptedEnvelopeMetadata | None = None,
+    encryption_identity: EncryptionIdentity | None = None,
+    key_bundle: KeyBundleReference | None = None,
+    note: str | None = None,
+) -> EncryptionPolicyDecision:
+    if encryption_identity is not None and not isinstance(
+        encryption_identity,
+        EncryptionIdentity,
+    ):
+        raise TypeError("encryption_identity must be an EncryptionIdentity or None")
+    if key_bundle is not None and not isinstance(key_bundle, KeyBundleReference):
+        raise TypeError("key_bundle must be a KeyBundleReference or None")
+    decision_metadata: dict[str, Any] = {
+        "simulator_local": True,
+        "message_mutated": False,
+        "registry_hub_mutated": False,
+        "delivery_behavior_changed": False,
+    }
+    if note is not None:
+        decision_metadata["note"] = note
+    return EncryptionPolicyDecision(
+        policy_id=policy.policy_id,
+        mailbox_id=policy.mailbox_id,
+        lane_signature=lane_signature,
+        message_id=message_id,
+        status=status,
+        reason=reason,
+        encryption_required=encryption_required,
+        envelope_accepted=envelope_accepted,
+        profile=None if envelope_metadata is None else envelope_metadata.profile,
+        encryption_identity_id=_decision_identity_id(
+            envelope_metadata,
+            encryption_identity,
+        ),
+        key_bundle_id=_decision_key_bundle_id(envelope_metadata, key_bundle),
+        metadata=decision_metadata,
+    )
+
+
+def _decision_identity_id(
+    envelope_metadata: EncryptedEnvelopeMetadata | None,
+    encryption_identity: EncryptionIdentity | None,
+) -> str | None:
+    if envelope_metadata is not None and envelope_metadata.encryption_identity_id:
+        return envelope_metadata.encryption_identity_id
+    if encryption_identity is not None:
+        return encryption_identity.encryption_identity_id
+    return None
+
+
+def _decision_key_bundle_id(
+    envelope_metadata: EncryptedEnvelopeMetadata | None,
+    key_bundle: KeyBundleReference | None,
+) -> str | None:
+    if envelope_metadata is not None and envelope_metadata.key_bundle_id:
+        return envelope_metadata.key_bundle_id
+    if key_bundle is not None:
+        return key_bundle.key_bundle_id
+    return None
 
 
 def _validate_encryption_state(value: str) -> None:
@@ -541,12 +1019,39 @@ def _validate_envelope_status(value: str) -> None:
         )
 
 
+def _validate_policy_decision_status(value: str) -> None:
+    _validate_required_string(value, "encryption policy decision status")
+    if value not in ENCRYPTION_POLICY_DECISION_STATUSES:
+        raise ValueError(
+            "encryption policy decision status must be one of "
+            f"{', '.join(ENCRYPTION_POLICY_DECISION_STATUSES)}"
+        )
+
+
+def _validate_policy_failure_reason(value: str) -> None:
+    _validate_required_string(value, "encryption policy failure reason")
+    if value not in ENCRYPTION_POLICY_FAILURE_REASONS:
+        raise ValueError(
+            "encryption policy failure reason must be one of "
+            f"{', '.join(ENCRYPTION_POLICY_FAILURE_REASONS)}"
+        )
+
+
 def _profile_label(profile: EncryptionProfile | str) -> str:
     if isinstance(profile, str):
         return EncryptionProfile(profile).profile
     if not isinstance(profile, EncryptionProfile):
         raise TypeError("profile must be an EncryptionProfile or string")
     return profile.profile
+
+
+def _profile_label_tuple(values: tuple[str, ...] | list[str]) -> tuple[str, ...]:
+    if not isinstance(values, tuple | list):
+        raise TypeError("allowed_profiles must be a list or tuple of profile labels")
+    profiles = tuple(_profile_label(value) for value in values)
+    if not profiles:
+        raise ValueError("allowed_profiles must contain at least one profile")
+    return profiles
 
 
 def _validate_subject_kind(value: str) -> None:
@@ -572,6 +1077,14 @@ def _lane_signature_tuple(values: tuple[str, ...] | list[str]) -> tuple[str, ...
         if not is_lane_signature(value):
             raise ValueError("required_for_lanes entries must use the form lane_id:version")
     return tuple(values)
+
+
+def _lane_signature_key(value: str) -> str:
+    if not isinstance(value, str):
+        raise TypeError("lane_signature must be a string")
+    if not is_lane_signature(value):
+        raise ValueError("lane_signature must use the form lane_id:version")
+    return value
 
 
 def _validate_required_string(value: str, field_name: str) -> None:

@@ -83,6 +83,9 @@ assertions, or new scenario YAMLs.
 Sprint 2 builds on these identity and key-bundle references with symbolic
 encrypted-envelope metadata. See `docs/ENCRYPTED_ENVELOPES_v1_0.md`.
 
+Sprint 3 uses these records in helper-level mailbox encryption policy
+decisions. See `docs/ENCRYPTION_POLICY_v1_0.md`.
+
 ## Helpers
 
 Sprint 1 adds pure deterministic helpers:
@@ -98,11 +101,12 @@ These helpers create or inspect dataclass records. They do not mutate
 
 ## Future Work
 
-Sprint 2 adds symbolic encrypted-envelope metadata. Future v1.0 sprints may
-add mailbox encryption policy helpers, scenario DSL coverage, and audit or
-snapshot visibility. Those layers should continue using symbolic profile labels
-and references until real cryptography is explicitly scoped outside this
-planning line.
+Sprint 2 adds symbolic encrypted-envelope metadata. Sprint 3 adds pure mailbox
+encryption policy helpers that inspect identity, key-bundle, and envelope
+records without mutating delivery state. Future v1.0 sprints may add scenario
+DSL coverage and audit or snapshot visibility. Those layers should continue
+using symbolic profile labels and references until real cryptography is
+explicitly scoped outside this planning line.
 
 ## Explicit Non-Goals
 
