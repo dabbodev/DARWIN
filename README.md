@@ -15,6 +15,16 @@ encryption metadata, policy, registry, scenario, and audit modeling while
 keeping plaintext mailbox delivery, canonical identity, TrafficHub routing,
 and v0.9 mailbox delivery behavior unchanged.
 
+The `v1.1/planning` branch contains unreleased draft work for symbolic
+encrypted delivery policy integration. The current branch package and CLI
+version are `darwin-sim 1.1.0`. Scenarios `050` through `052` model opt-in
+simulator-local request, gate, wrapped result, audit, retained history, and
+snapshot behavior. They do not add real cryptography, private key storage,
+encryption/decryption, production E2EE, secure messenger behavior, crypto
+library integration, networking, DNS lookup, external services, durable queues,
+default delivery enforcement, TrafficHub routing changes, or canonical
+identity rewrites.
+
 The v0.1 simulator answers questions like:
 
 - Can a device register under a scoped Registry Hub?
@@ -187,6 +197,11 @@ registry and policy-decision behavior. The current released scenario set
 covers `001` through `049`, and the current released version on `main` is
 `darwin-sim 1.0.0`. The annotated `v1.0.0` tag and GitHub release exist; no
 package publication was performed.
+
+On the unreleased `v1.1/planning` branch, scenarios `050` through `052` cover
+symbolic encrypted delivery request/gate/result integration. The planning
+scenario set covers `001` through `052`, and the branch package and CLI
+version are `darwin-sim 1.1.0`.
 
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
@@ -922,6 +937,15 @@ For v1.0 encrypted mailbox model planning, see:
 - `docs/ENCRYPTION_REGISTRY_v1_0.md`
 - `docs/ENCRYPTION_POLICY_DECISIONS_v1_0.md`
 - `docs/RELEASE_NOTES_v1_0_DRAFT.md`
+
+For v1.1 symbolic encrypted delivery policy integration planning, see:
+
+- `docs/V1_1_ROADMAP.md`
+- `docs/ENCRYPTED_DELIVERY_REQUESTS_v1_1.md`
+- `docs/ENCRYPTED_DELIVERY_POLICY_GATE_v1_1.md`
+- `docs/ENCRYPTED_DELIVERY_RESULTS_v1_1.md`
+- `docs/ENCRYPTED_DELIVERY_RESULT_HISTORY_v1_1.md`
+- `docs/RELEASE_NOTES_v1_1_DRAFT.md`
 
 ## What v0.1 Is Not
 

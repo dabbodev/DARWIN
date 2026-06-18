@@ -1,0 +1,157 @@
+scenario_id: 051_symbolic_encrypted_delivery_allowed
+name: Symbolic encrypted delivery allowed
+category: encryption
+description: gate-allowed encrypted delivery request can optionally attempt delivery
+tags:
+  - encryption
+  - symbolic
+  - encrypted_delivery
+  - message_delivery
+  - v1.1
+demonstrates:
+  - gate-allowed wrapped encrypted delivery without delivery attempt
+  - explicit opt-in delivery through existing in-memory mailbox helper
+  - unchanged retained delivery result and inbox assertions
+expected_result: first request is not delivered, second request is delivered explicitly
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  devices:
+    - device_id: dev_NEO
+      label: neo
+steps:
+  - action: register_device
+    registry_hub: registry_chat_001
+    device: dev_NEO
+    label: neo
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    canonical_device_id: dev_NEO
+    local_name: neo
+    scope: global.chat
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+  - action: register_adapter_endpoint
+    registry_hub: registry_chat_001
+    endpoint_id: endpoint_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: available
+    lane_signatures:
+      - basic_messaging:v1
+    scope: global.chat
+  - action: register_encryption_identity
+    registry_hub: registry_chat_001
+    encryption_identity_id: enc_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+  - action: register_key_bundle_reference
+    registry_hub: registry_chat_001
+    key_bundle_id: kb_mailbox_neo_001
+    encryption_identity_id: enc_mailbox_neo
+    public_ref: symbolic://public/mailbox_neo/001
+  - action: register_mailbox_encryption_binding
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    required_for_lanes:
+      - basic_messaging:v1
+  - action: register_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+  - action: evaluate_encrypted_delivery_request
+    registry_hub: registry_chat_001
+    request_id: req_encrypted_allowed_no_attempt
+    message_id: msg_encrypted_allowed_no_attempt
+    sender_id: dev_TRINITY
+    recipient_address: darwin://global.chat.neo/inbox
+    mailbox_id: mailbox_neo
+    policy_id: policy_mailbox_neo
+    envelope_id: env_encrypted_allowed_no_attempt
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    profile: symbolic_e2ee_v1
+    state: symbolically_encrypted
+    status: ready
+    attempt_delivery: false
+    payload: still there
+  - action: evaluate_encrypted_delivery_request
+    registry_hub: registry_chat_001
+    request_id: req_encrypted_allowed_attempt
+    message_id: msg_encrypted_allowed_attempt
+    sender_id: dev_TRINITY
+    recipient_address: darwin://global.chat.neo/inbox
+    mailbox_id: mailbox_neo
+    policy_id: policy_mailbox_neo
+    envelope_id: env_encrypted_allowed_attempt
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    profile: symbolic_e2ee_v1
+    state: symbolically_encrypted
+    status: ready
+    attempt_delivery: true
+    payload: follow the white rabbit
+assertions:
+  - type: encrypted_delivery_result_contains
+    registry_hub: registry_chat_001
+    request_id: req_encrypted_allowed_no_attempt
+    message_id: msg_encrypted_allowed_no_attempt
+    status: not_delivered
+    reason: delivery_not_attempted
+    delivery_attempted: false
+    delivery_allowed: true
+    gate_status: allowed
+    gate_reason: accepted
+    expected_count: 1
+  - type: encrypted_delivery_result_contains
+    registry_hub: registry_chat_001
+    request_id: req_encrypted_allowed_attempt
+    message_id: msg_encrypted_allowed_attempt
+    mailbox_id: mailbox_neo
+    status: delivered
+    delivery_attempted: true
+    delivery_allowed: true
+    gate_status: allowed
+    gate_reason: accepted
+    delivery_status: delivered
+    endpoint_id: endpoint_mailbox_neo
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    message_id: msg_encrypted_allowed_attempt
+    recipient_address: darwin://global.chat.neo/inbox
+    mailbox_id: mailbox_neo
+    status: delivered
+    lane_signature: basic_messaging:v1
+    endpoint_id: endpoint_mailbox_neo
+    expected_count: 1
+  - type: mailbox_inbox_contains
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    message_id: msg_encrypted_allowed_attempt
+    sender_id: dev_TRINITY
+    recipient_address: darwin://global.chat.neo/inbox
+    lane_signature: basic_messaging:v1
+    payload_kind: text
+    payload: follow the white rabbit
+    expected_count: 1
+  - type: mailbox_inbox_contains
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    message_id: msg_encrypted_allowed_no_attempt
+    expected_count: 0
+  - type: encryption_policy_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    status: accepted
+    expected_count: 2

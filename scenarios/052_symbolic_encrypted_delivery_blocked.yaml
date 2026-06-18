@@ -1,0 +1,133 @@
+scenario_id: 052_symbolic_encrypted_delivery_blocked
+name: Symbolic encrypted delivery blocked
+category: encryption
+description: gate-blocked encrypted delivery request does not deliver
+tags:
+  - encryption
+  - symbolic
+  - encrypted_delivery
+  - blocked
+  - v1.1
+demonstrates:
+  - unsupported symbolic profile blocks the wrapped delivery gate
+  - blocked requests skip explicit delivery attempts
+  - retained policy decision exposes deterministic rejection
+expected_result: unsupported profile is rejected and no inbox entry is created
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  devices:
+    - device_id: dev_NEO
+      label: neo
+steps:
+  - action: register_device
+    registry_hub: registry_chat_001
+    device: dev_NEO
+    label: neo
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    canonical_device_id: dev_NEO
+    local_name: neo
+    scope: global.chat
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+  - action: register_adapter_endpoint
+    registry_hub: registry_chat_001
+    endpoint_id: endpoint_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: available
+    lane_signatures:
+      - basic_messaging:v1
+    scope: global.chat
+  - action: register_encryption_identity
+    registry_hub: registry_chat_001
+    encryption_identity_id: enc_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+  - action: register_key_bundle_reference
+    registry_hub: registry_chat_001
+    key_bundle_id: kb_mailbox_neo_001
+    encryption_identity_id: enc_mailbox_neo
+    public_ref: symbolic://public/mailbox_neo/001
+  - action: register_mailbox_encryption_binding
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    required_for_lanes:
+      - basic_messaging:v1
+  - action: register_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+  - action: evaluate_encrypted_delivery_request
+    registry_hub: registry_chat_001
+    request_id: req_encrypted_blocked_profile
+    message_id: msg_encrypted_blocked_profile
+    sender_id: dev_TRINITY
+    recipient_address: darwin://global.chat.neo/inbox
+    mailbox_id: mailbox_neo
+    policy_id: policy_mailbox_neo
+    envelope_id: env_encrypted_blocked_profile
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    profile: symbolic_future_profile
+    state: symbolically_encrypted
+    status: ready
+    attempt_delivery: true
+    payload: blocked payload
+assertions:
+  - type: encrypted_delivery_result_contains
+    registry_hub: registry_chat_001
+    request_id: req_encrypted_blocked_profile
+    message_id: msg_encrypted_blocked_profile
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    status: gate_blocked
+    reason: unsupported_profile
+    delivery_attempted: false
+    delivery_allowed: false
+    policy_required: true
+    gate_status: policy_check_failed
+    gate_reason: unsupported_profile
+    expected_count: 1
+  - type: encrypted_delivery_audit_contains
+    registry_hub: registry_chat_001
+    request_id: req_encrypted_blocked_profile
+    message_id: msg_encrypted_blocked_profile
+    mailbox_id: mailbox_neo
+    gate_status: policy_check_failed
+    gate_reason: unsupported_profile
+    delivery_status: not_attempted
+    delivery_reason: unsupported_profile
+    policy_id: policy_mailbox_neo
+    encryption_required: true
+    envelope_accepted: false
+    expected_count: 1
+  - type: encryption_policy_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+    message_id: msg_encrypted_blocked_profile
+    status: unsupported_profile
+    reason: unsupported_profile
+    profile: symbolic_future_profile
+    envelope_accepted: false
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    expected_count: 0
+  - type: mailbox_inbox_contains
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    message_id: msg_encrypted_blocked_profile
+    expected_count: 0

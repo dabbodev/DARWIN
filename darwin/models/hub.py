@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from darwin.models.alias_authority import AliasAuthorityOutcomeRecord
     from darwin.models.checkpoint import CheckpointState
     from darwin.models.device import Device
+    from darwin.models.encrypted_delivery import EncryptedDeliveryResult
     from darwin.models.encryption import (
         EncryptionIdentity,
         EncryptionPolicyDecision,
@@ -119,6 +120,9 @@ class RegistryHub:
         default_factory=dict
     )
     encryption_policy_decision_history: list[EncryptionPolicyDecision] = field(
+        default_factory=list
+    )
+    encrypted_delivery_result_history: list[EncryptedDeliveryResult] = field(
         default_factory=list
     )
     adapter_endpoints: dict[str, AdapterEndpoint] = field(default_factory=dict)

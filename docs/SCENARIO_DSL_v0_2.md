@@ -680,3 +680,81 @@ The current v1.0 released scenario set covers `001` through `049`. Scenarios
 `047` through `049` do not deliver messages, mutate inboxes, enforce encrypted
 delivery, alter plaintext delivery behavior, open sockets, perform DNS lookup,
 or import cryptographic libraries.
+
+## v1.1 Symbolic Encrypted Delivery Request Scenarios
+
+The unreleased `v1.1/planning` branch adds scenario DSL coverage for the
+existing helper-level symbolic encrypted delivery request, policy gate, and
+wrapped result flow. The current branch package and CLI version are
+`darwin-sim 1.1.0`. This behavior remains opt-in and simulator-local. It is
+not real cryptography, encryption, decryption, production E2EE, secure
+messaging, networking, DNS lookup, external services, durable queues, or
+default delivery enforcement.
+
+Supported v1.1 encrypted delivery action:
+
+- `evaluate_encrypted_delivery_request`
+  - Required: `registry_hub`, `request_id`, `message_id`, `sender_id`,
+    `recipient_address`
+  - Optional: `mailbox_id`, `policy_id`, `lane_signature` defaulting to
+    `basic_messaging:v1`, `payload_kind` defaulting to `text`, `payload`,
+    `mode`, `policy_required`, `attempt_delivery`, `retain_policy_decision`,
+    `retain_result`, `metadata`
+  - Optional symbolic envelope fields: `envelope_id`,
+    `encryption_identity_id`, `key_bundle_id`, `profile`, `state`, `status`,
+    `algorithm_ref`, `ciphertext_ref`, `plaintext_ref`, `envelope_metadata`
+  - If `mode` is omitted, the runner infers `symbolic_encrypted` when
+    envelope fields are supplied and `plaintext` otherwise.
+    `policy_check_only` must be supplied explicitly.
+  - `attempt_delivery` defaults to `false`. Delivery is attempted only when
+    the gate allows the request and the scenario explicitly opts in.
+  - `retain_policy_decision` defaults to `true` and controls only the
+    existing retained `EncryptionPolicyDecision` history.
+  - `retain_result` defaults to `true` and controls retained wrapped
+    `EncryptedDeliveryResult` history on the referenced `RegistryHub`.
+
+The action builds a `MessageEnvelope`, builds an `EncryptedDeliveryRequest`,
+calls `evaluate_encrypted_delivery_request(...)`, retains the wrapped result
+on `RegistryHub.encrypted_delivery_result_history` by default, appends the
+wrapped result to scenario action results, and logs a deterministic event. If
+the gate is blocked, no delivery occurs even when `attempt_delivery: true`.
+
+Supported v1.1 encrypted delivery assertions:
+
+- `encrypted_delivery_result_contains`
+  - Required: `registry_hub`
+  - Optional filters: `request_id`, `message_id`, `mailbox_id`,
+    `lane_signature`, `status`, `reason`, `delivery_attempted`,
+    `delivery_allowed`, `policy_required`, `gate_status`, `gate_reason`,
+    `delivery_status`, `delivery_reason`, `endpoint_id`
+  - Optional count checks: `expected_count`, `min_count`
+- `encrypted_delivery_audit_contains`
+  - Required: `registry_hub`
+  - Optional filters: `request_id`, `message_id`, `mailbox_id`,
+    `lane_signature`, `gate_status`, `gate_reason`, `delivery_status`,
+    `delivery_reason`, `policy_id`, `encryption_required`,
+    `envelope_accepted`
+  - Optional count checks: `expected_count`, `min_count`
+
+Both assertions are read-only. They first query retained
+`RegistryHub.encrypted_delivery_result_history` records, then fall back to
+scenario action results only when retained history is unavailable or empty.
+They do not mutate inboxes, create delivery results, or change policy history.
+Count behavior matches existing count-style assertions: without
+`expected_count` or `min_count`, at least one matching record is required;
+`expected_count` requires an exact count; and `min_count` requires at least
+that many matches.
+
+Detailed snapshots include compact retained wrapped-result summaries at
+`registry_hubs.<hub_id>.encrypted_delivery_result_history`. Compact
+`world.snapshot()` output remains unchanged.
+
+Checked-in v1.1 encrypted delivery scenarios:
+
+- `scenarios/050_symbolic_encrypted_delivery_policy_check.yaml`
+- `scenarios/051_symbolic_encrypted_delivery_allowed.yaml`
+- `scenarios/052_symbolic_encrypted_delivery_blocked.yaml`
+
+The current planning scenario set is contiguous through `052`. Existing
+plaintext delivery scenarios still use the unchanged `deliver_message` action,
+and encrypted delivery policy enforcement is not the default.

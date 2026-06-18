@@ -1,5 +1,59 @@
 # Changelog
 
+## [1.1.0] - Unreleased
+
+DARWIN v1.1.0 is release-prep ready on the `v1.1/planning` branch. It has not
+been merged, tagged, published as a GitHub release, or published as a package.
+
+Added:
+
+- v1.1 Sprint 1 simulator-local symbolic encrypted delivery request models for
+  plaintext, symbolic encrypted, and policy-check-only request intent.
+- Pure encrypted delivery request constructors, predicates, structural status
+  helpers, JSON-safe summaries, and documentation.
+- v1.1 Sprint 2 opt-in symbolic encrypted delivery policy gate decisions for
+  accepted, plaintext-allowed, missing-policy, and policy-check-failed request
+  outcomes.
+- `evaluate_encrypted_delivery_request_policy(...)` helper for wrapping
+  registered mailbox encryption policy decisions without delivering messages.
+- Pure encrypted delivery gate predicates, JSON-safe summaries, retention
+  controls for the existing policy decision history, and documentation.
+- v1.1 Sprint 3 wrapped symbolic encrypted delivery results and compact audit
+  metadata that combine a request, gate decision, and optional existing
+  message delivery result.
+- `evaluate_encrypted_delivery_request(...)` helper with
+  `attempt_delivery=False` by default, plus JSON-safe result/audit summaries
+  and pure wrapped-result predicates.
+- v1.1 Sprint 4 scenario DSL action
+  `evaluate_encrypted_delivery_request`, read-only encrypted delivery
+  result/audit assertions, and scenarios `050` through `052` covering
+  policy-check-only, gate-allowed no-attempt, explicit allowed delivery, and
+  gate-blocked no-delivery paths.
+- v1.1 Sprint 5 RegistryHub-local retained wrapped encrypted delivery result
+  history, read-only `query_encrypted_delivery_results(...)` filters,
+  retained-history-first scenario assertions, detailed snapshot visibility,
+  and documentation for `retain_result` behavior.
+- v1.1 Sprint 6 release-candidate hardening docs and draft release notes for
+  symbolic encrypted delivery policy integration, with scenario index coverage
+  remaining contiguous through `052`.
+- v1.1 release prep updates the package and CLI version to
+  `darwin-sim 1.1.0` on the planning branch.
+
+Compatibility and limits:
+
+- Existing `deliver_message_to_mailbox(...)` behavior remains unchanged.
+- v1.1 work remains unreleased on `v1.1/planning`.
+- The package and CLI version now report `darwin-sim 1.1.0` on the planning
+  branch.
+- The checked-in scenario set is expected to run contiguously from `001`
+  through `052`, with scenarios `050` through `052` covering v1.1 symbolic
+  encrypted delivery integration.
+- No real cryptography, key generation, private key storage, encryption,
+  decryption, production E2EE, default delivery enforcement, networking,
+  external services, TrafficHub routing changes, canonical identity rewrites,
+  package publication, tagging, or release creation is added by this
+  release-prep work.
+
 ## [1.0.0] - 2026-06-17
 
 DARWIN v1.0.0 has been merged to `main`, tagged as annotated `v1.0.0`, and
