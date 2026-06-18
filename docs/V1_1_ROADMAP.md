@@ -200,27 +200,42 @@ Acceptance targets:
 - The scenario index remains contiguous through `052`.
 - Existing scenarios `001` through `049` continue to pass unchanged.
 
-## Sprint 5: Snapshot Visibility and Docs Hardening
+## Sprint 5: Retained Wrapped Result History and Snapshot Visibility
 
-Goal: make symbolic encrypted delivery gate decisions inspectable without
-implying production security behavior.
+Status: implemented on `v1.1/planning`.
 
-Candidate work:
+Goal: retain compact wrapped encrypted delivery result history on each
+`RegistryHub`, make it queryable, expose it in detailed snapshots, and keep
+symbolic-only behavior clear.
 
-- Add compact detailed snapshot visibility for symbolic encrypted delivery
-  gate decisions, if useful and consistent with existing conventions.
-- Preserve compact `world.snapshot()` behavior unless existing conventions say
-  otherwise.
-- Keep docs explicit about symbolic-only semantics.
-- Document that plaintext delivery behavior remains unchanged unless a gate is
-  requested.
+Implemented work:
+
+- Added `RegistryHub.encrypted_delivery_result_history` with deterministic
+  append-order retention.
+- Updated `evaluate_encrypted_delivery_request(...)` to retain one wrapped
+  `EncryptedDeliveryResult` by default, with `retain_result=False` for
+  no-retention helper usage.
+- Added read-only `query_encrypted_delivery_results(...)` filters over
+  retained wrapped results.
+- Updated encrypted delivery scenario assertions to prefer retained history and
+  fall back to scenario action results only when retained history is
+  unavailable or empty.
+- Added detailed snapshot visibility at
+  `registry_hubs.<hub_id>.encrypted_delivery_result_history`.
+- Preserved compact `world.snapshot()` behavior.
+- Kept plaintext delivery, TrafficHub routing, canonical identity, inbox, and
+  normal message delivery result behavior unchanged except for explicit
+  `attempt_delivery=True` calls through the existing delivery helper.
 
 Acceptance targets:
 
-- Detailed snapshots or result exports expose concise symbolic gate summaries.
+- Wrapped results are queryable from retained RegistryHub history.
+- Detailed snapshots expose concise symbolic wrapped-result summaries.
 - Docs avoid production cryptography, E2EE, networking, DNS, registrar, public
   CA, external-service, durable-queue, TrafficHub, or canonical identity
   claims.
+
+See `docs/ENCRYPTED_DELIVERY_RESULT_HISTORY_v1_1.md`.
 
 ## Sprint 6: Release-Candidate Hardening and Release Prep
 

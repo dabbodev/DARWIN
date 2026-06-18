@@ -12,7 +12,10 @@ from darwin.registry.authority_audit import (
     build_authority_audit_trace,
     summarize_authority_path,
 )
-from darwin.registry.encrypted_delivery import build_encrypted_delivery_audit_entry
+from darwin.registry.encrypted_delivery import (
+    build_encrypted_delivery_audit_entry,
+    query_encrypted_delivery_results,
+)
 from darwin.registry.encryption_registry import query_encryption_policy_decisions
 from darwin.registry.history_queries import (
     query_alias_conflicts,
@@ -1302,6 +1305,7 @@ def _encrypted_delivery_result_contains(
     assertion: dict[str, Any],
 ) -> AssertionResult:
     hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
     filters = {
         "registry_hub": hub_id,
         "request_id": _optional_filter_str(assertion, "request_id"),
@@ -1322,16 +1326,27 @@ def _encrypted_delivery_result_contains(
         "delivery_reason": _optional_filter_str(assertion, "delivery_reason"),
         "endpoint_id": _optional_filter_str(assertion, "endpoint_id"),
     }
-    records = [
-        result.to_summary()
-        for result in world.action_results
-        if isinstance(result, EncryptedDeliveryResult)
-    ]
-    records = [
-        record
-        for record in records
-        if _matches_encrypted_delivery_result_filters(record, filters)
-    ]
+    source = "retained_history"
+    if hub is not None and hub.encrypted_delivery_result_history:
+        records = [
+            result.to_summary()
+            for result in query_encrypted_delivery_results(
+                hub,
+                **_encrypted_delivery_result_query_filters(filters),
+            )
+        ]
+    else:
+        source = "action_results"
+        records = [
+            result.to_summary()
+            for result in world.action_results
+            if isinstance(result, EncryptedDeliveryResult)
+        ]
+        records = [
+            record
+            for record in records
+            if _matches_encrypted_delivery_result_filters(record, filters)
+        ]
     return _count_result(
         assertion_type,
         assertion,
@@ -1341,7 +1356,7 @@ def _encrypted_delivery_result_contains(
         actual_context={
             "registry_hub": hub_id,
             "registry_hub_found": hub_id in world.registry_hubs,
-            "source": "action_results",
+            "source": source,
         },
     )
 
@@ -1352,6 +1367,7 @@ def _encrypted_delivery_audit_contains(
     assertion: dict[str, Any],
 ) -> AssertionResult:
     hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
     filters = {
         "registry_hub": hub_id,
         "request_id": _optional_filter_str(assertion, "request_id"),
@@ -1369,16 +1385,32 @@ def _encrypted_delivery_audit_contains(
         ),
         "envelope_accepted": _optional_bool_filter(assertion, "envelope_accepted"),
     }
-    records = [
-        _encrypted_delivery_audit_summary(result)
-        for result in world.action_results
-        if isinstance(result, EncryptedDeliveryResult)
-    ]
-    records = [
-        record
-        for record in records
-        if _matches_encrypted_delivery_audit_filters(record, filters)
-    ]
+    source = "retained_history"
+    if hub is not None and hub.encrypted_delivery_result_history:
+        records = [
+            _encrypted_delivery_audit_summary(result)
+            for result in query_encrypted_delivery_results(
+                hub,
+                **_encrypted_delivery_audit_query_filters(filters),
+            )
+        ]
+        records = [
+            record
+            for record in records
+            if _matches_encrypted_delivery_audit_filters(record, filters)
+        ]
+    else:
+        source = "action_results"
+        records = [
+            _encrypted_delivery_audit_summary(result)
+            for result in world.action_results
+            if isinstance(result, EncryptedDeliveryResult)
+        ]
+        records = [
+            record
+            for record in records
+            if _matches_encrypted_delivery_audit_filters(record, filters)
+        ]
     return _count_result(
         assertion_type,
         assertion,
@@ -1388,7 +1420,7 @@ def _encrypted_delivery_audit_contains(
         actual_context={
             "registry_hub": hub_id,
             "registry_hub_found": hub_id in world.registry_hubs,
-            "source": "action_results",
+            "source": source,
         },
     )
 
@@ -1691,6 +1723,16 @@ def _matches_encrypted_delivery_result_filters(
     )
 
 
+def _encrypted_delivery_result_query_filters(
+    filters: dict[str, object],
+) -> dict[str, object]:
+    return {
+        key: value
+        for key, value in filters.items()
+        if key != "registry_hub"
+    }
+
+
 def _encrypted_delivery_audit_summary(
     result: EncryptedDeliveryResult,
 ) -> dict[str, object]:
@@ -1728,6 +1770,19 @@ def _matches_encrypted_delivery_audit_filters(
         if value is not None and record.get(field_name) != value:
             return False
     return True
+
+
+def _encrypted_delivery_audit_query_filters(
+    filters: dict[str, object],
+) -> dict[str, object]:
+    return {
+        "request_id": filters["request_id"],
+        "message_id": filters["message_id"],
+        "mailbox_id": filters["mailbox_id"],
+        "lane_signature": filters["lane_signature"],
+        "gate_status": filters["gate_status"],
+        "gate_reason": filters["gate_reason"],
+    }
 
 
 def _nested_delivery_value(

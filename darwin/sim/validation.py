@@ -708,6 +708,7 @@ def _validate_step_type_fields(
         _validate_optional_bool(step, "policy_required", location, errors)
         _validate_optional_bool(step, "attempt_delivery", location, errors)
         _validate_optional_bool(step, "retain_policy_decision", location, errors)
+        _validate_optional_bool(step, "retain_result", location, errors)
 
 
 def _validate_optional_bool(

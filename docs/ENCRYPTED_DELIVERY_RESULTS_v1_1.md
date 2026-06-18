@@ -3,8 +3,9 @@
 Status: implemented on the `v1.1/planning` branch. The current package and
 CLI version remain `darwin-sim 1.0.0`.
 
-DARWIN v1.1 Sprint 3 adds opt-in wrapped symbolic encrypted delivery results
-and compact audit metadata. These helpers combine an
+DARWIN v1.1 adds opt-in wrapped symbolic encrypted delivery results,
+compact audit metadata, and Sprint 5 RegistryHub-local retained wrapped-result
+history. These helpers combine an
 `EncryptedDeliveryRequest`, its `EncryptedDeliveryGateDecision`, and, only
 when explicitly requested, an existing v0.9 `MessageDeliveryResult`.
 
@@ -81,8 +82,9 @@ Gate decisions remain the source of truth for:
 - policy status and reason
 - the underlying retained `EncryptionPolicyDecision`, when one was created
 
-The wrapper does not add persistent gate-decision or wrapped-result history.
-It returns one compact result to the caller.
+The wrapper does not add persistent gate-decision history. Sprint 5 retains
+wrapped results separately on
+`RegistryHub.encrypted_delivery_result_history`.
 
 ## Relationship to MessageDeliveryResult
 
@@ -126,11 +128,24 @@ retain_policy_decision=True
 ```
 
 This is passed through to the Sprint 2 gate helper. It controls only the
-existing `RegistryHub.encryption_policy_decision_history` behavior. Sprint 3
-does not add durable wrapped-result history, queues, retry workers, or
-background processing.
+existing `RegistryHub.encryption_policy_decision_history` behavior.
 
-Persistent encrypted delivery audit history is deferred.
+Sprint 5 adds a separate retention flag:
+
+```python
+retain_result=True
+```
+
+By default, `evaluate_encrypted_delivery_request(...)` appends the returned
+`EncryptedDeliveryResult` to:
+
+```python
+registry_hub.encrypted_delivery_result_history
+```
+
+Passing `retain_result=False` returns the wrapped result without appending it.
+This does not affect `retain_policy_decision` and does not create queues,
+retry workers, or background processing.
 
 ## Helpers and Predicates
 
@@ -139,6 +154,7 @@ Sprint 3 adds:
 - `evaluate_encrypted_delivery_request(...)`
 - `summarize_encrypted_delivery_result(...)`
 - `build_encrypted_delivery_audit_entry(...)`
+- `query_encrypted_delivery_results(...)`
 - `is_encrypted_delivery_result_allowed(...)`
 - `is_encrypted_delivery_result_delivered(...)`
 - `is_encrypted_delivery_result_blocked(...)`
@@ -157,9 +173,21 @@ Sprint 4 also adds read-only scenario assertions:
 - `encrypted_delivery_result_contains`
 - `encrypted_delivery_audit_contains`
 
-These assertions derive records from wrapped results in scenario action
-results. They do not add persistent wrapped-result history or change
-`deliver_message_to_mailbox(...)` behavior.
+Sprint 5 updates these assertions to prefer retained
+`RegistryHub.encrypted_delivery_result_history` records, falling back to
+scenario action results only when retained history is unavailable or empty.
+They remain read-only and do not change `deliver_message_to_mailbox(...)`
+behavior.
+
+Detailed snapshots include compact retained wrapped-result summaries at:
+
+```text
+registry_hubs.<hub_id>.encrypted_delivery_result_history
+```
+
+Compact `world.snapshot()` output remains unchanged.
+
+See `docs/ENCRYPTED_DELIVERY_RESULT_HISTORY_v1_1.md`.
 
 Checked-in scenarios `050` through `052` cover policy-check-only, gate-allowed
 no-attempt, gate-allowed explicit delivery, and gate-blocked no-delivery
@@ -190,6 +218,6 @@ Sprint 3 does not add:
 - durable queues or retry workers;
 - TrafficHub routing changes;
 - canonical identity rewrites;
-- scenario DSL actions;
-- scenario DSL assertions;
-- new scenario YAMLs.
+- default delivery enforcement;
+- durable wrapped-result queues;
+- retry workers.

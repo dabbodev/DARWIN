@@ -152,6 +152,15 @@ unless the new action is used explicitly.
 
 See `docs/SCENARIO_DSL_v0_2.md`.
 
+Sprint 5 retains the higher-level wrapped results returned by
+`evaluate_encrypted_delivery_request(...)` on
+`RegistryHub.encrypted_delivery_result_history`. The policy gate itself still
+does not retain gate decisions separately and still does not call mailbox
+delivery. Underlying `EncryptionPolicyDecision` retention remains controlled
+by `retain_decision` / `retain_policy_decision`.
+
+See `docs/ENCRYPTED_DELIVERY_RESULT_HISTORY_v1_1.md`.
+
 ## Predicates
 
 Sprint 2 adds pure predicates:

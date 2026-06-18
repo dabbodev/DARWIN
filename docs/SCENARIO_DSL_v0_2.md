@@ -698,7 +698,7 @@ Supported v1.1 encrypted delivery action:
   - Optional: `mailbox_id`, `policy_id`, `lane_signature` defaulting to
     `basic_messaging:v1`, `payload_kind` defaulting to `text`, `payload`,
     `mode`, `policy_required`, `attempt_delivery`, `retain_policy_decision`,
-    `metadata`
+    `retain_result`, `metadata`
   - Optional symbolic envelope fields: `envelope_id`,
     `encryption_identity_id`, `key_bundle_id`, `profile`, `state`, `status`,
     `algorithm_ref`, `ciphertext_ref`, `plaintext_ref`, `envelope_metadata`
@@ -709,11 +709,14 @@ Supported v1.1 encrypted delivery action:
     the gate allows the request and the scenario explicitly opts in.
   - `retain_policy_decision` defaults to `true` and controls only the
     existing retained `EncryptionPolicyDecision` history.
+  - `retain_result` defaults to `true` and controls retained wrapped
+    `EncryptedDeliveryResult` history on the referenced `RegistryHub`.
 
 The action builds a `MessageEnvelope`, builds an `EncryptedDeliveryRequest`,
-calls `evaluate_encrypted_delivery_request(...)`, appends the wrapped result
-to scenario action results, and logs a deterministic event. If the gate is
-blocked, no delivery occurs even when `attempt_delivery: true`.
+calls `evaluate_encrypted_delivery_request(...)`, retains the wrapped result
+on `RegistryHub.encrypted_delivery_result_history` by default, appends the
+wrapped result to scenario action results, and logs a deterministic event. If
+the gate is blocked, no delivery occurs even when `attempt_delivery: true`.
 
 Supported v1.1 encrypted delivery assertions:
 
@@ -732,12 +735,18 @@ Supported v1.1 encrypted delivery assertions:
     `envelope_accepted`
   - Optional count checks: `expected_count`, `min_count`
 
-Both assertions are read-only and derive their records from scenario action
-results. They do not persist wrapped result history, mutate inboxes, create
-delivery results, or change policy history. Count behavior matches existing
-count-style assertions: without `expected_count` or `min_count`, at least one
-matching record is required; `expected_count` requires an exact count; and
-`min_count` requires at least that many matches.
+Both assertions are read-only. They first query retained
+`RegistryHub.encrypted_delivery_result_history` records, then fall back to
+scenario action results only when retained history is unavailable or empty.
+They do not mutate inboxes, create delivery results, or change policy history.
+Count behavior matches existing count-style assertions: without
+`expected_count` or `min_count`, at least one matching record is required;
+`expected_count` requires an exact count; and `min_count` requires at least
+that many matches.
+
+Detailed snapshots include compact retained wrapped-result summaries at
+`registry_hubs.<hub_id>.encrypted_delivery_result_history`. Compact
+`world.snapshot()` output remains unchanged.
 
 Checked-in v1.1 encrypted delivery scenarios:
 

@@ -1643,6 +1643,7 @@ def _step_evaluate_encrypted_delivery_request(
         request,
         attempt_delivery=_bool_field(fields, "attempt_delivery", False),
         retain_policy_decision=_bool_field(fields, "retain_policy_decision", True),
+        retain_result=_bool_field(fields, "retain_result", True),
     )
     result = _encrypted_delivery_result_with_registry_context(result, hub.hub_id)
     world.action_results.append(result)

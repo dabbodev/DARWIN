@@ -26,6 +26,10 @@ Added:
   result/audit assertions, and scenarios `050` through `052` covering
   policy-check-only, gate-allowed no-attempt, explicit allowed delivery, and
   gate-blocked no-delivery paths.
+- v1.1 Sprint 5 RegistryHub-local retained wrapped encrypted delivery result
+  history, read-only `query_encrypted_delivery_results(...)` filters,
+  retained-history-first scenario assertions, detailed snapshot visibility,
+  and documentation for `retain_result` behavior.
 
 Compatibility and limits:
 

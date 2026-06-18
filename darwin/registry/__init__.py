@@ -41,6 +41,7 @@ from darwin.registry.checkpoints import (
 from darwin.registry.encrypted_delivery import (
     build_encrypted_delivery_audit_entry,
     evaluate_encrypted_delivery_request,
+    query_encrypted_delivery_results,
     summarize_encrypted_delivery_result,
 )
 from darwin.registry.encrypted_delivery_policy import (
@@ -171,6 +172,7 @@ __all__ = [
     "query_alias_history",
     "query_authority_decisions",
     "query_authority_outcomes",
+    "query_encrypted_delivery_results",
     "query_encryption_policy_decisions",
     "query_quarantine_events",
     "record_checkpoint",

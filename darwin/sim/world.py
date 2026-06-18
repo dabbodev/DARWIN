@@ -234,6 +234,10 @@ class World:
                         decision.to_summary()
                         for decision in hub.encryption_policy_decision_history
                     ],
+                    "encrypted_delivery_result_history": [
+                        result.to_summary()
+                        for result in hub.encrypted_delivery_result_history
+                    ],
                     "adapter_endpoints": {
                         endpoint_id: endpoint.to_summary()
                         for endpoint_id, endpoint in sorted(
