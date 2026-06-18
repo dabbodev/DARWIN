@@ -125,6 +125,13 @@ results.
 
 See `docs/ENCRYPTED_DELIVERY_RESULTS_v1_1.md`.
 
+v1.1 Sprint 4 wires this helper-level request flow into the scenario DSL
+through `evaluate_encrypted_delivery_request`. Scenario usage remains
+symbolic and opt-in; it does not make encrypted delivery policy enforcement
+the default.
+
+See `docs/SCENARIO_DSL_v0_2.md`.
+
 ## Why This Is Separate From Delivery
 
 `deliver_message_to_mailbox(...)` is the released v0.9 in-memory mailbox

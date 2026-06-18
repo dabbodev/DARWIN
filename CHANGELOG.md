@@ -21,16 +21,21 @@ Added:
 - `evaluate_encrypted_delivery_request(...)` helper with
   `attempt_delivery=False` by default, plus JSON-safe result/audit summaries
   and pure wrapped-result predicates.
+- v1.1 Sprint 4 scenario DSL action
+  `evaluate_encrypted_delivery_request`, read-only encrypted delivery
+  result/audit assertions, and scenarios `050` through `052` covering
+  policy-check-only, gate-allowed no-attempt, explicit allowed delivery, and
+  gate-blocked no-delivery paths.
 
 Compatibility and limits:
 
 - Existing `deliver_message_to_mailbox(...)` behavior remains unchanged.
 - The package and CLI version remain `darwin-sim 1.0.0`.
 - No real cryptography, key generation, private key storage, encryption,
-  decryption, production E2EE, delivery enforcement, scenario DSL changes,
-  networking, external services, TrafficHub routing changes, canonical
-  identity rewrites, package publication, tagging, release creation, or version
-  bump is added by this draft work.
+  decryption, production E2EE, default delivery enforcement, networking,
+  external services, TrafficHub routing changes, canonical identity rewrites,
+  package publication, tagging, release creation, or version bump is added by
+  this draft work.
 
 ## [1.0.0] - 2026-06-17
 

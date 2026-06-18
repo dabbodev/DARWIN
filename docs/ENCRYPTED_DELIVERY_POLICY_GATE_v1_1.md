@@ -145,6 +145,13 @@ The policy gate itself remains delivery-free.
 
 See `docs/ENCRYPTED_DELIVERY_RESULTS_v1_1.md`.
 
+Sprint 4 exposes this opt-in gate path through scenario YAML with
+`evaluate_encrypted_delivery_request` and read-only wrapped-result assertions.
+Blocked gates still skip delivery, and plaintext delivery remains unchanged
+unless the new action is used explicitly.
+
+See `docs/SCENARIO_DSL_v0_2.md`.
+
 ## Predicates
 
 Sprint 2 adds pure predicates:

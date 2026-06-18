@@ -180,23 +180,24 @@ See `docs/ENCRYPTED_DELIVERY_RESULTS_v1_1.md`.
 
 ## Sprint 4: Scenario DSL and Scenarios
 
-Goal: add scenario actions and assertions only after helper-level behavior is
-stable.
+Status: implemented on `v1.1/planning`.
 
-Candidate work:
+Implemented work:
 
-- Add explicit scenario actions for opt-in symbolic encrypted delivery gating.
-- Add read-only assertions for gate decisions and wrapped delivery outcomes.
-- Add scenarios proving symbolic encrypted delivery accepted, missing envelope
-  rejected, unsupported profile rejected, and plaintext delivery remains
-  unchanged when no policy gate is requested.
+- Added `evaluate_encrypted_delivery_request` as an opt-in scenario action for
+  helper-level symbolic encrypted delivery requests and wrapped results.
+- Added read-only `encrypted_delivery_result_contains` and
+  `encrypted_delivery_audit_contains` assertions.
+- Added scenarios `050` through `052` for policy-check-only, gate-allowed
+  no-attempt, gate-allowed explicit delivery, and gate-blocked no-delivery
+  paths.
 - Preserve existing v0.9 plaintext delivery scenarios and v1.0 symbolic policy
   scenarios.
 
 Acceptance targets:
 
 - Scenario coverage demonstrates accepted and rejected opt-in gates.
-- The scenario index remains contiguous and current.
+- The scenario index remains contiguous through `052`.
 - Existing scenarios `001` through `049` continue to pass unchanged.
 
 ## Sprint 5: Snapshot Visibility and Docs Hardening

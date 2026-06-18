@@ -17,6 +17,11 @@ from darwin.auth.move_contract import attach_move_auth
 from darwin.models.adapter_endpoint import AdapterEndpoint
 from darwin.models.checkpoint import make_checkpoint_packet
 from darwin.models.device import Device
+from darwin.models.encrypted_delivery import (
+    EncryptedDeliveryRequest,
+    make_plaintext_delivery_request,
+    make_symbolic_encrypted_delivery_request,
+)
 from darwin.models.encryption import (
     DEFAULT_ENCRYPTION_PROFILE,
     DEFAULT_SYMBOLIC_ENVELOPE_ALGORITHM_REF,
@@ -61,6 +66,12 @@ from darwin.registry.aliases import (
     resolve_alias as resolve_alias_op,
 )
 from darwin.registry.checkpoints import record_checkpoint as record_checkpoint_op
+from darwin.registry.encrypted_delivery import (
+    evaluate_encrypted_delivery_request as evaluate_encrypted_delivery_request_op,
+)
+from darwin.registry.encrypted_delivery import (
+    summarize_encrypted_delivery_result,
+)
 from darwin.registry.encryption_registry import (
     evaluate_registered_mailbox_encryption_policy as evaluate_registered_policy_op,
 )
@@ -300,6 +311,7 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         "bind_mailbox_capability": _step_bind_mailbox_capability,
         "register_adapter_endpoint": _step_register_adapter_endpoint,
         "deliver_message": _step_deliver_message,
+        "evaluate_encrypted_delivery_request": _step_evaluate_encrypted_delivery_request,
         "register_encryption_identity": _step_register_encryption_identity,
         "register_key_bundle_reference": _step_register_key_bundle_reference,
         "register_mailbox_encryption_binding": (
@@ -1565,6 +1577,91 @@ def _step_deliver_message(world: World, fields: dict[str, Any]) -> None:
     )
 
 
+def _step_evaluate_encrypted_delivery_request(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    envelope = MessageEnvelope(
+        message_id=str(fields["message_id"]),
+        sender_id=str(fields["sender_id"]),
+        recipient_address=str(fields["recipient_address"]),
+        lane_signature=str(fields.get("lane_signature", "basic_messaging:v1")),
+        payload_kind=str(fields.get("payload_kind", "text")),
+        payload=fields.get("payload", ""),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    envelope_metadata = _policy_evaluation_envelope_metadata(fields)
+    mode = _encrypted_delivery_request_mode(fields, envelope_metadata)
+    policy_id = _optional_str(fields.get("policy_id"))
+    mailbox_id = _optional_str(fields.get("mailbox_id"))
+
+    if mode == "policy_check_only":
+        request = EncryptedDeliveryRequest(
+            request_id=str(fields["request_id"]),
+            message_envelope=envelope,
+            encryption_metadata=envelope_metadata,
+            mode="policy_check_only",
+            policy_required=True,
+            policy_id=policy_id,
+            mailbox_id=mailbox_id,
+            lane_signature=envelope.lane_signature,
+            metadata={
+                "simulator_local": True,
+                "request_only": True,
+                "delivery_behavior_changed": False,
+            },
+        )
+    elif mode == "symbolic_encrypted":
+        if envelope_metadata is None:
+            envelope_metadata = _policy_evaluation_envelope_metadata(
+                {**fields, "envelope_id": f"env_{fields['message_id']}"}
+            )
+        request = make_symbolic_encrypted_delivery_request(
+            request_id=str(fields["request_id"]),
+            message_envelope=envelope,
+            encryption_metadata=envelope_metadata,
+            mailbox_id=mailbox_id,
+            policy_id=policy_id,
+        )
+    else:
+        request = make_plaintext_delivery_request(
+            request_id=str(fields["request_id"]),
+            message_envelope=envelope,
+            mailbox_id=mailbox_id,
+            policy_id=policy_id,
+        )
+
+    if "policy_required" in fields:
+        request = _encrypted_delivery_request_with_policy_required(
+            request,
+            _bool_field(fields, "policy_required", request.policy_required),
+        )
+
+    result = evaluate_encrypted_delivery_request_op(
+        hub,
+        request,
+        attempt_delivery=_bool_field(fields, "attempt_delivery", False),
+        retain_policy_decision=_bool_field(fields, "retain_policy_decision", True),
+    )
+    result = _encrypted_delivery_result_with_registry_context(result, hub.hub_id)
+    world.action_results.append(result)
+    summary = summarize_encrypted_delivery_result(result)
+    world.log(
+        (
+            "evaluated encrypted delivery request "
+            f"{result.request_id} at {hub.hub_id}: {result.status.status}"
+        ),
+        event_type="encrypted_delivery_request_evaluated",
+        actor=envelope.sender_id,
+        target=result.mailbox_id or envelope.recipient_address,
+        device_id=envelope.sender_id,
+        hub_id=hub.hub_id,
+        status=result.status.status,
+        data=summary,
+    )
+
+
 def _step_register_encryption_identity(world: World, fields: dict[str, Any]) -> None:
     hub = world.registry_hubs[str(fields["registry_hub"])]
     identity = EncryptionIdentity(
@@ -1776,6 +1873,51 @@ def _bool_field(fields: dict[str, Any], field_name: str, default: bool) -> bool:
     return value
 
 
+def _encrypted_delivery_request_mode(
+    fields: dict[str, Any],
+    envelope_metadata: EncryptedEnvelopeMetadata | None,
+) -> str:
+    mode = fields.get("mode")
+    if mode is not None:
+        return str(mode)
+    if envelope_metadata is not None:
+        return "symbolic_encrypted"
+    return "plaintext"
+
+
+def _encrypted_delivery_request_with_policy_required(request: Any, value: bool) -> Any:
+    return request.__class__(
+        request_id=request.request_id,
+        message_envelope=request.message_envelope,
+        encryption_metadata=request.encryption_metadata,
+        mode=request.mode,
+        policy_required=value,
+        policy_id=request.policy_id,
+        mailbox_id=request.mailbox_id,
+        lane_signature=request.lane_signature,
+        metadata=request.metadata,
+    )
+
+
+def _encrypted_delivery_result_with_registry_context(result: Any, hub_id: str) -> Any:
+    metadata = dict(result.metadata or {})
+    metadata["registry_hub"] = hub_id
+    return result.__class__(
+        request_id=result.request_id,
+        message_id=result.message_id,
+        mailbox_id=result.mailbox_id,
+        lane_signature=result.lane_signature,
+        gate_decision=result.gate_decision,
+        delivery_result=result.delivery_result,
+        status=result.status,
+        reason=result.reason,
+        delivery_attempted=result.delivery_attempted,
+        delivery_allowed=result.delivery_allowed,
+        policy_required=result.policy_required,
+        metadata=metadata,
+    )
+
+
 def _policy_evaluation_envelope_metadata(
     fields: dict[str, Any],
 ) -> EncryptedEnvelopeMetadata | None:
@@ -1808,7 +1950,7 @@ def _policy_evaluation_envelope_metadata(
         ),
         ciphertext_ref=_optional_str(fields.get("ciphertext_ref")),
         plaintext_ref=_optional_str(fields.get("plaintext_ref")),
-        metadata=_optional_dict(fields.get("metadata")),
+        metadata=_optional_dict(fields.get("envelope_metadata")),
     )
 
 

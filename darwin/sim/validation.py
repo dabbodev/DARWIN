@@ -171,6 +171,13 @@ STEP_REQUIRED_FIELDS = {
         "sender_id",
         "recipient_address",
     ),
+    "evaluate_encrypted_delivery_request": (
+        "registry_hub",
+        "request_id",
+        "message_id",
+        "sender_id",
+        "recipient_address",
+    ),
     "register_encryption_identity": (
         "registry_hub",
         "encryption_identity_id",
@@ -257,6 +264,8 @@ ASSERTION_REQUIRED_FIELDS = {
     "mailbox_encryption_binding_registered": ("registry_hub", "mailbox_id"),
     "mailbox_encryption_policy_registered": ("registry_hub", "policy_id"),
     "encryption_policy_decision_contains": ("registry_hub",),
+    "encrypted_delivery_result_contains": ("registry_hub",),
+    "encrypted_delivery_audit_contains": ("registry_hub",),
 }
 
 
@@ -621,6 +630,15 @@ def _validate_assertion_type_fields(
         _validate_optional_bool(assertion, "encryption_required", location, errors)
         _validate_optional_bool(assertion, "envelope_accepted", location, errors)
         return
+    if assertion_type == "encrypted_delivery_result_contains":
+        _validate_optional_bool(assertion, "delivery_attempted", location, errors)
+        _validate_optional_bool(assertion, "delivery_allowed", location, errors)
+        _validate_optional_bool(assertion, "policy_required", location, errors)
+        return
+    if assertion_type == "encrypted_delivery_audit_contains":
+        _validate_optional_bool(assertion, "encryption_required", location, errors)
+        _validate_optional_bool(assertion, "envelope_accepted", location, errors)
+        return
     if assertion_type == "mailbox_encryption_policy_registered":
         _validate_optional_bool(assertion, "allow_plaintext_fallback", location, errors)
         return
@@ -686,6 +704,10 @@ def _validate_step_type_fields(
         _validate_optional_bool(step, "require_active_identity", location, errors)
         _validate_optional_bool(step, "require_usable_key_bundle", location, errors)
         _validate_optional_bool(step, "allow_plaintext_fallback", location, errors)
+    if action == "evaluate_encrypted_delivery_request":
+        _validate_optional_bool(step, "policy_required", location, errors)
+        _validate_optional_bool(step, "attempt_delivery", location, errors)
+        _validate_optional_bool(step, "retain_policy_decision", location, errors)
 
 
 def _validate_optional_bool(

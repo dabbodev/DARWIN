@@ -145,6 +145,26 @@ Sprint 3 adds:
 
 All helpers are deterministic and simulator-local.
 
+## Scenario DSL Coverage
+
+Sprint 4 exposes `evaluate_encrypted_delivery_request(...)` through the
+scenario action `evaluate_encrypted_delivery_request`. The action appends the
+wrapped `EncryptedDeliveryResult` to scenario action results and logs a
+deterministic simulator event. `attempt_delivery` defaults to `false`.
+
+Sprint 4 also adds read-only scenario assertions:
+
+- `encrypted_delivery_result_contains`
+- `encrypted_delivery_audit_contains`
+
+These assertions derive records from wrapped results in scenario action
+results. They do not add persistent wrapped-result history or change
+`deliver_message_to_mailbox(...)` behavior.
+
+Checked-in scenarios `050` through `052` cover policy-check-only, gate-allowed
+no-attempt, gate-allowed explicit delivery, and gate-blocked no-delivery
+paths.
+
 ## Explicit Non-Goals
 
 Sprint 3 does not add:

@@ -5,12 +5,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from darwin.models.encrypted_delivery import EncryptedDeliveryResult
 from darwin.models.encryption import EncryptionPolicyDecision
 from darwin.registry.aliases import resolve_alias
 from darwin.registry.authority_audit import (
     build_authority_audit_trace,
     summarize_authority_path,
 )
+from darwin.registry.encrypted_delivery import build_encrypted_delivery_audit_entry
 from darwin.registry.encryption_registry import query_encryption_policy_decisions
 from darwin.registry.history_queries import (
     query_alias_conflicts,
@@ -1294,6 +1296,103 @@ def _encryption_policy_decision_contains(
     )
 
 
+def _encrypted_delivery_result_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = {
+        "registry_hub": hub_id,
+        "request_id": _optional_filter_str(assertion, "request_id"),
+        "message_id": _optional_filter_str(assertion, "message_id"),
+        "mailbox_id": _optional_filter_str(assertion, "mailbox_id"),
+        "lane_signature": _optional_filter_str(assertion, "lane_signature"),
+        "status": _optional_filter_str(assertion, "status"),
+        "reason": _optional_filter_str(assertion, "reason"),
+        "delivery_attempted": _optional_bool_filter(
+            assertion,
+            "delivery_attempted",
+        ),
+        "delivery_allowed": _optional_bool_filter(assertion, "delivery_allowed"),
+        "policy_required": _optional_bool_filter(assertion, "policy_required"),
+        "gate_status": _optional_filter_str(assertion, "gate_status"),
+        "gate_reason": _optional_filter_str(assertion, "gate_reason"),
+        "delivery_status": _optional_filter_str(assertion, "delivery_status"),
+        "delivery_reason": _optional_filter_str(assertion, "delivery_reason"),
+        "endpoint_id": _optional_filter_str(assertion, "endpoint_id"),
+    }
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, EncryptedDeliveryResult)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_encrypted_delivery_result_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"encrypted delivery result contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
+def _encrypted_delivery_audit_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = {
+        "registry_hub": hub_id,
+        "request_id": _optional_filter_str(assertion, "request_id"),
+        "message_id": _optional_filter_str(assertion, "message_id"),
+        "mailbox_id": _optional_filter_str(assertion, "mailbox_id"),
+        "lane_signature": _optional_filter_str(assertion, "lane_signature"),
+        "gate_status": _optional_filter_str(assertion, "gate_status"),
+        "gate_reason": _optional_filter_str(assertion, "gate_reason"),
+        "delivery_status": _optional_filter_str(assertion, "delivery_status"),
+        "delivery_reason": _optional_filter_str(assertion, "delivery_reason"),
+        "policy_id": _optional_filter_str(assertion, "policy_id"),
+        "encryption_required": _optional_bool_filter(
+            assertion,
+            "encryption_required",
+        ),
+        "envelope_accepted": _optional_bool_filter(assertion, "envelope_accepted"),
+    }
+    records = [
+        _encrypted_delivery_audit_summary(result)
+        for result in world.action_results
+        if isinstance(result, EncryptedDeliveryResult)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_encrypted_delivery_audit_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"encrypted delivery audit contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
 def _result(
     assertion_type: str,
     passed: bool,
@@ -1535,6 +1634,111 @@ def _matches_encryption_policy_decision_filters(
     return True
 
 
+def _matches_encrypted_delivery_result_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    metadata = record.get("metadata")
+    registry_hub = metadata.get("registry_hub") if isinstance(metadata, dict) else None
+    if registry_hub != filters["registry_hub"]:
+        return False
+    for field_name in (
+        "request_id",
+        "message_id",
+        "mailbox_id",
+        "lane_signature",
+        "status",
+        "reason",
+        "delivery_attempted",
+        "delivery_allowed",
+        "policy_required",
+    ):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+
+    gate_decision = record.get("gate_decision")
+    if not isinstance(gate_decision, dict):
+        return False
+    if (
+        filters["gate_status"] is not None
+        and gate_decision.get("status") != filters["gate_status"]
+    ):
+        return False
+    if (
+        filters["gate_reason"] is not None
+        and gate_decision.get("reason") != filters["gate_reason"]
+    ):
+        return False
+
+    delivery_result = record.get("delivery_result")
+    if delivery_result is not None and not isinstance(delivery_result, dict):
+        return False
+    if (
+        filters["delivery_status"] is not None
+        and _nested_delivery_value(delivery_result, "status") != filters["delivery_status"]
+    ):
+        return False
+    if (
+        filters["delivery_reason"] is not None
+        and _nested_delivery_value(delivery_result, "reason") != filters["delivery_reason"]
+    ):
+        return False
+    return not (
+        filters["endpoint_id"] is not None
+        and _nested_delivery_value(delivery_result, "endpoint_id")
+        != filters["endpoint_id"]
+    )
+
+
+def _encrypted_delivery_audit_summary(
+    result: EncryptedDeliveryResult,
+) -> dict[str, object]:
+    summary = build_encrypted_delivery_audit_entry(result).to_summary()
+    result_metadata = result.metadata if isinstance(result.metadata, dict) else {}
+    audit_metadata = dict(summary.get("metadata", {}))
+    if "registry_hub" in result_metadata:
+        audit_metadata["registry_hub"] = result_metadata["registry_hub"]
+    summary["metadata"] = audit_metadata
+    return summary
+
+
+def _matches_encrypted_delivery_audit_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    metadata = record.get("metadata")
+    registry_hub = metadata.get("registry_hub") if isinstance(metadata, dict) else None
+    if registry_hub != filters["registry_hub"]:
+        return False
+    for field_name in (
+        "request_id",
+        "message_id",
+        "mailbox_id",
+        "lane_signature",
+        "gate_status",
+        "gate_reason",
+        "delivery_status",
+        "delivery_reason",
+        "policy_id",
+        "encryption_required",
+        "envelope_accepted",
+    ):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    return True
+
+
+def _nested_delivery_value(
+    delivery_result: object,
+    field_name: str,
+) -> object | None:
+    if not isinstance(delivery_result, dict):
+        return None
+    return delivery_result.get(field_name)
+
+
 _EVALUATORS = {
     "device_registered": _device_registered,
     "label_maps_to": _label_maps_to,
@@ -1583,4 +1787,6 @@ _EVALUATORS = {
     ),
     "mailbox_encryption_policy_registered": _mailbox_encryption_policy_registered,
     "encryption_policy_decision_contains": _encryption_policy_decision_contains,
+    "encrypted_delivery_result_contains": _encrypted_delivery_result_contains,
+    "encrypted_delivery_audit_contains": _encrypted_delivery_audit_contains,
 }
