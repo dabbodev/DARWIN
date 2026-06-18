@@ -138,9 +138,12 @@ Sprint 2 is deliberately scoped to policy-gate decisions. It proves the
 request and policy layers can be connected without changing released mailbox
 delivery semantics.
 
-Future v1.1 work may add an opt-in wrapper that combines a gate decision and
-an underlying delivery result. That wrapper is deferred so accepted and
-blocked policy outcomes can be tested independently first.
+Sprint 3 adds that opt-in wrapper as
+`evaluate_encrypted_delivery_request(...)`. It combines a gate decision and,
+only when `attempt_delivery=True`, the existing underlying delivery result.
+The policy gate itself remains delivery-free.
+
+See `docs/ENCRYPTED_DELIVERY_RESULTS_v1_1.md`.
 
 ## Predicates
 

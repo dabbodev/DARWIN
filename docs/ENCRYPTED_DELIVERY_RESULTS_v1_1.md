@@ -1,0 +1,175 @@
+# DARWIN Encrypted Delivery Results v1.1
+
+Status: implemented on the `v1.1/planning` branch. The current package and
+CLI version remain `darwin-sim 1.0.0`.
+
+DARWIN v1.1 Sprint 3 adds opt-in wrapped symbolic encrypted delivery results
+and compact audit metadata. These helpers combine an
+`EncryptedDeliveryRequest`, its `EncryptedDeliveryGateDecision`, and, only
+when explicitly requested, an existing v0.9 `MessageDeliveryResult`.
+
+This is simulator audit metadata only. It is not real encrypted delivery, not
+production E2EE, not a secure messenger, and not a cryptographic protocol.
+
+## Purpose
+
+`EncryptedDeliveryResult` records the outcome of the helper-level symbolic
+flow introduced across v1.1:
+
+- evaluate the request with the symbolic policy gate;
+- return the gate decision in every wrapped result;
+- do not deliver by default;
+- optionally call the existing in-memory mailbox delivery helper when
+  `attempt_delivery=True`;
+- include the existing `MessageDeliveryResult` only when that helper was
+  called.
+
+The result summary is deterministic and JSON-safe. It includes:
+
+- `request_id`
+- `message_id`
+- `mailbox_id`
+- `lane_signature`
+- `gate_decision`
+- `delivery_result`
+- `status`
+- `reason`
+- `delivery_attempted`
+- `delivery_allowed`
+- `policy_required`
+- `metadata`
+
+`EncryptedDeliveryAuditEntry` provides a smaller audit-oriented view with:
+
+- `request_id`
+- `message_id`
+- `mailbox_id`
+- `lane_signature`
+- `gate_status`
+- `gate_reason`
+- `delivery_status`
+- `delivery_reason`
+- `policy_id`
+- `encryption_required`
+- `envelope_accepted`
+- `metadata`
+
+## Relationship to EncryptedDeliveryRequest
+
+`EncryptedDeliveryRequest` remains the explicit request input shape. It may
+describe plaintext, symbolic encrypted, or policy-check-only intent.
+
+The new `evaluate_encrypted_delivery_request(...)` helper accepts that request
+and evaluates the existing policy gate. Policy-check-only requests never call
+delivery. Blocked requests never call delivery. Allowed requests only call
+delivery when the caller explicitly passes:
+
+```python
+attempt_delivery=True
+```
+
+## Relationship to EncryptedDeliveryGateDecision
+
+Every wrapped result includes the symbolic `EncryptedDeliveryGateDecision`
+from `evaluate_encrypted_delivery_request_policy(...)`.
+
+Gate decisions remain the source of truth for:
+
+- `delivery_allowed`
+- `policy_required`
+- `envelope_accepted`
+- policy status and reason
+- the underlying retained `EncryptionPolicyDecision`, when one was created
+
+The wrapper does not add persistent gate-decision or wrapped-result history.
+It returns one compact result to the caller.
+
+## Relationship to MessageDeliveryResult
+
+v0.9 `MessageDeliveryResult` remains the retained result created by
+`deliver_message_to_mailbox(...)`.
+
+The wrapper does not replace or alter that model. When
+`attempt_delivery=True` and the gate allows delivery, the helper calls:
+
+```python
+deliver_message_to_mailbox(registry_hub, request.message_envelope)
+```
+
+The returned `MessageDeliveryResult` is attached to the wrapped result. The
+normal delivery helper still owns inbox mutation and retained delivery-result
+append behavior.
+
+If `attempt_delivery=False`, the wrapper returns an allowed but not-delivered
+result and does not mutate message inboxes or retained message delivery
+results.
+
+## Default Behavior
+
+The default is:
+
+```python
+attempt_delivery=False
+```
+
+This keeps symbolic encrypted delivery integration observable without changing
+existing plaintext mailbox behavior. Direct calls to
+`deliver_message_to_mailbox(...)` keep their released v0.9 semantics and do
+not run encrypted delivery policy by default.
+
+## Retention
+
+The wrapper exposes:
+
+```python
+retain_policy_decision=True
+```
+
+This is passed through to the Sprint 2 gate helper. It controls only the
+existing `RegistryHub.encryption_policy_decision_history` behavior. Sprint 3
+does not add durable wrapped-result history, queues, retry workers, or
+background processing.
+
+Persistent encrypted delivery audit history is deferred.
+
+## Helpers and Predicates
+
+Sprint 3 adds:
+
+- `evaluate_encrypted_delivery_request(...)`
+- `summarize_encrypted_delivery_result(...)`
+- `build_encrypted_delivery_audit_entry(...)`
+- `is_encrypted_delivery_result_allowed(...)`
+- `is_encrypted_delivery_result_delivered(...)`
+- `is_encrypted_delivery_result_blocked(...)`
+
+All helpers are deterministic and simulator-local.
+
+## Explicit Non-Goals
+
+Sprint 3 does not add:
+
+- real cryptography;
+- key generation;
+- private key storage;
+- secret material;
+- encryption;
+- decryption;
+- production E2EE;
+- secure messenger behavior;
+- default delivery enforcement;
+- crypto library integration;
+- networking;
+- sockets;
+- HTTP or WebSocket behavior;
+- DNS lookup;
+- registrar integration;
+- public CA behavior;
+- production identity proof;
+- external services;
+- durable queues or retry workers;
+- TrafficHub routing changes;
+- canonical identity rewrites;
+- scenario DSL actions;
+- scenario DSL assertions;
+- new scenario YAMLs.

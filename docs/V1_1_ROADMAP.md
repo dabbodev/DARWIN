@@ -135,6 +135,8 @@ See `docs/ENCRYPTED_DELIVERY_POLICY_GATE_v1_1.md`.
 
 ## Sprint 3: Encrypted Delivery Result and Audit Metadata
 
+Status: implemented on `v1.1/planning`.
+
 Goal: extend or wrap delivery results with symbolic encryption decision
 summaries.
 
@@ -153,6 +155,28 @@ Acceptance targets:
 - Rejected gated delivery records a symbolic rejection without mutating inboxes.
 - Existing retained delivery result behavior remains unchanged unless the new
   opt-in wrapper is used.
+
+Implemented scope:
+
+- `EncryptedDeliveryResult`, `EncryptedDeliveryResultStatus`, and
+  `EncryptedDeliveryAuditEntry` model wrapped symbolic encrypted delivery
+  outcomes and compact audit metadata.
+- `evaluate_encrypted_delivery_request(...)` evaluates the Sprint 2 gate and
+  defaults to `attempt_delivery=False`, so allowed requests are reported as
+  not delivered unless the caller explicitly opts into delivery.
+- When `attempt_delivery=True` and the gate allows delivery, the wrapper calls
+  the existing `deliver_message_to_mailbox(...)` helper with the request's
+  base `MessageEnvelope` and attaches the resulting `MessageDeliveryResult`.
+- Blocked and policy-check-only requests do not mutate inboxes or retained
+  message delivery results.
+- `retain_policy_decision` passes through to the existing retained
+  `EncryptionPolicyDecision` history. Sprint 3 does not add persistent
+  wrapped-result history.
+- Existing plaintext delivery, message inboxes, retained message delivery
+  results, TrafficHub routing, canonical identity, and scenario DSL behavior
+  remain unchanged unless the new opt-in wrapper is used.
+
+See `docs/ENCRYPTED_DELIVERY_RESULTS_v1_1.md`.
 
 ## Sprint 4: Scenario DSL and Scenarios
 

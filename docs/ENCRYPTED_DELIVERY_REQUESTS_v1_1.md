@@ -102,7 +102,7 @@ These helpers construct or inspect records only. They do not mutate
 mailbox inboxes, retained delivery results, encryption policy decision
 history, scenario state, snapshots, or external systems.
 
-## Policy Gate Relationship
+## Policy Gate and Result Relationship
 
 v1.1 Sprint 2 uses `EncryptedDeliveryRequest` as the input to an explicit
 opt-in policy gate. `evaluate_encrypted_delivery_request_policy(...)`
@@ -117,6 +117,14 @@ v0.9 behavior.
 
 See `docs/ENCRYPTED_DELIVERY_POLICY_GATE_v1_1.md`.
 
+v1.1 Sprint 3 adds `evaluate_encrypted_delivery_request(...)`, which wraps the
+request, gate decision, and optional existing `MessageDeliveryResult` in an
+`EncryptedDeliveryResult`. Its default remains `attempt_delivery=False`, so a
+request can be evaluated without mutating inboxes or retained message delivery
+results.
+
+See `docs/ENCRYPTED_DELIVERY_RESULTS_v1_1.md`.
+
 ## Why This Is Separate From Delivery
 
 `deliver_message_to_mailbox(...)` is the released v0.9 in-memory mailbox
@@ -127,8 +135,10 @@ RegistryHub-local inbox, and retains delivery results.
 Encrypted delivery requests are deliberately separate because v1.1 policy
 integration is opt-in and observable before any delivery behavior is gated.
 Sprint 1 creates the request shape. Sprint 2 adds a symbolic policy gate that
-returns a decision without delivering. Neither sprint forces existing
-plaintext delivery to fail or adds default delivery enforcement.
+returns a decision without delivering. Sprint 3 adds an opt-in wrapper that
+can include an existing delivery result only when explicitly requested. None
+of these sprints force existing plaintext delivery to fail or add default
+delivery enforcement.
 
 ## Explicit Non-Goals
 

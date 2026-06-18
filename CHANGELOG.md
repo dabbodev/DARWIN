@@ -15,6 +15,12 @@ Added:
   registered mailbox encryption policy decisions without delivering messages.
 - Pure encrypted delivery gate predicates, JSON-safe summaries, retention
   controls for the existing policy decision history, and documentation.
+- v1.1 Sprint 3 wrapped symbolic encrypted delivery results and compact audit
+  metadata that combine a request, gate decision, and optional existing
+  message delivery result.
+- `evaluate_encrypted_delivery_request(...)` helper with
+  `attempt_delivery=False` by default, plus JSON-safe result/audit summaries
+  and pure wrapped-result predicates.
 
 Compatibility and limits:
 
