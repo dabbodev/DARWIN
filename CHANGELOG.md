@@ -1,5 +1,24 @@
 # Changelog
 
+## [v1.1 draft] - Unreleased
+
+Added:
+
+- v1.1 Sprint 1 simulator-local symbolic encrypted delivery request models for
+  plaintext, symbolic encrypted, and policy-check-only request intent.
+- Pure encrypted delivery request constructors, predicates, structural status
+  helpers, JSON-safe summaries, and documentation.
+
+Compatibility and limits:
+
+- Existing `deliver_message_to_mailbox(...)` behavior remains unchanged.
+- The package and CLI version remain `darwin-sim 1.0.0`.
+- No real cryptography, key generation, private key storage, encryption,
+  decryption, production E2EE, delivery enforcement, scenario DSL changes,
+  networking, external services, TrafficHub routing changes, canonical
+  identity rewrites, package publication, tagging, release creation, or version
+  bump is added by this draft work.
+
 ## [1.0.0] - 2026-06-17
 
 DARWIN v1.0.0 has been merged to `main`, tagged as annotated `v1.0.0`, and

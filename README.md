@@ -926,6 +926,7 @@ For v1.0 encrypted mailbox model planning, see:
 For v1.1 symbolic encrypted delivery policy integration planning, see:
 
 - `docs/V1_1_ROADMAP.md`
+- `docs/ENCRYPTED_DELIVERY_REQUESTS_v1_1.md`
 
 ## What v0.1 Is Not
 

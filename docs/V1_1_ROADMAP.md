@@ -53,6 +53,8 @@ Out of scope:
 
 ## Sprint 1: Symbolic Encrypted Delivery Request Model
 
+Status: implemented on `v1.1/planning`.
+
 Goal: introduce a helper-level delivery request model that can carry either a
 plaintext message envelope or symbolic encrypted envelope metadata.
 
@@ -72,6 +74,21 @@ Acceptance targets:
 - Request summaries are deterministic and JSON-safe.
 - No helper performs encryption, decryption, key generation, networking, or
   mailbox mutation by itself.
+
+Implemented scope:
+
+- `EncryptedDeliveryRequest`, `EncryptedDeliveryRequestMode`, and
+  `EncryptedDeliveryRequestStatus` model request intent separately from
+  mailbox delivery.
+- Pure constructors cover plaintext, symbolic encrypted, and
+  policy-check-only request records.
+- Pure predicates expose plaintext, symbolic encrypted, policy-required, and
+  structural status checks without evaluating policy or delivering messages.
+- The request layer preserves message envelope lane signatures, keeps
+  summaries JSON-safe, and does not mutate message envelopes, symbolic
+  encrypted envelope metadata, `RegistryHub`, or in-memory inbox state.
+
+See `docs/ENCRYPTED_DELIVERY_REQUESTS_v1_1.md`.
 
 ## Sprint 2: Opt-In Encrypted Delivery Policy Gate
 
