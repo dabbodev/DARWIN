@@ -30,10 +30,14 @@ Added:
   history, read-only `query_encrypted_delivery_results(...)` filters,
   retained-history-first scenario assertions, detailed snapshot visibility,
   and documentation for `retain_result` behavior.
+- v1.1 Sprint 6 release-candidate hardening docs and draft release notes for
+  symbolic encrypted delivery policy integration, with scenario index coverage
+  remaining contiguous through `052`.
 
 Compatibility and limits:
 
 - Existing `deliver_message_to_mailbox(...)` behavior remains unchanged.
+- v1.1 draft work remains unreleased on `v1.1/planning`.
 - The package and CLI version remain `darwin-sim 1.0.0`.
 - No real cryptography, key generation, private key storage, encryption,
   decryption, production E2EE, default delivery enforcement, networking,

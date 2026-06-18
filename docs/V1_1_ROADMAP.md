@@ -239,6 +239,10 @@ See `docs/ENCRYPTED_DELIVERY_RESULT_HISTORY_v1_1.md`.
 
 ## Sprint 6: Release-Candidate Hardening and Release Prep
 
+Status: implemented on `v1.1/planning` as release-candidate hardening. v1.1
+remains unreleased draft work and the package/CLI version remains
+`darwin-sim 1.0.0`.
+
 Goal: harden the v1.1 planning line after implementation slices are complete.
 
 Candidate work:
@@ -256,6 +260,17 @@ Acceptance targets:
 - Version remains `darwin-sim 1.0.0` until release prep.
 - Release-facing docs remain clear that v1.1 is simulator-only symbolic policy
   integration.
+
+Implemented scope:
+
+- Audited encrypted delivery request, policy gate, wrapped result, scenario
+  DSL, assertion, retained history, and detailed snapshot behavior against the
+  v1.1 simulator-only boundaries.
+- Added draft release notes at `docs/RELEASE_NOTES_v1_1_DRAFT.md`.
+- Confirmed the checked-in scenario index and scenario metadata coverage for
+  scenarios `001` through `052`.
+- Preserved existing plaintext delivery, compact snapshot, TrafficHub routing,
+  canonical identity, and version behavior.
 
 ## Future Real Crypto Adapter Considerations
 
