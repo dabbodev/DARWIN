@@ -683,12 +683,13 @@ or import cryptographic libraries.
 
 ## v1.1 Symbolic Encrypted Delivery Request Scenarios
 
-The v1.1 planning branch adds scenario DSL coverage for the existing
-helper-level symbolic encrypted delivery request, policy gate, and wrapped
-result flow. This behavior remains opt-in and simulator-local. It is not real
-cryptography, encryption, decryption, production E2EE, secure messaging,
-networking, DNS lookup, external services, durable queues, or default delivery
-enforcement.
+The unreleased `v1.1/planning` branch adds scenario DSL coverage for the
+existing helper-level symbolic encrypted delivery request, policy gate, and
+wrapped result flow. The current branch package and CLI version are
+`darwin-sim 1.1.0`. This behavior remains opt-in and simulator-local. It is
+not real cryptography, encryption, decryption, production E2EE, secure
+messaging, networking, DNS lookup, external services, durable queues, or
+default delivery enforcement.
 
 Supported v1.1 encrypted delivery action:
 

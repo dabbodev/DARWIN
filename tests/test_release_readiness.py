@@ -31,6 +31,7 @@ def test_documentation_links_exist():
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_8_DRAFT.md",
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_9_DRAFT.md",
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_0_DRAFT.md",
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_1_DRAFT.md",
     ]
 
     referenced_paths = {
@@ -57,7 +58,7 @@ def test_version_consistency():
         encoding="utf-8"
     )
     current_release_notes = (
-        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_0_DRAFT.md"
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_1_DRAFT.md"
     ).read_text(encoding="utf-8")
 
     assert darwin.__version__ == project_version

@@ -439,3 +439,49 @@ python -m darwin.cli.main --version
 python -m darwin.cli.main scenario-index
 python -m darwin.cli.main list-scenarios
 ```
+
+# DARWIN v1.1 Symbolic Encrypted Delivery Release-Prep Checklist
+
+v1.1.0 is release-prep work on the `v1.1/planning` branch. It has not been
+merged, tagged as `v1.1.0`, published as a GitHub release, or published as a
+package.
+
+- [x] Package version is updated to `1.1.0` on the planning branch.
+- [x] CLI version reports `darwin-sim 1.1.0`.
+- [x] Ruff passes with `python -m ruff check .`.
+- [x] Tests pass with `python -m pytest`.
+- [x] All checked-in scenarios `001` through `052` pass with
+  `python scripts/run_all_scenarios.py`.
+- [x] Scenario index is current and lists scenarios `001` through `052`
+  without numbering gaps.
+- [x] Scenario metadata regression confirms scenarios `001` through `052` are
+  contiguous and discoverable.
+- [x] v1.1 scenarios `050` through `052` validate and run.
+- [x] v1.1 draft release notes are checked in
+  `docs/RELEASE_NOTES_v1_1_DRAFT.md`.
+- [x] CHANGELOG contains an unreleased `1.1.0` release-prep section.
+- [x] README and v1.1 docs state that symbolic encrypted delivery integration
+  is opt-in, simulator-local policy/audit modeling.
+- [x] Documentation states that existing plaintext delivery, TrafficHub
+  routing, and canonical identity behavior remain unchanged.
+- [x] Documentation avoids real cryptography, key generation, private key
+  storage, encryption/decryption, crypto library integration, production E2EE,
+  secure messenger behavior, default delivery enforcement, real networking,
+  sockets, HTTP/WebSocket behavior, DNS lookup, external services, durable
+  queues, retry workers, TrafficHub routing changes, canonical identity
+  rewrites, and package-publication claims.
+- [x] Merge to `main` has not been performed.
+- [x] Annotated tag `v1.1.0` has not been created.
+- [x] GitHub release has not been created.
+- [x] Package publication has not been performed.
+
+## v1.1 Release-Prep Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main list-scenarios
+```

@@ -1,8 +1,8 @@
 # DARWIN v1.1 Roadmap: Symbolic Encrypted Delivery Policy Integration
 
 DARWIN v1.1 planning starts from the released v1.0.0 simulator on `main`.
-The planning branch is `v1.1/planning`. The current package and CLI version
-must remain `darwin-sim 1.0.0` until explicit release prep.
+The planning branch is `v1.1/planning`. During release prep, the current
+branch package and CLI version have been updated to `darwin-sim 1.1.0`.
 
 Recommended theme: Symbolic Encrypted Delivery Policy Integration.
 
@@ -49,7 +49,7 @@ Out of scope:
 - Default enforcement inside existing plaintext delivery helpers.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
-- Version bump beyond `1.0.0` before explicit release prep.
+- Version bump beyond `1.1.0`.
 
 ## Sprint 1: Symbolic Encrypted Delivery Request Model
 
@@ -240,8 +240,8 @@ See `docs/ENCRYPTED_DELIVERY_RESULT_HISTORY_v1_1.md`.
 ## Sprint 6: Release-Candidate Hardening and Release Prep
 
 Status: implemented on `v1.1/planning` as release-candidate hardening. v1.1
-remains unreleased draft work and the package/CLI version remains
-`darwin-sim 1.0.0`.
+remains unreleased release-prep work and the package/CLI version is
+`darwin-sim 1.1.0`.
 
 Goal: harden the v1.1 planning line after implementation slices are complete.
 
@@ -257,7 +257,7 @@ Acceptance targets:
 
 - Ruff, pytest, scenario runner, and CLI version checks pass.
 - Scenario set remains contiguous.
-- Version remains `darwin-sim 1.0.0` until release prep.
+- Version reports `darwin-sim 1.1.0` during release prep.
 - Release-facing docs remain clear that v1.1 is simulator-only symbolic policy
   integration.
 
@@ -271,6 +271,8 @@ Implemented scope:
   scenarios `001` through `052`.
 - Preserved existing plaintext delivery, compact snapshot, TrafficHub routing,
   canonical identity, and version behavior.
+- Completed the release-prep version bump to `darwin-sim 1.1.0` without
+  merging, tagging, creating a GitHub release, or publishing packages.
 
 ## Future Real Crypto Adapter Considerations
 
@@ -305,5 +307,5 @@ without changing existing plaintext delivery helpers.
 - Default enforcement inside existing plaintext delivery helpers.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
-- Package publication, tagging, release creation, or version bump during
-  planning.
+- Package publication, tagging, release creation, or version bump beyond
+  `1.1.0`.

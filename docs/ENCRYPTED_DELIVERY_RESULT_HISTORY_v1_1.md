@@ -1,7 +1,7 @@
 # DARWIN Encrypted Delivery Result History v1.1
 
-Status: implemented on the `v1.1/planning` branch. The current package and
-CLI version remain `darwin-sim 1.0.0`.
+Status: implemented on the unreleased `v1.1/planning` branch. The current
+branch package and CLI version are `darwin-sim 1.1.0`.
 
 DARWIN v1.1 Sprint 5 adds RegistryHub-local retained wrapped encrypted
 delivery result history. The retained records are compact symbolic audit

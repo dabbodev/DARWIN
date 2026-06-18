@@ -1,19 +1,20 @@
-# DARWIN v1.1 Draft Release Notes
+# DARWIN v1.1.0 Release Notes
 
-Status: unreleased draft work on the `v1.1/planning` branch. The current
-package and CLI version remain `darwin-sim 1.0.0`. Do not treat v1.1 as
-released until explicit release prep, tagging, and release publication occur.
+Status: unreleased release-prep work on the `v1.1/planning` branch. The
+current branch package and CLI version are `darwin-sim 1.1.0`. Do not treat
+v1.1.0 as released until merge, tagging, GitHub release publication, and any
+explicit publication steps are performed separately.
 
-DARWIN v1.1 adds simulator-local symbolic encrypted delivery policy
-integration. It connects v1.0 symbolic mailbox encryption policy decisions to
-v0.9 toy in-memory mailbox delivery through explicit request, gate, result,
-audit, retention, snapshot, and scenario DSL surfaces.
+DARWIN v1.1.0 prepares simulator-local symbolic encrypted delivery policy
+integration for release. It connects v1.0 symbolic mailbox encryption policy
+decisions to v0.9 toy in-memory mailbox delivery through explicit request,
+gate, result, audit, retention, snapshot, and scenario DSL surfaces.
 
 This is policy and audit modeling only. It is not real encryption, not
 production E2EE, not a secure messenger, and not cryptographic protocol
 behavior.
 
-## Draft Highlights
+## Highlights
 
 - Added symbolic encrypted delivery request models for plaintext,
   symbolic-encrypted, and policy-check-only intent.
@@ -32,15 +33,15 @@ behavior.
 - Added read-only scenario assertions
   `encrypted_delivery_result_contains` and
   `encrypted_delivery_audit_contains`.
-- Added v1.1 draft scenarios `050` through `052` for policy-check-only,
+- Added v1.1 scenarios `050` through `052` for policy-check-only,
   gate-allowed/no-attempt, explicit gate-allowed delivery, and gate-blocked
   no-delivery paths.
 - Added detailed snapshot visibility at
   `registry_hubs.<hub_id>.encrypted_delivery_result_history` while keeping
   compact `world.snapshot()` unchanged.
-- Hardened tests and docs for request models, policy gates, wrapped results,
-  retained history, scenario assertions, scenario index coverage, and
-  simulator-only boundaries.
+- Hardened the scenario index, metadata regression coverage, tests, and docs
+  for request models, policy gates, wrapped results, retained history,
+  scenario assertions, and simulator-only boundaries.
 
 ## Compatibility
 
@@ -48,13 +49,14 @@ behavior.
 - Existing plaintext `deliver_message` scenarios remain unchanged.
 - Encrypted delivery integration remains opt-in and simulator-local.
 - TrafficHub routing and canonical identity behavior remain unchanged.
-- The current planning scenario set is contiguous from `001` through `052`.
-- The package and CLI version remain `darwin-sim 1.0.0`.
-- No package publication was performed.
+- The current branch scenario set is contiguous from `001` through `052`.
+- The current branch package and CLI version are `darwin-sim 1.1.0`.
+- Merge, tag, GitHub release creation, and package publication have not been
+  performed.
 
 ## Scenario Coverage
 
-v1.1 draft scenarios:
+v1.1 scenarios:
 
 - `scenarios/050_symbolic_encrypted_delivery_policy_check.yaml`
 - `scenarios/051_symbolic_encrypted_delivery_allowed.yaml`
@@ -64,9 +66,19 @@ These scenarios validate symbolic request/gate/result/audit behavior only.
 They do not add production encrypted messaging, networking, DNS lookup,
 external services, or default delivery enforcement.
 
+## Current Limitations
+
+- Wrapped encrypted delivery result history is in-memory and RegistryHub-local.
+- Query helpers are read-only filters over retained simulator records.
+- Audit entries are compact simulator metadata, not compliance logs.
+- Policy checks depend on v1.0 symbolic policy records and symbolic envelope
+  metadata only.
+- Explicit delivery still delegates to the existing toy in-memory mailbox
+  delivery helper when `attempt_delivery=True` and the gate allows it.
+
 ## Non-Goals
 
-v1.1 does not add:
+v1.1.0 does not add:
 
 - real cryptography;
 - key generation;
@@ -97,7 +109,6 @@ v1.1 does not add:
 
 ## Release Readiness
 
-This draft is intended to support release-candidate review only. Before any
-v1.1 release, run the full validation set, confirm the versioning plan, update
-release metadata deliberately, and avoid package publication unless explicitly
-planned.
+This branch is release-prep ready after the full validation set passes. The
+release itself remains deferred: do not merge, tag, create a GitHub release,
+or publish packages as part of this draft release-prep state.

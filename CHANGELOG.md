@@ -1,6 +1,9 @@
 # Changelog
 
-## [v1.1 draft] - Unreleased
+## [1.1.0] - Unreleased
+
+DARWIN v1.1.0 is release-prep ready on the `v1.1/planning` branch. It has not
+been merged, tagged, published as a GitHub release, or published as a package.
 
 Added:
 
@@ -33,17 +36,23 @@ Added:
 - v1.1 Sprint 6 release-candidate hardening docs and draft release notes for
   symbolic encrypted delivery policy integration, with scenario index coverage
   remaining contiguous through `052`.
+- v1.1 release prep updates the package and CLI version to
+  `darwin-sim 1.1.0` on the planning branch.
 
 Compatibility and limits:
 
 - Existing `deliver_message_to_mailbox(...)` behavior remains unchanged.
-- v1.1 draft work remains unreleased on `v1.1/planning`.
-- The package and CLI version remain `darwin-sim 1.0.0`.
+- v1.1 work remains unreleased on `v1.1/planning`.
+- The package and CLI version now report `darwin-sim 1.1.0` on the planning
+  branch.
+- The checked-in scenario set is expected to run contiguously from `001`
+  through `052`, with scenarios `050` through `052` covering v1.1 symbolic
+  encrypted delivery integration.
 - No real cryptography, key generation, private key storage, encryption,
   decryption, production E2EE, default delivery enforcement, networking,
   external services, TrafficHub routing changes, canonical identity rewrites,
-  package publication, tagging, release creation, or version bump is added by
-  this draft work.
+  package publication, tagging, or release creation is added by this
+  release-prep work.
 
 ## [1.0.0] - 2026-06-17
 
