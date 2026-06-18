@@ -92,6 +92,8 @@ See `docs/ENCRYPTED_DELIVERY_REQUESTS_v1_1.md`.
 
 ## Sprint 2: Opt-In Encrypted Delivery Policy Gate
 
+Status: implemented on `v1.1/planning`.
+
 Goal: add an explicit helper that evaluates registered mailbox encryption
 policy before delivery.
 
@@ -111,6 +113,25 @@ Acceptance targets:
 - Existing plaintext delivery tests and scenarios remain unchanged when no
   policy gate is requested.
 - No real cryptography or external service behavior is introduced.
+
+Implemented scope:
+
+- `EncryptedDeliveryGateDecision`, `EncryptedDeliveryGateStatus`, and
+  `EncryptedDeliveryGateReason` model opt-in symbolic gate outcomes.
+- `evaluate_encrypted_delivery_request_policy(...)` evaluates an
+  `EncryptedDeliveryRequest` against registered mailbox encryption policy
+  without calling `deliver_message_to_mailbox(...)`.
+- Gate decisions wrap the existing `EncryptionPolicyDecision` summary when
+  registered policy evaluation runs.
+- `retain_decision` controls the existing
+  `RegistryHub.encryption_policy_decision_history` behavior. Sprint 2 does
+  not add separate persistent gate-decision history.
+- Pure gate predicates expose allowed and blocked outcomes without mutation.
+- Existing plaintext delivery, message inboxes, retained message delivery
+  results, TrafficHub routing, canonical identity, and scenario DSL behavior
+  remain unchanged.
+
+See `docs/ENCRYPTED_DELIVERY_POLICY_GATE_v1_1.md`.
 
 ## Sprint 3: Encrypted Delivery Result and Audit Metadata
 

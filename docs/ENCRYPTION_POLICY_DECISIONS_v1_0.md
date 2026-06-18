@@ -60,6 +60,19 @@ Results preserve append order and return an empty list when no retained
 decision matches. Decision `to_summary()` output is deterministic and
 JSON-safe.
 
+## v1.1 Gate Relationship
+
+v1.1 Sprint 2 adds the opt-in
+`evaluate_encrypted_delivery_request_policy(...)` helper. That gate wraps
+registered policy evaluation in an `EncryptedDeliveryGateDecision` without
+delivering messages.
+
+When the gate is called with `retain_decision=True`, retained history still
+uses the existing `RegistryHub.encryption_policy_decision_history` list. The
+gate does not add a separate persistent gate-decision history in Sprint 2.
+
+See `docs/ENCRYPTED_DELIVERY_POLICY_GATE_v1_1.md`.
+
 ## Snapshot Visibility
 
 Detailed snapshots expose retained decisions at:

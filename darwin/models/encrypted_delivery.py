@@ -5,7 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from darwin.models.encryption import EncryptedEnvelopeMetadata
+from darwin.models.encryption import (
+    EncryptedEnvelopeMetadata,
+    EncryptionPolicyDecision,
+)
 from darwin.models.lane_signature import LaneSignature, parse_lane_signature
 from darwin.models.message import MessageEnvelope
 
@@ -21,6 +24,34 @@ ENCRYPTED_DELIVERY_REQUEST_STATUSES: tuple[str, ...] = (
     "missing_envelope",
     "policy_check_only",
     "invalid",
+)
+
+ENCRYPTED_DELIVERY_GATE_STATUSES: tuple[str, ...] = (
+    "allowed",
+    "blocked",
+    "plaintext_allowed",
+    "policy_missing",
+    "policy_not_required",
+    "policy_check_failed",
+    "invalid_request",
+)
+
+ENCRYPTED_DELIVERY_GATE_REASONS: tuple[str, ...] = (
+    "accepted",
+    "plaintext_no_policy_required",
+    "policy_not_found",
+    "missing_policy_reference",
+    "missing_mailbox_reference",
+    "missing_envelope",
+    "needs_encryption",
+    "plaintext_fallback_allowed",
+    "missing_identity",
+    "missing_key_bundle",
+    "unsupported_profile",
+    "identity_inactive",
+    "key_bundle_unusable",
+    "envelope_not_ready",
+    "invalid_request",
 )
 
 
@@ -54,6 +85,126 @@ class EncryptedDeliveryRequestStatus:
     def to_summary(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe request status summary."""
         return {"status": self.status}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class EncryptedDeliveryGateStatus:
+    """Controlled simulator-local encrypted delivery gate status."""
+
+    status: str
+
+    def __post_init__(self) -> None:
+        _validate_gate_status(self.status)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe gate status summary."""
+        return {"status": self.status}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class EncryptedDeliveryGateReason:
+    """Controlled simulator-local encrypted delivery gate reason."""
+
+    reason: str
+
+    def __post_init__(self) -> None:
+        _validate_gate_reason(self.reason)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe gate reason summary."""
+        return {"reason": self.reason}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class EncryptedDeliveryGateDecision:
+    """Opt-in symbolic encrypted delivery policy gate decision."""
+
+    request_id: str
+    message_id: str | None
+    mailbox_id: str | None
+    lane_signature: LaneSignature | str | None
+    policy_id: str | None
+    status: EncryptedDeliveryGateStatus | str
+    reason: EncryptedDeliveryGateReason | str
+    policy_decision: EncryptionPolicyDecision | dict[str, Any] | None
+    delivery_allowed: bool
+    policy_required: bool
+    envelope_accepted: bool
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.request_id, "request_id")
+        _validate_optional_string(self.message_id, "message_id")
+        _validate_optional_string(self.mailbox_id, "mailbox_id")
+        _validate_optional_string(self.policy_id, "policy_id")
+
+        lane_signature = self.lane_signature
+        if lane_signature is not None:
+            lane_signature = _lane_signature_key(lane_signature)
+        object.__setattr__(self, "lane_signature", lane_signature)
+
+        status = self.status
+        if isinstance(status, str):
+            status = EncryptedDeliveryGateStatus(status)
+        if not isinstance(status, EncryptedDeliveryGateStatus):
+            raise TypeError("status must be an EncryptedDeliveryGateStatus or string")
+        object.__setattr__(self, "status", status)
+
+        reason = self.reason
+        if isinstance(reason, str):
+            reason = EncryptedDeliveryGateReason(reason)
+        if not isinstance(reason, EncryptedDeliveryGateReason):
+            raise TypeError("reason must be an EncryptedDeliveryGateReason or string")
+        object.__setattr__(self, "reason", reason)
+
+        policy_decision = self.policy_decision
+        if policy_decision is not None and not isinstance(
+            policy_decision,
+            EncryptionPolicyDecision | dict,
+        ):
+            raise TypeError(
+                "policy_decision must be an EncryptionPolicyDecision, dict, or None"
+            )
+        if isinstance(policy_decision, dict):
+            policy_decision = _json_safe_dict(policy_decision, "policy_decision")
+        object.__setattr__(self, "policy_decision", policy_decision)
+
+        if not isinstance(self.delivery_allowed, bool):
+            raise TypeError("delivery_allowed must be a boolean")
+        if not isinstance(self.policy_required, bool):
+            raise TypeError("policy_required must be a boolean")
+        if not isinstance(self.envelope_accepted, bool):
+            raise TypeError("envelope_accepted must be a boolean")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe encrypted delivery gate summary."""
+        return {
+            "request_id": self.request_id,
+            "message_id": self.message_id,
+            "mailbox_id": self.mailbox_id,
+            "lane_signature": self.lane_signature,
+            "policy_id": self.policy_id,
+            "status": self.status.status,
+            "reason": self.reason.reason,
+            "policy_decision": _gate_policy_decision_summary(self.policy_decision),
+            "delivery_allowed": self.delivery_allowed,
+            "policy_required": self.policy_required,
+            "envelope_accepted": self.envelope_accepted,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
 
     def to_dict(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe representation."""
@@ -263,9 +414,40 @@ def delivery_request_status(
     return EncryptedDeliveryRequestStatus("invalid")
 
 
+def is_encrypted_delivery_gate_allowed(
+    decision: EncryptedDeliveryGateDecision,
+) -> bool:
+    """Return whether a gate decision allows the caller to proceed to delivery."""
+    _validate_gate_decision(decision)
+    return decision.delivery_allowed
+
+
+def is_encrypted_delivery_gate_blocked(
+    decision: EncryptedDeliveryGateDecision,
+) -> bool:
+    """Return whether a gate decision blocks the caller from proceeding."""
+    _validate_gate_decision(decision)
+    return not decision.delivery_allowed
+
+
 def _validate_request(request: EncryptedDeliveryRequest) -> None:
     if not isinstance(request, EncryptedDeliveryRequest):
         raise TypeError("request must be an EncryptedDeliveryRequest")
+
+
+def _validate_gate_decision(decision: EncryptedDeliveryGateDecision) -> None:
+    if not isinstance(decision, EncryptedDeliveryGateDecision):
+        raise TypeError("decision must be an EncryptedDeliveryGateDecision")
+
+
+def _gate_policy_decision_summary(
+    policy_decision: EncryptionPolicyDecision | dict[str, Any] | None,
+) -> dict[str, object] | None:
+    if policy_decision is None:
+        return None
+    if isinstance(policy_decision, EncryptionPolicyDecision):
+        return policy_decision.to_summary()
+    return _json_safe_dict(policy_decision, "policy_decision")
 
 
 def _request_message_summary(
@@ -367,6 +549,24 @@ def _validate_request_status(value: str) -> None:
         )
 
 
+def _validate_gate_status(value: str) -> None:
+    _validate_required_string(value, "encrypted delivery gate status")
+    if value not in ENCRYPTED_DELIVERY_GATE_STATUSES:
+        raise ValueError(
+            "encrypted delivery gate status must be one of "
+            f"{', '.join(ENCRYPTED_DELIVERY_GATE_STATUSES)}"
+        )
+
+
+def _validate_gate_reason(value: str) -> None:
+    _validate_required_string(value, "encrypted delivery gate reason")
+    if value not in ENCRYPTED_DELIVERY_GATE_REASONS:
+        raise ValueError(
+            "encrypted delivery gate reason must be one of "
+            f"{', '.join(ENCRYPTED_DELIVERY_GATE_REASONS)}"
+        )
+
+
 def _validate_required_string(value: str, field_name: str) -> None:
     if not isinstance(value, str):
         raise TypeError(f"{field_name} must be a string")
@@ -397,4 +597,3 @@ def _json_safe_copy(value: Any) -> object:
     if isinstance(value, dict):
         return {str(key): _json_safe_copy(item) for key, item in value.items()}
     raise TypeError("request data must be JSON-safe simulator data")
-

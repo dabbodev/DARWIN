@@ -102,15 +102,20 @@ These helpers construct or inspect records only. They do not mutate
 mailbox inboxes, retained delivery results, encryption policy decision
 history, scenario state, snapshots, or external systems.
 
-## Future Policy Gate Relationship
+## Policy Gate Relationship
 
-Later v1.1 sprints can use `EncryptedDeliveryRequest` as the input to an
-explicit opt-in policy gate. That future gate can evaluate registered mailbox
-encryption policy before deciding whether a delivery helper should be called.
+v1.1 Sprint 2 uses `EncryptedDeliveryRequest` as the input to an explicit
+opt-in policy gate. `evaluate_encrypted_delivery_request_policy(...)`
+evaluates registered mailbox encryption policy and returns an
+`EncryptedDeliveryGateDecision`.
 
-Sprint 1 does not perform that gate. `policy_required` and `policy_id` are
-intent metadata only. Existing plaintext delivery remains unchanged, and a
-plain call to `deliver_message_to_mailbox(...)` still follows v0.9 behavior.
+The gate is still separate from delivery. It does not call
+`deliver_message_to_mailbox(...)`, does not mutate message inboxes, and does
+not create message delivery results. Existing plaintext delivery remains
+unchanged, and a plain call to `deliver_message_to_mailbox(...)` still follows
+v0.9 behavior.
+
+See `docs/ENCRYPTED_DELIVERY_POLICY_GATE_v1_1.md`.
 
 ## Why This Is Separate From Delivery
 
@@ -120,9 +125,10 @@ capabilities, selects in-memory adapter endpoints, appends to a
 RegistryHub-local inbox, and retains delivery results.
 
 Encrypted delivery requests are deliberately separate because v1.1 policy
-integration should be opt-in and observable before any delivery behavior is
-gated. Sprint 1 creates the request shape only. It does not force existing
-plaintext delivery to fail and does not add delivery enforcement.
+integration is opt-in and observable before any delivery behavior is gated.
+Sprint 1 creates the request shape. Sprint 2 adds a symbolic policy gate that
+returns a decision without delivering. Neither sprint forces existing
+plaintext delivery to fail or adds default delivery enforcement.
 
 ## Explicit Non-Goals
 
@@ -157,4 +163,3 @@ Sprint 1 does not add:
 - retry workers;
 - TrafficHub routing changes;
 - canonical identity rewrites.
-

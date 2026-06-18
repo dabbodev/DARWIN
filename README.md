@@ -927,6 +927,7 @@ For v1.1 symbolic encrypted delivery policy integration planning, see:
 
 - `docs/V1_1_ROADMAP.md`
 - `docs/ENCRYPTED_DELIVERY_REQUESTS_v1_1.md`
+- `docs/ENCRYPTED_DELIVERY_POLICY_GATE_v1_1.md`
 
 ## What v0.1 Is Not
 

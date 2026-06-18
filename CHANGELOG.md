@@ -8,6 +8,13 @@ Added:
   plaintext, symbolic encrypted, and policy-check-only request intent.
 - Pure encrypted delivery request constructors, predicates, structural status
   helpers, JSON-safe summaries, and documentation.
+- v1.1 Sprint 2 opt-in symbolic encrypted delivery policy gate decisions for
+  accepted, plaintext-allowed, missing-policy, and policy-check-failed request
+  outcomes.
+- `evaluate_encrypted_delivery_request_policy(...)` helper for wrapping
+  registered mailbox encryption policy decisions without delivering messages.
+- Pure encrypted delivery gate predicates, JSON-safe summaries, retention
+  controls for the existing policy decision history, and documentation.
 
 Compatibility and limits:
 

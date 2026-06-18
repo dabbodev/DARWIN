@@ -38,6 +38,9 @@ from darwin.registry.checkpoints import (
     get_checkpoint_state,
     record_checkpoint,
 )
+from darwin.registry.encrypted_delivery_policy import (
+    evaluate_encrypted_delivery_request_policy,
+)
 from darwin.registry.encryption_registry import (
     evaluate_registered_mailbox_encryption_policy,
     get_encryption_identity,
@@ -121,6 +124,7 @@ __all__ = [
     "create_alias_bundle",
     "detect_checkpoint_timeouts",
     "deliver_message_to_mailbox",
+    "evaluate_encrypted_delivery_request_policy",
     "evaluate_alias_authority_chain",
     "evaluate_alias_authority_step",
     "evaluate_registered_mailbox_encryption_policy",
