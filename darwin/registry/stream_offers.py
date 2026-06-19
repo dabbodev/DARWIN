@@ -11,6 +11,8 @@ from darwin.models.lane_signature import (
     parse_lane_signature,
 )
 from darwin.models.stream_offer import (
+    LaneAdmissionDecision,
+    LaneAdmissionPolicy,
     RendezvousPollResult,
     RendezvousRequest,
     StreamOffer,
@@ -20,6 +22,7 @@ from darwin.models.stream_offer import (
     is_stream_offer_active,
     is_stream_offer_discoverable_to_request,
     is_stream_offer_expired,
+    is_stream_offer_terminal,
     stream_offer_matches_rendezvous_request,
 )
 
@@ -242,6 +245,281 @@ def mark_stream_offers_discoverable(
     return updated_offers
 
 
+def evaluate_lane_admission_policy(
+    policy: LaneAdmissionPolicy,
+    offer: StreamOffer,
+    *,
+    request: RendezvousRequest | None = None,
+    poll_result: RendezvousPollResult | None = None,
+    decision_id: str | None = None,
+    metadata: dict[str, object] | None = None,
+) -> LaneAdmissionDecision:
+    """Evaluate one stream offer against a simulator-local admission policy."""
+    _validate_optional_rendezvous_request(request)
+    _validate_optional_poll_result(poll_result)
+    _validate_optional_string(decision_id, "decision_id")
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+
+    if not isinstance(policy, LaneAdmissionPolicy):
+        return _lane_admission_decision(
+            policy=None,
+            offer=offer if isinstance(offer, StreamOffer) else None,
+            request=request,
+            poll_result=poll_result,
+            decision_id=decision_id,
+            status="deny",
+            reason="invalid_policy",
+            metadata=metadata,
+        )
+
+    if not isinstance(offer, StreamOffer):
+        return _lane_admission_decision(
+            policy=policy,
+            offer=None,
+            request=request,
+            poll_result=poll_result,
+            decision_id=decision_id,
+            status="deny",
+            reason="invalid_offer",
+            metadata=metadata,
+        )
+
+    if is_stream_offer_terminal(offer):
+        return _lane_admission_decision(
+            policy=policy,
+            offer=offer,
+            request=request,
+            poll_result=poll_result,
+            decision_id=decision_id,
+            status="deny",
+            reason="invalid_offer",
+            metadata=metadata,
+        )
+
+    target_scope = _target_scope(offer, request, poll_result)
+
+    if offer.requester_id in policy.denied_requester_ids:
+        return _lane_admission_decision(
+            policy=policy,
+            offer=offer,
+            request=request,
+            poll_result=poll_result,
+            decision_id=decision_id,
+            status="deny",
+            reason="explicit_requester_denied",
+            metadata=metadata,
+        )
+
+    if offer.lane_signature in policy.denied_lane_signatures:
+        return _lane_admission_decision(
+            policy=policy,
+            offer=offer,
+            request=request,
+            poll_result=poll_result,
+            decision_id=decision_id,
+            status="deny",
+            reason="explicit_lane_denied",
+            metadata=metadata,
+        )
+
+    if target_scope is not None and target_scope in policy.denied_target_scopes:
+        return _lane_admission_decision(
+            policy=policy,
+            offer=offer,
+            request=request,
+            poll_result=poll_result,
+            decision_id=decision_id,
+            status="deny",
+            reason="explicit_scope_denied",
+            metadata=metadata,
+        )
+
+    if (
+        policy.max_visibility_tier is not None
+        and offer.visibility_tier.tier > policy.max_visibility_tier.tier
+    ):
+        return _lane_admission_decision(
+            policy=policy,
+            offer=offer,
+            request=request,
+            poll_result=poll_result,
+            decision_id=decision_id,
+            status="deny",
+            reason="visibility_tier_exceeded",
+            metadata=metadata,
+        )
+
+    if policy.require_discoverable and not _offer_in_poll_result(offer, poll_result):
+        return _lane_admission_decision(
+            policy=policy,
+            offer=offer,
+            request=request,
+            poll_result=poll_result,
+            decision_id=decision_id,
+            status="requires_poll",
+            reason="not_discoverable",
+            metadata=metadata,
+        )
+
+    if (
+        policy.allowed_lane_signatures
+        and offer.lane_signature not in policy.allowed_lane_signatures
+    ):
+        return _lane_admission_decision(
+            policy=policy,
+            offer=offer,
+            request=request,
+            poll_result=poll_result,
+            decision_id=decision_id,
+            status="hold",
+            reason="lane_not_allowed",
+            metadata=metadata,
+        )
+
+    if (
+        policy.allowed_requester_ids
+        and offer.requester_id not in policy.allowed_requester_ids
+    ):
+        return _lane_admission_decision(
+            policy=policy,
+            offer=offer,
+            request=request,
+            poll_result=poll_result,
+            decision_id=decision_id,
+            status="hold",
+            reason="requester_not_allowed",
+            metadata=metadata,
+        )
+
+    if policy.allowed_target_scopes and (
+        target_scope is None or target_scope not in policy.allowed_target_scopes
+    ):
+        return _lane_admission_decision(
+            policy=policy,
+            offer=offer,
+            request=request,
+            poll_result=poll_result,
+            decision_id=decision_id,
+            status="hold",
+            reason="scope_not_allowed",
+            metadata=metadata,
+        )
+
+    return _lane_admission_decision(
+        policy=policy,
+        offer=offer,
+        request=request,
+        poll_result=poll_result,
+        decision_id=decision_id,
+        status=policy.default_status.status,
+        reason=_default_lane_admission_reason(policy.default_status.status),
+        metadata=metadata,
+    )
+
+
+def _lane_admission_decision(
+    *,
+    policy: LaneAdmissionPolicy | None,
+    offer: StreamOffer | None,
+    request: RendezvousRequest | None,
+    poll_result: RendezvousPollResult | None,
+    decision_id: str | None,
+    status: str,
+    reason: str,
+    metadata: dict[str, object] | None,
+) -> LaneAdmissionDecision:
+    decision_metadata: dict[str, object] = {
+        "simulator_local": True,
+        "policy_only": True,
+        "read_only": True,
+        "registry_hub_mutated": False,
+        "offer_mutated": False,
+        "message_mutated": False,
+        "inbox_mutated": False,
+        "delivery_result_created": False,
+        "delivery_behavior_changed": False,
+        "traffic_hub_routing_changed": False,
+        "networking": False,
+    }
+    if poll_result is not None:
+        decision_metadata["poll_result_status"] = poll_result.status.status
+        decision_metadata["poll_result_reason"] = poll_result.reason
+    if metadata is not None:
+        decision_metadata.update(metadata)
+
+    target_scope = _target_scope(offer, request, poll_result)
+    if decision_id is None:
+        decision_id = _lane_admission_decision_id(policy, offer, request)
+
+    return LaneAdmissionDecision(
+        decision_id=decision_id,
+        policy_id=None if policy is None else policy.policy_id,
+        offer_id=None if offer is None else offer.offer_id,
+        request_id=None if request is None else request.request_id,
+        hub_id=None if policy is None else policy.hub_id,
+        requester_id=None if offer is None else offer.requester_id,
+        target_handle=None if offer is None else offer.target_handle,
+        target_scope=target_scope,
+        lane_signature=None if offer is None else offer.lane_signature,
+        status=status,
+        reason=reason,
+        allowed=status == "pass_down",
+        metadata=decision_metadata,
+    )
+
+
+def _lane_admission_decision_id(
+    policy: LaneAdmissionPolicy | None,
+    offer: StreamOffer | None,
+    request: RendezvousRequest | None,
+) -> str:
+    policy_id = "invalid_policy" if policy is None else policy.policy_id
+    offer_id = "invalid_offer" if offer is None else offer.offer_id
+    request_id = "no_request" if request is None else request.request_id
+    return f"lane_admission:{policy_id}:{offer_id}:{request_id}"
+
+
+def _default_lane_admission_reason(status: str) -> str:
+    if status == "pass_down":
+        return "accepted"
+    if status == "rate_limited":
+        return "rate_limited"
+    if status == "quarantined":
+        return "quarantined"
+    if status == "deny":
+        return "default_hold"
+    if status == "requires_poll":
+        return "not_discoverable"
+    return "default_hold"
+
+
+def _target_scope(
+    offer: StreamOffer | None,
+    request: RendezvousRequest | None,
+    poll_result: RendezvousPollResult | None,
+) -> str | None:
+    if request is not None:
+        return request.target_scope
+    if poll_result is not None:
+        return poll_result.target_scope
+    if offer is not None:
+        return offer.rendezvous_scope
+    return None
+
+
+def _offer_in_poll_result(
+    offer: StreamOffer,
+    poll_result: RendezvousPollResult | None,
+) -> bool:
+    if poll_result is None:
+        return False
+    return (
+        poll_result.status.status == "matched"
+        and offer.offer_id in poll_result.matched_offer_ids
+    )
+
+
 def _poll_offer_matches(
     offer: StreamOffer,
     request: RendezvousRequest,
@@ -381,6 +659,19 @@ def _validate_offer(offer: StreamOffer) -> None:
 def _validate_rendezvous_request(request: RendezvousRequest) -> None:
     if not isinstance(request, RendezvousRequest):
         raise TypeError("request must be a RendezvousRequest")
+
+
+def _validate_optional_rendezvous_request(request: RendezvousRequest | None) -> None:
+    if request is None:
+        return
+    _validate_rendezvous_request(request)
+
+
+def _validate_optional_poll_result(poll_result: RendezvousPollResult | None) -> None:
+    if poll_result is None:
+        return
+    if not isinstance(poll_result, RendezvousPollResult):
+        raise TypeError("poll_result must be a RendezvousPollResult or None")
 
 
 def _validate_registry_hub(registry_hub: RegistryHub) -> None:

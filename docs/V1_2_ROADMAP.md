@@ -216,7 +216,7 @@ Implemented scope:
 
 ## Sprint 4: Lane Admission Policy Helpers
 
-Status: planned.
+Status: implemented on `v1.2/planning`.
 
 Goal: add hub-level simulator policy for whether discovered offers can move
 downward.
@@ -238,6 +238,23 @@ Acceptance targets:
 - Admission outcomes are deterministic and explainable.
 - Denied, rate-limited, and quarantined offers do not deliver messages or
   mutate TrafficHub routes.
+
+Implemented scope:
+
+- Added simulator-local `LaneAdmissionPolicy`, `LaneAdmissionDecision`,
+  `LaneAdmissionStatus`, and `LaneAdmissionReason` models.
+- Added a pure `make_lane_admission_policy(...)` constructor and lane
+  admission predicates for allowed, blocked, and terminal decisions.
+- Added `evaluate_lane_admission_policy(...)` for deterministic read-only
+  evaluation of a stream offer with optional rendezvous request and poll
+  result context.
+- Preserved explicit precedence for invalid inputs, deny lists, visibility,
+  discoverability, allowed lists, and default policy status.
+- Documented Sprint 4 behavior in `docs/LANE_ADMISSION_POLICY_v1_2.md`.
+- Kept RegistryHub policy storage, retained decision history, scenario DSL
+  changes, delivery changes, TrafficHub routing changes, live polling loops,
+  durable queues, retry workers, sockets, DNS lookup, and real networking
+  deferred.
 
 ## Sprint 5: Scenario DSL and Scenarios
 

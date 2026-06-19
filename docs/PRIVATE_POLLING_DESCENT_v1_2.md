@@ -117,14 +117,15 @@ Reasons include:
 
 Summaries are copied and JSON-safe.
 
-## Relationship To Future Lane Admission Policy
+## Relationship To Lane Admission Policy
 
-Private polling descent is discovery only. It does not decide whether a lane
-offer should pass downward, be accepted, be denied, be rate-limited, be
-quarantined, or require a device poll.
+Private polling descent is discovery only. Sprint 4 adds separate lane
+admission helpers that can consume a `RendezvousPollResult` as optional
+context and decide whether a lane offer should pass downward, be held, be
+denied, be rate-limited, be quarantined, or require another poll.
 
-Lane admission policy remains a future v1.2 sprint. Discovery results are
-intended to give that future policy layer a deterministic input.
+Discovery and admission remain separate. Polling does not evaluate policy, and
+admission does not poll live services, deliver messages, or route traffic.
 
 ## Privacy And Security Framing
 

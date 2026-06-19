@@ -28,6 +28,10 @@ The third v1.2 sprint adds helper-level private polling descent. See
 `docs/PRIVATE_POLLING_DESCENT_v1_2.md` for poll result summaries,
 discoverability matching, active/expired behavior, and explicit non-goals.
 
+The fourth v1.2 sprint adds lane admission policy helpers. See
+`docs/LANE_ADMISSION_POLICY_v1_2.md` for policy records, decision summaries,
+deterministic precedence, read-only behavior, and privacy/security framing.
+
 ## Purpose
 
 A `StreamOffer` represents a request to establish or deliver over a lane at a
@@ -135,16 +139,17 @@ for marking selected held offers `discoverable` without delivery side effects.
 Sprint 3 intentionally does not add live polling, socket listeners, HTTP,
 WebSocket behavior, DNS lookup, or external service discovery.
 
-## Future Lane Admission Policies
+## Lane Admission Policies
 
-Later v1.2 work may evaluate discovered offers against hub-level admission
-policy. Possible outcomes include passing an offer downward, holding it,
-denying it, rate-limiting it, quarantining it, or requiring a later device
-poll.
+Sprint 4 evaluates stream offers against hub-level simulator admission policy.
+`evaluate_lane_admission_policy(...)` reads a `LaneAdmissionPolicy`, a
+`StreamOffer`, and optional rendezvous request or poll result context, then
+returns a deterministic `LaneAdmissionDecision`.
 
-Sprint 1 and Sprint 2 intentionally do not add lane admission rules, firewall
-behavior, production DDoS protection, scenario DSL actions, or scenario DSL
-assertions.
+Possible outcomes include passing an offer downward, holding it, denying it,
+rate-limiting it, quarantining it, or requiring a matching poll first.
+Admission is read-only by default and does not deliver messages, update held
+offers, call TrafficHub, or perform networking.
 
 ## Example
 

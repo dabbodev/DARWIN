@@ -25,6 +25,8 @@ The queue is intentionally small:
 - `poll_held_stream_offers(...)` reads the queue for discoverable offers.
 - `mark_stream_offers_discoverable(...)` explicitly marks selected held offers
   as discoverable.
+- `evaluate_lane_admission_policy(...)` can evaluate a held offer separately
+  without mutating the queue.
 
 ## Relationship To StreamOffer
 
@@ -105,13 +107,16 @@ append delivery results, call TrafficHub, or perform admission policy.
 This remains a simulator helper call, not a live loop, socket listener, HTTP
 endpoint, WebSocket endpoint, DNS lookup, or external service.
 
-## Future Lane Admission Policy
+## Lane Admission Policy
 
-Lane admission policy is still deferred. Future helpers may evaluate
-discovered offers and produce deterministic outcomes such as hold, pass down,
-deny, rate limit, quarantine, or require device poll. Sprint 3 does not add
-policy rules, delivery changes, firewall behavior, production DDoS protection,
-or scenario DSL actions/assertions.
+Sprint 4 adds helper-level lane admission policy. Admission reads an offer,
+an admission policy, and optional rendezvous request or poll result context,
+then returns a deterministic decision such as hold, pass down, deny, rate
+limit, quarantine, or require poll.
+
+Admission does not mutate `held_stream_offers` by default. It also does not
+deliver messages, write inboxes, append delivery results, call TrafficHub,
+open sockets, perform DNS lookup, or run live polling loops.
 
 ## Privacy And Security Framing
 

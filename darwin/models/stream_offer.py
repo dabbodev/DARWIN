@@ -60,6 +60,45 @@ RENDEZVOUS_POLL_REASONS: tuple[str, ...] = (
     "scope_mismatch",
 )
 
+LANE_ADMISSION_STATUSES: tuple[str, ...] = (
+    "pass_down",
+    "hold",
+    "deny",
+    "rate_limited",
+    "quarantined",
+    "requires_poll",
+)
+
+LANE_ADMISSION_REASONS: tuple[str, ...] = (
+    "accepted",
+    "default_hold",
+    "explicit_lane_denied",
+    "explicit_requester_denied",
+    "explicit_scope_denied",
+    "lane_not_allowed",
+    "requester_not_allowed",
+    "scope_not_allowed",
+    "visibility_tier_exceeded",
+    "not_discoverable",
+    "rate_limited",
+    "quarantined",
+    "invalid_offer",
+    "invalid_policy",
+)
+
+LANE_ADMISSION_BLOCKED_STATUSES: tuple[str, ...] = (
+    "deny",
+    "rate_limited",
+    "quarantined",
+)
+
+LANE_ADMISSION_TERMINAL_STATUSES: tuple[str, ...] = (
+    "pass_down",
+    "deny",
+    "rate_limited",
+    "quarantined",
+)
+
 
 @dataclass(frozen=True, slots=True)
 class StreamOfferMode:
@@ -109,6 +148,42 @@ class RendezvousPollStatus:
     def to_summary(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe status summary."""
         return {"status": self.status}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class LaneAdmissionStatus:
+    """Controlled simulator-local lane admission decision status."""
+
+    status: str = "hold"
+
+    def __post_init__(self) -> None:
+        _validate_lane_admission_status(self.status)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe status summary."""
+        return {"status": self.status}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class LaneAdmissionReason:
+    """Controlled simulator-local lane admission decision reason."""
+
+    reason: str = "default_hold"
+
+    def __post_init__(self) -> None:
+        _validate_lane_admission_reason(self.reason)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe reason summary."""
+        return {"reason": self.reason}
 
     def to_dict(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe representation."""
@@ -352,6 +427,185 @@ class RendezvousPollResult:
         return self.to_summary()
 
 
+@dataclass(frozen=True, slots=True)
+class LaneAdmissionPolicy:
+    """Simulator-local hub policy for evaluating stream offer admission."""
+
+    policy_id: str
+    hub_id: str
+    allowed_lane_signatures: tuple[str, ...] | list[str] = ()
+    denied_lane_signatures: tuple[str, ...] | list[str] = ()
+    allowed_requester_ids: tuple[str, ...] | list[str] = ()
+    denied_requester_ids: tuple[str, ...] | list[str] = ()
+    allowed_target_scopes: tuple[str, ...] | list[str] = ()
+    denied_target_scopes: tuple[str, ...] | list[str] = ()
+    max_visibility_tier: StreamOfferVisibility | LaneVisibilityTier | int | None = None
+    require_discoverable: bool = False
+    default_status: LaneAdmissionStatus | str = "hold"
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.policy_id, "policy_id")
+        _validate_required_string(self.hub_id, "hub_id")
+        object.__setattr__(
+            self,
+            "allowed_lane_signatures",
+            _lane_signature_tuple(self.allowed_lane_signatures),
+        )
+        object.__setattr__(
+            self,
+            "denied_lane_signatures",
+            _lane_signature_tuple(self.denied_lane_signatures),
+        )
+        object.__setattr__(
+            self,
+            "allowed_requester_ids",
+            _string_tuple(self.allowed_requester_ids, "allowed_requester_ids"),
+        )
+        object.__setattr__(
+            self,
+            "denied_requester_ids",
+            _string_tuple(self.denied_requester_ids, "denied_requester_ids"),
+        )
+        object.__setattr__(
+            self,
+            "allowed_target_scopes",
+            _string_tuple(self.allowed_target_scopes, "allowed_target_scopes"),
+        )
+        object.__setattr__(
+            self,
+            "denied_target_scopes",
+            _string_tuple(self.denied_target_scopes, "denied_target_scopes"),
+        )
+
+        max_visibility_tier = self.max_visibility_tier
+        if isinstance(max_visibility_tier, LaneVisibilityTier):
+            max_visibility_tier = max_visibility_tier.tier
+        if isinstance(max_visibility_tier, int):
+            max_visibility_tier = StreamOfferVisibility(max_visibility_tier)
+        if max_visibility_tier is not None and not isinstance(
+            max_visibility_tier,
+            StreamOfferVisibility,
+        ):
+            raise TypeError(
+                "max_visibility_tier must be a StreamOfferVisibility, "
+                "LaneVisibilityTier, integer, or None"
+            )
+        object.__setattr__(self, "max_visibility_tier", max_visibility_tier)
+
+        if not isinstance(self.require_discoverable, bool):
+            raise TypeError("require_discoverable must be a boolean")
+
+        default_status = self.default_status
+        if isinstance(default_status, str):
+            default_status = LaneAdmissionStatus(default_status)
+        if not isinstance(default_status, LaneAdmissionStatus):
+            raise TypeError("default_status must be a LaneAdmissionStatus or string")
+        object.__setattr__(self, "default_status", default_status)
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe lane admission policy summary."""
+        return {
+            "policy_id": self.policy_id,
+            "hub_id": self.hub_id,
+            "allowed_lane_signatures": list(self.allowed_lane_signatures),
+            "denied_lane_signatures": list(self.denied_lane_signatures),
+            "allowed_requester_ids": list(self.allowed_requester_ids),
+            "denied_requester_ids": list(self.denied_requester_ids),
+            "allowed_target_scopes": list(self.allowed_target_scopes),
+            "denied_target_scopes": list(self.denied_target_scopes),
+            "max_visibility_tier": (
+                None
+                if self.max_visibility_tier is None
+                else self.max_visibility_tier.tier
+            ),
+            "require_discoverable": self.require_discoverable,
+            "default_status": self.default_status.status,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class LaneAdmissionDecision:
+    """Deterministic result of evaluating one stream offer against policy."""
+
+    decision_id: str
+    policy_id: str | None
+    offer_id: str | None
+    request_id: str | None
+    hub_id: str | None
+    requester_id: str | None
+    target_handle: str | None
+    target_scope: str | None
+    lane_signature: str | None
+    status: LaneAdmissionStatus | str
+    reason: LaneAdmissionReason | str
+    allowed: bool
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.decision_id, "decision_id")
+        _validate_optional_string(self.policy_id, "policy_id")
+        _validate_optional_string(self.offer_id, "offer_id")
+        _validate_optional_string(self.request_id, "request_id")
+        _validate_optional_string(self.hub_id, "hub_id")
+        _validate_optional_string(self.requester_id, "requester_id")
+        _validate_optional_string(self.target_handle, "target_handle")
+        _validate_optional_string(self.target_scope, "target_scope")
+
+        lane_signature = self.lane_signature
+        if lane_signature is not None:
+            lane_signature = parse_lane_signature(lane_signature).signature
+        object.__setattr__(self, "lane_signature", lane_signature)
+
+        status = self.status
+        if isinstance(status, str):
+            status = LaneAdmissionStatus(status)
+        if not isinstance(status, LaneAdmissionStatus):
+            raise TypeError("status must be a LaneAdmissionStatus or string")
+        object.__setattr__(self, "status", status)
+
+        reason = self.reason
+        if isinstance(reason, str):
+            reason = LaneAdmissionReason(reason)
+        if not isinstance(reason, LaneAdmissionReason):
+            raise TypeError("reason must be a LaneAdmissionReason or string")
+        object.__setattr__(self, "reason", reason)
+
+        if not isinstance(self.allowed, bool):
+            raise TypeError("allowed must be a boolean")
+        if self.allowed != (status.status == "pass_down"):
+            raise ValueError("allowed must be true only for pass_down decisions")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe lane admission decision summary."""
+        return {
+            "decision_id": self.decision_id,
+            "policy_id": self.policy_id,
+            "offer_id": self.offer_id,
+            "request_id": self.request_id,
+            "hub_id": self.hub_id,
+            "requester_id": self.requester_id,
+            "target_handle": self.target_handle,
+            "target_scope": self.target_scope,
+            "lane_signature": self.lane_signature,
+            "status": self.status.status,
+            "reason": self.reason.reason,
+            "allowed": self.allowed,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
 def make_stream_offer(
     *,
     offer_id: str,
@@ -427,6 +681,38 @@ def make_rendezvous_request(
         requester_id=requester_id,
         target_scope=target_scope,
         visibility_tier=visibility_tier,
+        metadata=_helper_metadata(metadata),
+    )
+
+
+def make_lane_admission_policy(
+    *,
+    policy_id: str,
+    hub_id: str,
+    allowed_lane_signatures: list[str] | None = None,
+    denied_lane_signatures: list[str] | None = None,
+    allowed_requester_ids: list[str] | None = None,
+    denied_requester_ids: list[str] | None = None,
+    allowed_target_scopes: list[str] | None = None,
+    denied_target_scopes: list[str] | None = None,
+    max_visibility_tier: int | None = None,
+    require_discoverable: bool = False,
+    default_status: str = "hold",
+    metadata: dict[str, Any] | None = None,
+) -> LaneAdmissionPolicy:
+    """Return a pure simulator-local lane admission policy record."""
+    return LaneAdmissionPolicy(
+        policy_id=policy_id,
+        hub_id=hub_id,
+        allowed_lane_signatures=allowed_lane_signatures or [],
+        denied_lane_signatures=denied_lane_signatures or [],
+        allowed_requester_ids=allowed_requester_ids or [],
+        denied_requester_ids=denied_requester_ids or [],
+        allowed_target_scopes=allowed_target_scopes or [],
+        denied_target_scopes=denied_target_scopes or [],
+        max_visibility_tier=max_visibility_tier,
+        require_discoverable=require_discoverable,
+        default_status=default_status,
         metadata=_helper_metadata(metadata),
     )
 
@@ -507,6 +793,24 @@ def stream_offer_matches_lane(
     return offer.lane_signature == lane_signature
 
 
+def is_lane_admission_allowed(decision: LaneAdmissionDecision) -> bool:
+    """Return whether a lane admission decision permits pass-down."""
+    _validate_lane_admission_decision(decision)
+    return decision.status.status == "pass_down"
+
+
+def is_lane_admission_blocked(decision: LaneAdmissionDecision) -> bool:
+    """Return whether a lane admission decision is a blocking terminal outcome."""
+    _validate_lane_admission_decision(decision)
+    return decision.status.status in LANE_ADMISSION_BLOCKED_STATUSES
+
+
+def is_lane_admission_terminal(decision: LaneAdmissionDecision) -> bool:
+    """Return whether a lane admission decision needs no further polling."""
+    _validate_lane_admission_decision(decision)
+    return decision.status.status in LANE_ADMISSION_TERMINAL_STATUSES
+
+
 def _validate_offer(offer: StreamOffer) -> None:
     if not isinstance(offer, StreamOffer):
         raise TypeError("offer must be a StreamOffer")
@@ -515,6 +819,11 @@ def _validate_offer(offer: StreamOffer) -> None:
 def _validate_rendezvous_request(request: RendezvousRequest) -> None:
     if not isinstance(request, RendezvousRequest):
         raise TypeError("request must be a RendezvousRequest")
+
+
+def _validate_lane_admission_decision(decision: LaneAdmissionDecision) -> None:
+    if not isinstance(decision, LaneAdmissionDecision):
+        raise TypeError("decision must be a LaneAdmissionDecision")
 
 
 def _stream_offer_visibility_compatible(
@@ -567,6 +876,24 @@ def _validate_poll_reason(value: str) -> None:
         )
 
 
+def _validate_lane_admission_status(value: str) -> None:
+    _validate_required_string(value, "lane admission status")
+    if value not in LANE_ADMISSION_STATUSES:
+        raise ValueError(
+            "lane admission status must be one of "
+            f"{', '.join(LANE_ADMISSION_STATUSES)}"
+        )
+
+
+def _validate_lane_admission_reason(value: str) -> None:
+    _validate_required_string(value, "lane admission reason")
+    if value not in LANE_ADMISSION_REASONS:
+        raise ValueError(
+            "lane admission reason must be one of "
+            f"{', '.join(LANE_ADMISSION_REASONS)}"
+        )
+
+
 def _validate_required_string(value: str, field_name: str) -> None:
     if not isinstance(value, str):
         raise TypeError(f"{field_name} must be a string")
@@ -593,6 +920,20 @@ def _validate_optional_order(value: int | None, field_name: str) -> None:
     if value is None:
         return
     _validate_order(value, field_name)
+
+
+def _lane_signature_tuple(values: tuple[str, ...] | list[str]) -> tuple[str, ...]:
+    if not isinstance(values, tuple | list):
+        raise TypeError("lane signature lists must be a list or tuple")
+    return tuple(parse_lane_signature(value).signature for value in values)
+
+
+def _string_tuple(values: tuple[str, ...] | list[str], field_name: str) -> tuple[str, ...]:
+    if not isinstance(values, tuple | list):
+        raise TypeError(f"{field_name} must be a list or tuple")
+    for value in values:
+        _validate_required_string(value, field_name)
+    return tuple(values)
 
 
 def _json_safe_copy(value: Any) -> object:

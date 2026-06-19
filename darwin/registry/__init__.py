@@ -105,6 +105,7 @@ from darwin.registry.operations import (
     resolve_label,
 )
 from darwin.registry.stream_offers import (
+    evaluate_lane_admission_policy,
     get_held_stream_offer,
     hold_stream_offer,
     mark_stream_offers_discoverable,
@@ -142,6 +143,7 @@ __all__ = [
     "build_encrypted_delivery_audit_entry",
     "evaluate_encrypted_delivery_request",
     "evaluate_encrypted_delivery_request_policy",
+    "evaluate_lane_admission_policy",
     "evaluate_alias_authority_chain",
     "evaluate_alias_authority_step",
     "evaluate_registered_mailbox_encryption_policy",
