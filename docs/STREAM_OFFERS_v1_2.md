@@ -24,6 +24,10 @@ The second v1.2 sprint adds RegistryHub-local held offer queues. See
 `docs/RENDEZVOUS_OFFER_QUEUES_v1_2.md` for queue helper behavior, duplicate
 handling, query filters, status updates, and privacy/security framing.
 
+The third v1.2 sprint adds helper-level private polling descent. See
+`docs/PRIVATE_POLLING_DESCENT_v1_2.md` for poll result summaries,
+discoverability matching, active/expired behavior, and explicit non-goals.
+
 ## Purpose
 
 A `StreamOffer` represents a request to establish or deliver over a lane at a
@@ -76,8 +80,8 @@ services.
 
 ## Rendezvous Requests
 
-`RendezvousRequest` represents future metadata for a child or private hub
-polling upward for offers it may see.
+`RendezvousRequest` represents metadata for a child or private hub polling
+upward for offers it may see.
 
 Core fields:
 
@@ -89,9 +93,9 @@ Core fields:
 - `visibility_tier`
 - `metadata`
 
-Sprint 1 does not implement live polling, background polling, offer queues, or
-poll result mutation. A rendezvous request is just a JSON-safe record for later
-private polling descent helpers.
+Sprint 3 uses rendezvous requests as inputs to explicit helper-level polling.
+The request remains a JSON-safe record. It does not start live polling,
+background polling, sockets, DNS lookup, external services, or delivery.
 
 ## RegistryHub Held Offer Queues
 
@@ -112,18 +116,24 @@ rejected by default, and `replace_existing=True` replaces the existing record
 in place. Query helpers are read-only and additive.
 
 Sprint 2 still does not add durable queues, retry workers, background delivery
-services, private polling descent, lane admission policy, scenario DSL actions,
-or scenario DSL assertions.
+services, lane admission policy, scenario DSL actions, or scenario DSL
+assertions.
 
-## Future Private Polling Descent
+## Private Polling Descent
 
-Later helpers may let private child hubs explicitly poll an upstream
-rendezvous hub for discoverable stream offers. Those helpers should apply
-visibility and trust filters, keep discovery separate from admission, and
-return deterministic simulator results.
+Sprint 3 lets private child hubs explicitly poll an upstream rendezvous hub
+for discoverable held stream offers. `poll_held_stream_offers(...)` reads only
+the parent hub's `held_stream_offers`, applies deterministic visibility,
+scope, lane, mode, status, and expiration filters, and returns a
+`RendezvousPollResult`.
 
-Sprint 1 and Sprint 2 intentionally do not add live polling, socket listeners,
-HTTP, WebSocket behavior, DNS lookup, or external service discovery.
+Polling is read-only by default. It does not update offer status, deliver
+messages, write inboxes, append delivery results, call TrafficHub, or perform
+admission policy. `mark_stream_offers_discoverable(...)` is an explicit helper
+for marking selected held offers `discoverable` without delivery side effects.
+
+Sprint 3 intentionally does not add live polling, socket listeners, HTTP,
+WebSocket behavior, DNS lookup, or external service discovery.
 
 ## Future Lane Admission Policies
 

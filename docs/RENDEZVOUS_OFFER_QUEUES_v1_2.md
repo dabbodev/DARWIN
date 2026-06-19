@@ -22,6 +22,9 @@ The queue is intentionally small:
 - `update_held_stream_offer_status(...)` replaces a held offer with an updated
   immutable record.
 - `summarize_held_stream_offers(...)` returns JSON-safe copied summaries.
+- `poll_held_stream_offers(...)` reads the queue for discoverable offers.
+- `mark_stream_offers_discoverable(...)` explicitly marks selected held offers
+  as discoverable.
 
 ## Relationship To StreamOffer
 
@@ -86,19 +89,27 @@ queue.
 Use `offer.to_summary()` or `summarize_held_stream_offers(...)` for copied,
 JSON-safe dictionaries. Summary mutation does not mutate retained offers.
 
-## Future Private Polling Descent
+## Private Polling Descent
 
-Private polling descent is still deferred. Future helpers may let a child or
-private hub explicitly ask an upstream rendezvous hub for discoverable offers,
-then return deterministic poll results. That future work should remain a
-simulator helper call, not a live loop, socket listener, HTTP endpoint,
-WebSocket endpoint, DNS lookup, or external service.
+Sprint 3 adds private polling descent helpers. A child or private hub can
+explicitly ask an upstream rendezvous hub for discoverable offers with
+`poll_held_stream_offers(...)`, then receive a deterministic
+`RendezvousPollResult`.
+
+Polling reads only `held_stream_offers` and preserves append order. It matches
+visibility tier, rendezvous scope, optional lane signature, optional requested
+mode, active status, and deterministic expiration order. It is read-only by
+default and does not update offer status, deliver messages, write inboxes,
+append delivery results, call TrafficHub, or perform admission policy.
+
+This remains a simulator helper call, not a live loop, socket listener, HTTP
+endpoint, WebSocket endpoint, DNS lookup, or external service.
 
 ## Future Lane Admission Policy
 
 Lane admission policy is still deferred. Future helpers may evaluate
 discovered offers and produce deterministic outcomes such as hold, pass down,
-deny, rate limit, quarantine, or require device poll. Sprint 2 does not add
+deny, rate limit, quarantine, or require device poll. Sprint 3 does not add
 policy rules, delivery changes, firewall behavior, production DDoS protection,
 or scenario DSL actions/assertions.
 

@@ -11,12 +11,16 @@ from darwin.models.lane_signature import (
     parse_lane_signature,
 )
 from darwin.models.stream_offer import (
+    RendezvousPollResult,
+    RendezvousRequest,
     StreamOffer,
     StreamOfferMode,
     StreamOfferStatus,
     StreamOfferVisibility,
     is_stream_offer_active,
+    is_stream_offer_discoverable_to_request,
     is_stream_offer_expired,
+    stream_offer_matches_rendezvous_request,
 )
 
 
@@ -143,6 +147,162 @@ def summarize_held_stream_offers(registry_hub: RegistryHub) -> list[dict[str, ob
     return [offer.to_summary() for offer in registry_hub.held_stream_offers]
 
 
+def poll_held_stream_offers(
+    parent_hub: RegistryHub | None,
+    request: RendezvousRequest,
+    *,
+    lane_signature: LaneSignature | str | None = None,
+    requested_mode: StreamOfferMode | str | None = None,
+    active_only: bool = True,
+    current_order: int | None = None,
+) -> RendezvousPollResult:
+    """Return discoverable held stream offers for one explicit poll request."""
+    _validate_rendezvous_request(request)
+    if parent_hub is None:
+        return _poll_result(
+            request,
+            parent_hub_id="hub_missing",
+            matched_offers=[],
+            status="invalid_request",
+            reason="hub_missing",
+        )
+    _validate_registry_hub(parent_hub)
+    lane_signature_key = _lane_signature_key(lane_signature)
+    mode_key = _requested_mode_key(requested_mode)
+    if not isinstance(active_only, bool):
+        raise TypeError("active_only must be a bool")
+    if current_order is not None:
+        _validate_order(current_order, "current_order")
+
+    matches = [
+        offer
+        for offer in parent_hub.held_stream_offers
+        if _poll_offer_matches(
+            offer,
+            request,
+            lane_signature_key=lane_signature_key,
+            mode_key=mode_key,
+            active_only=active_only,
+            current_order=current_order,
+        )
+    ]
+
+    if matches:
+        return _poll_result(
+            request,
+            parent_hub_id=parent_hub.hub_id,
+            matched_offers=matches,
+            status="matched",
+            reason="offers_available",
+        )
+
+    reason = (
+        "scope_mismatch"
+        if _has_scope_visible_offer(parent_hub, request)
+        else "no_discoverable_offers"
+    )
+    return _poll_result(
+        request,
+        parent_hub_id=parent_hub.hub_id,
+        matched_offers=[],
+        status="empty",
+        reason=reason,
+    )
+
+
+def mark_stream_offers_discoverable(
+    parent_hub: RegistryHub,
+    offer_ids: list[str],
+    *,
+    metadata: dict[str, object] | None = None,
+) -> list[StreamOffer]:
+    """Mark selected held stream offers discoverable without delivery side effects."""
+    _validate_registry_hub(parent_hub)
+    if not isinstance(offer_ids, list):
+        raise TypeError("offer_ids must be a list")
+    for offer_id in offer_ids:
+        _validate_required_string(offer_id, "offer_id")
+
+    updated_offers: list[StreamOffer] = []
+    requested_ids = set(offer_ids)
+    for index, offer in enumerate(parent_hub.held_stream_offers):
+        if offer.offer_id not in requested_ids:
+            continue
+
+        merged_metadata = dict(offer.metadata or {})
+        if metadata is not None:
+            if not isinstance(metadata, dict):
+                raise TypeError("metadata must be a JSON-safe dict")
+            merged_metadata.update(metadata)
+
+        updated = replace(offer, status="discoverable", metadata=merged_metadata)
+        parent_hub.held_stream_offers[index] = updated
+        updated_offers.append(updated)
+
+    return updated_offers
+
+
+def _poll_offer_matches(
+    offer: StreamOffer,
+    request: RendezvousRequest,
+    *,
+    lane_signature_key: str | None,
+    mode_key: str | None,
+    active_only: bool,
+    current_order: int | None,
+) -> bool:
+    if lane_signature_key is not None and offer.lane_signature != lane_signature_key:
+        return False
+    if mode_key is not None and offer.requested_mode.mode != mode_key:
+        return False
+    if active_only:
+        return is_stream_offer_discoverable_to_request(
+            offer,
+            request,
+            current_order=current_order,
+        )
+    return stream_offer_matches_rendezvous_request(offer, request)
+
+
+def _poll_result(
+    request: RendezvousRequest,
+    *,
+    parent_hub_id: str,
+    matched_offers: list[StreamOffer],
+    status: str,
+    reason: str,
+) -> RendezvousPollResult:
+    return RendezvousPollResult(
+        request_id=request.request_id,
+        polling_hub_id=request.polling_hub_id,
+        parent_hub_id=parent_hub_id,
+        target_scope=request.target_scope,
+        visibility_tier=request.visibility_tier,
+        matched_offer_ids=[offer.offer_id for offer in matched_offers],
+        matched_offers=matched_offers,
+        status=status,
+        reason=reason,
+        metadata={
+            "simulator_local": True,
+            "read_only": True,
+            "delivery_behavior_changed": False,
+            "networking": False,
+        },
+    )
+
+
+def _has_scope_visible_offer(
+    parent_hub: RegistryHub,
+    request: RendezvousRequest,
+) -> bool:
+    return any(
+        offer.rendezvous_scope is not None
+        and offer.rendezvous_scope != request.target_scope
+        and offer.visibility_tier.tier <= request.visibility_tier.tier
+        for offer in parent_hub.held_stream_offers
+    )
+
+
 def _matches_active_filter(
     offer: StreamOffer,
     *,
@@ -216,6 +376,11 @@ def _status_key(status: StreamOfferStatus | str | None) -> str | None:
 def _validate_offer(offer: StreamOffer) -> None:
     if not isinstance(offer, StreamOffer):
         raise TypeError("offer must be a StreamOffer")
+
+
+def _validate_rendezvous_request(request: RendezvousRequest) -> None:
+    if not isinstance(request, RendezvousRequest):
+        raise TypeError("request must be a RendezvousRequest")
 
 
 def _validate_registry_hub(registry_hub: RegistryHub) -> None:

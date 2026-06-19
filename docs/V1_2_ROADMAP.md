@@ -180,7 +180,7 @@ Implemented scope:
 
 ## Sprint 3: Private Polling Descent Helpers
 
-Status: planned.
+Status: implemented on `v1.2/planning`.
 
 Goal: let child or private hubs explicitly poll upward for stream offers they
 may discover.
@@ -199,6 +199,20 @@ Acceptance targets:
 - Polling is a simulator helper call, not a live loop or socket listener.
 - Visibility filters are testable and explain rejected discovery results.
 - Admission decisions are still deferred to Sprint 4.
+
+Implemented scope:
+
+- Added `RendezvousPollResult` and `RendezvousPollStatus` models with
+  JSON-safe summaries.
+- Added `poll_held_stream_offers(...)` to return discoverable held stream
+  offers for one explicit rendezvous request.
+- Added pure request-matching and discoverability predicates.
+- Added explicit `mark_stream_offers_discoverable(...)` status marking helper.
+- Preserved append order, read-only polling by default, active/expired
+  filtering, lane and mode filters, and visibility-tier compatibility.
+- Kept lane admission policy, scenario DSL changes, delivery changes, live
+  polling loops, durable queues, retry workers, sockets, DNS lookup, and real
+  networking deferred.
 
 ## Sprint 4: Lane Admission Policy Helpers
 

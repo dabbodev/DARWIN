@@ -46,6 +46,20 @@ STREAM_OFFER_TERMINAL_STATUSES: tuple[str, ...] = (
     "quarantined",
 )
 
+RENDEZVOUS_POLL_STATUSES: tuple[str, ...] = (
+    "matched",
+    "empty",
+    "invalid_request",
+)
+
+RENDEZVOUS_POLL_REASONS: tuple[str, ...] = (
+    "offers_available",
+    "no_discoverable_offers",
+    "invalid_request",
+    "hub_missing",
+    "scope_mismatch",
+)
+
 
 @dataclass(frozen=True, slots=True)
 class StreamOfferMode:
@@ -73,6 +87,24 @@ class StreamOfferStatus:
 
     def __post_init__(self) -> None:
         _validate_status(self.status)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe status summary."""
+        return {"status": self.status}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class RendezvousPollStatus:
+    """Controlled simulator-local rendezvous poll result status."""
+
+    status: str = "empty"
+
+    def __post_init__(self) -> None:
+        _validate_poll_status(self.status)
 
     def to_summary(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe status summary."""
@@ -241,6 +273,85 @@ class RendezvousRequest:
         return self.to_summary()
 
 
+@dataclass(frozen=True, slots=True)
+class RendezvousPollResult:
+    """Simulator-local result for one explicit private polling helper call."""
+
+    request_id: str
+    polling_hub_id: str
+    parent_hub_id: str
+    target_scope: str
+    visibility_tier: StreamOfferVisibility | LaneVisibilityTier | int = 0
+    matched_offer_ids: tuple[str, ...] | list[str] = ()
+    matched_offers: tuple[StreamOffer, ...] | list[StreamOffer] = ()
+    status: RendezvousPollStatus | str = "empty"
+    reason: str = "no_discoverable_offers"
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.request_id, "request_id")
+        _validate_required_string(self.polling_hub_id, "polling_hub_id")
+        _validate_required_string(self.parent_hub_id, "parent_hub_id")
+        _validate_required_string(self.target_scope, "target_scope")
+
+        visibility_tier = self.visibility_tier
+        if isinstance(visibility_tier, LaneVisibilityTier):
+            visibility_tier = visibility_tier.tier
+        if isinstance(visibility_tier, int):
+            visibility_tier = StreamOfferVisibility(visibility_tier)
+        if not isinstance(visibility_tier, StreamOfferVisibility):
+            raise TypeError(
+                "visibility_tier must be a StreamOfferVisibility, "
+                "LaneVisibilityTier, or integer"
+            )
+        object.__setattr__(self, "visibility_tier", visibility_tier)
+
+        matched_offer_ids = tuple(self.matched_offer_ids)
+        for offer_id in matched_offer_ids:
+            _validate_required_string(offer_id, "matched_offer_id")
+        object.__setattr__(self, "matched_offer_ids", matched_offer_ids)
+
+        matched_offers = tuple(self.matched_offers)
+        for offer in matched_offers:
+            _validate_offer(offer)
+        object.__setattr__(self, "matched_offers", matched_offers)
+
+        status = self.status
+        if isinstance(status, str):
+            status = RendezvousPollStatus(status)
+        if not isinstance(status, RendezvousPollStatus):
+            raise TypeError("status must be a RendezvousPollStatus or string")
+        object.__setattr__(self, "status", status)
+
+        _validate_poll_reason(self.reason)
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    @property
+    def matched_count(self) -> int:
+        """Return the number of discoverable offers in this result."""
+        return len(self.matched_offer_ids)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe rendezvous poll summary."""
+        return {
+            "request_id": self.request_id,
+            "polling_hub_id": self.polling_hub_id,
+            "parent_hub_id": self.parent_hub_id,
+            "target_scope": self.target_scope,
+            "visibility_tier": self.visibility_tier.tier,
+            "matched_offer_ids": list(self.matched_offer_ids),
+            "matched_count": self.matched_count,
+            "matched_offers": [offer.to_summary() for offer in self.matched_offers],
+            "status": self.status.status,
+            "reason": self.reason,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
 def make_stream_offer(
     *,
     offer_id: str,
@@ -341,6 +452,46 @@ def is_stream_offer_expired(offer: StreamOffer, *, current_order: int) -> bool:
     )
 
 
+def stream_offer_matches_rendezvous_request(
+    offer: StreamOffer,
+    request: RendezvousRequest,
+) -> bool:
+    """Return whether an offer structurally matches a rendezvous request."""
+    _validate_offer(offer)
+    _validate_rendezvous_request(request)
+    return (
+        _stream_offer_visibility_compatible(offer, request)
+        and (
+            offer.rendezvous_scope is None
+            or offer.rendezvous_scope == request.target_scope
+        )
+    )
+
+
+def is_stream_offer_discoverable_to_request(
+    offer: StreamOffer,
+    request: RendezvousRequest,
+    *,
+    current_order: int | None = None,
+) -> bool:
+    """Return whether an active offer is discoverable for a request."""
+    _validate_offer(offer)
+    _validate_rendezvous_request(request)
+    if current_order is not None:
+        _validate_order(current_order, "current_order")
+    if not stream_offer_matches_rendezvous_request(offer, request):
+        return False
+    if not is_stream_offer_active(offer):
+        return False
+    return not (
+        current_order is not None
+        and is_stream_offer_expired(
+            offer,
+            current_order=current_order,
+        )
+    )
+
+
 def stream_offer_matches_lane(
     offer: StreamOffer,
     lane_signature: LaneSignature | str,
@@ -359,6 +510,18 @@ def stream_offer_matches_lane(
 def _validate_offer(offer: StreamOffer) -> None:
     if not isinstance(offer, StreamOffer):
         raise TypeError("offer must be a StreamOffer")
+
+
+def _validate_rendezvous_request(request: RendezvousRequest) -> None:
+    if not isinstance(request, RendezvousRequest):
+        raise TypeError("request must be a RendezvousRequest")
+
+
+def _stream_offer_visibility_compatible(
+    offer: StreamOffer,
+    request: RendezvousRequest,
+) -> bool:
+    return offer.visibility_tier.tier <= request.visibility_tier.tier
 
 
 def _helper_metadata(metadata: dict[str, Any] | None) -> dict[str, object]:
@@ -383,6 +546,24 @@ def _validate_status(value: str) -> None:
     if value not in STREAM_OFFER_STATUSES:
         raise ValueError(
             "stream offer status must be one of " f"{', '.join(STREAM_OFFER_STATUSES)}"
+        )
+
+
+def _validate_poll_status(value: str) -> None:
+    _validate_required_string(value, "rendezvous poll status")
+    if value not in RENDEZVOUS_POLL_STATUSES:
+        raise ValueError(
+            "rendezvous poll status must be one of "
+            f"{', '.join(RENDEZVOUS_POLL_STATUSES)}"
+        )
+
+
+def _validate_poll_reason(value: str) -> None:
+    _validate_required_string(value, "rendezvous poll reason")
+    if value not in RENDEZVOUS_POLL_REASONS:
+        raise ValueError(
+            "rendezvous poll reason must be one of "
+            f"{', '.join(RENDEZVOUS_POLL_REASONS)}"
         )
 
 
