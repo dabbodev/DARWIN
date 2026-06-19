@@ -1,12 +1,10 @@
 # DARWIN v1.1.0 Release Notes
 
-Status: unreleased release-prep work on the `v1.1/planning` branch. The
-current branch package and CLI version are `darwin-sim 1.1.0`. Do not treat
-v1.1.0 as released until merge, tagging, GitHub release publication, and any
-explicit publication steps are performed separately.
+Status: released on `main` as `darwin-sim 1.1.0`. The annotated `v1.1.0` tag
+and GitHub release exist. No package publication was performed.
 
-DARWIN v1.1.0 prepares simulator-local symbolic encrypted delivery policy
-integration for release. It connects v1.0 symbolic mailbox encryption policy
+DARWIN v1.1.0 adds simulator-local symbolic encrypted delivery policy
+integration. It connects v1.0 symbolic mailbox encryption policy
 decisions to v0.9 toy in-memory mailbox delivery through explicit request,
 gate, result, audit, retention, snapshot, and scenario DSL surfaces.
 
@@ -49,10 +47,10 @@ behavior.
 - Existing plaintext `deliver_message` scenarios remain unchanged.
 - Encrypted delivery integration remains opt-in and simulator-local.
 - TrafficHub routing and canonical identity behavior remain unchanged.
-- The current branch scenario set is contiguous from `001` through `052`.
-- The current branch package and CLI version are `darwin-sim 1.1.0`.
-- Merge, tag, GitHub release creation, and package publication have not been
-  performed.
+- The current released scenario set is contiguous from `001` through `052`.
+- The released package and CLI version are `darwin-sim 1.1.0`.
+- The annotated `v1.1.0` tag and GitHub release exist.
+- No package publication was performed.
 
 ## Scenario Coverage
 
@@ -109,6 +107,6 @@ v1.1.0 does not add:
 
 ## Release Readiness
 
-This branch is release-prep ready after the full validation set passes. The
-release itself remains deferred: do not merge, tag, create a GitHub release,
-or publish packages as part of this draft release-prep state.
+The v1.1.0 release is complete after full validation, merge to `main`,
+annotated tag creation, and GitHub release publication. Package publication
+was intentionally not performed.

@@ -1,8 +1,7 @@
 # DARWIN v1.1 Roadmap: Symbolic Encrypted Delivery Policy Integration
 
-DARWIN v1.1 planning starts from the released v1.0.0 simulator on `main`.
-The planning branch is `v1.1/planning`. During release prep, the current
-branch package and CLI version have been updated to `darwin-sim 1.1.0`.
+DARWIN v1.1 is released on `main` as `darwin-sim 1.1.0`. The annotated
+`v1.1.0` tag and GitHub release exist. No package publication was performed.
 
 Recommended theme: Symbolic Encrypted Delivery Policy Integration.
 
@@ -53,7 +52,7 @@ Out of scope:
 
 ## Sprint 1: Symbolic Encrypted Delivery Request Model
 
-Status: implemented on `v1.1/planning`.
+Status: released in v1.1.0.
 
 Goal: introduce a helper-level delivery request model that can carry either a
 plaintext message envelope or symbolic encrypted envelope metadata.
@@ -92,7 +91,7 @@ See `docs/ENCRYPTED_DELIVERY_REQUESTS_v1_1.md`.
 
 ## Sprint 2: Opt-In Encrypted Delivery Policy Gate
 
-Status: implemented on `v1.1/planning`.
+Status: released in v1.1.0.
 
 Goal: add an explicit helper that evaluates registered mailbox encryption
 policy before delivery.
@@ -135,7 +134,7 @@ See `docs/ENCRYPTED_DELIVERY_POLICY_GATE_v1_1.md`.
 
 ## Sprint 3: Encrypted Delivery Result and Audit Metadata
 
-Status: implemented on `v1.1/planning`.
+Status: released in v1.1.0.
 
 Goal: extend or wrap delivery results with symbolic encryption decision
 summaries.
@@ -180,7 +179,7 @@ See `docs/ENCRYPTED_DELIVERY_RESULTS_v1_1.md`.
 
 ## Sprint 4: Scenario DSL and Scenarios
 
-Status: implemented on `v1.1/planning`.
+Status: released in v1.1.0.
 
 Implemented work:
 
@@ -202,7 +201,7 @@ Acceptance targets:
 
 ## Sprint 5: Retained Wrapped Result History and Snapshot Visibility
 
-Status: implemented on `v1.1/planning`.
+Status: released in v1.1.0.
 
 Goal: retain compact wrapped encrypted delivery result history on each
 `RegistryHub`, make it queryable, expose it in detailed snapshots, and keep
@@ -239,9 +238,7 @@ See `docs/ENCRYPTED_DELIVERY_RESULT_HISTORY_v1_1.md`.
 
 ## Sprint 6: Release-Candidate Hardening and Release Prep
 
-Status: implemented on `v1.1/planning` as release-candidate hardening. v1.1
-remains unreleased release-prep work and the package/CLI version is
-`darwin-sim 1.1.0`.
+Status: released in v1.1.0 after release-candidate hardening.
 
 Goal: harden the v1.1 planning line after implementation slices are complete.
 
@@ -257,7 +254,7 @@ Acceptance targets:
 
 - Ruff, pytest, scenario runner, and CLI version checks pass.
 - Scenario set remains contiguous.
-- Version reports `darwin-sim 1.1.0` during release prep.
+- Version reports `darwin-sim 1.1.0`.
 - Release-facing docs remain clear that v1.1 is simulator-only symbolic policy
   integration.
 
@@ -271,8 +268,9 @@ Implemented scope:
   scenarios `001` through `052`.
 - Preserved existing plaintext delivery, compact snapshot, TrafficHub routing,
   canonical identity, and version behavior.
-- Completed the release-prep version bump to `darwin-sim 1.1.0` without
-  merging, tagging, creating a GitHub release, or publishing packages.
+- Completed the release-prep version bump to `darwin-sim 1.1.0`, merge to
+  `main`, annotated tag creation, and GitHub release publication. Package
+  publication was intentionally not performed.
 
 ## Future Real Crypto Adapter Considerations
 
@@ -307,5 +305,4 @@ without changing existing plaintext delivery helpers.
 - Default enforcement inside existing plaintext delivery helpers.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
-- Package publication, tagging, release creation, or version bump beyond
-  `1.1.0`.
+- Package publication and version bump beyond `1.1.0`.

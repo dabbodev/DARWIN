@@ -1,7 +1,7 @@
 # DARWIN Encrypted Delivery Policy Gate v1.1
 
-Status: implemented on the unreleased `v1.1/planning` branch. The current
-branch package and CLI version are `darwin-sim 1.1.0`.
+Status: released in v1.1.0 on `main`. The current package and CLI version are
+`darwin-sim 1.1.0`.
 
 DARWIN v1.1 Sprint 2 adds an opt-in symbolic encrypted delivery policy gate.
 The gate evaluates an `EncryptedDeliveryRequest` against registered mailbox

@@ -442,11 +442,10 @@ python -m darwin.cli.main list-scenarios
 
 # DARWIN v1.1 Symbolic Encrypted Delivery Release-Prep Checklist
 
-v1.1.0 is release-prep work on the `v1.1/planning` branch. It has not been
-merged, tagged as `v1.1.0`, published as a GitHub release, or published as a
-package.
+v1.1.0 has been merged to `main`, tagged as annotated `v1.1.0`, and published
+as a GitHub release. No package publication was performed.
 
-- [x] Package version is updated to `1.1.0` on the planning branch.
+- [x] Package version is confirmed as `1.1.0`.
 - [x] CLI version reports `darwin-sim 1.1.0`.
 - [x] Ruff passes with `python -m ruff check .`.
 - [x] Tests pass with `python -m pytest`.
@@ -459,7 +458,7 @@ package.
 - [x] v1.1 scenarios `050` through `052` validate and run.
 - [x] v1.1 draft release notes are checked in
   `docs/RELEASE_NOTES_v1_1_DRAFT.md`.
-- [x] CHANGELOG contains an unreleased `1.1.0` release-prep section.
+- [x] CHANGELOG contains a dated `1.1.0` release section.
 - [x] README and v1.1 docs state that symbolic encrypted delivery integration
   is opt-in, simulator-local policy/audit modeling.
 - [x] Documentation states that existing plaintext delivery, TrafficHub
@@ -470,10 +469,8 @@ package.
   sockets, HTTP/WebSocket behavior, DNS lookup, external services, durable
   queues, retry workers, TrafficHub routing changes, canonical identity
   rewrites, and package-publication claims.
-- [x] Merge to `main` has not been performed.
-- [x] Annotated tag `v1.1.0` has not been created.
-- [x] GitHub release has not been created.
-- [x] Package publication has not been performed.
+- [x] Merge to `main`, annotated tag, and GitHub release are complete.
+- [x] Package publication was intentionally not performed.
 
 ## v1.1 Release-Prep Validation Commands
 

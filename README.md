@@ -8,18 +8,13 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently released at **simulator v1.0.0** on `main`. The
-annotated `v1.0.0` tag and GitHub release have been published. No package
-publication was performed. The v1.0 release adds simulator-only symbolic
-encryption metadata, policy, registry, scenario, and audit modeling while
-keeping plaintext mailbox delivery, canonical identity, TrafficHub routing,
-and v0.9 mailbox delivery behavior unchanged.
-
-The `v1.1/planning` branch contains unreleased draft work for symbolic
-encrypted delivery policy integration. The current branch package and CLI
-version are `darwin-sim 1.1.0`. Scenarios `050` through `052` model opt-in
-simulator-local request, gate, wrapped result, audit, retained history, and
-snapshot behavior. They do not add real cryptography, private key storage,
+This project is currently released at **simulator v1.1.0** on `main`. The
+annotated `v1.1.0` tag and GitHub release have been published. No package
+publication was performed. The v1.1 release adds opt-in, simulator-local
+symbolic encrypted delivery request, gate, wrapped result, audit, retained
+history, scenario, and snapshot behavior while keeping plaintext mailbox
+delivery, canonical identity, TrafficHub routing, and v0.9 mailbox delivery
+behavior unchanged. It does not add real cryptography, private key storage,
 encryption/decryption, production E2EE, secure messenger behavior, crypto
 library integration, networking, DNS lookup, external services, durable queues,
 default delivery enforcement, TrafficHub routing changes, or canonical
@@ -193,15 +188,13 @@ delivery, deterministic failure behavior, and lane fallback policy outcomes.
 The v0.9 released scenario set covers `001` through `046`.
 
 In the v1.0 release, scenarios `047` through `049` cover symbolic encryption
-registry and policy-decision behavior. The current released scenario set
-covers `001` through `049`, and the current released version on `main` is
-`darwin-sim 1.0.0`. The annotated `v1.0.0` tag and GitHub release exist; no
-package publication was performed.
+registry and policy-decision behavior.
 
-On the unreleased `v1.1/planning` branch, scenarios `050` through `052` cover
-symbolic encrypted delivery request/gate/result integration. The planning
-scenario set covers `001` through `052`, and the branch package and CLI
-version are `darwin-sim 1.1.0`.
+In the v1.1 release, scenarios `050` through `052` cover symbolic encrypted
+delivery request/gate/result integration. The current released scenario set
+covers `001` through `052`, and the current released version on `main` is
+`darwin-sim 1.1.0`. The annotated `v1.1.0` tag and GitHub release exist; no
+package publication was performed.
 
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
@@ -216,6 +209,12 @@ private key storage, encryption/decryption, crypto library integration,
 production E2EE, secure messenger behavior, delivery enforcement, networking,
 DNS lookup, external services, TrafficHub routing changes, or canonical
 identity rewrites.
+
+v1.1 symbolic encrypted delivery remains simulator-only policy and audit
+modeling. It does not add real cryptography, production E2EE, real networking,
+sockets, HTTP/WebSocket behavior, DNS lookup, external services, durable
+queues, retry workers, TrafficHub routing changes, or canonical identity
+rewrites.
 
 ## What v0.1 Supports
 

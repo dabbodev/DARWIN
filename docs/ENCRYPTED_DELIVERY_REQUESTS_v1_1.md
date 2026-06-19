@@ -1,7 +1,7 @@
 # DARWIN Encrypted Delivery Requests v1.1
 
-Status: implemented on the unreleased `v1.1/planning` branch. The current
-branch package and CLI version are `darwin-sim 1.1.0`.
+Status: released in v1.1.0 on `main`. The current package and CLI version are
+`darwin-sim 1.1.0`.
 
 DARWIN v1.1 Sprint 1 adds simulator-local symbolic encrypted delivery request
 models. These records describe delivery intent and metadata only. They can
