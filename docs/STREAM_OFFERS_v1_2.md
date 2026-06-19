@@ -5,7 +5,7 @@ rendezvous. A stream offer says that a requester wants to establish or deliver
 over a symbolic DARWIN lane, but it does not deliver a message, open a socket,
 perform lookup, enqueue durable work, or contact an external service.
 
-The first v1.2 sprint adds compact model foundations only:
+The first v1.2 sprint adds compact model foundations:
 
 - `StreamOffer`
 - `StreamOfferStatus`
@@ -19,6 +19,10 @@ offer queues, private polling descent, and lane admission policy without
 changing v1.1 mailbox delivery, encrypted delivery, TrafficHub routing, alias
 behavior, authority-chain behavior, retained outcomes, audit behavior, or
 snapshots.
+
+The second v1.2 sprint adds RegistryHub-local held offer queues. See
+`docs/RENDEZVOUS_OFFER_QUEUES_v1_2.md` for queue helper behavior, duplicate
+handling, query filters, status updates, and privacy/security framing.
 
 ## Purpose
 
@@ -89,19 +93,27 @@ Sprint 1 does not implement live polling, background polling, offer queues, or
 poll result mutation. A rendezvous request is just a JSON-safe record for later
 private polling descent helpers.
 
-## Future Rendezvous Queues
+## RegistryHub Held Offer Queues
 
-Later v1.2 sprints may add RegistryHub-local held offer queues. Those queues
-should be explicit in-memory simulator state, preserve deterministic append
-order, and remain separate from message inboxes and delivery result history.
+Sprint 2 adds RegistryHub-local held offer queues. These queues are explicit
+in-memory simulator state, preserve deterministic append order, and remain
+separate from message inboxes and delivery result history.
 
-Sprint 1 intentionally does not add:
+Queue helpers include:
 
-- Hub-held offer queues.
-- Durable queues.
-- Retry workers.
-- Background delivery services.
-- RegistryHub mutation.
+- `hold_stream_offer(...)`
+- `get_held_stream_offer(...)`
+- `query_held_stream_offers(...)`
+- `update_held_stream_offer_status(...)`
+- `summarize_held_stream_offers(...)`
+
+Holding a `created` offer stores it as `held`. Duplicate `offer_id` values are
+rejected by default, and `replace_existing=True` replaces the existing record
+in place. Query helpers are read-only and additive.
+
+Sprint 2 still does not add durable queues, retry workers, background delivery
+services, private polling descent, lane admission policy, scenario DSL actions,
+or scenario DSL assertions.
 
 ## Future Private Polling Descent
 
@@ -110,8 +122,8 @@ rendezvous hub for discoverable stream offers. Those helpers should apply
 visibility and trust filters, keep discovery separate from admission, and
 return deterministic simulator results.
 
-Sprint 1 intentionally does not add live polling, socket listeners, HTTP,
-WebSocket behavior, DNS lookup, or external service discovery.
+Sprint 1 and Sprint 2 intentionally do not add live polling, socket listeners,
+HTTP, WebSocket behavior, DNS lookup, or external service discovery.
 
 ## Future Lane Admission Policies
 
@@ -120,8 +132,9 @@ policy. Possible outcomes include passing an offer downward, holding it,
 denying it, rate-limiting it, quarantining it, or requiring a later device
 poll.
 
-Sprint 1 intentionally does not add lane admission rules, firewall behavior,
-production DDoS protection, scenario DSL actions, or scenario DSL assertions.
+Sprint 1 and Sprint 2 intentionally do not add lane admission rules, firewall
+behavior, production DDoS protection, scenario DSL actions, or scenario DSL
+assertions.
 
 ## Example
 

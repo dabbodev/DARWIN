@@ -148,7 +148,7 @@ Implemented scope:
 
 ## Sprint 2: Rendezvous Hub Offer Queues
 
-Status: planned.
+Status: implemented on `v1.2/planning`.
 
 Goal: store held stream offers on RegistryHub-local rendezvous queues.
 
@@ -167,6 +167,16 @@ Acceptance targets:
 - Queue helpers are explicit and deterministic.
 - No background retry workers, durable queues, sockets, or live polling are
   introduced.
+
+Implemented scope:
+
+- Added `RegistryHub.held_stream_offers` as in-memory simulator-local storage.
+- Added helpers to hold, get, query, update, and summarize held stream offers.
+- Preserved append order, duplicate rejection by default, deterministic
+  replacement, JSON-safe summaries, and read-only additive query filters.
+- Kept private polling descent, lane admission policy, scenario DSL changes,
+  delivery changes, durable queues, retry workers, sockets, DNS lookup, and
+  real networking deferred.
 
 ## Sprint 3: Private Polling Descent Helpers
 

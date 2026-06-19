@@ -104,6 +104,13 @@ from darwin.registry.operations import (
     resolve_device_id,
     resolve_label,
 )
+from darwin.registry.stream_offers import (
+    get_held_stream_offer,
+    hold_stream_offer,
+    query_held_stream_offers,
+    summarize_held_stream_offers,
+    update_held_stream_offer_status,
+)
 from darwin.registry.trace_explain import (
     explain_alias_conflict_entry,
     explain_alias_history_entry,
@@ -146,6 +153,7 @@ __all__ = [
     "get_checkpoint_state",
     "get_encryption_identity",
     "get_hub_topology_advertisement",
+    "get_held_stream_offer",
     "get_key_bundle_reference",
     "get_lane_definition",
     "get_mailbox",
@@ -192,8 +200,12 @@ __all__ = [
     "resolve_bundle_alias",
     "resolve_label",
     "highest_authorized_alias",
+    "hold_stream_offer",
     "suggest_alias_fallbacks",
     "summarize_encrypted_delivery_result",
     "summarize_authority_decision",
     "summarize_authority_path",
+    "query_held_stream_offers",
+    "summarize_held_stream_offers",
+    "update_held_stream_offer_status",
 ]
