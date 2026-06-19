@@ -946,6 +946,10 @@ For v1.1 symbolic encrypted delivery policy integration planning, see:
 - `docs/ENCRYPTED_DELIVERY_RESULT_HISTORY_v1_1.md`
 - `docs/RELEASE_NOTES_v1_1_DRAFT.md`
 
+For v1.2 pull-based lane rendezvous planning, see:
+
+- `docs/V1_2_ROADMAP.md`
+
 ## What v0.1 Is Not
 
 DARWIN simulator v0.1 is not:
