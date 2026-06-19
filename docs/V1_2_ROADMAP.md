@@ -114,7 +114,7 @@ metadata-hiding guarantees.
 
 ## Sprint 1: Stream Offer and Rendezvous Request Models
 
-Status: planned.
+Status: implemented on `v1.2/planning`.
 
 Goal: introduce the smallest simulator-local record shape for an offer to
 establish or deliver over a lane.
@@ -136,6 +136,15 @@ Acceptance targets:
   behavior is added.
 - Existing v1.1 encrypted delivery and v0.9 mailbox behavior remain
   unchanged.
+
+Implemented scope:
+
+- Added simulator-local `StreamOffer`, `StreamOfferStatus`,
+  `StreamOfferMode`, `StreamOfferVisibility`, and `RendezvousRequest` models.
+- Added deterministic constructors, pure predicates, and JSON-safe summaries.
+- Documented Sprint 1 behavior in `docs/STREAM_OFFERS_v1_2.md`.
+- Kept hub-held queues, private polling descent, admission policy, scenario
+  DSL, delivery changes, and networking behavior deferred.
 
 ## Sprint 2: Rendezvous Hub Offer Queues
 
