@@ -791,8 +791,10 @@ Supported v1.2 stream offer actions:
     `metadata`
   - The action builds a `RendezvousRequest`, calls
     `poll_held_stream_offers(...)`, appends the request and
-    `RendezvousPollResult` to action results, and logs the poll summary.
-    Polling is read-only by default.
+    `RendezvousPollResult` to action results, records the poll result on the
+    RegistryHub's retained audit history, and logs the poll summary. Polling
+    remains read-only with respect to held offers, delivery, routing, and
+    networking.
 - `mark_stream_offers_discoverable`
   - Required: `registry_hub`, `offer_ids`
   - Optional: `metadata`
@@ -811,8 +813,9 @@ Supported v1.2 stream offer actions:
     `decision_metadata`
   - The action finds the held offer, builds a `LaneAdmissionPolicy`, uses a
     prior poll request/result when referenced, appends a
-    `LaneAdmissionDecision` to action results, and logs a compact decision.
-    It is read-only by default and does not mutate the offer.
+    `LaneAdmissionDecision` to action results, records the decision on the
+    RegistryHub's retained audit history, and logs a compact decision. It does
+    not mutate the held offer, deliver, route, or poll live services.
 
 Supported v1.2 stream offer assertions:
 
@@ -839,6 +842,13 @@ Count behavior matches existing count-style assertions. Without
 `expected_count` or `min_count`, at least one matching record is required.
 `expected_count` requires an exact count, and `min_count` requires at least
 that many matches. Boolean filters must be YAML booleans.
+
+Sprint 6 changes `rendezvous_poll_result_contains` and
+`lane_admission_decision_contains` to prefer retained RegistryHub histories
+before falling back to scenario action results. Detailed snapshots include
+compact `held_stream_offers`, `rendezvous_poll_result_history`, and
+`lane_admission_decision_history` summaries under each RegistryHub. Compact
+`world.snapshot()` output remains unchanged.
 
 Checked-in v1.2 stream offer scenarios:
 

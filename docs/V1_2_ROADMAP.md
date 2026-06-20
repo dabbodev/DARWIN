@@ -36,7 +36,8 @@ In scope:
 - Private polling descent helpers with visibility and trust filters.
 - Hub-level lane admission policy records and deterministic outcomes.
 - Scenario DSL actions and assertions after helper behavior is stable.
-- Snapshot and audit visibility for held offers and admission decisions.
+- Snapshot and audit visibility for held offers, poll results, and admission
+  decisions.
 - Documentation that explains metadata and privacy limitations.
 
 Out of scope:
@@ -298,7 +299,7 @@ Implemented scope:
 
 ## Sprint 6: Snapshot, Audit Visibility, and Hardening
 
-Status: planned.
+Status: implemented on `v1.2/planning`.
 
 Goal: make retained offers and admission decisions inspectable without
 claiming production privacy, security, or delivery guarantees.
@@ -318,6 +319,30 @@ Acceptance targets:
 - Version remains `darwin-sim 1.1.0` until release prep.
 - Docs avoid production DDoS, anonymity, networking, DNS, registrar, public CA,
   real cryptography, TrafficHub routing, and canonical identity claims.
+
+Implemented scope:
+
+- Added `RegistryHub.rendezvous_poll_result_history` and
+  `RegistryHub.lane_admission_decision_history` as default-empty append-order
+  simulator-local histories.
+- Added explicit record, query, and summarize helpers for retained poll
+  results and lane admission decisions.
+- Kept `poll_held_stream_offers(...)` and
+  `evaluate_lane_admission_policy(...)` read-only by default.
+- Updated scenario poll and admission actions to record their explicit
+  outcomes while preserving scenario action results.
+- Updated `rendezvous_poll_result_contains` and
+  `lane_admission_decision_contains` to prefer retained RegistryHub history
+  and fall back to action results when retained history is empty or
+  unavailable.
+- Added detailed snapshot visibility for compact retained poll and admission
+  summaries alongside `held_stream_offers`; compact `world.snapshot()` remains
+  unchanged.
+- Documented Sprint 6 behavior in
+  `docs/STREAM_OFFER_AUDIT_HISTORY_v1_2.md`.
+- Preserved mailbox delivery, encrypted delivery, TrafficHub routing,
+  networking, live polling, durable queues, retry workers, DNS lookup,
+  registrar/public CA behavior, real cryptography, and version behavior.
 
 ## Recommended First Implementation Sprint
 

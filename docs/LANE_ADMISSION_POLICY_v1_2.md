@@ -64,9 +64,14 @@ Sprint 5 exposes admission through `evaluate_lane_admission_policy` and
 builds a simulator-local policy, optionally uses a prior poll request/result,
 and appends the `LaneAdmissionDecision` to action results for assertions.
 
-Scenario-level admission remains read-only by default. It does not mutate the
-held offer, retain admission history on RegistryHub, deliver messages, call
-TrafficHub, open sockets, perform DNS lookup, or start live polling.
+Sprint 6 also records explicit scenario admission outcomes on
+`RegistryHub.lane_admission_decision_history`. The assertion now prefers this
+retained history and falls back to action results only when retained history is
+empty or unavailable.
+
+Scenario-level admission remains read-only with respect to the held offer,
+delivery, and routing. It does not mutate the held offer, deliver messages,
+call TrafficHub, open sockets, perform DNS lookup, or start live polling.
 
 ## Policy Fields
 
@@ -174,6 +179,22 @@ Admission evaluation is read-only by default. It returns a new
 
 Decision metadata records this non-mutating scope with JSON-safe simulator
 flags.
+
+## Retained Decision History
+
+Sprint 6 adds optional RegistryHub-local retention for explicit admission
+decisions:
+
+- `record_lane_admission_decision(...)`
+- `query_lane_admission_decisions(...)`
+- `summarize_lane_admission_decisions(...)`
+
+`evaluate_lane_admission_policy(...)` remains pure by default. Callers can
+record returned decisions explicitly; scenario actions do so after evaluation.
+Retained decision queries filter by decision ID, policy ID, offer ID, request
+ID, hub ID, requester ID, target handle, target scope, lane signature, status,
+reason, and allowed flag. Detailed snapshots include compact retained decision
+summaries; compact `world.snapshot()` output remains unchanged.
 
 ## Privacy And Security Framing
 

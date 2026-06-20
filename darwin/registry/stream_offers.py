@@ -13,7 +13,10 @@ from darwin.models.lane_signature import (
 from darwin.models.stream_offer import (
     LaneAdmissionDecision,
     LaneAdmissionPolicy,
+    LaneAdmissionReason,
+    LaneAdmissionStatus,
     RendezvousPollResult,
+    RendezvousPollStatus,
     RendezvousRequest,
     StreamOffer,
     StreamOfferMode,
@@ -150,6 +153,68 @@ def summarize_held_stream_offers(registry_hub: RegistryHub) -> list[dict[str, ob
     return [offer.to_summary() for offer in registry_hub.held_stream_offers]
 
 
+def record_rendezvous_poll_result(
+    registry_hub: RegistryHub,
+    result: RendezvousPollResult,
+) -> RendezvousPollResult:
+    """Append a rendezvous poll result to RegistryHub-local audit history."""
+    _validate_registry_hub(registry_hub)
+    _validate_poll_result(result)
+    registry_hub.rendezvous_poll_result_history.append(result)
+    return result
+
+
+def query_rendezvous_poll_results(
+    registry_hub: RegistryHub,
+    *,
+    request_id: str | None = None,
+    polling_hub_id: str | None = None,
+    parent_hub_id: str | None = None,
+    target_scope: str | None = None,
+    visibility_tier: StreamOfferVisibility | LaneVisibilityTier | int | None = None,
+    status: RendezvousPollStatus | str | None = None,
+    reason: str | None = None,
+    matched_offer_id: str | None = None,
+) -> list[RendezvousPollResult]:
+    """Return retained poll results matching additive filters in append order."""
+    _validate_registry_hub(registry_hub)
+    _validate_optional_string(request_id, "request_id")
+    _validate_optional_string(polling_hub_id, "polling_hub_id")
+    _validate_optional_string(parent_hub_id, "parent_hub_id")
+    _validate_optional_string(target_scope, "target_scope")
+    _validate_optional_string(reason, "reason")
+    _validate_optional_string(matched_offer_id, "matched_offer_id")
+    visibility_key = _visibility_tier_key(visibility_tier)
+    poll_status_key = _poll_status_key(status)
+
+    return [
+        result
+        for result in registry_hub.rendezvous_poll_result_history
+        if (request_id is None or result.request_id == request_id)
+        and (polling_hub_id is None or result.polling_hub_id == polling_hub_id)
+        and (parent_hub_id is None or result.parent_hub_id == parent_hub_id)
+        and (target_scope is None or result.target_scope == target_scope)
+        and (visibility_key is None or result.visibility_tier.tier == visibility_key)
+        and (poll_status_key is None or result.status.status == poll_status_key)
+        and (reason is None or result.reason == reason)
+        and (
+            matched_offer_id is None
+            or matched_offer_id in result.matched_offer_ids
+        )
+    ]
+
+
+def summarize_rendezvous_poll_results(
+    registry_hub: RegistryHub,
+) -> list[dict[str, object]]:
+    """Return JSON-safe retained poll result summaries in append order."""
+    _validate_registry_hub(registry_hub)
+    return [
+        result.to_summary()
+        for result in registry_hub.rendezvous_poll_result_history
+    ]
+
+
 def poll_held_stream_offers(
     parent_hub: RegistryHub | None,
     request: RendezvousRequest,
@@ -243,6 +308,87 @@ def mark_stream_offers_discoverable(
         updated_offers.append(updated)
 
     return updated_offers
+
+
+def record_lane_admission_decision(
+    registry_hub: RegistryHub,
+    decision: LaneAdmissionDecision,
+) -> LaneAdmissionDecision:
+    """Append a lane admission decision to RegistryHub-local audit history."""
+    _validate_registry_hub(registry_hub)
+    _validate_lane_admission_decision(decision)
+    registry_hub.lane_admission_decision_history.append(decision)
+    return decision
+
+
+def query_lane_admission_decisions(
+    registry_hub: RegistryHub,
+    *,
+    decision_id: str | None = None,
+    policy_id: str | None = None,
+    offer_id: str | None = None,
+    request_id: str | None = None,
+    hub_id: str | None = None,
+    requester_id: str | None = None,
+    target_handle: str | None = None,
+    target_scope: str | None = None,
+    lane_signature: LaneSignature | str | None = None,
+    status: LaneAdmissionStatus | str | None = None,
+    reason: LaneAdmissionReason | str | None = None,
+    allowed: bool | None = None,
+) -> list[LaneAdmissionDecision]:
+    """Return retained admission decisions matching additive filters in append order."""
+    _validate_registry_hub(registry_hub)
+    _validate_optional_string(decision_id, "decision_id")
+    _validate_optional_string(policy_id, "policy_id")
+    _validate_optional_string(offer_id, "offer_id")
+    _validate_optional_string(request_id, "request_id")
+    _validate_optional_string(hub_id, "hub_id")
+    _validate_optional_string(requester_id, "requester_id")
+    _validate_optional_string(target_handle, "target_handle")
+    _validate_optional_string(target_scope, "target_scope")
+    lane_signature_key = _lane_signature_key(lane_signature)
+    admission_status_key = _lane_admission_status_key(status)
+    admission_reason_key = _lane_admission_reason_key(reason)
+    if allowed is not None and not isinstance(allowed, bool):
+        raise TypeError("allowed must be a bool or None")
+
+    return [
+        decision
+        for decision in registry_hub.lane_admission_decision_history
+        if (decision_id is None or decision.decision_id == decision_id)
+        and (policy_id is None or decision.policy_id == policy_id)
+        and (offer_id is None or decision.offer_id == offer_id)
+        and (request_id is None or decision.request_id == request_id)
+        and (hub_id is None or decision.hub_id == hub_id)
+        and (requester_id is None or decision.requester_id == requester_id)
+        and (target_handle is None or decision.target_handle == target_handle)
+        and (target_scope is None or decision.target_scope == target_scope)
+        and (
+            lane_signature_key is None
+            or decision.lane_signature == lane_signature_key
+        )
+        and (
+            admission_status_key is None
+            or decision.status.status == admission_status_key
+        )
+        and (
+            admission_reason_key is None
+            or decision.reason.reason == admission_reason_key
+        )
+        and (allowed is None or decision.allowed is allowed)
+    ]
+
+
+def summarize_lane_admission_decisions(
+    registry_hub: RegistryHub,
+) -> list[dict[str, object]]:
+    """Return JSON-safe retained admission decision summaries in append order."""
+    _validate_registry_hub(registry_hub)
+    return [
+        decision.to_summary()
+        for decision in registry_hub.lane_admission_decision_history
+    ]
 
 
 def evaluate_lane_admission_policy(
@@ -649,6 +795,50 @@ def _status_key(status: StreamOfferStatus | str | None) -> str | None:
     if isinstance(status, str):
         return StreamOfferStatus(status).status
     raise TypeError("status must be a StreamOfferStatus, string, or None")
+
+
+def _poll_status_key(status: RendezvousPollStatus | str | None) -> str | None:
+    if status is None:
+        return None
+    if isinstance(status, RendezvousPollStatus):
+        return status.status
+    if isinstance(status, str):
+        return RendezvousPollStatus(status).status
+    raise TypeError("status must be a RendezvousPollStatus, string, or None")
+
+
+def _lane_admission_status_key(
+    status: LaneAdmissionStatus | str | None,
+) -> str | None:
+    if status is None:
+        return None
+    if isinstance(status, LaneAdmissionStatus):
+        return status.status
+    if isinstance(status, str):
+        return LaneAdmissionStatus(status).status
+    raise TypeError("status must be a LaneAdmissionStatus, string, or None")
+
+
+def _lane_admission_reason_key(
+    reason: LaneAdmissionReason | str | None,
+) -> str | None:
+    if reason is None:
+        return None
+    if isinstance(reason, LaneAdmissionReason):
+        return reason.reason
+    if isinstance(reason, str):
+        return LaneAdmissionReason(reason).reason
+    raise TypeError("reason must be a LaneAdmissionReason, string, or None")
+
+
+def _validate_poll_result(result: RendezvousPollResult) -> None:
+    if not isinstance(result, RendezvousPollResult):
+        raise TypeError("result must be a RendezvousPollResult")
+
+
+def _validate_lane_admission_decision(decision: LaneAdmissionDecision) -> None:
+    if not isinstance(decision, LaneAdmissionDecision):
+        raise TypeError("decision must be a LaneAdmissionDecision")
 
 
 def _validate_offer(offer: StreamOffer) -> None:

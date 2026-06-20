@@ -27,6 +27,9 @@ The queue is intentionally small:
   as discoverable.
 - `evaluate_lane_admission_policy(...)` can evaluate a held offer separately
   without mutating the queue.
+- `record_rendezvous_poll_result(...)` and
+  `record_lane_admission_decision(...)` retain explicit audit outcomes when a
+  caller opts into history.
 
 ## Relationship To StreamOffer
 
@@ -124,8 +127,16 @@ Sprint 5 adds scenario actions and assertions over the same held queue helper
 surface. `hold_stream_offer` stores offers on `RegistryHub.held_stream_offers`,
 `poll_held_stream_offers` records explicit poll results in scenario action
 results, and `held_stream_offer_contains` reads the queue with additive
-filters. Detailed scenario snapshots now include compact
-`held_stream_offers` summaries for each RegistryHub.
+filters. Detailed scenario snapshots include compact `held_stream_offers`
+summaries for each RegistryHub.
+
+Sprint 6 adds retained RegistryHub-local histories for explicit poll results
+and lane admission decisions. Scenario poll and admission actions append their
+outcomes to those histories after evaluation. Query helpers read the retained
+histories with additive filters, while `rendezvous_poll_result_contains` and
+`lane_admission_decision_contains` prefer retained history before falling back
+to scenario action results. Detailed snapshots include compact retained
+history summaries; compact `world.snapshot()` output remains unchanged.
 
 This scenario layer remains symbolic metadata flow only. It does not make the
 queue durable, start retry workers, run live polling loops, deliver messages,

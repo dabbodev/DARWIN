@@ -161,6 +161,12 @@ from darwin.registry.stream_offers import (
 from darwin.registry.stream_offers import (
     poll_held_stream_offers as poll_held_stream_offers_op,
 )
+from darwin.registry.stream_offers import (
+    record_lane_admission_decision as record_lane_admission_decision_op,
+)
+from darwin.registry.stream_offers import (
+    record_rendezvous_poll_result as record_rendezvous_poll_result_op,
+)
 from darwin.sim.assertions import AssertionResult, evaluate_assertions
 from darwin.sim.scenarios import Scenario, load_scenario
 from darwin.sim.world import World
@@ -1902,6 +1908,7 @@ def _step_poll_held_stream_offers(world: World, fields: dict[str, Any]) -> None:
         active_only=_bool_field(fields, "active_only", True),
         current_order=_optional_int(fields.get("current_order")),
     )
+    record_rendezvous_poll_result_op(hub, result)
     world.action_results.append(request)
     world.action_results.append(result)
     world.log(
@@ -1988,6 +1995,7 @@ def _step_evaluate_lane_admission_policy(
         decision_id=_optional_str(fields.get("decision_id")),
         metadata=_optional_dict(fields.get("decision_metadata")),
     )
+    record_lane_admission_decision_op(hub, result)
     world.action_results.append(result)
     world.log(
         (

@@ -37,6 +37,12 @@ and assertions. See `docs/SCENARIO_DSL_v0_2.md` and scenarios `053` through
 `057` for symbolic-only rendezvous, private polling, and lane admission
 coverage.
 
+The sixth v1.2 sprint adds retained RegistryHub-local audit history for
+explicit poll results and lane admission decisions. See
+`docs/STREAM_OFFER_AUDIT_HISTORY_v1_2.md` for recording helpers, query
+filters, assertion source preference, detailed snapshot visibility, compact
+snapshot exclusion, and privacy/security framing.
+
 ## Purpose
 
 A `StreamOffer` represents a request to establish or deliver over a lane at a
@@ -172,6 +178,14 @@ These scenario actions and assertions remain simulator-local metadata checks.
 They do not add delivery behavior, TrafficHub routing changes, live polling,
 networking, durable queues, retry workers, or production privacy/security
 guarantees.
+
+Sprint 6 records explicit scenario poll and admission outcomes on the
+RegistryHub. `rendezvous_poll_result_contains` and
+`lane_admission_decision_contains` now prefer retained history and fall back to
+scenario action results only when retained history is empty or unavailable.
+Detailed snapshots include compact summaries for held stream offers, retained
+poll results, and retained lane admission decisions. Compact `world.snapshot()`
+output remains unchanged.
 
 ## Example
 

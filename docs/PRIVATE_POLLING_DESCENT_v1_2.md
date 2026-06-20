@@ -117,6 +117,22 @@ Reasons include:
 
 Summaries are copied and JSON-safe.
 
+## Retained Poll History
+
+Sprint 6 adds optional RegistryHub-local retention for explicit poll results:
+
+- `record_rendezvous_poll_result(...)`
+- `query_rendezvous_poll_results(...)`
+- `summarize_rendezvous_poll_results(...)`
+
+`poll_held_stream_offers(...)` remains read-only by default. Scenario
+`poll_held_stream_offers` actions record the returned result on the
+RegistryHub after evaluation and still append the request and result to action
+results. Retained poll queries filter by request ID, polling hub ID, parent
+hub ID, target scope, visibility tier, status, reason, and matched offer ID.
+Detailed snapshots include compact retained poll summaries; compact
+`world.snapshot()` output remains unchanged.
+
 ## Relationship To Lane Admission Policy
 
 Private polling descent is discovery only. Sprint 4 adds separate lane
@@ -130,10 +146,12 @@ admission does not poll live services, deliver messages, or route traffic.
 ## Scenario DSL Coverage
 
 Sprint 5 adds `poll_held_stream_offers` as a scenario action and
-`rendezvous_poll_result_contains` as a read-only assertion over scenario
-action results. The action represents one explicit helper call and does not
-start a live poller, socket listener, HTTP endpoint, WebSocket endpoint, DNS
-lookup, or external service request.
+`rendezvous_poll_result_contains` as a read-only assertion. Sprint 6 changes
+the assertion to prefer retained RegistryHub poll history and fall back to
+scenario action results when retained history is empty or unavailable. The
+action represents one explicit helper call and does not start a live poller,
+socket listener, HTTP endpoint, WebSocket endpoint, DNS lookup, or external
+service request.
 
 ## Privacy And Security Framing
 

@@ -32,7 +32,11 @@ from darwin.registry.message_delivery import (
     get_mailbox_inbox,
     list_message_delivery_results,
 )
-from darwin.registry.stream_offers import query_held_stream_offers
+from darwin.registry.stream_offers import (
+    query_held_stream_offers,
+    query_lane_admission_decisions,
+    query_rendezvous_poll_results,
+)
 from darwin.registry.trace_explain import explain_authority_trace
 from darwin.sim.world import World
 
@@ -1482,6 +1486,7 @@ def _rendezvous_poll_result_contains(
     assertion: dict[str, Any],
 ) -> AssertionResult:
     hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
     filters = {
         "registry_hub": hub_id,
         "request_id": _optional_filter_str(assertion, "request_id"),
@@ -1497,16 +1502,40 @@ def _rendezvous_poll_result_contains(
             "matched_offer_ids",
         ),
     }
-    records = [
-        result.to_summary()
-        for result in world.action_results
-        if isinstance(result, RendezvousPollResult)
-    ]
-    records = [
-        record
-        for record in records
-        if _matches_rendezvous_poll_result_filters(record, filters)
-    ]
+    source = "action_results"
+    records: list[dict[str, object]]
+    if hub is not None and hub.rendezvous_poll_result_history:
+        source = "retained_history"
+        records = [
+            result.to_summary()
+            for result in query_rendezvous_poll_results(
+                hub,
+                request_id=filters["request_id"],
+                polling_hub_id=filters["polling_hub_id"],
+                parent_hub_id=filters["parent_hub_id"] or hub_id,
+                target_scope=filters["target_scope"],
+                visibility_tier=filters["visibility_tier"],
+                status=filters["status"],
+                reason=filters["reason"],
+                matched_offer_id=filters["matched_offer_id"],
+            )
+        ]
+        records = [
+            record
+            for record in records
+            if _matches_rendezvous_poll_result_filters(record, filters)
+        ]
+    else:
+        records = [
+            result.to_summary()
+            for result in world.action_results
+            if isinstance(result, RendezvousPollResult)
+        ]
+        records = [
+            record
+            for record in records
+            if _matches_rendezvous_poll_result_filters(record, filters)
+        ]
     return _count_result(
         assertion_type,
         assertion,
@@ -1515,8 +1544,8 @@ def _rendezvous_poll_result_contains(
         expected_context={"filters": filters},
         actual_context={
             "registry_hub": hub_id,
-            "registry_hub_found": hub_id in world.registry_hubs,
-            "source": "action_results",
+            "registry_hub_found": hub is not None,
+            "source": source,
         },
     )
 
@@ -1527,6 +1556,7 @@ def _lane_admission_decision_contains(
     assertion: dict[str, Any],
 ) -> AssertionResult:
     hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
     filters = {
         "registry_hub": hub_id,
         "decision_id": _optional_filter_str(assertion, "decision_id"),
@@ -1542,16 +1572,44 @@ def _lane_admission_decision_contains(
         "reason": _optional_filter_str(assertion, "reason"),
         "allowed": _optional_bool_filter(assertion, "allowed"),
     }
-    records = [
-        result.to_summary()
-        for result in world.action_results
-        if isinstance(result, LaneAdmissionDecision)
-    ]
-    records = [
-        record
-        for record in records
-        if _matches_lane_admission_decision_filters(record, filters)
-    ]
+    source = "action_results"
+    records: list[dict[str, object]]
+    if hub is not None and hub.lane_admission_decision_history:
+        source = "retained_history"
+        records = [
+            decision.to_summary()
+            for decision in query_lane_admission_decisions(
+                hub,
+                decision_id=filters["decision_id"],
+                policy_id=filters["policy_id"],
+                offer_id=filters["offer_id"],
+                request_id=filters["request_id"],
+                hub_id=filters["hub_id"] or hub_id,
+                requester_id=filters["requester_id"],
+                target_handle=filters["target_handle"],
+                target_scope=filters["target_scope"],
+                lane_signature=filters["lane_signature"],
+                status=filters["status"],
+                reason=filters["reason"],
+                allowed=filters["allowed"],
+            )
+        ]
+        records = [
+            record
+            for record in records
+            if _matches_lane_admission_decision_filters(record, filters)
+        ]
+    else:
+        records = [
+            result.to_summary()
+            for result in world.action_results
+            if isinstance(result, LaneAdmissionDecision)
+        ]
+        records = [
+            record
+            for record in records
+            if _matches_lane_admission_decision_filters(record, filters)
+        ]
     return _count_result(
         assertion_type,
         assertion,
@@ -1560,8 +1618,8 @@ def _lane_admission_decision_contains(
         expected_context={"filters": filters},
         actual_context={
             "registry_hub": hub_id,
-            "registry_hub_found": hub_id in world.registry_hubs,
-            "source": "action_results",
+            "registry_hub_found": hub is not None,
+            "source": source,
         },
     )
 
