@@ -258,7 +258,7 @@ Implemented scope:
 
 ## Sprint 5: Scenario DSL and Scenarios
 
-Status: planned.
+Status: implemented on `v1.2/planning`.
 
 Goal: expose the stable helper flow through scenario YAML after models,
 queues, polling, and admission decisions are covered by focused tests.
@@ -281,6 +281,21 @@ Acceptance targets:
 - Scenario output clearly distinguishes discovery, admission, and delivery
   mode.
 
+Implemented scope:
+
+- Added scenario actions for holding stream offers, polling held offers,
+  marking selected offers discoverable, and evaluating lane admission policy.
+- Added read-only count-style assertions for held offers, rendezvous poll
+  results, and lane admission decisions.
+- Added scenarios `053` through `057` for allowed, requires-poll, denied,
+  rate-limited, and quarantined stream offer outcomes.
+- Added detailed snapshot visibility for `RegistryHub.held_stream_offers`.
+- Kept poll results and admission decisions in scenario action results rather
+  than adding retained RegistryHub admission history.
+- Preserved mailbox delivery, encrypted delivery, TrafficHub routing,
+  networking, live polling, durable queues, retry workers, DNS lookup,
+  registrar/public CA behavior, real cryptography, and version behavior.
+
 ## Sprint 6: Snapshot, Audit Visibility, and Hardening
 
 Status: planned.
@@ -290,7 +305,8 @@ claiming production privacy, security, or delivery guarantees.
 
 Candidate work:
 
-- Add detailed snapshot visibility for held offers and admission decisions.
+- Add any remaining detailed snapshot visibility for admission decisions if
+  retained decision history becomes necessary.
 - Add compact audit summaries for poll and admission results.
 - Add docs and tests clarifying metadata and privacy limitations.
 - Harden scenario index, metadata regression, and documentation consistency.

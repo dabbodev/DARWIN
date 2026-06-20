@@ -127,6 +127,14 @@ denied, be rate-limited, be quarantined, or require another poll.
 Discovery and admission remain separate. Polling does not evaluate policy, and
 admission does not poll live services, deliver messages, or route traffic.
 
+## Scenario DSL Coverage
+
+Sprint 5 adds `poll_held_stream_offers` as a scenario action and
+`rendezvous_poll_result_contains` as a read-only assertion over scenario
+action results. The action represents one explicit helper call and does not
+start a live poller, socket listener, HTTP endpoint, WebSocket endpoint, DNS
+lookup, or external service request.
+
 ## Privacy And Security Framing
 
 Polling descent can reduce direct endpoint exposure inside the simulator by

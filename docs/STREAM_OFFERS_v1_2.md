@@ -32,6 +32,11 @@ The fourth v1.2 sprint adds lane admission policy helpers. See
 `docs/LANE_ADMISSION_POLICY_v1_2.md` for policy records, decision summaries,
 deterministic precedence, read-only behavior, and privacy/security framing.
 
+The fifth v1.2 sprint exposes the helper flow through scenario DSL actions
+and assertions. See `docs/SCENARIO_DSL_v0_2.md` and scenarios `053` through
+`057` for symbolic-only rendezvous, private polling, and lane admission
+coverage.
+
 ## Purpose
 
 A `StreamOffer` represents a request to establish or deliver over a lane at a
@@ -150,6 +155,23 @@ Possible outcomes include passing an offer downward, holding it, denying it,
 rate-limiting it, quarantining it, or requiring a matching poll first.
 Admission is read-only by default and does not deliver messages, update held
 offers, call TrafficHub, or perform networking.
+
+## Scenario DSL Coverage
+
+Sprint 5 adds scenario-level coverage for the existing helper stack:
+
+- `hold_stream_offer`
+- `poll_held_stream_offers`
+- `mark_stream_offers_discoverable`
+- `evaluate_lane_admission_policy`
+- `held_stream_offer_contains`
+- `rendezvous_poll_result_contains`
+- `lane_admission_decision_contains`
+
+These scenario actions and assertions remain simulator-local metadata checks.
+They do not add delivery behavior, TrafficHub routing changes, live polling,
+networking, durable queues, retry workers, or production privacy/security
+guarantees.
 
 ## Example
 

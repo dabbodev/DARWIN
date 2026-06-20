@@ -57,14 +57,16 @@ poll result must be `matched`.
 If the offer is not discoverable through the supplied poll result, admission
 returns a `requires_poll` decision with reason `not_discoverable`.
 
-## Relationship To Future Scenario DSL
+## Relationship To Scenario DSL
 
-Sprint 4 intentionally keeps admission as model and helper behavior. Future
-v1.2 work may expose this through scenario DSL actions, assertions, snapshots,
-and audit summaries after the helper contract is stable.
+Sprint 5 exposes admission through `evaluate_lane_admission_policy` and
+`lane_admission_decision_contains`. Scenario evaluation finds a held offer,
+builds a simulator-local policy, optionally uses a prior poll request/result,
+and appends the `LaneAdmissionDecision` to action results for assertions.
 
-This sprint does not add scenario DSL actions, scenario DSL assertions, or new
-scenario YAML files.
+Scenario-level admission remains read-only by default. It does not mutate the
+held offer, retain admission history on RegistryHub, deliver messages, call
+TrafficHub, open sockets, perform DNS lookup, or start live polling.
 
 ## Policy Fields
 

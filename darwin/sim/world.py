@@ -238,6 +238,10 @@ class World:
                         result.to_summary()
                         for result in hub.encrypted_delivery_result_history
                     ],
+                    "held_stream_offers": [
+                        offer.to_summary()
+                        for offer in hub.held_stream_offers
+                    ],
                     "adapter_endpoints": {
                         endpoint_id: endpoint.to_summary()
                         for endpoint_id, endpoint in sorted(

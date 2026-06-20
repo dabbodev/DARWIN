@@ -7,6 +7,10 @@ from typing import Any
 
 from darwin.models.encrypted_delivery import EncryptedDeliveryResult
 from darwin.models.encryption import EncryptionPolicyDecision
+from darwin.models.stream_offer import (
+    LaneAdmissionDecision,
+    RendezvousPollResult,
+)
 from darwin.registry.aliases import resolve_alias
 from darwin.registry.authority_audit import (
     build_authority_audit_trace,
@@ -28,6 +32,7 @@ from darwin.registry.message_delivery import (
     get_mailbox_inbox,
     list_message_delivery_results,
 )
+from darwin.registry.stream_offers import query_held_stream_offers
 from darwin.registry.trace_explain import explain_authority_trace
 from darwin.sim.world import World
 
@@ -1425,6 +1430,142 @@ def _encrypted_delivery_audit_contains(
     )
 
 
+def _held_stream_offer_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    filters = {
+        "offer_id": _optional_filter_str(assertion, "offer_id"),
+        "requester_id": _optional_filter_str(assertion, "requester_id"),
+        "target_handle": _optional_filter_str(assertion, "target_handle"),
+        "lane_signature": _optional_filter_str(assertion, "lane_signature"),
+        "requested_mode": _optional_filter_str(assertion, "requested_mode"),
+        "visibility_tier": _optional_int_field(assertion, "visibility_tier"),
+        "status": _optional_filter_str(assertion, "status"),
+        "rendezvous_scope": _optional_filter_str(assertion, "rendezvous_scope"),
+    }
+    records = []
+    if hub is not None:
+        records = [
+            offer.to_summary()
+            for offer in query_held_stream_offers(
+                hub,
+                offer_id=filters["offer_id"],
+                requester_id=filters["requester_id"],
+                target_handle=filters["target_handle"],
+                lane_signature=filters["lane_signature"],
+                requested_mode=filters["requested_mode"],
+                visibility_tier=filters["visibility_tier"],
+                status=filters["status"],
+                rendezvous_scope=filters["rendezvous_scope"],
+            )
+        ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"held stream offer contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub is not None,
+        },
+    )
+
+
+def _rendezvous_poll_result_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = {
+        "registry_hub": hub_id,
+        "request_id": _optional_filter_str(assertion, "request_id"),
+        "polling_hub_id": _optional_filter_str(assertion, "polling_hub_id"),
+        "parent_hub_id": _optional_filter_str(assertion, "parent_hub_id"),
+        "target_scope": _optional_filter_str(assertion, "target_scope"),
+        "visibility_tier": _optional_int_field(assertion, "visibility_tier"),
+        "status": _optional_filter_str(assertion, "status"),
+        "reason": _optional_filter_str(assertion, "reason"),
+        "matched_offer_id": _optional_filter_str(assertion, "matched_offer_id"),
+        "matched_offer_ids": _optional_str_sequence_filter(
+            assertion,
+            "matched_offer_ids",
+        ),
+    }
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, RendezvousPollResult)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_rendezvous_poll_result_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"rendezvous poll result contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
+def _lane_admission_decision_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = {
+        "registry_hub": hub_id,
+        "decision_id": _optional_filter_str(assertion, "decision_id"),
+        "policy_id": _optional_filter_str(assertion, "policy_id"),
+        "offer_id": _optional_filter_str(assertion, "offer_id"),
+        "request_id": _optional_filter_str(assertion, "request_id"),
+        "hub_id": _optional_filter_str(assertion, "hub_id"),
+        "requester_id": _optional_filter_str(assertion, "requester_id"),
+        "target_handle": _optional_filter_str(assertion, "target_handle"),
+        "target_scope": _optional_filter_str(assertion, "target_scope"),
+        "lane_signature": _optional_filter_str(assertion, "lane_signature"),
+        "status": _optional_filter_str(assertion, "status"),
+        "reason": _optional_filter_str(assertion, "reason"),
+        "allowed": _optional_bool_filter(assertion, "allowed"),
+    }
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, LaneAdmissionDecision)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_lane_admission_decision_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"lane admission decision contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
 def _result(
     assertion_type: str,
     passed: bool,
@@ -1606,6 +1747,18 @@ def _optional_int_field(assertion: dict[str, Any], field_name: str) -> int | Non
     return int(assertion[field_name])
 
 
+def _optional_str_sequence_filter(
+    assertion: dict[str, Any],
+    field_name: str,
+) -> list[str] | None:
+    if field_name not in assertion or assertion[field_name] is None:
+        return None
+    value = assertion[field_name]
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    return [str(value)]
+
+
 def _matches_message_filters(
     record: dict[str, object],
     assertion: dict[str, Any],
@@ -1772,6 +1925,66 @@ def _matches_encrypted_delivery_audit_filters(
     return True
 
 
+def _matches_rendezvous_poll_result_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    parent_hub_id = filters["parent_hub_id"] or filters["registry_hub"]
+    if parent_hub_id is not None and record.get("parent_hub_id") != parent_hub_id:
+        return False
+    for field_name in (
+        "request_id",
+        "polling_hub_id",
+        "target_scope",
+        "visibility_tier",
+        "status",
+        "reason",
+    ):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+
+    matched_offer_ids = record.get("matched_offer_ids")
+    if not isinstance(matched_offer_ids, list):
+        return False
+    if (
+        filters["matched_offer_id"] is not None
+        and filters["matched_offer_id"] not in matched_offer_ids
+    ):
+        return False
+    expected_ids = filters["matched_offer_ids"]
+    return not (
+        expected_ids is not None
+        and not set(expected_ids).issubset(set(matched_offer_ids))
+    )
+
+
+def _matches_lane_admission_decision_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    if record.get("hub_id") != filters["registry_hub"]:
+        return False
+    for field_name in (
+        "decision_id",
+        "policy_id",
+        "offer_id",
+        "request_id",
+        "hub_id",
+        "requester_id",
+        "target_handle",
+        "target_scope",
+        "lane_signature",
+        "status",
+        "reason",
+        "allowed",
+    ):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    return True
+
+
 def _encrypted_delivery_audit_query_filters(
     filters: dict[str, object],
 ) -> dict[str, object]:
@@ -1844,4 +2057,7 @@ _EVALUATORS = {
     "encryption_policy_decision_contains": _encryption_policy_decision_contains,
     "encrypted_delivery_result_contains": _encrypted_delivery_result_contains,
     "encrypted_delivery_audit_contains": _encrypted_delivery_audit_contains,
+    "held_stream_offer_contains": _held_stream_offer_contains,
+    "rendezvous_poll_result_contains": _rendezvous_poll_result_contains,
+    "lane_admission_decision_contains": _lane_admission_decision_contains,
 }

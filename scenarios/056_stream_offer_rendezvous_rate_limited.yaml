@@ -1,0 +1,49 @@
+scenario_id: 056_stream_offer_rendezvous_rate_limited
+name: Stream offer rendezvous rate limited
+category: stream_offer
+description: lane admission can represent a symbolic rate-limited outcome
+tags:
+  - stream_offer
+  - lane_admission
+  - rate_limited
+  - v1.2
+demonstrates:
+  - lane admission policy default status can be rate_limited
+  - rate-limited outcome is symbolic metadata only
+  - no delivery behavior changes
+expected_result: policy returns rate_limited with allowed false
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_chat_rate_limited
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+  - action: evaluate_lane_admission_policy
+    registry_hub: registry_chat_001
+    policy_id: policy_chat_admission_rate_limited
+    hub_id: registry_chat_001
+    offer_id: offer_chat_rate_limited
+    default_status: rate_limited
+assertions:
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_chat_rate_limited
+    expected_count: 1
+  - type: lane_admission_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: policy_chat_admission_rate_limited
+    offer_id: offer_chat_rate_limited
+    target_scope: global.chat
+    status: rate_limited
+    reason: rate_limited
+    allowed: false
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    expected_count: 0

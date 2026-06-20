@@ -196,6 +196,11 @@ covers `001` through `052`, and the current released version on `main` is
 `darwin-sim 1.1.0`. The annotated `v1.1.0` tag and GitHub release exist; no
 package publication was performed.
 
+On the v1.2 planning branch, scenarios `053` through `057` cover symbolic
+stream offer rendezvous, private polling descent, and lane admission policy
+outcomes. The version remains `darwin-sim 1.1.0` until explicit v1.2 release
+prep.
+
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
 networking, sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar
@@ -215,6 +220,11 @@ modeling. It does not add real cryptography, production E2EE, real networking,
 sockets, HTTP/WebSocket behavior, DNS lookup, external services, durable
 queues, retry workers, TrafficHub routing changes, or canonical identity
 rewrites.
+
+v1.2 stream offer rendezvous planning remains symbolic metadata flow only. It
+does not add real networking, live polling loops, durable queues, retry
+workers, delivery behavior changes, TrafficHub routing changes, production
+DDoS/security/privacy guarantees, real cryptography, or production E2EE.
 
 ## What v0.1 Supports
 
@@ -953,6 +963,7 @@ For v1.2 pull-based lane rendezvous planning, see:
 - `docs/RENDEZVOUS_OFFER_QUEUES_v1_2.md`
 - `docs/PRIVATE_POLLING_DESCENT_v1_2.md`
 - `docs/LANE_ADMISSION_POLICY_v1_2.md`
+- `docs/SCENARIO_DSL_v0_2.md`
 
 ## What v0.1 Is Not
 

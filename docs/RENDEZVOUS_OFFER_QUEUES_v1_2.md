@@ -118,6 +118,19 @@ Admission does not mutate `held_stream_offers` by default. It also does not
 deliver messages, write inboxes, append delivery results, call TrafficHub,
 open sockets, perform DNS lookup, or run live polling loops.
 
+## Scenario DSL Coverage
+
+Sprint 5 adds scenario actions and assertions over the same held queue helper
+surface. `hold_stream_offer` stores offers on `RegistryHub.held_stream_offers`,
+`poll_held_stream_offers` records explicit poll results in scenario action
+results, and `held_stream_offer_contains` reads the queue with additive
+filters. Detailed scenario snapshots now include compact
+`held_stream_offers` summaries for each RegistryHub.
+
+This scenario layer remains symbolic metadata flow only. It does not make the
+queue durable, start retry workers, run live polling loops, deliver messages,
+or route TrafficHub traffic.
+
 ## Privacy And Security Framing
 
 Held offers can reduce direct endpoint exposure inside the simulator by

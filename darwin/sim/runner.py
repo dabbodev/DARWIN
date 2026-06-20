@@ -41,6 +41,14 @@ from darwin.models.lane_signature import (
 from darwin.models.mailbox import MailboxCapability, MailboxIdentity, format_mailbox_address
 from darwin.models.message import MessageEnvelope
 from darwin.models.route import LinkMetrics
+from darwin.models.stream_offer import (
+    RendezvousPollResult,
+    RendezvousRequest,
+    StreamOffer,
+    make_lane_admission_policy,
+    make_rendezvous_request,
+    make_stream_offer,
+)
 from darwin.registry.adapter_endpoints import (
     register_adapter_endpoint as register_adapter_endpoint_op,
 )
@@ -137,6 +145,21 @@ from darwin.registry.sessions import (
 )
 from darwin.registry.sessions import (
     verify_hmac_rolling_proof_for_session as verify_hmac_session_proof_op,
+)
+from darwin.registry.stream_offers import (
+    evaluate_lane_admission_policy as evaluate_lane_admission_policy_op,
+)
+from darwin.registry.stream_offers import (
+    get_held_stream_offer as get_held_stream_offer_op,
+)
+from darwin.registry.stream_offers import (
+    hold_stream_offer as hold_stream_offer_op,
+)
+from darwin.registry.stream_offers import (
+    mark_stream_offers_discoverable as mark_stream_offers_discoverable_op,
+)
+from darwin.registry.stream_offers import (
+    poll_held_stream_offers as poll_held_stream_offers_op,
 )
 from darwin.sim.assertions import AssertionResult, evaluate_assertions
 from darwin.sim.scenarios import Scenario, load_scenario
@@ -319,6 +342,10 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         ),
         "register_mailbox_encryption_policy": _step_register_mailbox_encryption_policy,
         "evaluate_mailbox_encryption_policy": _step_evaluate_mailbox_encryption_policy,
+        "hold_stream_offer": _step_hold_stream_offer,
+        "poll_held_stream_offers": _step_poll_held_stream_offers,
+        "mark_stream_offers_discoverable": _step_mark_stream_offers_discoverable,
+        "evaluate_lane_admission_policy": _step_evaluate_lane_admission_policy,
         "advance_time": _step_advance_time,
     }
     try:
@@ -1809,6 +1836,173 @@ def _step_evaluate_mailbox_encryption_policy(
     )
 
 
+def _step_hold_stream_offer(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    base_offer = make_stream_offer(
+        offer_id=str(fields["offer_id"]),
+        requester_id=str(fields["requester_id"]),
+        target_handle=str(fields["target_handle"]),
+        lane_signature=str(fields["lane_signature"]),
+        requested_mode=str(fields.get("requested_mode", "message")),
+        visibility_tier=int(fields.get("visibility_tier", 0)),
+        rendezvous_scope=_optional_str(fields.get("rendezvous_scope")),
+        created_order=int(fields.get("created_order", 0)),
+        expires_order=_optional_int(fields.get("expires_order")),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    status = fields.get("status")
+    offer = base_offer
+    if status is not None:
+        offer = StreamOffer(
+            offer_id=base_offer.offer_id,
+            requester_id=base_offer.requester_id,
+            target_handle=base_offer.target_handle,
+            lane_signature=base_offer.lane_signature,
+            requested_mode=base_offer.requested_mode,
+            visibility_tier=base_offer.visibility_tier,
+            status=str(status),
+            rendezvous_scope=base_offer.rendezvous_scope,
+            created_order=base_offer.created_order,
+            expires_order=base_offer.expires_order,
+            metadata=base_offer.metadata,
+        )
+    result = hold_stream_offer_op(
+        hub,
+        offer,
+        replace_existing=_bool_field(fields, "replace_existing", False),
+    )
+    world.action_results.append(result)
+    world.log(
+        f"held stream offer {result.offer_id} at {hub.hub_id}: {result.status.status}",
+        event_type="stream_offer_held",
+        actor=result.requester_id,
+        target=result.target_handle,
+        hub_id=hub.hub_id,
+        status=result.status.status,
+        data=result.to_summary(),
+    )
+
+
+def _step_poll_held_stream_offers(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    request = make_rendezvous_request(
+        request_id=str(fields["request_id"]),
+        offer_id=str(fields["offer_id"]),
+        polling_hub_id=str(fields["polling_hub_id"]),
+        requester_id=str(fields["requester_id"]),
+        target_scope=str(fields["target_scope"]),
+        visibility_tier=int(fields.get("visibility_tier", 0)),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    result = poll_held_stream_offers_op(
+        hub,
+        request,
+        lane_signature=_optional_str(fields.get("lane_signature")),
+        requested_mode=_optional_str(fields.get("requested_mode")),
+        active_only=_bool_field(fields, "active_only", True),
+        current_order=_optional_int(fields.get("current_order")),
+    )
+    world.action_results.append(request)
+    world.action_results.append(result)
+    world.log(
+        (
+            "polled held stream offers "
+            f"{request.request_id} at {hub.hub_id}: {result.status.status}"
+        ),
+        event_type="stream_offers_polled",
+        actor=request.polling_hub_id,
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status=result.status.status,
+        data=result.to_summary(),
+    )
+
+
+def _step_mark_stream_offers_discoverable(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    updated = mark_stream_offers_discoverable_op(
+        hub,
+        _optional_str_list(fields.get("offer_ids")) or [],
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    world.action_results.extend(updated)
+    world.log(
+        f"marked stream offers discoverable at {hub.hub_id}: {len(updated)}",
+        event_type="stream_offers_marked_discoverable",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="discoverable",
+        data={"offers": [offer.to_summary() for offer in updated]},
+    )
+
+
+def _step_evaluate_lane_admission_policy(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    offer = get_held_stream_offer_op(hub, str(fields["offer_id"]))
+    if offer is None:
+        raise KeyError(f"held stream offer is not registered: {fields['offer_id']}")
+
+    policy = make_lane_admission_policy(
+        policy_id=str(fields["policy_id"]),
+        hub_id=str(fields["hub_id"]),
+        allowed_lane_signatures=_optional_str_list(
+            fields.get("allowed_lane_signatures")
+        ),
+        denied_lane_signatures=_optional_str_list(fields.get("denied_lane_signatures")),
+        allowed_requester_ids=_optional_str_list(fields.get("allowed_requester_ids")),
+        denied_requester_ids=_optional_str_list(fields.get("denied_requester_ids")),
+        allowed_target_scopes=_optional_str_list(fields.get("allowed_target_scopes")),
+        denied_target_scopes=_optional_str_list(fields.get("denied_target_scopes")),
+        max_visibility_tier=_optional_int(fields.get("max_visibility_tier")),
+        require_discoverable=_bool_field(fields, "require_discoverable", False),
+        default_status=str(fields.get("default_status", "hold")),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    request = _find_rendezvous_request(world, fields)
+    poll_result = _find_rendezvous_poll_result(world, fields)
+    if request is None and fields.get("request_id") is not None:
+        target_scope = _optional_str(fields.get("target_scope"))
+        if target_scope is None and poll_result is not None:
+            target_scope = poll_result.target_scope
+        if target_scope is not None:
+            request = RendezvousRequest(
+                request_id=str(fields["request_id"]),
+                offer_id=offer.offer_id,
+                polling_hub_id=str(fields.get("polling_hub_id", policy.hub_id)),
+                requester_id=offer.requester_id,
+                target_scope=target_scope,
+                visibility_tier=offer.visibility_tier,
+                metadata={"simulator_local": True, "request_only": True},
+            )
+    result = evaluate_lane_admission_policy_op(
+        policy,
+        offer,
+        request=request,
+        poll_result=poll_result,
+        decision_id=_optional_str(fields.get("decision_id")),
+        metadata=_optional_dict(fields.get("decision_metadata")),
+    )
+    world.action_results.append(result)
+    world.log(
+        (
+            "evaluated lane admission "
+            f"{result.decision_id} at {hub.hub_id}: {result.status.status}"
+        ),
+        event_type="lane_admission_policy_evaluated",
+        actor=result.requester_id,
+        target=result.offer_id,
+        hub_id=hub.hub_id,
+        status=result.status.status,
+        data=result.to_summary(),
+    )
+
+
 def _step_advance_time(world: World, fields: dict[str, Any]) -> None:
     ticks = int(fields.get("ticks", 1))
     world.advance_time(ticks)
@@ -1865,6 +2059,36 @@ def _optional_dict(value: Any) -> dict[str, object]:
     if not isinstance(value, dict):
         raise TypeError("metadata must be a mapping")
     return dict(value)
+
+
+def _find_rendezvous_request(
+    world: World,
+    fields: dict[str, Any],
+) -> RendezvousRequest | None:
+    request_id = fields.get("poll_request_id", fields.get("request_id"))
+    if request_id is None:
+        return None
+    request_id = str(request_id)
+    for result in reversed(world.action_results):
+        if isinstance(result, RendezvousRequest) and result.request_id == request_id:
+            return result
+    return None
+
+
+def _find_rendezvous_poll_result(
+    world: World,
+    fields: dict[str, Any],
+) -> RendezvousPollResult | None:
+    request_id = fields.get("poll_result_request_id")
+    if request_id is None:
+        request_id = fields.get("poll_request_id")
+    if request_id is None:
+        return None
+    request_id = str(request_id)
+    for result in reversed(world.action_results):
+        if isinstance(result, RendezvousPollResult) and result.request_id == request_id:
+            return result
+    return None
 
 
 def _bool_field(fields: dict[str, Any], field_name: str, default: bool) -> bool:

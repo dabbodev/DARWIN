@@ -98,7 +98,7 @@ expected_result: The lane returns to active state.
 ```
 
 Supported categories are `registry`, `traffic`, `lane`, `relocation`,
-`security`, `metrics`, `mailbox`, `encryption`, `preset`, and
+`security`, `metrics`, `mailbox`, `encryption`, `stream_offer`, `preset`, and
 `visualization`. Unknown categories warn during validation instead of failing.
 
 List scenario metadata from the CLI:
@@ -758,3 +758,94 @@ Checked-in v1.1 encrypted delivery scenarios:
 The current planning scenario set is contiguous through `052`. Existing
 plaintext delivery scenarios still use the unchanged `deliver_message` action,
 and encrypted delivery policy enforcement is not the default.
+
+## v1.2 Stream Offer Rendezvous Scenarios
+
+The `v1.2/planning` branch adds scenario DSL coverage for the existing
+simulator-local stream offer, private polling descent, and lane admission
+helper stack. The package and CLI version remain `darwin-sim 1.1.0`.
+
+This DSL surface is symbolic metadata flow only. It does not add real
+networking, sockets, HTTP/WebSocket behavior, DNS lookup, registrar
+integration, public CA behavior, external services, live polling loops,
+durable queues, retry workers, real cryptography, production E2EE, production
+DDoS/security/privacy/anonymity guarantees, TrafficHub routing changes, or
+delivery behavior changes.
+
+Supported v1.2 stream offer actions:
+
+- `hold_stream_offer`
+  - Required: `registry_hub`, `offer_id`, `requester_id`, `target_handle`,
+    `lane_signature`
+  - Optional: `requested_mode` defaulting to `message`, `visibility_tier`
+    defaulting to `0`, `rendezvous_scope`, `created_order` defaulting to `0`,
+    `expires_order`, `status`, `replace_existing`, `metadata`
+  - The action builds a `StreamOffer`, stores it with
+    `hold_stream_offer(...)`, appends the stored offer to action results, and
+    logs a compact summary. It does not deliver or call TrafficHub.
+- `poll_held_stream_offers`
+  - Required: `registry_hub`, `request_id`, `offer_id`, `polling_hub_id`,
+    `requester_id`, `target_scope`
+  - Optional: `visibility_tier` defaulting to `0`, `lane_signature`,
+    `requested_mode`, `active_only` defaulting to `true`, `current_order`,
+    `metadata`
+  - The action builds a `RendezvousRequest`, calls
+    `poll_held_stream_offers(...)`, appends the request and
+    `RendezvousPollResult` to action results, and logs the poll summary.
+    Polling is read-only by default.
+- `mark_stream_offers_discoverable`
+  - Required: `registry_hub`, `offer_ids`
+  - Optional: `metadata`
+  - The action explicitly marks selected held offers `discoverable` and
+    appends updated offer records to action results. It does not deliver,
+    route, or poll live services.
+- `evaluate_lane_admission_policy`
+  - Required: `registry_hub`, `policy_id`, `hub_id`, `offer_id`
+  - Optional policy fields: `allowed_lane_signatures`,
+    `denied_lane_signatures`, `allowed_requester_ids`,
+    `denied_requester_ids`, `allowed_target_scopes`,
+    `denied_target_scopes`, `max_visibility_tier`,
+    `require_discoverable`, `default_status`, `metadata`
+  - Optional evaluation fields: `decision_id`, `request_id`,
+    `poll_request_id`, `poll_result_request_id`, `target_scope`,
+    `decision_metadata`
+  - The action finds the held offer, builds a `LaneAdmissionPolicy`, uses a
+    prior poll request/result when referenced, appends a
+    `LaneAdmissionDecision` to action results, and logs a compact decision.
+    It is read-only by default and does not mutate the offer.
+
+Supported v1.2 stream offer assertions:
+
+- `held_stream_offer_contains`
+  - Required: `registry_hub`
+  - Optional filters: `offer_id`, `requester_id`, `target_handle`,
+    `lane_signature`, `requested_mode`, `visibility_tier`, `status`,
+    `rendezvous_scope`
+  - Optional count checks: `expected_count`, `min_count`
+- `rendezvous_poll_result_contains`
+  - Required: `registry_hub`
+  - Optional filters: `request_id`, `polling_hub_id`, `parent_hub_id`,
+    `target_scope`, `visibility_tier`, `status`, `reason`,
+    `matched_offer_id`, `matched_offer_ids`
+  - Optional count checks: `expected_count`, `min_count`
+- `lane_admission_decision_contains`
+  - Required: `registry_hub`
+  - Optional filters: `decision_id`, `policy_id`, `offer_id`, `request_id`,
+    `hub_id`, `requester_id`, `target_handle`, `target_scope`,
+    `lane_signature`, `status`, `reason`, `allowed`
+  - Optional count checks: `expected_count`, `min_count`
+
+Count behavior matches existing count-style assertions. Without
+`expected_count` or `min_count`, at least one matching record is required.
+`expected_count` requires an exact count, and `min_count` requires at least
+that many matches. Boolean filters must be YAML booleans.
+
+Checked-in v1.2 stream offer scenarios:
+
+- `scenarios/053_stream_offer_rendezvous_allowed.yaml`
+- `scenarios/054_stream_offer_rendezvous_held.yaml`
+- `scenarios/055_stream_offer_rendezvous_denied.yaml`
+- `scenarios/056_stream_offer_rendezvous_rate_limited.yaml`
+- `scenarios/057_stream_offer_rendezvous_quarantined.yaml`
+
+The current planning scenario set is contiguous through `057`.

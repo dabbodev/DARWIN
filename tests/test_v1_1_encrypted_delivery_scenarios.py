@@ -196,7 +196,7 @@ def test_v1_1_scenario_sweep_remains_contiguous_001_through_052():
         if path.name[:3].isdigit()
     )
 
-    assert scenario_numbers == list(range(1, 53))
+    assert scenario_numbers[:52] == list(range(1, 53))
 
 
 def test_v1_1_existing_plaintext_delivery_scenario_still_passes():

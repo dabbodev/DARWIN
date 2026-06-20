@@ -1,0 +1,90 @@
+scenario_id: 053_stream_offer_rendezvous_allowed
+name: Stream offer rendezvous allowed
+category: stream_offer
+description: held stream offer is found by private polling and passes lane admission
+tags:
+  - stream_offer
+  - rendezvous
+  - private_polling
+  - lane_admission
+  - v1.2
+demonstrates:
+  - RegistryHub-local held stream offer queues
+  - explicit private polling descent result matching
+  - simulator-local lane admission pass-down decision
+expected_result: matching poll result allows the stream offer to pass down symbolically
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_chat_001
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    visibility_tier: 1
+    rendezvous_scope: global.chat
+  - action: poll_held_stream_offers
+    registry_hub: registry_chat_001
+    request_id: poll_req_chat_001
+    offer_id: offer_chat_001
+    polling_hub_id: hub_private_child
+    requester_id: hub_private_child
+    target_scope: global.chat
+    visibility_tier: 1
+    lane_signature: basic_messaging:v1
+  - action: evaluate_lane_admission_policy
+    registry_hub: registry_chat_001
+    policy_id: policy_chat_admission_001
+    hub_id: registry_chat_001
+    offer_id: offer_chat_001
+    poll_request_id: poll_req_chat_001
+    poll_result_request_id: poll_req_chat_001
+    allowed_lane_signatures:
+      - basic_messaging:v1
+    allowed_requester_ids:
+      - dev_TRINITY
+    allowed_target_scopes:
+      - global.chat
+    require_discoverable: true
+    default_status: pass_down
+assertions:
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_chat_001
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    visibility_tier: 1
+    status: held
+    rendezvous_scope: global.chat
+    expected_count: 1
+  - type: rendezvous_poll_result_contains
+    registry_hub: registry_chat_001
+    request_id: poll_req_chat_001
+    polling_hub_id: hub_private_child
+    parent_hub_id: registry_chat_001
+    target_scope: global.chat
+    status: matched
+    reason: offers_available
+    matched_offer_id: offer_chat_001
+    expected_count: 1
+  - type: lane_admission_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: policy_chat_admission_001
+    offer_id: offer_chat_001
+    request_id: poll_req_chat_001
+    hub_id: registry_chat_001
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    target_scope: global.chat
+    lane_signature: basic_messaging:v1
+    status: pass_down
+    reason: accepted
+    allowed: true
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    expected_count: 0
