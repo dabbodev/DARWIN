@@ -964,6 +964,7 @@ For v1.2 pull-based lane rendezvous planning, see:
 - `docs/PRIVATE_POLLING_DESCENT_v1_2.md`
 - `docs/LANE_ADMISSION_POLICY_v1_2.md`
 - `docs/STREAM_OFFER_AUDIT_HISTORY_v1_2.md`
+- `docs/RELEASE_NOTES_v1_2_DRAFT.md`
 - `docs/SCENARIO_DSL_v0_2.md`
 
 ## What v0.1 Is Not
