@@ -20,4 +20,4 @@ class SymbolicAuthState(AuthState):
 
     @property
     def all_valid(self) -> bool:
-        return super().all_valid and self.move_contract_valid
+        return AuthState.all_valid.fget(self) and self.move_contract_valid

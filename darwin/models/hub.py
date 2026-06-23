@@ -32,6 +32,11 @@ if TYPE_CHECKING:
     from darwin.models.message import MessageDeliveryResult, MessageEnvelope
     from darwin.models.route import ForwardingResult, RouteRecord
     from darwin.models.security import QuarantineRecord, SecurityEvent
+    from darwin.models.stream_offer import (
+        LaneAdmissionDecision,
+        RendezvousPollResult,
+        StreamOffer,
+    )
     from darwin.registry.summaries import SummaryDeviceEntry, UpwardSummary
 
 
@@ -123,6 +128,13 @@ class RegistryHub:
         default_factory=list
     )
     encrypted_delivery_result_history: list[EncryptedDeliveryResult] = field(
+        default_factory=list
+    )
+    held_stream_offers: list[StreamOffer] = field(default_factory=list)
+    rendezvous_poll_result_history: list[RendezvousPollResult] = field(
+        default_factory=list
+    )
+    lane_admission_decision_history: list[LaneAdmissionDecision] = field(
         default_factory=list
     )
     adapter_endpoints: dict[str, AdapterEndpoint] = field(default_factory=dict)

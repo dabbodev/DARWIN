@@ -482,3 +482,48 @@ python -m darwin.cli.main --version
 python -m darwin.cli.main scenario-index
 python -m darwin.cli.main list-scenarios
 ```
+
+# DARWIN v1.2 Pull-Based Lane Rendezvous Release-Prep Checklist
+
+v1.2.0 release prep is staged on `v1.2/planning`. This release-prep step does
+not merge to `main`, create a tag, create a GitHub release, or publish a
+package.
+
+- [x] Package version is confirmed as `1.2.0`.
+- [x] CLI version reports `darwin-sim 1.2.0`.
+- [x] Ruff passes with `python -m ruff check .`.
+- [x] Tests pass with `python -m pytest`.
+- [x] All checked-in scenarios `001` through `057` pass with
+  `python scripts/run_all_scenarios.py`.
+- [x] Scenario index is current and lists scenarios `001` through `057`
+  without numbering gaps.
+- [x] Scenario metadata regression confirms scenarios `001` through `057` are
+  contiguous and discoverable.
+- [x] v1.2 scenarios `053` through `057` validate and run.
+- [x] v1.2 release notes are checked in
+  `docs/RELEASE_NOTES_v1_2_DRAFT.md`.
+- [x] CHANGELOG contains a dated `1.2.0` release-prep section.
+- [x] README and v1.2 docs state that pull-based lane rendezvous and stream
+  offer admission remain simulator-local symbolic metadata, policy, and audit
+  modeling only.
+- [x] Documentation states that existing mailbox delivery, encrypted delivery,
+  TrafficHub routing, alias, identity, scenario, snapshot, and retained-history
+  behavior remain unchanged outside the explicit v1.2 stream offer surfaces.
+- [x] Documentation avoids real networking, sockets, HTTP/WebSocket behavior,
+  DNS lookup, registrar integration, public CA behavior, external services,
+  real cryptography, key generation, private key storage, production E2EE,
+  delivery enforcement, TrafficHub routing changes, canonical identity
+  rewrites, and production anonymity/privacy/firewall/DDoS guarantees.
+- [x] Merge to `main`, tagging, GitHub release creation, and package
+  publication remain explicitly deferred.
+
+## v1.2 Release-Prep Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main list-scenarios
+```

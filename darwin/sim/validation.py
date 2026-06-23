@@ -205,6 +205,28 @@ STEP_REQUIRED_FIELDS = {
         "mailbox_id",
         "lane_signature",
     ),
+    "hold_stream_offer": (
+        "registry_hub",
+        "offer_id",
+        "requester_id",
+        "target_handle",
+        "lane_signature",
+    ),
+    "poll_held_stream_offers": (
+        "registry_hub",
+        "request_id",
+        "offer_id",
+        "polling_hub_id",
+        "requester_id",
+        "target_scope",
+    ),
+    "mark_stream_offers_discoverable": ("registry_hub", "offer_ids"),
+    "evaluate_lane_admission_policy": (
+        "registry_hub",
+        "policy_id",
+        "hub_id",
+        "offer_id",
+    ),
     "advance_time": (),
 }
 
@@ -266,6 +288,9 @@ ASSERTION_REQUIRED_FIELDS = {
     "encryption_policy_decision_contains": ("registry_hub",),
     "encrypted_delivery_result_contains": ("registry_hub",),
     "encrypted_delivery_audit_contains": ("registry_hub",),
+    "held_stream_offer_contains": ("registry_hub",),
+    "rendezvous_poll_result_contains": ("registry_hub",),
+    "lane_admission_decision_contains": ("registry_hub",),
 }
 
 
@@ -278,6 +303,7 @@ SUPPORTED_SCENARIO_CATEGORIES = {
     "metrics",
     "mailbox",
     "encryption",
+    "stream_offer",
     "preset",
     "visualization",
 }
@@ -639,6 +665,31 @@ def _validate_assertion_type_fields(
         _validate_optional_bool(assertion, "encryption_required", location, errors)
         _validate_optional_bool(assertion, "envelope_accepted", location, errors)
         return
+    if assertion_type == "held_stream_offer_contains":
+        _validate_optional_non_negative_int(
+            assertion,
+            "visibility_tier",
+            location,
+            errors,
+        )
+        return
+    if assertion_type == "rendezvous_poll_result_contains":
+        _validate_optional_non_negative_int(
+            assertion,
+            "visibility_tier",
+            location,
+            errors,
+        )
+        _validate_optional_string_list_or_string(
+            assertion,
+            "matched_offer_ids",
+            location,
+            errors,
+        )
+        return
+    if assertion_type == "lane_admission_decision_contains":
+        _validate_optional_bool(assertion, "allowed", location, errors)
+        return
     if assertion_type == "mailbox_encryption_policy_registered":
         _validate_optional_bool(assertion, "allow_plaintext_fallback", location, errors)
         return
@@ -709,6 +760,28 @@ def _validate_step_type_fields(
         _validate_optional_bool(step, "attempt_delivery", location, errors)
         _validate_optional_bool(step, "retain_policy_decision", location, errors)
         _validate_optional_bool(step, "retain_result", location, errors)
+    if action == "hold_stream_offer":
+        _validate_optional_bool(step, "replace_existing", location, errors)
+        for field_name in ("visibility_tier", "created_order", "expires_order"):
+            _validate_optional_non_negative_int(step, field_name, location, errors)
+    if action == "poll_held_stream_offers":
+        _validate_optional_bool(step, "active_only", location, errors)
+        for field_name in ("visibility_tier", "current_order"):
+            _validate_optional_non_negative_int(step, field_name, location, errors)
+    if action == "mark_stream_offers_discoverable":
+        _validate_optional_string_list_or_string(step, "offer_ids", location, errors)
+    if action == "evaluate_lane_admission_policy":
+        _validate_optional_bool(step, "require_discoverable", location, errors)
+        _validate_optional_non_negative_int(step, "max_visibility_tier", location, errors)
+        for field_name in (
+            "allowed_lane_signatures",
+            "denied_lane_signatures",
+            "allowed_requester_ids",
+            "denied_requester_ids",
+            "allowed_target_scopes",
+            "denied_target_scopes",
+        ):
+            _validate_optional_string_list_or_string(step, field_name, location, errors)
 
 
 def _validate_optional_bool(
@@ -720,6 +793,63 @@ def _validate_optional_bool(
     value = item.get(field_name)
     if value is not None and not isinstance(value, bool):
         errors.append(_issue(f"{location}.{field_name}", f"{field_name} must be a boolean"))
+
+
+def _validate_optional_non_negative_int(
+    item: dict[str, Any],
+    field_name: str,
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    value = item.get(field_name)
+    if value is None:
+        return
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        errors.append(
+            _issue(
+                f"{location}.{field_name}",
+                f"{field_name} must be a non-negative integer",
+            )
+        )
+        return
+    if isinstance(value, bool) or parsed < 0:
+        errors.append(
+            _issue(
+                f"{location}.{field_name}",
+                f"{field_name} must be a non-negative integer",
+            )
+        )
+
+
+def _validate_optional_string_list_or_string(
+    item: dict[str, Any],
+    field_name: str,
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    value = item.get(field_name)
+    if value is None:
+        return
+    if isinstance(value, str):
+        return
+    if not isinstance(value, list):
+        errors.append(
+            _issue(
+                f"{location}.{field_name}",
+                f"{field_name} must be a string or list of strings",
+            )
+        )
+        return
+    for index, entry in enumerate(value):
+        if not isinstance(entry, str):
+            errors.append(
+                _issue(
+                    f"{location}.{field_name}[{index}]",
+                    f"{field_name} entries must be strings",
+                )
+            )
 
 
 def _validate_link_metrics(

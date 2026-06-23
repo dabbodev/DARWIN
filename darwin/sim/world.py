@@ -238,6 +238,18 @@ class World:
                         result.to_summary()
                         for result in hub.encrypted_delivery_result_history
                     ],
+                    "held_stream_offers": [
+                        offer.to_summary()
+                        for offer in hub.held_stream_offers
+                    ],
+                    "rendezvous_poll_result_history": [
+                        result.to_summary()
+                        for result in hub.rendezvous_poll_result_history
+                    ],
+                    "lane_admission_decision_history": [
+                        decision.to_summary()
+                        for decision in hub.lane_admission_decision_history
+                    ],
                     "adapter_endpoints": {
                         endpoint_id: endpoint.to_summary()
                         for endpoint_id, endpoint in sorted(

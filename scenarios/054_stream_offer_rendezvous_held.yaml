@@ -1,0 +1,61 @@
+scenario_id: 054_stream_offer_rendezvous_held
+name: Stream offer rendezvous held
+category: stream_offer
+description: admission requires a matching poll before pass-down
+tags:
+  - stream_offer
+  - rendezvous
+  - private_polling
+  - lane_admission
+  - v1.2
+demonstrates:
+  - held stream offer remains local metadata
+  - lane admission can require a prior discoverable poll
+  - no delivery behavior changes
+expected_result: policy returns requires_poll and leaves delivery state untouched
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_chat_held
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    visibility_tier: 1
+    rendezvous_scope: global.chat
+  - action: evaluate_lane_admission_policy
+    registry_hub: registry_chat_001
+    policy_id: policy_chat_admission_requires_poll
+    hub_id: registry_chat_001
+    offer_id: offer_chat_held
+    request_id: poll_req_missing
+    target_scope: global.chat
+    allowed_lane_signatures:
+      - basic_messaging:v1
+    allowed_requester_ids:
+      - dev_TRINITY
+    allowed_target_scopes:
+      - global.chat
+    require_discoverable: true
+    default_status: pass_down
+assertions:
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_chat_held
+    status: held
+    expected_count: 1
+  - type: lane_admission_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: policy_chat_admission_requires_poll
+    offer_id: offer_chat_held
+    request_id: poll_req_missing
+    status: requires_poll
+    reason: not_discoverable
+    allowed: false
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    expected_count: 0

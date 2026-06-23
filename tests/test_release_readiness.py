@@ -32,6 +32,13 @@ def test_documentation_links_exist():
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v0_9_DRAFT.md",
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_0_DRAFT.md",
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_1_DRAFT.md",
+        PROJECT_ROOT / "docs" / "V1_2_ROADMAP.md",
+        PROJECT_ROOT / "docs" / "STREAM_OFFERS_v1_2.md",
+        PROJECT_ROOT / "docs" / "RENDEZVOUS_OFFER_QUEUES_v1_2.md",
+        PROJECT_ROOT / "docs" / "PRIVATE_POLLING_DESCENT_v1_2.md",
+        PROJECT_ROOT / "docs" / "LANE_ADMISSION_POLICY_v1_2.md",
+        PROJECT_ROOT / "docs" / "STREAM_OFFER_AUDIT_HISTORY_v1_2.md",
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_2_DRAFT.md",
     ]
 
     referenced_paths = {
@@ -58,12 +65,16 @@ def test_version_consistency():
         encoding="utf-8"
     )
     current_release_notes = (
-        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_1_DRAFT.md"
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_2_DRAFT.md"
     ).read_text(encoding="utf-8")
 
     assert darwin.__version__ == project_version
     assert f"[{project_version}]" in changelog or f"## v{project_version}" in changelog
     assert f"v{project_version}" in current_release_notes
+    assert "darwin-sim 1.2.0" in current_release_notes
+    assert "Scenarios `053` through `057`" in current_release_notes
+    assert "real networking" in current_release_notes
+    assert "TrafficHub routing changes" in current_release_notes
     assert "v0.1.0" in release_notes
 
 

@@ -1,5 +1,49 @@
 # Changelog
 
+## [1.2.0] - 2026-06-23
+
+DARWIN v1.2.0 release prep is staged on `v1.2/planning`. This commit does not
+merge to `main`, create a tag, create a GitHub release, or publish a package.
+
+Added:
+
+- v1.2 Sprint 1 simulator-local stream offer and rendezvous request models for
+  symbolic pull-based lane rendezvous.
+- v1.2 Sprint 2 RegistryHub-local held stream offer queues with deterministic
+  append order, duplicate handling, replacement behavior, and read-only query
+  filters.
+- v1.2 Sprint 3 private polling descent helpers for one explicit simulator
+  poll request over held stream offers.
+- v1.2 Sprint 4 symbolic lane admission policy helpers with deterministic
+  outcomes for pass-down, hold, deny, rate-limited, quarantined, and
+  requires-poll decisions.
+- v1.2 Sprint 5 scenario DSL actions and read-only assertions for held stream
+  offers, rendezvous poll results, and lane admission decisions.
+- v1.2 scenarios `053` through `057` for allowed, held/requires-poll, denied,
+  rate-limited, and quarantined symbolic stream offer rendezvous outcomes.
+- v1.2 Sprint 6 retained RegistryHub-local rendezvous poll result and lane
+  admission decision histories, plus detailed snapshot visibility for held
+  stream offers and retained poll/admission audit histories.
+- v1.2 release prep updates the package and CLI version to
+  `darwin-sim 1.2.0`.
+
+Compatibility and limits:
+
+- Existing mailbox delivery behavior remains unchanged.
+- Existing encrypted delivery behavior remains unchanged.
+- Existing TrafficHub routing behavior remains unchanged.
+- Existing alias, identity, scenario, snapshot, and retained-history behavior
+  remains unchanged outside the explicit v1.2 stream offer surfaces.
+- The checked-in scenario set is expected to run contiguously from `001`
+  through `057`, with scenarios `053` through `057` covering v1.2 symbolic
+  stream offer rendezvous, private polling, and lane admission outcomes.
+- No real networking, sockets, HTTP/WebSocket behavior, DNS lookup, registrar
+  integration, public CA behavior, external services, real cryptography, key
+  generation, private key storage, production E2EE, delivery enforcement,
+  TrafficHub routing changes, canonical identity rewrites, production
+  anonymity/privacy/firewall/DDoS guarantees, package publication, or
+  additional release artifacts are added by this simulator work.
+
 ## [1.1.0] - 2026-06-19
 
 DARWIN v1.1.0 has been merged to `main`, tagged as annotated `v1.1.0`, and
