@@ -2,8 +2,10 @@
 
 ## [1.2.0] - 2026-06-23
 
-DARWIN v1.2.0 release prep is staged on `v1.2/planning`. This commit does not
-merge to `main`, create a tag, create a GitHub release, or publish a package.
+DARWIN v1.2.0 has been merged to `main`, tagged as annotated `v1.2.0`, and
+published as a GitHub release:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
+publication was performed.
 
 Added:
 
@@ -24,7 +26,7 @@ Added:
 - v1.2 Sprint 6 retained RegistryHub-local rendezvous poll result and lane
   admission decision histories, plus detailed snapshot visibility for held
   stream offers and retained poll/admission audit histories.
-- v1.2 release prep updates the package and CLI version to
+- v1.2 release prep updated the package and CLI version to
   `darwin-sim 1.2.0`.
 
 Compatibility and limits:
@@ -43,6 +45,12 @@ Compatibility and limits:
   TrafficHub routing changes, canonical identity rewrites, production
   anonymity/privacy/firewall/DDoS guarantees, package publication, or
   additional release artifacts are added by this simulator work.
+- The final v1.2.0 validation passed `python -m ruff check .`,
+  `python -m pytest` with 777 tests, `python scripts/run_all_scenarios.py`
+  for scenarios `001` through `057`, and
+  `python -m darwin.cli.main --version` reporting `darwin-sim 1.2.0`.
+- The annotated `v1.2.0` tag and GitHub release exist; no package publication
+  was performed.
 
 ## [1.1.0] - 2026-06-19
 

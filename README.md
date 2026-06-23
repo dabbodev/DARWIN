@@ -8,13 +8,11 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently released at **simulator v1.1.0** on `main`. The
-annotated `v1.1.0` tag and GitHub release have been published. No package
+This project is currently released at **simulator v1.2.0** on `main`. The
+annotated `v1.2.0` tag and GitHub release have been published:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
 publication was performed.
 
-The `v1.2/planning` branch is in release prep for **simulator v1.2.0**. Its
-package and CLI version report `darwin-sim 1.2.0`, and no merge to `main`,
-tag, GitHub release, or package publication is included in that prep step.
 v1.2 adds simulator-local pull-based lane rendezvous and stream offer
 admission modeling while keeping mailbox delivery, encrypted delivery,
 canonical identity, TrafficHub routing, alias, scenario, snapshot, and
@@ -196,15 +194,13 @@ In the v1.0 release, scenarios `047` through `049` cover symbolic encryption
 registry and policy-decision behavior.
 
 In the v1.1 release, scenarios `050` through `052` cover symbolic encrypted
-delivery request/gate/result integration. The current released scenario set
-covers `001` through `052`, and the current released version on `main` is
-`darwin-sim 1.1.0`. The annotated `v1.1.0` tag and GitHub release exist; no
-package publication was performed.
+delivery request/gate/result integration.
 
-On the v1.2 planning branch, scenarios `053` through `057` cover symbolic
-stream offer rendezvous, private polling descent, and lane admission policy
-outcomes. During release prep, the package and CLI version report
-`darwin-sim 1.2.0`.
+In the v1.2 release, scenarios `053` through `057` cover symbolic stream
+offer rendezvous, private polling descent, and lane admission policy outcomes.
+The current released scenario set covers `001` through `057`, and the current
+released version on `main` is `darwin-sim 1.2.0`. The annotated `v1.2.0` tag
+and GitHub release exist; no package publication was performed.
 
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real

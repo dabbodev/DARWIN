@@ -1,8 +1,9 @@
 # DARWIN v1.2 Roadmap: Pull-Based Lane Rendezvous and Stream Offer Admission
 
-DARWIN v1.2 planning starts from the released v1.1.0 simulator on `main`.
-The planning branch is `v1.2/planning`. During release prep, the package and
-CLI version report `darwin-sim 1.2.0` on this branch.
+DARWIN v1.2 is released on `main` as `darwin-sim 1.2.0`. The annotated
+`v1.2.0` tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
+publication was performed.
 
 Recommended theme: Pull-Based Lane Rendezvous and Stream Offer Admission.
 
@@ -50,8 +51,8 @@ Out of scope:
 - Real cryptography, key exchange, production E2EE, or secure messaging.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
-- Version bump beyond `1.2.0` during release prep.
-- Package publication, tagging, or release creation during release prep.
+- Version bump beyond `1.2.0`.
+- Package publication.
 
 ## Key Concepts
 
@@ -115,7 +116,7 @@ metadata-hiding guarantees.
 
 ## Sprint 1: Stream Offer and Rendezvous Request Models
 
-Status: implemented on `v1.2/planning`.
+Status: released in v1.2.0.
 
 Goal: introduce the smallest simulator-local record shape for an offer to
 establish or deliver over a lane.
@@ -149,7 +150,7 @@ Implemented scope:
 
 ## Sprint 2: Rendezvous Hub Offer Queues
 
-Status: implemented on `v1.2/planning`.
+Status: released in v1.2.0.
 
 Goal: store held stream offers on RegistryHub-local rendezvous queues.
 
@@ -181,7 +182,7 @@ Implemented scope:
 
 ## Sprint 3: Private Polling Descent Helpers
 
-Status: implemented on `v1.2/planning`.
+Status: released in v1.2.0.
 
 Goal: let child or private hubs explicitly poll upward for stream offers they
 may discover.
@@ -217,7 +218,7 @@ Implemented scope:
 
 ## Sprint 4: Lane Admission Policy Helpers
 
-Status: implemented on `v1.2/planning`.
+Status: released in v1.2.0.
 
 Goal: add hub-level simulator policy for whether discovered offers can move
 downward.
@@ -259,7 +260,7 @@ Implemented scope:
 
 ## Sprint 5: Scenario DSL and Scenarios
 
-Status: implemented on `v1.2/planning`.
+Status: released in v1.2.0.
 
 Goal: expose the stable helper flow through scenario YAML after models,
 queues, polling, and admission decisions are covered by focused tests.
@@ -299,7 +300,7 @@ Implemented scope:
 
 ## Sprint 6: Snapshot, Audit Visibility, and Hardening
 
-Status: implemented on `v1.2/planning`.
+Status: released in v1.2.0.
 
 Goal: make retained offers and admission decisions inspectable without
 claiming production privacy, security, or delivery guarantees.
@@ -316,7 +317,7 @@ Candidate work:
 Acceptance targets:
 
 - Ruff, pytest, scenario runner, and CLI version checks pass.
-- Version reports `darwin-sim 1.2.0` during release prep.
+- Version reports `darwin-sim 1.2.0`.
 - Docs avoid production DDoS, anonymity, networking, DNS, registrar, public CA,
   real cryptography, TrafficHub routing, and canonical identity claims.
 
@@ -366,5 +367,4 @@ identity behavior.
   protocols.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
-- Package publication, tagging, release creation, or version bump beyond
-  `1.2.0` during release prep.
+- Package publication or version bump beyond `1.2.0`.

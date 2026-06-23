@@ -755,16 +755,15 @@ Checked-in v1.1 encrypted delivery scenarios:
 - `scenarios/051_symbolic_encrypted_delivery_allowed.yaml`
 - `scenarios/052_symbolic_encrypted_delivery_blocked.yaml`
 
-The current planning scenario set is contiguous through `052`. Existing
+The current released scenario set is contiguous through `052`. Existing
 plaintext delivery scenarios still use the unchanged `deliver_message` action,
 and encrypted delivery policy enforcement is not the default.
 
 ## v1.2 Stream Offer Rendezvous Scenarios
 
-The `v1.2/planning` branch adds scenario DSL coverage for the existing
-simulator-local stream offer, private polling descent, and lane admission
-helper stack. During release prep, the package and CLI version report
-`darwin-sim 1.2.0`.
+The v1.2 release adds scenario DSL coverage for the existing simulator-local
+stream offer, private polling descent, and lane admission helper stack. The
+released package and CLI version report `darwin-sim 1.2.0`.
 
 This DSL surface is symbolic metadata flow only. It does not add real
 networking, sockets, HTTP/WebSocket behavior, DNS lookup, registrar
@@ -859,4 +858,4 @@ Checked-in v1.2 stream offer scenarios:
 - `scenarios/056_stream_offer_rendezvous_rate_limited.yaml`
 - `scenarios/057_stream_offer_rendezvous_quarantined.yaml`
 
-The current planning scenario set is contiguous through `057`.
+The current released scenario set is contiguous through `057`.

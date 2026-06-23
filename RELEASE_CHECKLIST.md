@@ -483,11 +483,12 @@ python -m darwin.cli.main scenario-index
 python -m darwin.cli.main list-scenarios
 ```
 
-# DARWIN v1.2 Pull-Based Lane Rendezvous Release-Prep Checklist
+# DARWIN v1.2 Pull-Based Lane Rendezvous Release Checklist
 
-v1.2.0 release prep is staged on `v1.2/planning`. This release-prep step does
-not merge to `main`, create a tag, create a GitHub release, or publish a
-package.
+v1.2.0 has been merged to `main`, tagged as annotated `v1.2.0`, and published
+as a GitHub release:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
+publication was performed.
 
 - [x] Package version is confirmed as `1.2.0`.
 - [x] CLI version reports `darwin-sim 1.2.0`.
@@ -502,7 +503,7 @@ package.
 - [x] v1.2 scenarios `053` through `057` validate and run.
 - [x] v1.2 release notes are checked in
   `docs/RELEASE_NOTES_v1_2_DRAFT.md`.
-- [x] CHANGELOG contains a dated `1.2.0` release-prep section.
+- [x] CHANGELOG contains a dated `1.2.0` release section.
 - [x] README and v1.2 docs state that pull-based lane rendezvous and stream
   offer admission remain simulator-local symbolic metadata, policy, and audit
   modeling only.
@@ -514,10 +515,10 @@ package.
   real cryptography, key generation, private key storage, production E2EE,
   delivery enforcement, TrafficHub routing changes, canonical identity
   rewrites, and production anonymity/privacy/firewall/DDoS guarantees.
-- [x] Merge to `main`, tagging, GitHub release creation, and package
-  publication remain explicitly deferred.
+- [x] Merge to `main`, annotated tag, and GitHub release are complete.
+- [x] No package publication was performed.
 
-## v1.2 Release-Prep Validation Commands
+## v1.2 Release Validation Commands
 
 ```bash
 python -m ruff check .

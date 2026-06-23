@@ -1,9 +1,9 @@
 # DARWIN v1.2.0 Release Notes
 
-Status: release prep on `v1.2/planning`. These notes describe the current
-v1.2.0 release-candidate scope only. The package and CLI version now report
-`darwin-sim 1.2.0` on this branch. No merge to `main`, tag, GitHub release,
-or package publication is included in this release-prep commit.
+Status: released on `main` as `darwin-sim 1.2.0`. The annotated `v1.2.0` tag
+and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
+publication was performed.
 
 DARWIN v1.2 adds simulator-local pull-based lane rendezvous and stream offer
 admission modeling. It introduces stream offer records, RegistryHub-local
@@ -83,8 +83,9 @@ Sprint 6 added retained audit history and hardening:
   remains unchanged outside the explicit v1.2 stream offer surfaces.
 - The checked-in scenario set is expected to remain contiguous from `001`
   through `057`.
-- The package and CLI version now report `darwin-sim 1.2.0` on the
-  release-prep branch.
+- The released package and CLI version are `darwin-sim 1.2.0`.
+- The annotated `v1.2.0` tag and GitHub release exist.
+- No package publication was performed.
 
 ## Scenario Coverage
 
@@ -144,14 +145,14 @@ v1.2 does not add:
 - encrypted delivery behavior changes;
 - TrafficHub routing changes;
 - canonical identity rewrites;
-- merge to `main`;
-- tags;
-- GitHub releases;
 - package publication;
-- version bumps beyond `1.2.0` during this release-prep step.
+- version bumps beyond `1.2.0`.
 
 ## Release Readiness
 
-This release-candidate documentation is ready for v1.2.0 release prep on
-`v1.2/planning`. The version bump is included here, while merge, tag, GitHub
-release, and package publication remain explicitly deferred.
+The v1.2.0 release is complete after full validation, merge to `main`,
+annotated tag creation, and GitHub release publication. Final validation
+passed `python -m ruff check .`, `python -m pytest` with 777 tests,
+`python scripts/run_all_scenarios.py` for scenarios `001` through `057`, and
+`python -m darwin.cli.main --version` reporting `darwin-sim 1.2.0`. Package
+publication was intentionally not performed.
