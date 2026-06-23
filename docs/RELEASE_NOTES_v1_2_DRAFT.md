@@ -1,8 +1,9 @@
-# DARWIN v1.2 Draft Release Notes
+# DARWIN v1.2.0 Release Notes
 
-Status: unreleased planning branch. These notes describe the current v1.2
-release-candidate scope only. The package and CLI version remain
-`darwin-sim 1.1.0` until explicit v1.2 release prep.
+Status: release prep on `v1.2/planning`. These notes describe the current
+v1.2.0 release-candidate scope only. The package and CLI version now report
+`darwin-sim 1.2.0` on this branch. No merge to `main`, tag, GitHub release,
+or package publication is included in this release-prep commit.
 
 DARWIN v1.2 adds simulator-local pull-based lane rendezvous and stream offer
 admission modeling. It introduces stream offer records, RegistryHub-local
@@ -82,8 +83,8 @@ Sprint 6 added retained audit history and hardening:
   remains unchanged outside the explicit v1.2 stream offer surfaces.
 - The checked-in scenario set is expected to remain contiguous from `001`
   through `057`.
-- The package and CLI version remain `darwin-sim 1.1.0` until explicit v1.2
-  release prep.
+- The package and CLI version now report `darwin-sim 1.2.0` on the
+  release-prep branch.
 
 ## Scenario Coverage
 
@@ -143,12 +144,14 @@ v1.2 does not add:
 - encrypted delivery behavior changes;
 - TrafficHub routing changes;
 - canonical identity rewrites;
+- merge to `main`;
+- tags;
+- GitHub releases;
 - package publication;
-- tags, releases, or version bumps during planning.
+- version bumps beyond `1.2.0` during this release-prep step.
 
 ## Release Readiness
 
-This draft is release-candidate hardening documentation for the unreleased
-v1.2 planning branch. Final v1.2 release notes, a version bump, merge, tag,
-GitHub release, or package publication are explicitly deferred until release
-prep.
+This release-candidate documentation is ready for v1.2.0 release prep on
+`v1.2/planning`. The version bump is included here, while merge, tag, GitHub
+release, and package publication remain explicitly deferred.

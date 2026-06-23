@@ -763,7 +763,8 @@ and encrypted delivery policy enforcement is not the default.
 
 The `v1.2/planning` branch adds scenario DSL coverage for the existing
 simulator-local stream offer, private polling descent, and lane admission
-helper stack. The package and CLI version remain `darwin-sim 1.1.0`.
+helper stack. During release prep, the package and CLI version report
+`darwin-sim 1.2.0`.
 
 This DSL surface is symbolic metadata flow only. It does not add real
 networking, sockets, HTTP/WebSocket behavior, DNS lookup, registrar

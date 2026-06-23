@@ -65,17 +65,16 @@ def test_version_consistency():
         encoding="utf-8"
     )
     current_release_notes = (
-        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_1_DRAFT.md"
-    ).read_text(encoding="utf-8")
-    v1_2_draft_notes = (
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_2_DRAFT.md"
     ).read_text(encoding="utf-8")
 
     assert darwin.__version__ == project_version
     assert f"[{project_version}]" in changelog or f"## v{project_version}" in changelog
     assert f"v{project_version}" in current_release_notes
-    assert "darwin-sim 1.1.0" in v1_2_draft_notes
-    assert "until explicit v1.2 release prep" in v1_2_draft_notes
+    assert "darwin-sim 1.2.0" in current_release_notes
+    assert "Scenarios `053` through `057`" in current_release_notes
+    assert "real networking" in current_release_notes
+    assert "TrafficHub routing changes" in current_release_notes
     assert "v0.1.0" in release_notes
 
 

@@ -1,8 +1,8 @@
 # DARWIN v1.2 Roadmap: Pull-Based Lane Rendezvous and Stream Offer Admission
 
 DARWIN v1.2 planning starts from the released v1.1.0 simulator on `main`.
-The planning branch is `v1.2/planning`. The package and CLI version should
-remain `darwin-sim 1.1.0` until explicit v1.2 release prep.
+The planning branch is `v1.2/planning`. During release prep, the package and
+CLI version report `darwin-sim 1.2.0` on this branch.
 
 Recommended theme: Pull-Based Lane Rendezvous and Stream Offer Admission.
 
@@ -50,8 +50,8 @@ Out of scope:
 - Real cryptography, key exchange, production E2EE, or secure messaging.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
-- Version bump beyond `1.1.0` before explicit release prep.
-- Package publication, tagging, or release creation during planning.
+- Version bump beyond `1.2.0` during release prep.
+- Package publication, tagging, or release creation during release prep.
 
 ## Key Concepts
 
@@ -316,7 +316,7 @@ Candidate work:
 Acceptance targets:
 
 - Ruff, pytest, scenario runner, and CLI version checks pass.
-- Version remains `darwin-sim 1.1.0` until release prep.
+- Version reports `darwin-sim 1.2.0` during release prep.
 - Docs avoid production DDoS, anonymity, networking, DNS, registrar, public CA,
   real cryptography, TrafficHub routing, and canonical identity claims.
 
@@ -367,4 +367,4 @@ identity behavior.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
 - Package publication, tagging, release creation, or version bump beyond
-  `1.1.0` during planning.
+  `1.2.0` during release prep.
