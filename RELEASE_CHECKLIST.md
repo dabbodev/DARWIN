@@ -528,3 +528,39 @@ python -m darwin.cli.main --version
 python -m darwin.cli.main scenario-index
 python -m darwin.cli.main list-scenarios
 ```
+
+# DARWIN v1.3 Planning Checklist
+
+Status: planning draft only. v1.3 is unreleased, and `darwin-sim 1.2.0`
+remains the latest released version on `main`.
+
+Do not merge, tag, create a GitHub release, publish packages, or bump the
+version as part of this planning checklist.
+
+- [x] v1.3 planning roadmap seed is checked in at `docs/V1_3_ROADMAP.md`.
+- [x] v1.3 draft release-notes placeholder is checked in at
+  `docs/RELEASE_NOTES_v1_3_DRAFT.md`.
+- [x] README links to v1.3 planning drafts while preserving v1.2.0 as the
+  latest released version.
+- [ ] Future v1.3 implementation scope is explicitly accepted before feature
+  code is added.
+- [ ] Future v1.3 helpers, if accepted, remain simulator-local and symbolic.
+- [ ] Future v1.3 scenario DSL coverage is added only after helper behavior is
+  stable.
+- [ ] Future v1.3 release notes are updated from placeholder to concrete
+  implementation summary.
+- [ ] Future v1.3 changelog entry is added only during release preparation.
+- [ ] Documentation avoids production networking, sockets, HTTP/WebSocket
+  behavior, DNS lookup, registrar integration, public CA behavior, external
+  services, real cryptography, key generation, private key storage, production
+  E2EE, delivery enforcement, TrafficHub routing changes, canonical identity
+  rewrites, and production anonymity/privacy/firewall/DDoS guarantees.
+
+## v1.3 Planning Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+```

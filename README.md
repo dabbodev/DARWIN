@@ -229,6 +229,9 @@ retry workers, delivery behavior changes, TrafficHub routing changes,
 production anonymity/privacy/firewall/DDoS guarantees, real cryptography, or
 production E2EE.
 
+This branch also contains planning-only v1.3 draft docs. v1.3 is unreleased,
+and v1.2.0 remains the latest released version.
+
 ## What v0.1 Supports
 
 - Scoped Registry Hub registration and label conflict handling.
@@ -969,6 +972,11 @@ For v1.2 pull-based lane rendezvous planning, see:
 - `docs/STREAM_OFFER_AUDIT_HISTORY_v1_2.md`
 - `docs/RELEASE_NOTES_v1_2_DRAFT.md`
 - `docs/SCENARIO_DSL_v0_2.md`
+
+For v1.3 rendezvous lifecycle planning drafts, see:
+
+- `docs/V1_3_ROADMAP.md`
+- `docs/RELEASE_NOTES_v1_3_DRAFT.md`
 
 ## What v0.1 Is Not
 
