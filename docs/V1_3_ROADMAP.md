@@ -1,6 +1,7 @@
 # DARWIN v1.3 Roadmap Draft: Rendezvous Lifecycle and Retained Stream-Offer Status Transitions
 
-Status: planning branch with Sprints 1 and 2 implemented. v1.3 is unreleased.
+Status: planning branch with Sprints 1 through 3 implemented. v1.3 is
+unreleased.
 DARWIN v1.2.0 remains the latest released version on `main` as
 `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub release exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
@@ -166,28 +167,39 @@ Acceptance targets:
   default.
 - Compact `world.snapshot()` output remains unchanged.
 
-## Candidate Sprint 3: Expanding Retained Status Transition History
+## Sprint 3: Explicit Lifecycle Plan Application Helper
 
-Status: draft candidate, not started.
+Status: implemented on the v1.3 planning branch.
 
-Goal: expand compact, deterministic lifecycle transition metadata only if
-later expiration or cleanup helpers need additional retained fields.
+Goal: add an explicit opt-in helper for applying caller-provided lifecycle
+plans without adding automatic cleanup or delivery behavior.
 
-Possible work:
+Implemented work:
 
-- Revisit the Sprint 1 transition record shape after any accepted expiration
-  or cleanup helper work.
-- Include simulated time or scenario timestamp only if future helper behavior
-  needs it.
-- Keep JSON-safe metadata compact and explicit.
-- Preserve read-only defaults where helper behavior is meant to inspect rather
-  than mutate state.
+- Add `StreamOfferLifecycleApplyResult` for copied JSON-safe apply result
+  metadata.
+- Add `apply_stream_offer_lifecycle_plan(...)` for explicit simulator-local
+  mutation of eligible planned expired offers.
+- Recheck plan eligibility against the explicit `plan.checked_at` simulator
+  order before applying.
+- Report skipped and missing offer IDs deterministically.
+- Preserve retained held offers; no deletion is performed.
+- Integrate optional transition recording using the existing status update
+  helper with reason `expired`.
+- Add `summarize_stream_offer_lifecycle_apply_result(...)`.
+- Document Sprint 3 behavior in
+  `docs/STREAM_OFFER_LIFECYCLE_PLANNING_v1_3.md`.
 
-Acceptance targets for any future implementation:
+Acceptance targets:
 
+- Lifecycle planning remains read-only until the explicit apply helper is
+  called.
+- Apply only mutates eligible offers listed in the provided plan.
+- Terminal offers remain unchanged and missing IDs are reported.
 - Transition history remains simulator audit metadata only.
 - Retention does not become a production audit log, compliance store, delivery
-  queue, or security guarantee.
+  queue, cleanup daemon, timer, retry loop, or security guarantee.
+- Compact `world.snapshot()` output remains unchanged.
 
 ## Candidate Sprint 4: Lifecycle Query and Summary Helpers
 

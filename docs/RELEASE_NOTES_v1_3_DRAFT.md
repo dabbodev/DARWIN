@@ -1,9 +1,9 @@
 # DARWIN v1.3 Release Notes Draft
 
-Status: planning draft with Sprints 1 and 2 implemented on the v1.3 planning
-branch. v1.3 is unreleased. DARWIN v1.2.0 remains the latest released version
-on `main` as `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub release
-exist:
+Status: planning draft with Sprints 1 through 3 implemented on the v1.3
+planning branch. v1.3 is unreleased. DARWIN v1.2.0 remains the latest released
+version on `main` as `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub
+release exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
 publication was performed.
 
@@ -55,6 +55,30 @@ Sprint 2 adds deterministic read-only stream-offer lifecycle planning helpers:
 
 No scenario DSL actions or assertions were added in Sprint 2. No apply helper
 was added; lifecycle planning remains read-only by default.
+
+## Sprint 3 Draft Note
+
+Sprint 3 adds an explicit simulator-local lifecycle plan application helper:
+
+- `StreamOfferLifecycleApplyResult` for copied JSON-safe application result
+  metadata.
+- `apply_stream_offer_lifecycle_plan(...)` for applying caller-provided
+  lifecycle plans to eligible retained held offers.
+- `summarize_stream_offer_lifecycle_apply_result(...)` for copied
+  deterministic result summaries.
+- Eligible planned non-terminal expired offers are marked `expired`.
+- Terminal or stale planned offers are skipped deterministically.
+- Missing planned offer IDs are reported deterministically.
+- Held offers are not deleted.
+- Transition recording is enabled by default through the existing status update
+  helper with reason `expired`, and can be disabled with
+  `record_transition=False`.
+- Compact `world.snapshot()` output remains unchanged.
+
+No scenario DSL actions or assertions were added in Sprint 3. No automatic
+cleanup workers, retry loops, durable queues, live timers, delivery behavior,
+TrafficHub routing, DNS, networking, external service, real cryptography, or
+canonical identity behavior were added.
 
 ## Current Draft Scope
 

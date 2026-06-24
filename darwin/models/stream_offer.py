@@ -447,6 +447,56 @@ class StreamOfferLifecyclePlan:
 
 
 @dataclass(frozen=True, slots=True)
+class StreamOfferLifecycleApplyResult:
+    """RegistryHub-local result for explicitly applying a lifecycle plan."""
+
+    hub_id: str
+    plan_checked_at: int
+    applied_offer_ids: tuple[str, ...] | list[str] = ()
+    skipped_offer_ids: tuple[str, ...] | list[str] = ()
+    missing_offer_ids: tuple[str, ...] | list[str] = ()
+    recorded_transition_count: int = 0
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_order(self.plan_checked_at, "plan_checked_at")
+        object.__setattr__(
+            self,
+            "applied_offer_ids",
+            _string_tuple(self.applied_offer_ids, "applied_offer_ids"),
+        )
+        object.__setattr__(
+            self,
+            "skipped_offer_ids",
+            _string_tuple(self.skipped_offer_ids, "skipped_offer_ids"),
+        )
+        object.__setattr__(
+            self,
+            "missing_offer_ids",
+            _string_tuple(self.missing_offer_ids, "missing_offer_ids"),
+        )
+        _validate_order(self.recorded_transition_count, "recorded_transition_count")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe lifecycle apply result metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "plan_checked_at": self.plan_checked_at,
+            "applied_offer_ids": list(self.applied_offer_ids),
+            "skipped_offer_ids": list(self.skipped_offer_ids),
+            "missing_offer_ids": list(self.missing_offer_ids),
+            "recorded_transition_count": self.recorded_transition_count,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
 class RendezvousRequest:
     """Simulator-local metadata for a future private hub poll request."""
 

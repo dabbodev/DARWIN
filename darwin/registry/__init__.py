@@ -105,6 +105,7 @@ from darwin.registry.operations import (
     resolve_label,
 )
 from darwin.registry.stream_offers import (
+    apply_stream_offer_lifecycle_plan,
     evaluate_lane_admission_policy,
     get_held_stream_offer,
     hold_stream_offer,
@@ -123,6 +124,7 @@ from darwin.registry.stream_offers import (
     summarize_held_stream_offers,
     summarize_lane_admission_decisions,
     summarize_rendezvous_poll_results,
+    summarize_stream_offer_lifecycle_apply_result,
     summarize_stream_offer_lifecycle_plan,
     summarize_stream_offer_status_transitions,
     update_held_stream_offer_status,
@@ -139,6 +141,7 @@ __all__ = [
     "alias_exists",
     "AliasConflictQueryResult",
     "AliasHistoryQueryResult",
+    "apply_stream_offer_lifecycle_plan",
     "AuthorityDecisionQueryResult",
     "AuthorityOutcomeQueryResult",
     "build_authority_audit_trace",
@@ -238,6 +241,7 @@ __all__ = [
     "summarize_lane_admission_decisions",
     "summarize_rendezvous_poll_results",
     "summarize_stream_offer_lifecycle_plan",
+    "summarize_stream_offer_lifecycle_apply_result",
     "summarize_stream_offer_status_transitions",
     "update_held_stream_offer_status",
 ]
