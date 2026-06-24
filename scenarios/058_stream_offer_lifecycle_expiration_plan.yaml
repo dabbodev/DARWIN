@@ -1,0 +1,82 @@
+scenario_id: 058_stream_offer_lifecycle_expiration_plan
+name: Stream offer lifecycle expiration plan
+category: stream_offer
+description: explicit scenario time identifies expired held offers without mutation
+tags:
+  - stream_offer
+  - lifecycle
+  - expiration
+  - planning
+  - v1.3
+demonstrates:
+  - read-only lifecycle planning from retained held stream offers
+  - explicit deterministic checked_at time
+  - planning does not mutate held offer status or transition history
+expected_result: expired held offers are listed in the lifecycle plan while retained offers remain unchanged
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_lifecycle_expired
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 2
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_lifecycle_active
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 10
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_lifecycle_terminal
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    status: accepted
+    created_order: 0
+    expires_order: 1
+  - action: plan_stream_offer_expiration
+    registry_hub: registry_chat_001
+    checked_at: 5
+assertions:
+  - type: stream_offer_lifecycle_plan_contains
+    registry_hub: registry_chat_001
+    checked_at: 5
+    expired_offer_id: offer_lifecycle_expired
+    cleanup_candidate_offer_ids:
+      - offer_lifecycle_expired
+      - offer_lifecycle_terminal
+    active_offer_id: offer_lifecycle_active
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_lifecycle_expired
+    status: held
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_lifecycle_active
+    status: held
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_lifecycle_terminal
+    status: accepted
+    expected_count: 1
+  - type: stream_offer_status_transition_contains
+    registry_hub: registry_chat_001
+    expected_count: 0
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    expected_count: 0

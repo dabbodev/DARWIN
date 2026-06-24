@@ -1,6 +1,6 @@
 # DARWIN v1.3 Release Notes Draft
 
-Status: planning draft with Sprints 1 through 3 implemented on the v1.3
+Status: planning draft with Sprints 1 through 4 implemented on the v1.3
 planning branch. v1.3 is unreleased. DARWIN v1.2.0 remains the latest released
 version on `main` as `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub
 release exist:
@@ -80,6 +80,29 @@ cleanup workers, retry loops, durable queues, live timers, delivery behavior,
 TrafficHub routing, DNS, networking, external service, real cryptography, or
 canonical identity behavior were added.
 
+## Sprint 4 Draft Note
+
+Sprint 4 adds scenario DSL coverage for the existing lifecycle planning and
+explicit apply helpers:
+
+- `plan_stream_offer_expiration` as a read-only scenario action using explicit
+  deterministic `checked_at`.
+- `apply_stream_offer_lifecycle_plan` as an explicit scenario action using a
+  prior action-result lifecycle plan or caller-provided lifecycle plan fields.
+- `stream_offer_lifecycle_plan_contains` for lifecycle plan action results.
+- `stream_offer_lifecycle_apply_result_contains` for apply result action
+  results.
+- `stream_offer_status_transition_contains` for retained transition history,
+  with action-result fallback consistent with existing scenario assertions.
+- Scenarios `058` through `060` for expiration planning, apply with retained
+  transition recording, and apply without transition recording.
+
+Planning remains read-only. Apply mutates only eligible planned held offers
+and never deletes held offers. No automatic cleanup workers, retry loops,
+durable queues, live timers, live clocks, live polling, delivery behavior,
+TrafficHub routing, DNS, networking, external services, real cryptography,
+compact snapshot changes, or canonical identity behavior were added.
+
 ## Current Draft Scope
 
 Any future v1.3 implementation should preserve:
@@ -95,7 +118,8 @@ Any future v1.3 implementation should preserve:
 ## Expected Compatibility Framing
 
 The checked-in released scenario set remains expected to run contiguously from
-`001` through `057` until new v1.3 scenarios are intentionally added.
+`001` through `057`. The v1.3 planning-branch scenario set is now contiguous
+from `001` through `060`.
 
 The package and CLI version remain `darwin-sim 1.2.0` during planning.
 

@@ -1,6 +1,6 @@
 # DARWIN v1.3 Roadmap Draft: Rendezvous Lifecycle and Retained Stream-Offer Status Transitions
 
-Status: planning branch with Sprints 1 through 3 implemented. v1.3 is
+Status: planning branch with Sprints 1 through 4 implemented. v1.3 is
 unreleased.
 DARWIN v1.2.0 remains the latest released version on `main` as
 `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub release exist:
@@ -201,50 +201,40 @@ Acceptance targets:
   queue, cleanup daemon, timer, retry loop, or security guarantee.
 - Compact `world.snapshot()` output remains unchanged.
 
-## Candidate Sprint 4: Lifecycle Query and Summary Helpers
+## Sprint 4: Scenario DSL Coverage
 
-Status: draft candidate, not started.
+Status: implemented on the v1.3 planning branch.
 
-Goal: make retained lifecycle audit metadata easy to inspect without changing
-runtime behavior.
-
-Possible work:
-
-- Add read-only filters over retained transition history.
-- Add compact summaries suitable for detailed snapshots or scenario
-  assertions.
-- Preserve deterministic ordering and stable JSON-safe output.
-- Keep query helpers additive and non-mutating.
-
-Acceptance targets for any future implementation:
-
-- Queries are read-only and deterministic.
-- Existing compact `world.snapshot()` behavior remains unchanged unless a
-  later sprint explicitly scopes a compatible visibility update.
-
-## Candidate Sprint 5: Scenario DSL Coverage
-
-Status: draft candidate, not started.
-
-Goal: expose stable lifecycle helpers through scenario YAML only after helper
+Goal: expose stable lifecycle helpers through scenario YAML after helper
 behavior and summaries are covered by focused tests.
 
-Possible work:
+Implemented work:
 
-- Add scenario actions for explicit expiration, cleanup, or transition
-  recording only if those helpers land.
-- Add read-only assertions for retained lifecycle transition summaries.
-- Add contiguous scenarios after `057` only when the behavior is stable.
-- Update `docs/SCENARIO_INDEX.md` through the existing deterministic metadata
-  path.
+- Add `plan_stream_offer_expiration` as a read-only scenario action requiring
+  explicit deterministic `checked_at`.
+- Add `apply_stream_offer_lifecycle_plan` as an explicit scenario action that
+  uses either a prior action-result lifecycle plan or a caller-provided plan.
+- Add `stream_offer_lifecycle_plan_contains`,
+  `stream_offer_lifecycle_apply_result_contains`, and
+  `stream_offer_status_transition_contains` assertions.
+- Prefer retained transition history for transition assertions, with
+  action-result fallback matching existing scenario assertion patterns.
+- Add scenarios `058` through `060` for planning, apply with transition
+  recording, and apply without transition recording.
+- Update scenario validation, scenario index coverage, and DSL docs.
 
-Acceptance targets for any future implementation:
+Acceptance targets:
 
-- Existing scenarios `001` through `057` continue to pass unchanged.
+- Existing scenarios `001` through `057` continue to pass unchanged, and the
+  planning-branch scenario set is contiguous through `060`.
 - New scenarios remain symbolic and make no networking, delivery, DNS,
   cryptography, TrafficHub, or canonical identity claims.
+- Planning remains read-only; held offers are mutated only when a scenario
+  explicitly runs the apply action.
+- Held stream offers are not deleted.
+- Compact `world.snapshot()` output remains unchanged.
 
-## Candidate Sprint 6: Release-Readiness Docs and Hardening
+## Candidate Sprint 5: Release-Readiness Docs and Hardening
 
 Status: draft candidate, not started.
 
