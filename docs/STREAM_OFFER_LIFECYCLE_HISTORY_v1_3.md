@@ -101,6 +101,10 @@ RegistryHub:
 registry_hubs.<hub_id>.stream_offer_status_transition_history
 ```
 
+Scenario result exports write the final detailed snapshot, so lifecycle
+transition history recorded by scenario apply actions is visible in those
+exports as retained RegistryHub-local simulator metadata.
+
 Compact `world.snapshot()` output remains unchanged and does not include
 transition history.
 

@@ -128,8 +128,16 @@ TrafficHub routing change, or canonical identity rewrite is added.
 ## Snapshot Visibility
 
 Lifecycle plans and apply results are returned to callers and are not stored on
-`RegistryHub` by default. Detailed snapshots continue to show retained stream
-offers and Sprint 1 transition history. Compact `world.snapshot()` output
+`RegistryHub` by default. Detailed snapshots expose copied action-result
+summaries at top level for scenario/debug inspection:
+
+```text
+stream_offer_lifecycle_plans
+stream_offer_lifecycle_apply_results
+```
+
+Detailed snapshots also continue to show retained stream offers and Sprint 1
+transition history under each `RegistryHub`. Compact `world.snapshot()` output
 remains unchanged.
 
 ## Non-Goals

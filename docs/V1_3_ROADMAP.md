@@ -1,6 +1,6 @@
 # DARWIN v1.3 Roadmap Draft: Rendezvous Lifecycle and Retained Stream-Offer Status Transitions
 
-Status: planning branch with Sprints 1 through 4 implemented. v1.3 is
+Status: planning branch with Sprints 1 through 5 implemented. v1.3 is
 unreleased.
 DARWIN v1.2.0 remains the latest released version on `main` as
 `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub release exist:
@@ -234,26 +234,35 @@ Acceptance targets:
 - Held stream offers are not deleted.
 - Compact `world.snapshot()` output remains unchanged.
 
-## Candidate Sprint 5: Release-Readiness Docs and Hardening
+## Sprint 5: Detailed Snapshot Lifecycle Artifact Visibility
 
-Status: draft candidate, not started.
+Status: implemented on the v1.3 planning branch.
 
-Goal: if v1.3 implementation slices are accepted and completed, harden tests,
-scenario coverage, release notes, and documentation.
+Goal: harden detailed snapshot/debug visibility for existing stream-offer
+lifecycle artifacts without changing compact snapshots or adding lifecycle
+behavior.
 
-Possible work:
+Implemented work:
 
-- Confirm Ruff, pytest, all-scenario, and CLI version checks.
-- Update release notes from placeholder to implementation summary.
-- Check README, changelog, checklist, scenario index, and docs for consistency.
-- Keep the version bump deferred to explicit release prep.
+- Confirm retained lifecycle transition history is exposed under each detailed
+  `RegistryHub` snapshot.
+- Add top-level detailed snapshot action-result summaries for
+  `stream_offer_lifecycle_plans` and
+  `stream_offer_lifecycle_apply_results`.
+- Add focused tests for detailed lifecycle artifact visibility, copied
+  summaries, deterministic action-result ordering, and unchanged compact
+  snapshots.
+- Update lifecycle planning/history docs, scenario DSL docs, and draft release
+  notes.
 
-Acceptance targets for any future implementation:
+Acceptance targets:
 
-- Documentation clearly states v1.3 remains simulator-first and symbolic.
-- Docs avoid production networking, DNS, registrar, public CA, external
-  service, real cryptography, production E2EE, privacy, anonymity, firewall,
-  DDoS, delivery, TrafficHub routing, and canonical identity claims.
+- Compact `world.snapshot()` output remains unchanged.
+- Snapshot additions are copied JSON-safe summaries and preserve deterministic
+  action-result order.
+- No new lifecycle mutation behavior, cleanup worker, retry loop, durable
+  queue, live timer, delivery behavior, networking, DNS, TrafficHub routing,
+  canonical identity rewrite, version bump, or package publication is added.
 
 ## Recommended First Planning Step
 

@@ -1,6 +1,6 @@
 # DARWIN v1.3 Release Notes Draft
 
-Status: planning draft with Sprints 1 through 4 implemented on the v1.3
+Status: planning draft with Sprints 1 through 5 implemented on the v1.3
 planning branch. v1.3 is unreleased. DARWIN v1.2.0 remains the latest released
 version on `main` as `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub
 release exist:
@@ -102,6 +102,28 @@ and never deletes held offers. No automatic cleanup workers, retry loops,
 durable queues, live timers, live clocks, live polling, delivery behavior,
 TrafficHub routing, DNS, networking, external services, real cryptography,
 compact snapshot changes, or canonical identity behavior were added.
+
+## Sprint 5 Draft Note
+
+Sprint 5 hardens detailed snapshot/debug visibility for existing lifecycle
+artifacts:
+
+- Retained `stream_offer_status_transition_history` remains visible under each
+  detailed `RegistryHub` snapshot.
+- Lifecycle plan action results are visible in detailed snapshots at top-level
+  `stream_offer_lifecycle_plans`.
+- Lifecycle apply action results are visible in detailed snapshots at
+  top-level `stream_offer_lifecycle_apply_results`.
+- Snapshot entries use existing copied JSON-safe `to_summary()` shapes and
+  preserve deterministic action-result order.
+- Focused tests cover detailed visibility, copied summaries, deterministic
+  ordering, and unchanged compact `world.snapshot()` output.
+
+No compact snapshot changes, lifecycle behavior changes, automatic cleanup
+workers, retry loops, durable queues, live timers, delivery behavior,
+TrafficHub routing, DNS, networking, external services, real cryptography,
+canonical identity behavior, version bump, package publication, merge, tag, or
+release were added.
 
 ## Current Draft Scope
 

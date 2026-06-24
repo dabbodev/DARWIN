@@ -928,6 +928,13 @@ scenario action results. Lifecycle plan and apply-result assertions read
 scenario action results because plans and apply results are returned to
 callers and are not retained on the hub by default.
 
+Detailed snapshots include copied lifecycle plan and apply-result action
+summaries at top level under `stream_offer_lifecycle_plans` and
+`stream_offer_lifecycle_apply_results`. Retained transition summaries remain
+under each RegistryHub at
+`registry_hubs.<hub_id>.stream_offer_status_transition_history`. Compact
+`world.snapshot()` output remains unchanged.
+
 Checked-in v1.3 planning-branch stream offer lifecycle scenarios:
 
 - `scenarios/058_stream_offer_lifecycle_expiration_plan.yaml`
