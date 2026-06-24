@@ -1,14 +1,14 @@
 # DARWIN v1.3 Release Notes Draft
 
-Status: planning placeholder only. v1.3 is unreleased. DARWIN v1.2.0 remains
-the latest released version on `main` as `darwin-sim 1.2.0`. The annotated
-`v1.2.0` tag and GitHub release exist:
+Status: planning draft with Sprint 1 implemented on the v1.3 planning branch.
+v1.3 is unreleased. DARWIN v1.2.0 remains the latest released version on
+`main` as `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub release
+exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
 publication was performed.
 
-This file is a placeholder for future v1.3 release notes. It does not describe
-released v1.3 behavior, does not authorize implementation work, and should not
-be treated as a release announcement.
+This file is a draft for future v1.3 release notes. It does not describe
+released v1.3 behavior and should not be treated as a release announcement.
 
 ## Candidate Theme
 
@@ -22,9 +22,25 @@ Future v1.3 work may explore small simulator-first slices around:
 - scenario DSL coverage after helper behavior lands;
 - release-readiness documentation after scenario coverage exists.
 
-## Current Draft Scope
+## Sprint 1 Draft Note
 
-No v1.3 feature behavior has been implemented in this planning seed.
+Sprint 1 adds symbolic RegistryHub-local stream-offer lifecycle transition
+history:
+
+- `StreamOfferStatusTransition` and
+  `StreamOfferStatusTransitionReason` models.
+- `RegistryHub.stream_offer_status_transition_history`.
+- Explicit make, record, query, and summarize helpers for retained transition
+  history.
+- An opt-in transition recording path on `update_held_stream_offer_status(...)`
+  that leaves default behavior unchanged.
+- Detailed snapshot visibility for copied transition summaries while compact
+  `world.snapshot()` output remains unchanged.
+- Documentation in `docs/STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md`.
+
+No scenario DSL actions or assertions were added in Sprint 1.
+
+## Current Draft Scope
 
 Any future v1.3 implementation should preserve:
 

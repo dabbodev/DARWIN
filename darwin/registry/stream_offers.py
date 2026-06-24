@@ -21,6 +21,8 @@ from darwin.models.stream_offer import (
     StreamOffer,
     StreamOfferMode,
     StreamOfferStatus,
+    StreamOfferStatusTransition,
+    StreamOfferStatusTransitionReason,
     StreamOfferVisibility,
     is_stream_offer_active,
     is_stream_offer_discoverable_to_request,
@@ -124,10 +126,18 @@ def update_held_stream_offer_status(
     status: StreamOfferStatus | str,
     *,
     metadata: dict[str, object] | None = None,
+    record_transition: bool = False,
+    transition_reason: StreamOfferStatusTransitionReason | str = "status_updated",
+    actor_id: str | None = None,
+    request_id: str | None = None,
+    transition_metadata: dict[str, object] | None = None,
+    transition_sequence: int | None = None,
 ) -> StreamOffer:
     """Update a held stream offer status and optionally merge JSON-safe metadata."""
     _validate_registry_hub(registry_hub)
     _validate_required_string(offer_id, "offer_id")
+    if not isinstance(record_transition, bool):
+        raise TypeError("record_transition must be a bool")
     status_value = _status_key(status)
     assert status_value is not None
 
@@ -144,6 +154,27 @@ def update_held_stream_offer_status(
 
     updated = replace(offer, status=status_value, metadata=merged_metadata)
     registry_hub.held_stream_offers[existing_index] = updated
+    if record_transition:
+        _validate_optional_string(actor_id, "actor_id")
+        _validate_optional_string(request_id, "request_id")
+        if transition_metadata is not None and not isinstance(transition_metadata, dict):
+            raise TypeError("transition_metadata must be a JSON-safe dict")
+        _validate_optional_order(transition_sequence, "transition_sequence")
+        transition_reason_value = _transition_reason_key(transition_reason)
+        record_stream_offer_status_transition(
+            registry_hub,
+            make_stream_offer_status_transition(
+                offer_id=offer_id,
+                previous_status=offer.status,
+                new_status=status_value,
+                reason=transition_reason_value,
+                hub_id=registry_hub.hub_id,
+                actor_id=actor_id,
+                request_id=request_id,
+                metadata=transition_metadata,
+                sequence=transition_sequence,
+            ),
+        )
     return updated
 
 
@@ -151,6 +182,101 @@ def summarize_held_stream_offers(registry_hub: RegistryHub) -> list[dict[str, ob
     """Return JSON-safe summaries for held stream offers in append order."""
     _validate_registry_hub(registry_hub)
     return [offer.to_summary() for offer in registry_hub.held_stream_offers]
+
+
+def make_stream_offer_status_transition(
+    *,
+    offer_id: str,
+    previous_status: StreamOfferStatus | str,
+    new_status: StreamOfferStatus | str,
+    reason: StreamOfferStatusTransitionReason | str,
+    hub_id: str,
+    actor_id: str | None = None,
+    request_id: str | None = None,
+    metadata: dict[str, object] | None = None,
+    sequence: int | None = None,
+) -> StreamOfferStatusTransition:
+    """Return symbolic simulator-local stream offer transition metadata."""
+    return StreamOfferStatusTransition(
+        offer_id=offer_id,
+        previous_status=previous_status,
+        new_status=new_status,
+        reason=reason,
+        hub_id=hub_id,
+        actor_id=actor_id,
+        request_id=request_id,
+        metadata=metadata,
+        sequence=sequence,
+    )
+
+
+def record_stream_offer_status_transition(
+    registry_hub: RegistryHub,
+    transition: StreamOfferStatusTransition,
+) -> StreamOfferStatusTransition:
+    """Append a status transition to RegistryHub-local lifecycle history."""
+    _validate_registry_hub(registry_hub)
+    _validate_status_transition(transition)
+    registry_hub.stream_offer_status_transition_history.append(transition)
+    return transition
+
+
+def query_stream_offer_status_transitions(
+    registry_hub: RegistryHub,
+    *,
+    offer_id: str | None = None,
+    hub_id: str | None = None,
+    previous_status: StreamOfferStatus | str | None = None,
+    new_status: StreamOfferStatus | str | None = None,
+    status: StreamOfferStatus | str | None = None,
+    reason: StreamOfferStatusTransitionReason | str | None = None,
+    actor_id: str | None = None,
+    request_id: str | None = None,
+) -> list[StreamOfferStatusTransition]:
+    """Return retained status transitions matching additive filters."""
+    _validate_registry_hub(registry_hub)
+    _validate_optional_string(offer_id, "offer_id")
+    _validate_optional_string(hub_id, "hub_id")
+    _validate_optional_string(actor_id, "actor_id")
+    _validate_optional_string(request_id, "request_id")
+    previous_status_key = _status_key(previous_status)
+    new_status_key = _status_key(new_status)
+    status_key = _status_key(status)
+    reason_key = _transition_reason_key(reason)
+
+    return [
+        transition
+        for transition in registry_hub.stream_offer_status_transition_history
+        if (offer_id is None or transition.offer_id == offer_id)
+        and (hub_id is None or transition.hub_id == hub_id)
+        and (
+            previous_status_key is None
+            or transition.previous_status.status == previous_status_key
+        )
+        and (
+            new_status_key is None
+            or transition.new_status.status == new_status_key
+        )
+        and (
+            status_key is None
+            or transition.previous_status.status == status_key
+            or transition.new_status.status == status_key
+        )
+        and (reason_key is None or transition.reason.reason == reason_key)
+        and (actor_id is None or transition.actor_id == actor_id)
+        and (request_id is None or transition.request_id == request_id)
+    ]
+
+
+def summarize_stream_offer_status_transitions(
+    registry_hub: RegistryHub,
+) -> list[dict[str, object]]:
+    """Return JSON-safe retained status transition summaries in append order."""
+    _validate_registry_hub(registry_hub)
+    return [
+        transition.to_summary()
+        for transition in registry_hub.stream_offer_status_transition_history
+    ]
 
 
 def record_rendezvous_poll_result(
@@ -797,6 +923,20 @@ def _status_key(status: StreamOfferStatus | str | None) -> str | None:
     raise TypeError("status must be a StreamOfferStatus, string, or None")
 
 
+def _transition_reason_key(
+    reason: StreamOfferStatusTransitionReason | str | None,
+) -> str | None:
+    if reason is None:
+        return None
+    if isinstance(reason, StreamOfferStatusTransitionReason):
+        return reason.reason
+    if isinstance(reason, str):
+        return StreamOfferStatusTransitionReason(reason).reason
+    raise TypeError(
+        "reason must be a StreamOfferStatusTransitionReason, string, or None"
+    )
+
+
 def _poll_status_key(status: RendezvousPollStatus | str | None) -> str | None:
     if status is None:
         return None
@@ -839,6 +979,11 @@ def _validate_poll_result(result: RendezvousPollResult) -> None:
 def _validate_lane_admission_decision(decision: LaneAdmissionDecision) -> None:
     if not isinstance(decision, LaneAdmissionDecision):
         raise TypeError("decision must be a LaneAdmissionDecision")
+
+
+def _validate_status_transition(transition: StreamOfferStatusTransition) -> None:
+    if not isinstance(transition, StreamOfferStatusTransition):
+        raise TypeError("transition must be a StreamOfferStatusTransition")
 
 
 def _validate_offer(offer: StreamOffer) -> None:
@@ -889,3 +1034,9 @@ def _validate_order(value: int, field_name: str) -> None:
         raise TypeError(f"{field_name} must be an integer")
     if value < 0:
         raise ValueError(f"{field_name} must be greater than or equal to 0")
+
+
+def _validate_optional_order(value: int | None, field_name: str) -> None:
+    if value is None:
+        return
+    _validate_order(value, field_name)

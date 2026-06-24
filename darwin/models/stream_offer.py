@@ -46,6 +46,14 @@ STREAM_OFFER_TERMINAL_STATUSES: tuple[str, ...] = (
     "quarantined",
 )
 
+STREAM_OFFER_STATUS_TRANSITION_REASONS: tuple[str, ...] = (
+    "status_updated",
+    "expired",
+    "manual_hold",
+    "manual_deny",
+    "manual_quarantine",
+)
+
 RENDEZVOUS_POLL_STATUSES: tuple[str, ...] = (
     "matched",
     "empty",
@@ -130,6 +138,24 @@ class StreamOfferStatus:
     def to_summary(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe status summary."""
         return {"status": self.status}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class StreamOfferStatusTransitionReason:
+    """Controlled reason for simulator-local stream offer status transitions."""
+
+    reason: str = "status_updated"
+
+    def __post_init__(self) -> None:
+        _validate_status_transition_reason(self.reason)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe reason summary."""
+        return {"reason": self.reason}
 
     def to_dict(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe representation."""
@@ -292,6 +318,70 @@ class StreamOffer:
             "created_order": self.created_order,
             "expires_order": self.expires_order,
             "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class StreamOfferStatusTransition:
+    """RegistryHub-local symbolic stream offer lifecycle transition metadata."""
+
+    offer_id: str
+    previous_status: StreamOfferStatus | str
+    new_status: StreamOfferStatus | str
+    reason: StreamOfferStatusTransitionReason | str
+    hub_id: str
+    actor_id: str | None = None
+    request_id: str | None = None
+    metadata: dict[str, Any] | None = None
+    sequence: int | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.offer_id, "offer_id")
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_optional_string(self.actor_id, "actor_id")
+        _validate_optional_string(self.request_id, "request_id")
+        _validate_optional_order(self.sequence, "sequence")
+
+        previous_status = self.previous_status
+        if isinstance(previous_status, str):
+            previous_status = StreamOfferStatus(previous_status)
+        if not isinstance(previous_status, StreamOfferStatus):
+            raise TypeError("previous_status must be a StreamOfferStatus or string")
+        object.__setattr__(self, "previous_status", previous_status)
+
+        new_status = self.new_status
+        if isinstance(new_status, str):
+            new_status = StreamOfferStatus(new_status)
+        if not isinstance(new_status, StreamOfferStatus):
+            raise TypeError("new_status must be a StreamOfferStatus or string")
+        object.__setattr__(self, "new_status", new_status)
+
+        reason = self.reason
+        if isinstance(reason, str):
+            reason = StreamOfferStatusTransitionReason(reason)
+        if not isinstance(reason, StreamOfferStatusTransitionReason):
+            raise TypeError(
+                "reason must be a StreamOfferStatusTransitionReason or string"
+            )
+        object.__setattr__(self, "reason", reason)
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe transition metadata."""
+        return {
+            "offer_id": self.offer_id,
+            "previous_status": self.previous_status.status,
+            "new_status": self.new_status.status,
+            "reason": self.reason.reason,
+            "hub_id": self.hub_id,
+            "actor_id": self.actor_id,
+            "request_id": self.request_id,
+            "metadata": _json_safe_copy(self.metadata or {}),
+            "sequence": self.sequence,
         }
 
     def to_dict(self) -> dict[str, object]:
@@ -855,6 +945,15 @@ def _validate_status(value: str) -> None:
     if value not in STREAM_OFFER_STATUSES:
         raise ValueError(
             "stream offer status must be one of " f"{', '.join(STREAM_OFFER_STATUSES)}"
+        )
+
+
+def _validate_status_transition_reason(value: str) -> None:
+    _validate_required_string(value, "stream offer status transition reason")
+    if value not in STREAM_OFFER_STATUS_TRANSITION_REASONS:
+        raise ValueError(
+            "stream offer status transition reason must be one of "
+            f"{', '.join(STREAM_OFFER_STATUS_TRANSITION_REASONS)}"
         )
 
 

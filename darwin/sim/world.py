@@ -250,6 +250,10 @@ class World:
                         decision.to_summary()
                         for decision in hub.lane_admission_decision_history
                     ],
+                    "stream_offer_status_transition_history": [
+                        transition.to_summary()
+                        for transition in hub.stream_offer_status_transition_history
+                    ],
                     "adapter_endpoints": {
                         endpoint_id: endpoint.to_summary()
                         for endpoint_id, endpoint in sorted(

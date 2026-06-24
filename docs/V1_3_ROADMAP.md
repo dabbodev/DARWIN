@@ -1,8 +1,8 @@
 # DARWIN v1.3 Roadmap Draft: Rendezvous Lifecycle and Retained Stream-Offer Status Transitions
 
-Status: planning draft only. v1.3 is unreleased. DARWIN v1.2.0 remains the
-latest released version on `main` as `darwin-sim 1.2.0`. The annotated
-`v1.2.0` tag and GitHub release exist:
+Status: planning branch with Sprint 1 implemented. v1.3 is unreleased.
+DARWIN v1.2.0 remains the latest released version on `main` as
+`darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub release exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
 publication was performed.
 
@@ -103,28 +103,36 @@ Lifecycle audit query:
 - Queries should preserve deterministic append order and expose only
   JSON-safe simulator summaries.
 
-## Candidate Sprint 1: Lifecycle Status Planning and Pure Predicates
+## Sprint 1: Retained Lifecycle Transition History
 
-Status: draft candidate, not started.
+Status: implemented on the v1.3 planning branch.
 
-Goal: define the smallest useful lifecycle vocabulary and pure predicates for
-retained stream-offer state.
+Goal: add the smallest useful RegistryHub-local history for explicit symbolic
+stream-offer status transitions without changing delivery, routing, polling,
+admission, scenario DSL, or compact snapshot behavior.
 
-Possible work:
+Implemented work:
 
 - Review existing `StreamOfferStatus` behavior and v1.2 retained offer helper
   boundaries.
-- Identify the minimum lifecycle labels needed for later expiration, cleanup,
-  and audit slices.
-- Add pure status predicates only if they are needed by a later accepted
-  implementation sprint.
-- Keep construction, queueing, polling, admission, delivery, and routing
-  behavior unchanged unless a later sprint explicitly scopes a helper change.
+- Add `StreamOfferStatusTransition` and
+  `StreamOfferStatusTransitionReason` models with a small symbolic reason
+  vocabulary.
+- Retain transition records on
+  `RegistryHub.stream_offer_status_transition_history`.
+- Add explicit make, record, query, and summarize helpers for lifecycle
+  history.
+- Add an opt-in `update_held_stream_offer_status(..., record_transition=True)`
+  path while preserving default behavior.
+- Document Sprint 1 behavior in
+  `docs/STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md`.
 
-Acceptance targets for any future implementation:
+Acceptance targets:
 
 - Existing v1.2 stream offer, poll, admission, history, snapshot, and scenario
-  behavior remains unchanged unless explicitly documented.
+  behavior remains unchanged except detailed snapshots now include copied
+  transition-history summaries when records exist.
+- Compact `world.snapshot()` output remains unchanged.
 - No real networking, DNS lookup, external services, delivery enforcement,
   TrafficHub routing changes, canonical identity rewrites, real cryptography,
   or version bump is added.
@@ -152,21 +160,20 @@ Acceptance targets for any future implementation:
 - Helpers do not deliver messages, enforce production policy, mutate
   TrafficHub routes, perform DNS lookup, or contact external services.
 
-## Candidate Sprint 3: Retained Status Transition History
+## Candidate Sprint 3: Expanding Retained Status Transition History
 
 Status: draft candidate, not started.
 
-Goal: record compact, deterministic lifecycle transition metadata for
-retained stream offers when explicit helper calls change status.
+Goal: expand compact, deterministic lifecycle transition metadata only if
+later expiration or cleanup helpers need additional retained fields.
 
 Possible work:
 
-- Add a compact transition record shape if existing status summaries are not
-  enough.
-- Retain transition history on the relevant RegistryHub-local simulator state.
-- Include previous status, next status, reason, offer ID, hub ID, simulated
-  time or scenario timestamp when available, and JSON-safe metadata only if
-  those fields are necessary.
+- Revisit the Sprint 1 transition record shape after any accepted expiration
+  or cleanup helper work.
+- Include simulated time or scenario timestamp only if future helper behavior
+  needs it.
+- Keep JSON-safe metadata compact and explicit.
 - Preserve read-only defaults where helper behavior is meant to inspect rather
   than mutate state.
 

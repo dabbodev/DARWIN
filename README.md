@@ -229,8 +229,9 @@ retry workers, delivery behavior changes, TrafficHub routing changes,
 production anonymity/privacy/firewall/DDoS guarantees, real cryptography, or
 production E2EE.
 
-This branch also contains planning-only v1.3 draft docs. v1.3 is unreleased,
-and v1.2.0 remains the latest released version.
+This branch also contains v1.3 planning docs and Sprint 1 lifecycle-history
+implementation docs. v1.3 is unreleased, and v1.2.0 remains the latest
+released version.
 
 ## What v0.1 Supports
 
@@ -976,6 +977,7 @@ For v1.2 pull-based lane rendezvous planning, see:
 For v1.3 rendezvous lifecycle planning drafts, see:
 
 - `docs/V1_3_ROADMAP.md`
+- `docs/STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md`
 - `docs/RELEASE_NOTES_v1_3_DRAFT.md`
 
 ## What v0.1 Is Not

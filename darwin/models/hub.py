@@ -36,6 +36,7 @@ if TYPE_CHECKING:
         LaneAdmissionDecision,
         RendezvousPollResult,
         StreamOffer,
+        StreamOfferStatusTransition,
     )
     from darwin.registry.summaries import SummaryDeviceEntry, UpwardSummary
 
@@ -135,6 +136,9 @@ class RegistryHub:
         default_factory=list
     )
     lane_admission_decision_history: list[LaneAdmissionDecision] = field(
+        default_factory=list
+    )
+    stream_offer_status_transition_history: list[StreamOfferStatusTransition] = field(
         default_factory=list
     )
     adapter_endpoints: dict[str, AdapterEndpoint] = field(default_factory=dict)
