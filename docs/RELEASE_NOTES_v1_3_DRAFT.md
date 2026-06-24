@@ -1,8 +1,8 @@
 # DARWIN v1.3 Release Notes Draft
 
-Status: planning draft with Sprint 1 implemented on the v1.3 planning branch.
-v1.3 is unreleased. DARWIN v1.2.0 remains the latest released version on
-`main` as `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub release
+Status: planning draft with Sprints 1 and 2 implemented on the v1.3 planning
+branch. v1.3 is unreleased. DARWIN v1.2.0 remains the latest released version
+on `main` as `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub release
 exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
 publication was performed.
@@ -39,6 +39,22 @@ history:
 - Documentation in `docs/STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md`.
 
 No scenario DSL actions or assertions were added in Sprint 1.
+
+## Sprint 2 Draft Note
+
+Sprint 2 adds deterministic read-only stream-offer lifecycle planning helpers:
+
+- `StreamOfferLifecyclePlan` for copied JSON-safe lifecycle planning metadata.
+- `query_expired_held_stream_offers(...)` for active retained offers expired by
+  an explicit simulator order.
+- `plan_stream_offer_expiration(...)` for classifying expired, active, cleanup
+  candidate, and ignored retained offer IDs without mutating hub state.
+- `summarize_stream_offer_lifecycle_plan(...)` for copied deterministic plan
+  summaries.
+- Documentation in `docs/STREAM_OFFER_LIFECYCLE_PLANNING_v1_3.md`.
+
+No scenario DSL actions or assertions were added in Sprint 2. No apply helper
+was added; lifecycle planning remains read-only by default.
 
 ## Current Draft Scope
 

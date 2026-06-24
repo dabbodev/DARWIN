@@ -390,6 +390,63 @@ class StreamOfferStatusTransition:
 
 
 @dataclass(frozen=True, slots=True)
+class StreamOfferLifecyclePlan:
+    """RegistryHub-local read-only stream offer lifecycle planning metadata."""
+
+    hub_id: str
+    checked_at: int
+    expired_offer_ids: tuple[str, ...] | list[str] = ()
+    cleanup_candidate_offer_ids: tuple[str, ...] | list[str] = ()
+    active_offer_ids: tuple[str, ...] | list[str] = ()
+    ignored_offer_ids: tuple[str, ...] | list[str] = ()
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_order(self.checked_at, "checked_at")
+        object.__setattr__(
+            self,
+            "expired_offer_ids",
+            _string_tuple(self.expired_offer_ids, "expired_offer_ids"),
+        )
+        object.__setattr__(
+            self,
+            "cleanup_candidate_offer_ids",
+            _string_tuple(
+                self.cleanup_candidate_offer_ids,
+                "cleanup_candidate_offer_ids",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "active_offer_ids",
+            _string_tuple(self.active_offer_ids, "active_offer_ids"),
+        )
+        object.__setattr__(
+            self,
+            "ignored_offer_ids",
+            _string_tuple(self.ignored_offer_ids, "ignored_offer_ids"),
+        )
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe lifecycle planning metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "checked_at": self.checked_at,
+            "expired_offer_ids": list(self.expired_offer_ids),
+            "cleanup_candidate_offer_ids": list(self.cleanup_candidate_offer_ids),
+            "active_offer_ids": list(self.active_offer_ids),
+            "ignored_offer_ids": list(self.ignored_offer_ids),
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
 class RendezvousRequest:
     """Simulator-local metadata for a future private hub poll request."""
 

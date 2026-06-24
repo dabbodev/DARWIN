@@ -1,6 +1,6 @@
 # DARWIN v1.3 Roadmap Draft: Rendezvous Lifecycle and Retained Stream-Offer Status Transitions
 
-Status: planning branch with Sprint 1 implemented. v1.3 is unreleased.
+Status: planning branch with Sprints 1 and 2 implemented. v1.3 is unreleased.
 DARWIN v1.2.0 remains the latest released version on `main` as
 `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub release exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
@@ -137,28 +137,34 @@ Acceptance targets:
   TrafficHub routing changes, canonical identity rewrites, real cryptography,
   or version bump is added.
 
-## Candidate Sprint 2: Symbolic Expiration and Cleanup Helpers
+## Sprint 2: Symbolic Expiration and Cleanup Planning Helpers
 
-Status: draft candidate, not started.
+Status: implemented on the v1.3 planning branch.
 
-Goal: explore explicit helper calls for symbolic stream-offer expiration and
-cleanup.
+Goal: add explicit read-only helper calls for symbolic stream-offer expiration
+and cleanup planning.
 
-Possible work:
+Implemented work:
 
-- Add deterministic helper behavior for selecting retained stream offers that
-  are expired under simulated-time or scenario metadata.
-- Add an explicit cleanup operation if it proves useful after expiration
-  semantics are clear.
-- Preserve append-order summaries and JSON-safe output.
-- Keep all behavior caller-driven and in-memory.
+- Add `StreamOfferLifecyclePlan` for copied JSON-safe lifecycle planning
+  metadata.
+- Add `query_expired_held_stream_offers(...)` for active retained offers
+  expired by an explicit simulator order.
+- Add `plan_stream_offer_expiration(...)` for deterministic read-only
+  expiration and cleanup-candidate classification.
+- Add `summarize_stream_offer_lifecycle_plan(...)` for copied plan summaries.
+- Document Sprint 2 behavior in
+  `docs/STREAM_OFFER_LIFECYCLE_PLANNING_v1_3.md`.
 
-Acceptance targets for any future implementation:
+Acceptance targets:
 
 - Expiration and cleanup are explicit simulator helper calls, not live timers,
   background workers, durable queues, or retry services.
 - Helpers do not deliver messages, enforce production policy, mutate
   TrafficHub routes, perform DNS lookup, or contact external services.
+- Helpers do not remove offers, change statuses, or record transitions by
+  default.
+- Compact `world.snapshot()` output remains unchanged.
 
 ## Candidate Sprint 3: Expanding Retained Status Transition History
 

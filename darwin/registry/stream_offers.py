@@ -19,6 +19,7 @@ from darwin.models.stream_offer import (
     RendezvousPollStatus,
     RendezvousRequest,
     StreamOffer,
+    StreamOfferLifecyclePlan,
     StreamOfferMode,
     StreamOfferStatus,
     StreamOfferStatusTransition,
@@ -118,6 +119,88 @@ def query_held_stream_offers(
             current_order=current_order,
         )
     ]
+
+
+def query_expired_held_stream_offers(
+    registry_hub: RegistryHub,
+    *,
+    checked_at: int,
+) -> list[StreamOffer]:
+    """Return active held offers expired by an explicit simulator order."""
+    _validate_registry_hub(registry_hub)
+    _validate_order(checked_at, "checked_at")
+    return [
+        offer
+        for offer in registry_hub.held_stream_offers
+        if is_stream_offer_active(offer)
+        and is_stream_offer_expired(offer, current_order=checked_at)
+    ]
+
+
+def plan_stream_offer_expiration(
+    registry_hub: RegistryHub,
+    *,
+    checked_at: int,
+    metadata: dict[str, object] | None = None,
+) -> StreamOfferLifecyclePlan:
+    """Build a read-only lifecycle plan for retained stream offers."""
+    _validate_registry_hub(registry_hub)
+    _validate_order(checked_at, "checked_at")
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+
+    expired_offer_ids: list[str] = []
+    cleanup_candidate_offer_ids: list[str] = []
+    active_offer_ids: list[str] = []
+    ignored_offer_ids: list[str] = []
+
+    for offer in registry_hub.held_stream_offers:
+        if is_stream_offer_active(offer):
+            if is_stream_offer_expired(offer, current_order=checked_at):
+                expired_offer_ids.append(offer.offer_id)
+                cleanup_candidate_offer_ids.append(offer.offer_id)
+            else:
+                active_offer_ids.append(offer.offer_id)
+            continue
+
+        if is_stream_offer_terminal(offer):
+            cleanup_candidate_offer_ids.append(offer.offer_id)
+            continue
+
+        ignored_offer_ids.append(offer.offer_id)
+
+    plan_metadata: dict[str, object] = {
+        "simulator_local": True,
+        "read_only": True,
+        "planning_only": True,
+        "registry_hub_mutated": False,
+        "offer_mutated": False,
+        "transitions_recorded": False,
+        "offers_deleted": False,
+        "delivery_behavior_changed": False,
+        "traffic_hub_routing_changed": False,
+        "networking": False,
+    }
+    if metadata is not None:
+        plan_metadata.update(metadata)
+
+    return StreamOfferLifecyclePlan(
+        hub_id=registry_hub.hub_id,
+        checked_at=checked_at,
+        expired_offer_ids=expired_offer_ids,
+        cleanup_candidate_offer_ids=cleanup_candidate_offer_ids,
+        active_offer_ids=active_offer_ids,
+        ignored_offer_ids=ignored_offer_ids,
+        metadata=plan_metadata,
+    )
+
+
+def summarize_stream_offer_lifecycle_plan(
+    plan: StreamOfferLifecyclePlan,
+) -> dict[str, object]:
+    """Return a copied JSON-safe stream offer lifecycle plan summary."""
+    _validate_lifecycle_plan(plan)
+    return plan.to_summary()
 
 
 def update_held_stream_offer_status(
@@ -984,6 +1067,11 @@ def _validate_lane_admission_decision(decision: LaneAdmissionDecision) -> None:
 def _validate_status_transition(transition: StreamOfferStatusTransition) -> None:
     if not isinstance(transition, StreamOfferStatusTransition):
         raise TypeError("transition must be a StreamOfferStatusTransition")
+
+
+def _validate_lifecycle_plan(plan: StreamOfferLifecyclePlan) -> None:
+    if not isinstance(plan, StreamOfferLifecyclePlan):
+        raise TypeError("plan must be a StreamOfferLifecyclePlan")
 
 
 def _validate_offer(offer: StreamOffer) -> None:
