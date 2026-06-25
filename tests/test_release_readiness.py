@@ -5,6 +5,34 @@ from pathlib import Path
 import darwin
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+V1_3_PLANNING_DOCS = [
+    PROJECT_ROOT / "docs" / "V1_3_ROADMAP.md",
+    PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_3_DRAFT.md",
+    PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md",
+    PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_PLANNING_v1_3.md",
+]
+V1_3_RELEASE_CANDIDATE_CAVEATS = [
+    "simulator-local",
+    "symbolic",
+    "real networking",
+    "sockets",
+    "DNS lookup",
+    "external services",
+    "real cryptography",
+    "production E2EE",
+    "production anonymity",
+    "production privacy",
+    "production firewall",
+    "production DDoS",
+    "automatic cleanup workers",
+    "retry loops",
+    "durable queues",
+    "live timers",
+    "TrafficHub routing changes",
+    "delivery behavior changes",
+    "compact snapshot changes",
+    "canonical identity rewrites",
+]
 
 
 def _repo_relative_backtick_paths(text: str) -> set[str]:
@@ -39,6 +67,7 @@ def test_documentation_links_exist():
         PROJECT_ROOT / "docs" / "LANE_ADMISSION_POLICY_v1_2.md",
         PROJECT_ROOT / "docs" / "STREAM_OFFER_AUDIT_HISTORY_v1_2.md",
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_2_DRAFT.md",
+        *V1_3_PLANNING_DOCS,
     ]
 
     referenced_paths = {
@@ -76,6 +105,37 @@ def test_version_consistency():
     assert "real networking" in current_release_notes
     assert "TrafficHub routing changes" in current_release_notes
     assert "v0.1.0" in release_notes
+
+
+def test_v1_3_planning_docs_are_release_candidate_ready():
+    release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_3_DRAFT.md").read_text(
+        encoding="utf-8"
+    )
+    roadmap = (PROJECT_ROOT / "docs" / "V1_3_ROADMAP.md").read_text(
+        encoding="utf-8"
+    )
+    combined_docs = "\n".join(path.read_text(encoding="utf-8") for path in V1_3_PLANNING_DOCS)
+
+    assert "v1.3 is unreleased" in release_notes
+    assert "Sprints 1 through 6" in release_notes
+    assert "darwin-sim 1.2.0" in release_notes
+    assert "Scenarios `058` through `060`" in release_notes
+    assert "from `001` through `060`" in release_notes
+    assert "release-candidate hardening" in release_notes.lower()
+    assert "Sprint 6: Release-Candidate Hardening" in roadmap
+
+    for caveat in V1_3_RELEASE_CANDIDATE_CAVEATS:
+        assert caveat in combined_docs
+
+
+def test_checked_in_scenarios_are_contiguous_through_060():
+    scenario_numbers = sorted(
+        path.name[:3]
+        for path in (PROJECT_ROOT / "scenarios").glob("*.yaml")
+        if path.name[:3].isdigit()
+    )
+
+    assert scenario_numbers == [f"{number:03}" for number in range(1, 61)]
 
 
 def test_license_consistency():

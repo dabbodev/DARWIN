@@ -202,6 +202,11 @@ The current released scenario set covers `001` through `057`, and the current
 released version on `main` is `darwin-sim 1.2.0`. The annotated `v1.2.0` tag
 and GitHub release exist; no package publication was performed.
 
+On the unreleased v1.3 planning branch, scenarios `058` through `060` cover
+simulator-local stream-offer lifecycle planning and explicit apply behavior.
+The planning-branch scenario set is contiguous from `001` through `060`, while
+the package and CLI version remain `darwin-sim 1.2.0`.
+
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
 networking, sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar

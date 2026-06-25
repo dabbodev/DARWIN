@@ -531,7 +531,8 @@ python -m darwin.cli.main list-scenarios
 
 # DARWIN v1.3 Planning Checklist
 
-Status: planning draft only. v1.3 is unreleased, and `darwin-sim 1.2.0`
+Status: planning branch release-candidate hardening. v1.3 is unreleased, and
+`darwin-sim 1.2.0`
 remains the latest released version on `main`.
 
 Do not merge, tag, create a GitHub release, publish packages, or bump the
@@ -542,18 +543,31 @@ version as part of this planning checklist.
   `docs/RELEASE_NOTES_v1_3_DRAFT.md`.
 - [x] README links to v1.3 planning drafts while preserving v1.2.0 as the
   latest released version.
-- [ ] Future v1.3 implementation scope is explicitly accepted before feature
-  code is added.
-- [ ] Future v1.3 helpers, if accepted, remain simulator-local and symbolic.
-- [ ] Future v1.3 scenario DSL coverage is added only after helper behavior is
-  stable.
-- [ ] Future v1.3 release notes are updated from placeholder to concrete
-  implementation summary.
+- [x] Sprints 1 through 5 implementation scope is documented as
+  simulator-local and symbolic.
+- [x] v1.3 lifecycle history docs are checked in at
+  `docs/STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md`.
+- [x] v1.3 lifecycle planning/apply docs are checked in at
+  `docs/STREAM_OFFER_LIFECYCLE_PLANNING_v1_3.md`.
+- [x] v1.3 scenario DSL coverage was added after helper behavior stabilized.
+- [x] Scenarios `058` through `060` validate and run.
+- [x] Planning-branch scenario metadata is contiguous from `001` through
+  `060`.
+- [x] Scenario index is current and generated from deterministic scenario
+  metadata.
+- [x] v1.3 documentation readiness checks include the roadmap, draft release
+  notes, lifecycle history docs, and lifecycle planning/apply docs.
+- [x] v1.3 release notes summarize Sprints 1 through 5 and document Sprint 6
+  release-candidate hardening scope.
 - [ ] Future v1.3 changelog entry is added only during release preparation.
-- [ ] Documentation avoids production networking, sockets, HTTP/WebSocket
+- [ ] Future v1.3 release notes are converted from draft/planning language to
+  final release language only during release preparation.
+- [x] Documentation avoids production networking, sockets, HTTP/WebSocket
   behavior, DNS lookup, registrar integration, public CA behavior, external
   services, real cryptography, key generation, private key storage, production
-  E2EE, delivery enforcement, TrafficHub routing changes, canonical identity
+  E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
+  queues, live timers, live clocks, live polling, delivery behavior changes,
+  compact snapshot changes, TrafficHub routing changes, canonical identity
   rewrites, and production anonymity/privacy/firewall/DDoS guarantees.
 
 ## v1.3 Planning Validation Commands

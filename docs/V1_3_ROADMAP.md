@@ -1,6 +1,6 @@
 # DARWIN v1.3 Roadmap Draft: Rendezvous Lifecycle and Retained Stream-Offer Status Transitions
 
-Status: planning branch with Sprints 1 through 5 implemented. v1.3 is
+Status: planning branch with Sprints 1 through 6 implemented. v1.3 is
 unreleased.
 DARWIN v1.2.0 remains the latest released version on `main` as
 `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub release exist:
@@ -50,6 +50,7 @@ Candidate in scope:
 - Read-only query and summarize helpers for lifecycle audit metadata.
 - Scenario DSL coverage only after helper behavior is stable.
 - Documentation and release-readiness checks after scenario coverage exists.
+- Release-candidate documentation audit and readiness hardening.
 
 Out of scope:
 
@@ -264,25 +265,64 @@ Acceptance targets:
   queue, live timer, delivery behavior, networking, DNS, TrafficHub routing,
   canonical identity rewrite, version bump, or package publication is added.
 
-## Recommended First Planning Step
+## Sprint 6: Release-Candidate Hardening and Documentation Audit
 
-Start by auditing v1.2 stream offer statuses and retained histories before
-adding any feature code. The safest next decision is whether v1.3 needs a new
-transition record shape or can reuse existing retained stream-offer and
-admission/poll summaries.
+Status: implemented on the v1.3 planning branch.
+
+Goal: harden release-candidate documentation and readiness checks without
+adding feature behavior.
+
+Implemented work:
+
+- Include v1.3 roadmap, draft release notes, lifecycle history docs, and
+  lifecycle planning/apply docs in documentation readiness and link checks.
+- Keep readiness checks compatible with the unreleased planning state and
+  `darwin-sim 1.2.0`.
+- Confirm checked-in scenario coverage remains contiguous from `001` through
+  `060`.
+- Preserve deterministic `docs/SCENARIO_INDEX.md` generation from scenario
+  metadata.
+- Refresh v1.3 release-candidate docs so implemented/planned status, scenario
+  coverage, and simulator-local symbolic caveats are explicit.
+
+Acceptance targets:
+
+- No version bump, merge, tag, GitHub release, or package publication is added.
+- No new feature behavior or new scenarios are added unless required for
+  deterministic index consistency.
+- Compact `world.snapshot()` output remains unchanged.
+- Existing mailbox delivery, encrypted delivery, TrafficHub routing, alias,
+  identity, stream-offer polling/admission behavior, retained histories, and
+  canonical identity behavior remain unchanged.
+- No automatic cleanup workers, retry loops, durable queues, live timers, live
+  clocks, live polling, delivery behavior changes, networking, sockets,
+  HTTP/WebSocket behavior, DNS lookup, external services, real cryptography,
+  production E2EE, TrafficHub routing changes, or canonical identity rewrites
+  are added.
+
+## Remaining Release-Prep Work
+
+Before any future v1.3 release, replace draft release-note status with final
+release status, record final validation results, make an explicit release
+decision about changelog/version updates, and perform the normal merge, tag,
+GitHub release, and package-publication decisions. Sprint 6 does not perform
+those release actions.
 
 ## Intentionally Deferred Work
 
 - Real networking, sockets, HTTP/WebSocket behavior, DNS lookup, and external
   services.
-- Live polling, durable queues, retry workers, background cleanup services, or
-  wall-clock schedulers.
+- Live polling, live timers, live clocks, durable queues, retry loops,
+  automatic cleanup workers, background cleanup services, or wall-clock
+  schedulers.
 - Production DDoS protection, firewall guarantees, abuse mitigation, or
   delivery guarantees.
 - Privacy, anonymity, metadata-hiding, or traffic-analysis guarantees.
 - Registrar integration, public CA behavior, and production identity proof.
 - Real cryptography, key generation, private key storage, production E2EE, and
   secure messaging protocols.
+- Delivery behavior changes.
 - TrafficHub routing changes.
+- Compact snapshot changes.
 - Canonical identity rewrites.
 - Package publication or version bump beyond `1.2.0` during planning.

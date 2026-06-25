@@ -1,6 +1,6 @@
 # DARWIN v1.3 Release Notes Draft
 
-Status: planning draft with Sprints 1 through 5 implemented on the v1.3
+Status: planning draft with Sprints 1 through 6 implemented on the v1.3
 planning branch. v1.3 is unreleased. DARWIN v1.2.0 remains the latest released
 version on `main` as `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub
 release exist:
@@ -14,13 +14,15 @@ released v1.3 behavior and should not be treated as a release announcement.
 
 Rendezvous lifecycle and retained stream-offer status transitions.
 
-Future v1.3 work may explore small simulator-first slices around:
+Implemented v1.3 planning work covers small simulator-first, symbolic slices
+around:
 
-- symbolic stream-offer expiration and cleanup helpers;
 - retained stream-offer status transition history;
-- read-only query and summarize helpers for lifecycle audit metadata;
-- scenario DSL coverage after helper behavior lands;
-- release-readiness documentation after scenario coverage exists.
+- read-only stream-offer expiration and cleanup planning helpers;
+- explicit caller-driven lifecycle plan application;
+- scenario DSL coverage for lifecycle planning and apply results;
+- detailed snapshot/debug visibility for lifecycle plans and apply results;
+- release-candidate documentation and readiness checks.
 
 ## Sprint 1 Draft Note
 
@@ -125,17 +127,39 @@ TrafficHub routing, DNS, networking, external services, real cryptography,
 canonical identity behavior, version bump, package publication, merge, tag, or
 release were added.
 
+## Sprint 6 Draft Note
+
+Sprint 6 hardens release-candidate documentation and readiness checks only:
+
+- v1.3 roadmap, draft release notes, lifecycle history docs, and lifecycle
+  planning/apply docs are included in documentation link/readiness checks.
+- Release-candidate checks keep v1.3 compatible with the unreleased planning
+  state and confirm `darwin-sim 1.2.0` remains the package and CLI version.
+- Scenario continuity checks cover checked-in scenarios from `001` through
+  `060`.
+- `docs/SCENARIO_INDEX.md` remains generated from deterministic scenario
+  metadata.
+- v1.3 docs summarize Sprints 1 through 5 and preserve simulator-local,
+  symbolic caveats.
+
+No feature behavior, scenarios, compact snapshot changes, lifecycle behavior
+changes, automatic cleanup workers, retry loops, durable queues, live timers,
+live clocks, live polling, delivery behavior changes, TrafficHub routing,
+DNS, networking, sockets, HTTP/WebSocket behavior, external services, real
+cryptography, production E2EE, canonical identity rewrites, version bump,
+package publication, merge, tag, or release were added.
+
 ## Current Draft Scope
 
-Any future v1.3 implementation should preserve:
+Current v1.3 planning implementation preserves:
 
 - existing mailbox delivery behavior;
 - existing encrypted delivery behavior;
 - existing TrafficHub routing behavior;
 - existing canonical identity behavior;
 - existing v1.2 stream offer, rendezvous poll, lane admission, retained
-  history, snapshot, and scenario behavior unless a later accepted sprint
-  explicitly scopes a simulator-local change.
+  history, snapshot, and scenario behavior outside explicitly scoped
+  simulator-local lifecycle helpers.
 
 ## Expected Compatibility Framing
 
@@ -158,7 +182,10 @@ v1.3 planning does not add:
 - external services;
 - live polling loops;
 - durable queues;
-- retry workers;
+- automatic cleanup workers;
+- retry loops;
+- live timers;
+- live clocks;
 - production DDoS guarantees;
 - production firewall guarantees;
 - production privacy guarantees;
@@ -172,12 +199,22 @@ v1.3 planning does not add:
 - mailbox delivery behavior changes;
 - encrypted delivery behavior changes;
 - TrafficHub routing changes;
+- compact snapshot changes;
 - canonical identity rewrites;
 - package publication;
 - version bumps beyond `1.2.0` during planning.
 
 ## Release Readiness
 
-Not started. Before any future v1.3 release, this placeholder should be
-replaced with a concrete implementation summary, scenario coverage, validation
-results, compatibility notes, and final release status.
+Release-candidate hardening is in progress on the planning branch only.
+Current readiness expectations are:
+
+- `python -m ruff check .` passes.
+- `python -m pytest` passes.
+- `python scripts/run_all_scenarios.py` runs scenarios `001` through `060`.
+- `python -m darwin.cli.main --version` reports `darwin-sim 1.2.0`.
+
+Before any future v1.3 release, this draft should be replaced with final
+release status, final validation results, and any release-process notes. This
+draft does not authorize a merge, tag, GitHub release, package publication, or
+version bump.
