@@ -1,32 +1,23 @@
-# DARWIN v1.3 Release Notes Draft
+# DARWIN v1.3.0 Release Notes
 
-Status: planning draft with Sprints 1 through 6 implemented on the v1.3
-planning branch. v1.3 is unreleased. DARWIN v1.2.0 remains the latest released
-version on `main` as `darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub
-release exist:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
-publication was performed.
+Status: release prep is complete on `v1.3/planning` as
+`darwin-sim 1.3.0`. No merge, tag, GitHub release, or package publication has
+been performed by this release-prep step.
 
-This file is a draft for future v1.3 release notes. It does not describe
-released v1.3 behavior and should not be treated as a release announcement.
+DARWIN v1.3 Sprints 1 through 6 add simulator-local rendezvous lifecycle and
+retained stream-offer status transition modeling. It introduces retained
+transition history, read-only lifecycle planning helpers, an explicit
+lifecycle plan apply helper, scenario DSL coverage, scenarios `058` through
+`060`, and detailed snapshot visibility for lifecycle plans, apply results,
+and retained transition history.
 
-## Candidate Theme
+This is symbolic simulator metadata flow only. It is not real networking, not
+a network service, not production DDoS protection, not a firewall, not a
+privacy or anonymity system, and not real cryptography or production E2EE.
 
-Rendezvous lifecycle and retained stream-offer status transitions.
+## Sprint Summary
 
-Implemented v1.3 planning work covers small simulator-first, symbolic slices
-around:
-
-- retained stream-offer status transition history;
-- read-only stream-offer expiration and cleanup planning helpers;
-- explicit caller-driven lifecycle plan application;
-- scenario DSL coverage for lifecycle planning and apply results;
-- detailed snapshot/debug visibility for lifecycle plans and apply results;
-- release-candidate documentation and readiness checks.
-
-## Sprint 1 Draft Note
-
-Sprint 1 adds symbolic RegistryHub-local stream-offer lifecycle transition
+Sprint 1 added symbolic RegistryHub-local stream-offer lifecycle transition
 history:
 
 - `StreamOfferStatusTransition` and
@@ -34,58 +25,39 @@ history:
 - `RegistryHub.stream_offer_status_transition_history`.
 - Explicit make, record, query, and summarize helpers for retained transition
   history.
-- An opt-in transition recording path on `update_held_stream_offer_status(...)`
-  that leaves default behavior unchanged.
+- An opt-in transition recording path on
+  `update_held_stream_offer_status(...)` that leaves default behavior
+  unchanged.
 - Detailed snapshot visibility for copied transition summaries while compact
   `world.snapshot()` output remains unchanged.
 - Documentation in `docs/STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md`.
 
-No scenario DSL actions or assertions were added in Sprint 1.
-
-## Sprint 2 Draft Note
-
-Sprint 2 adds deterministic read-only stream-offer lifecycle planning helpers:
+Sprint 2 added deterministic read-only lifecycle planning helpers:
 
 - `StreamOfferLifecyclePlan` for copied JSON-safe lifecycle planning metadata.
-- `query_expired_held_stream_offers(...)` for active retained offers expired by
-  an explicit simulator order.
-- `plan_stream_offer_expiration(...)` for classifying expired, active, cleanup
-  candidate, and ignored retained offer IDs without mutating hub state.
+- `query_expired_held_stream_offers(...)` for active retained offers expired
+  by an explicit simulator order.
+- `plan_stream_offer_expiration(...)` for classifying expired, active,
+  cleanup-candidate, and ignored retained offer IDs without mutating hub
+  state.
 - `summarize_stream_offer_lifecycle_plan(...)` for copied deterministic plan
   summaries.
 - Documentation in `docs/STREAM_OFFER_LIFECYCLE_PLANNING_v1_3.md`.
 
-No scenario DSL actions or assertions were added in Sprint 2. No apply helper
-was added; lifecycle planning remains read-only by default.
-
-## Sprint 3 Draft Note
-
-Sprint 3 adds an explicit simulator-local lifecycle plan application helper:
+Sprint 3 added explicit simulator-local lifecycle plan application:
 
 - `StreamOfferLifecycleApplyResult` for copied JSON-safe application result
   metadata.
 - `apply_stream_offer_lifecycle_plan(...)` for applying caller-provided
   lifecycle plans to eligible retained held offers.
-- `summarize_stream_offer_lifecycle_apply_result(...)` for copied
-  deterministic result summaries.
 - Eligible planned non-terminal expired offers are marked `expired`.
-- Terminal or stale planned offers are skipped deterministically.
-- Missing planned offer IDs are reported deterministically.
+- Terminal, stale, and missing planned offers are reported deterministically.
 - Held offers are not deleted.
-- Transition recording is enabled by default through the existing status update
-  helper with reason `expired`, and can be disabled with
-  `record_transition=False`.
+- Transition recording uses the existing status update helper with reason
+  `expired` by default and can be disabled with `record_transition=False`.
 - Compact `world.snapshot()` output remains unchanged.
 
-No scenario DSL actions or assertions were added in Sprint 3. No automatic
-cleanup workers, retry loops, durable queues, live timers, delivery behavior,
-TrafficHub routing, DNS, networking, external service, real cryptography, or
-canonical identity behavior were added.
-
-## Sprint 4 Draft Note
-
-Sprint 4 adds scenario DSL coverage for the existing lifecycle planning and
-explicit apply helpers:
+Sprint 4 added scenario DSL coverage and checked-in scenarios:
 
 - `plan_stream_offer_expiration` as a read-only scenario action using explicit
   deterministic `checked_at`.
@@ -99,16 +71,7 @@ explicit apply helpers:
 - Scenarios `058` through `060` for expiration planning, apply with retained
   transition recording, and apply without transition recording.
 
-Planning remains read-only. Apply mutates only eligible planned held offers
-and never deletes held offers. No automatic cleanup workers, retry loops,
-durable queues, live timers, live clocks, live polling, delivery behavior,
-TrafficHub routing, DNS, networking, external services, real cryptography,
-compact snapshot changes, or canonical identity behavior were added.
-
-## Sprint 5 Draft Note
-
-Sprint 5 hardens detailed snapshot/debug visibility for existing lifecycle
-artifacts:
+Sprint 5 hardened detailed snapshot/debug visibility:
 
 - Retained `stream_offer_status_transition_history` remains visible under each
   detailed `RegistryHub` snapshot.
@@ -121,57 +84,65 @@ artifacts:
 - Focused tests cover detailed visibility, copied summaries, deterministic
   ordering, and unchanged compact `world.snapshot()` output.
 
-No compact snapshot changes, lifecycle behavior changes, automatic cleanup
-workers, retry loops, durable queues, live timers, delivery behavior,
-TrafficHub routing, DNS, networking, external services, real cryptography,
-canonical identity behavior, version bump, package publication, merge, tag, or
-release were added.
+Sprint 6 hardened release-candidate documentation and readiness checks:
 
-## Sprint 6 Draft Note
-
-Sprint 6 hardens release-candidate documentation and readiness checks only:
-
-- v1.3 roadmap, draft release notes, lifecycle history docs, and lifecycle
+- v1.3 roadmap, release notes, lifecycle history docs, and lifecycle
   planning/apply docs are included in documentation link/readiness checks.
-- Release-candidate checks keep v1.3 compatible with the unreleased planning
-  state and confirm `darwin-sim 1.2.0` remains the package and CLI version.
-- Scenario continuity checks cover checked-in scenarios from `001` through
-  `060`.
+- Scenario continuity checks cover checked-in scenarios from `001` through `060`.
 - `docs/SCENARIO_INDEX.md` remains generated from deterministic scenario
   metadata.
 - v1.3 docs summarize Sprints 1 through 5 and preserve simulator-local,
   symbolic caveats.
 
-No feature behavior, scenarios, compact snapshot changes, lifecycle behavior
-changes, automatic cleanup workers, retry loops, durable queues, live timers,
-live clocks, live polling, delivery behavior changes, TrafficHub routing,
-DNS, networking, sockets, HTTP/WebSocket behavior, external services, real
-cryptography, production E2EE, canonical identity rewrites, version bump,
-package publication, merge, tag, or release were added.
+## Compatibility
 
-## Current Draft Scope
+- Existing mailbox delivery behavior remains unchanged.
+- Existing encrypted delivery behavior remains unchanged.
+- Existing TrafficHub routing behavior remains unchanged.
+- Existing alias behavior remains unchanged.
+- Existing identity and canonical identity behavior remains unchanged.
+- Existing v1.2 stream offer, rendezvous poll, lane admission, retained
+  history, snapshot, and scenario behavior remains unchanged outside the
+  explicit v1.3 lifecycle helpers.
+- Compact `world.snapshot()` output remains unchanged.
+- The checked-in scenario set is expected to remain contiguous from `001`
+  through `060`.
+- The prepared package and CLI version are `darwin-sim 1.3.0`.
+- No package publication was performed.
 
-Current v1.3 planning implementation preserves:
+## Scenario Coverage
 
-- existing mailbox delivery behavior;
-- existing encrypted delivery behavior;
-- existing TrafficHub routing behavior;
-- existing canonical identity behavior;
-- existing v1.2 stream offer, rendezvous poll, lane admission, retained
-  history, snapshot, and scenario behavior outside explicitly scoped
-  simulator-local lifecycle helpers.
+v1.3 scenarios:
 
-## Expected Compatibility Framing
+- `scenarios/058_stream_offer_lifecycle_expiration_plan.yaml`
+- `scenarios/059_stream_offer_lifecycle_apply_records_transition.yaml`
+- `scenarios/060_stream_offer_lifecycle_apply_without_transition.yaml`
 
-The checked-in released scenario set remains expected to run contiguously from
-`001` through `057`. The v1.3 planning-branch scenario set is now contiguous
-from `001` through `060`.
+These scenarios validate simulator-local stream-offer lifecycle planning,
+explicit lifecycle plan application, retained transition history, apply
+results, and detailed snapshot visibility. They do not deliver messages,
+change TrafficHub routes, open sockets, perform DNS lookup, contact external
+services, generate keys, encrypt payloads, enforce production security, or
+change compact `world.snapshot()` output.
 
-The package and CLI version remain `darwin-sim 1.2.0` during planning.
+## Current Limitations
+
+- Held stream offers and retained transition histories are in-memory and
+  RegistryHub-local.
+- Lifecycle planning is read-only by default and only uses explicit simulator
+  order values supplied by callers.
+- Lifecycle apply is explicit, caller-driven, and only mutates eligible
+  planned held offer statuses.
+- Lifecycle apply does not delete held offers.
+- Retained lifecycle transition histories are simulator audit metadata, not
+  production logs, compliance evidence, or delivery records.
+- Detailed snapshots may expose modeled metadata such as offer IDs, hub IDs,
+  statuses, lifecycle reasons, actor IDs, request IDs, checked-at values, and
+  JSON-safe scenario metadata.
 
 ## Non-Goals
 
-v1.3 planning does not add:
+v1.3 does not add:
 
 - real networking;
 - sockets;
@@ -201,20 +172,18 @@ v1.3 planning does not add:
 - TrafficHub routing changes;
 - compact snapshot changes;
 - canonical identity rewrites;
+- merge to `main`;
+- release tag creation;
+- GitHub release publication;
 - package publication;
-- version bumps beyond `1.2.0` during planning.
+- version bumps beyond `1.3.0`.
 
 ## Release Readiness
 
-Release-candidate hardening is in progress on the planning branch only.
-Current readiness expectations are:
+The v1.3.0 release-prep state is complete when full validation passes on
+`v1.3/planning`: `python -m ruff check .`, `python -m pytest`,
+`python scripts/run_all_scenarios.py` for scenarios `001` through `060`, and
+`python -m darwin.cli.main --version` reporting `darwin-sim 1.3.0`.
 
-- `python -m ruff check .` passes.
-- `python -m pytest` passes.
-- `python scripts/run_all_scenarios.py` runs scenarios `001` through `060`.
-- `python -m darwin.cli.main --version` reports `darwin-sim 1.2.0`.
-
-Before any future v1.3 release, this draft should be replaced with final
-release status, final validation results, and any release-process notes. This
-draft does not authorize a merge, tag, GitHub release, package publication, or
-version bump.
+No merge, tag, GitHub release, or package publication has been performed by
+this release-prep step.

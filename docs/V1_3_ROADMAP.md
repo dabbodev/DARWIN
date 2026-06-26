@@ -1,19 +1,17 @@
-# DARWIN v1.3 Roadmap Draft: Rendezvous Lifecycle and Retained Stream-Offer Status Transitions
+# DARWIN v1.3 Roadmap: Rendezvous Lifecycle and Retained Stream-Offer Status Transitions
 
-Status: planning branch with Sprints 1 through 6 implemented. v1.3 is
-unreleased.
-DARWIN v1.2.0 remains the latest released version on `main` as
-`darwin-sim 1.2.0`. The annotated `v1.2.0` tag and GitHub release exist:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
-publication was performed.
+Status: release prep is complete on `v1.3/planning` as
+`darwin-sim 1.3.0`. No merge, tag, GitHub release, or package publication has
+been performed by this release-prep step. The latest published GitHub release
+remains v1.2.0 on `main`:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0.
 
-Recommended candidate theme: Rendezvous lifecycle and retained stream-offer
-status transitions.
+Release theme: Rendezvous lifecycle and retained stream-offer status
+transitions.
 
-This roadmap is a seed for future planning. It does not lock implementation
-scope, commit to a release date, or authorize feature work. Any later v1.3
-sprint should remain simulator-first and symbolic unless explicitly scoped
-otherwise.
+This roadmap records the implemented v1.3 simulator-local scope. It does not
+authorize additional feature work, a merge, tag, GitHub release, or package
+publication.
 
 v1.3 should not become production networking, a real DDoS protection system,
 a firewall product, a privacy or anonymity system, DNS, registrar
@@ -65,7 +63,7 @@ Out of scope:
   secure messaging.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
-- Version bump beyond `1.2.0` during planning.
+- Version bumps beyond `1.3.0`.
 - Package publication.
 
 ## Candidate Concepts
@@ -107,7 +105,7 @@ Lifecycle audit query:
 
 ## Sprint 1: Retained Lifecycle Transition History
 
-Status: implemented on the v1.3 planning branch.
+Status: implemented for v1.3.
 
 Goal: add the smallest useful RegistryHub-local history for explicit symbolic
 stream-offer status transitions without changing delivery, routing, polling,
@@ -137,11 +135,11 @@ Acceptance targets:
 - Compact `world.snapshot()` output remains unchanged.
 - No real networking, DNS lookup, external services, delivery enforcement,
   TrafficHub routing changes, canonical identity rewrites, real cryptography,
-  or version bump is added.
+  or version bump beyond release prep is added.
 
 ## Sprint 2: Symbolic Expiration and Cleanup Planning Helpers
 
-Status: implemented on the v1.3 planning branch.
+Status: implemented for v1.3.
 
 Goal: add explicit read-only helper calls for symbolic stream-offer expiration
 and cleanup planning.
@@ -170,7 +168,7 @@ Acceptance targets:
 
 ## Sprint 3: Explicit Lifecycle Plan Application Helper
 
-Status: implemented on the v1.3 planning branch.
+Status: implemented for v1.3.
 
 Goal: add an explicit opt-in helper for applying caller-provided lifecycle
 plans without adding automatic cleanup or delivery behavior.
@@ -204,7 +202,7 @@ Acceptance targets:
 
 ## Sprint 4: Scenario DSL Coverage
 
-Status: implemented on the v1.3 planning branch.
+Status: implemented for v1.3.
 
 Goal: expose stable lifecycle helpers through scenario YAML after helper
 behavior and summaries are covered by focused tests.
@@ -227,7 +225,7 @@ Implemented work:
 Acceptance targets:
 
 - Existing scenarios `001` through `057` continue to pass unchanged, and the
-  planning-branch scenario set is contiguous through `060`.
+  checked-in scenario set is contiguous through `060`.
 - New scenarios remain symbolic and make no networking, delivery, DNS,
   cryptography, TrafficHub, or canonical identity claims.
 - Planning remains read-only; held offers are mutated only when a scenario
@@ -237,7 +235,7 @@ Acceptance targets:
 
 ## Sprint 5: Detailed Snapshot Lifecycle Artifact Visibility
 
-Status: implemented on the v1.3 planning branch.
+Status: implemented for v1.3.
 
 Goal: harden detailed snapshot/debug visibility for existing stream-offer
 lifecycle artifacts without changing compact snapshots or adding lifecycle
@@ -263,11 +261,12 @@ Acceptance targets:
   action-result order.
 - No new lifecycle mutation behavior, cleanup worker, retry loop, durable
   queue, live timer, delivery behavior, networking, DNS, TrafficHub routing,
-  canonical identity rewrite, version bump, or package publication is added.
+  canonical identity rewrite, version bump beyond release prep, or package
+  publication is added.
 
 ## Sprint 6: Release-Candidate Hardening and Documentation Audit
 
-Status: implemented on the v1.3 planning branch.
+Status: implemented for v1.3.
 
 Goal: harden release-candidate documentation and readiness checks without
 adding feature behavior.
@@ -276,8 +275,8 @@ Implemented work:
 
 - Include v1.3 roadmap, draft release notes, lifecycle history docs, and
   lifecycle planning/apply docs in documentation readiness and link checks.
-- Keep readiness checks compatible with the unreleased planning state and
-  `darwin-sim 1.2.0`.
+- Keep readiness checks compatible with release-prep state and
+  `darwin-sim 1.3.0`.
 - Confirm checked-in scenario coverage remains contiguous from `001` through
   `060`.
 - Preserve deterministic `docs/SCENARIO_INDEX.md` generation from scenario
@@ -287,7 +286,7 @@ Implemented work:
 
 Acceptance targets:
 
-- No version bump, merge, tag, GitHub release, or package publication is added.
+- No merge, tag, GitHub release, or package publication is added.
 - No new feature behavior or new scenarios are added unless required for
   deterministic index consistency.
 - Compact `world.snapshot()` output remains unchanged.
@@ -300,13 +299,12 @@ Acceptance targets:
   production E2EE, TrafficHub routing changes, or canonical identity rewrites
   are added.
 
-## Remaining Release-Prep Work
+## Release-Prep Status
 
-Before any future v1.3 release, replace draft release-note status with final
-release status, record final validation results, make an explicit release
-decision about changelog/version updates, and perform the normal merge, tag,
-GitHub release, and package-publication decisions. Sprint 6 does not perform
-those release actions.
+Release prep updates the package and CLI version to `darwin-sim 1.3.0`,
+finalizes release-facing notes, updates the changelog and readiness checklist,
+and preserves scenario continuity through `060`. It does not merge to `main`,
+create a tag, create a GitHub release, or publish packages.
 
 ## Intentionally Deferred Work
 
@@ -325,4 +323,4 @@ those release actions.
 - TrafficHub routing changes.
 - Compact snapshot changes.
 - Canonical identity rewrites.
-- Package publication or version bump beyond `1.2.0` during planning.
+- Package publication or version bump beyond `1.3.0`.

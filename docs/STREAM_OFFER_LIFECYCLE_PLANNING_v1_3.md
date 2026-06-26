@@ -172,4 +172,4 @@ Sprint 2 and Sprint 3 do not add:
 - canonical identity rewrites;
 - scenario DSL changes;
 - package publication;
-- version bumps beyond `1.2.0` during planning.
+- version bumps beyond `1.3.0`.

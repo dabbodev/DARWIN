@@ -862,10 +862,9 @@ The current released scenario set is contiguous through `057`.
 
 ## v1.3 Stream Offer Lifecycle Scenarios
 
-The v1.3 planning branch adds scenario DSL coverage for existing
+The v1.3 release-prep state adds scenario DSL coverage for existing
 simulator-local stream-offer lifecycle planning and explicit apply helpers.
-The package and CLI version still report `darwin-sim 1.2.0` while v1.3
-remains unreleased.
+The package and CLI version report `darwin-sim 1.3.0`.
 
 This DSL surface is symbolic metadata flow only. It does not add automatic
 cleanup workers, retry loops, durable queues, live timers, live clocks, live
@@ -935,10 +934,10 @@ under each RegistryHub at
 `registry_hubs.<hub_id>.stream_offer_status_transition_history`. Compact
 `world.snapshot()` output remains unchanged.
 
-Checked-in v1.3 planning-branch stream offer lifecycle scenarios:
+Checked-in v1.3 stream offer lifecycle scenarios:
 
 - `scenarios/058_stream_offer_lifecycle_expiration_plan.yaml`
 - `scenarios/059_stream_offer_lifecycle_apply_records_transition.yaml`
 - `scenarios/060_stream_offer_lifecycle_apply_without_transition.yaml`
 
-The current planning-branch scenario set is contiguous through `060`.
+The current checked-in scenario set is contiguous through `060`.

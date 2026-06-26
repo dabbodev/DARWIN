@@ -139,4 +139,4 @@ Sprint 1 does not add:
 - canonical identity rewrites;
 - scenario DSL changes;
 - package publication;
-- version bumps beyond `1.2.0` during planning.
+- version bumps beyond `1.3.0`.

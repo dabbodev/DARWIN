@@ -94,20 +94,20 @@ def test_version_consistency():
         encoding="utf-8"
     )
     current_release_notes = (
-        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_2_DRAFT.md"
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_3_DRAFT.md"
     ).read_text(encoding="utf-8")
 
     assert darwin.__version__ == project_version
     assert f"[{project_version}]" in changelog or f"## v{project_version}" in changelog
     assert f"v{project_version}" in current_release_notes
-    assert "darwin-sim 1.2.0" in current_release_notes
-    assert "Scenarios `053` through `057`" in current_release_notes
+    assert "darwin-sim 1.3.0" in current_release_notes
+    assert "Scenarios `058` through `060`" in current_release_notes
     assert "real networking" in current_release_notes
     assert "TrafficHub routing changes" in current_release_notes
     assert "v0.1.0" in release_notes
 
 
-def test_v1_3_planning_docs_are_release_candidate_ready():
+def test_v1_3_docs_are_release_prep_ready():
     release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_3_DRAFT.md").read_text(
         encoding="utf-8"
     )
@@ -116,12 +116,12 @@ def test_v1_3_planning_docs_are_release_candidate_ready():
     )
     combined_docs = "\n".join(path.read_text(encoding="utf-8") for path in V1_3_PLANNING_DOCS)
 
-    assert "v1.3 is unreleased" in release_notes
+    assert "release prep is complete" in release_notes
     assert "Sprints 1 through 6" in release_notes
-    assert "darwin-sim 1.2.0" in release_notes
+    assert "darwin-sim 1.3.0" in release_notes
     assert "Scenarios `058` through `060`" in release_notes
     assert "from `001` through `060`" in release_notes
-    assert "release-candidate hardening" in release_notes.lower()
+    assert "No merge, tag, GitHub release, or package publication" in release_notes
     assert "Sprint 6: Release-Candidate Hardening" in roadmap
 
     for caveat in V1_3_RELEASE_CANDIDATE_CAVEATS:
