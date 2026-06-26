@@ -8,11 +8,10 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project has v1.3.0 release prep staged on `v1.3/planning` as
-`darwin-sim 1.3.0`. The latest published GitHub release remains v1.2.0 on
-`main`:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
-publication has been performed.
+DARWIN v1.3.0 is released on `main` as `darwin-sim 1.3.0`. The annotated
+`v1.3.0` tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.3.0. No package
+publication was performed, and no release assets were uploaded.
 
 v1.3 adds simulator-local rendezvous lifecycle and retained stream-offer
 status transition modeling while keeping mailbox delivery, encrypted delivery,
@@ -204,9 +203,9 @@ offer rendezvous, private polling descent, and lane admission policy outcomes.
 The annotated `v1.2.0` tag and GitHub release exist; no package publication
 was performed.
 
-In the v1.3 release-prep state, scenarios `058` through `060` cover
+In the v1.3 release, scenarios `058` through `060` cover
 simulator-local stream-offer lifecycle planning and explicit apply behavior.
-The checked-in scenario set is contiguous from `001` through `060`, and the
+The released scenario set is contiguous from `001` through `060`, and the
 package and CLI version report `darwin-sim 1.3.0`.
 
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
@@ -236,10 +235,13 @@ retry workers, delivery behavior changes, TrafficHub routing changes,
 production anonymity/privacy/firewall/DDoS guarantees, real cryptography, or
 production E2EE.
 
-The v1.3 release-prep docs cover retained lifecycle transition history,
+The v1.3 release docs cover retained lifecycle transition history,
 read-only lifecycle planning, explicit lifecycle apply, scenario DSL coverage,
-and detailed snapshot visibility. Release prep does not merge, tag, create a
-GitHub release, or publish packages.
+and detailed snapshot visibility. Final validation passed `python -m ruff
+check .`, `python -m pytest` with 808 tests,
+`python scripts/run_all_scenarios.py` for scenarios `001` through `060`, and
+`python -m darwin.cli.main --version` reporting `darwin-sim 1.3.0`. No package
+publication was performed.
 
 ## What v0.1 Supports
 
@@ -982,7 +984,7 @@ For v1.2 pull-based lane rendezvous planning, see:
 - `docs/RELEASE_NOTES_v1_2_DRAFT.md`
 - `docs/SCENARIO_DSL_v0_2.md`
 
-For v1.3 rendezvous lifecycle release-prep docs, see:
+For v1.3 rendezvous lifecycle release docs, see:
 
 - `docs/V1_3_ROADMAP.md`
 - `docs/STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md`

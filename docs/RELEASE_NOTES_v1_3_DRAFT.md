@@ -1,8 +1,9 @@
 # DARWIN v1.3.0 Release Notes
 
-Status: release prep is complete on `v1.3/planning` as
-`darwin-sim 1.3.0`. No merge, tag, GitHub release, or package publication has
-been performed by this release-prep step.
+Status: released on `main` as `darwin-sim 1.3.0`. The annotated `v1.3.0` tag
+and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.3.0. No package
+publication was performed, and no release assets were uploaded.
 
 DARWIN v1.3 Sprints 1 through 6 add simulator-local rendezvous lifecycle and
 retained stream-offer status transition modeling. It introduces retained
@@ -105,10 +106,12 @@ Sprint 6 hardened release-candidate documentation and readiness checks:
   history, snapshot, and scenario behavior remains unchanged outside the
   explicit v1.3 lifecycle helpers.
 - Compact `world.snapshot()` output remains unchanged.
-- The checked-in scenario set is expected to remain contiguous from `001`
+- The released scenario set is contiguous from `001`
   through `060`.
-- The prepared package and CLI version are `darwin-sim 1.3.0`.
+- The released package and CLI version are `darwin-sim 1.3.0`.
+- The annotated `v1.3.0` tag and GitHub release exist.
 - No package publication was performed.
+- No release assets were uploaded.
 
 ## Scenario Coverage
 
@@ -172,18 +175,15 @@ v1.3 does not add:
 - TrafficHub routing changes;
 - compact snapshot changes;
 - canonical identity rewrites;
-- merge to `main`;
-- release tag creation;
-- GitHub release publication;
 - package publication;
 - version bumps beyond `1.3.0`.
 
 ## Release Readiness
 
-The v1.3.0 release-prep state is complete when full validation passes on
-`v1.3/planning`: `python -m ruff check .`, `python -m pytest`,
+The v1.3.0 release is complete after full validation, merge to `main`,
+annotated tag creation, and GitHub release publication. Final validation
+passed `python -m ruff check .`, `python -m pytest` with 808 tests,
 `python scripts/run_all_scenarios.py` for scenarios `001` through `060`, and
-`python -m darwin.cli.main --version` reporting `darwin-sim 1.3.0`.
-
-No merge, tag, GitHub release, or package publication has been performed by
-this release-prep step.
+`python -m darwin.cli.main --version` reporting `darwin-sim 1.3.0`. Package
+publication was intentionally not performed, and no release assets were
+uploaded.

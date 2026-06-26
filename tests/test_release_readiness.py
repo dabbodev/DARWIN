@@ -107,7 +107,7 @@ def test_version_consistency():
     assert "v0.1.0" in release_notes
 
 
-def test_v1_3_docs_are_release_prep_ready():
+def test_v1_3_docs_are_release_status_ready():
     release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_3_DRAFT.md").read_text(
         encoding="utf-8"
     )
@@ -116,12 +116,15 @@ def test_v1_3_docs_are_release_prep_ready():
     )
     combined_docs = "\n".join(path.read_text(encoding="utf-8") for path in V1_3_PLANNING_DOCS)
 
-    assert "release prep is complete" in release_notes
+    assert "released on `main` as `darwin-sim 1.3.0`" in release_notes
     assert "Sprints 1 through 6" in release_notes
     assert "darwin-sim 1.3.0" in release_notes
     assert "Scenarios `058` through `060`" in release_notes
     assert "from `001` through `060`" in release_notes
-    assert "No merge, tag, GitHub release, or package publication" in release_notes
+    assert "https://github.com/dabbodev/DARWIN/releases/tag/v1.3.0" in release_notes
+    assert "No package publication was performed" in release_notes
+    assert "no release assets were uploaded" in release_notes
+    assert "python -m pytest` with 808 tests" in release_notes
     assert "Sprint 6: Release-Candidate Hardening" in roadmap
 
     for caveat in V1_3_RELEASE_CANDIDATE_CAVEATS:

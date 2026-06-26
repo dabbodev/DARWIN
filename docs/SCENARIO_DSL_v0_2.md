@@ -862,9 +862,9 @@ The current released scenario set is contiguous through `057`.
 
 ## v1.3 Stream Offer Lifecycle Scenarios
 
-The v1.3 release-prep state adds scenario DSL coverage for existing
+The v1.3 release adds scenario DSL coverage for existing
 simulator-local stream-offer lifecycle planning and explicit apply helpers.
-The package and CLI version report `darwin-sim 1.3.0`.
+The released package and CLI version report `darwin-sim 1.3.0`.
 
 This DSL surface is symbolic metadata flow only. It does not add automatic
 cleanup workers, retry loops, durable queues, live timers, live clocks, live
@@ -940,4 +940,4 @@ Checked-in v1.3 stream offer lifecycle scenarios:
 - `scenarios/059_stream_offer_lifecycle_apply_records_transition.yaml`
 - `scenarios/060_stream_offer_lifecycle_apply_without_transition.yaml`
 
-The current checked-in scenario set is contiguous through `060`.
+The current released scenario set is contiguous through `060`.

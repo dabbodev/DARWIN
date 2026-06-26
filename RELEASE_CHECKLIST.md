@@ -529,19 +529,20 @@ python -m darwin.cli.main scenario-index
 python -m darwin.cli.main list-scenarios
 ```
 
-# DARWIN v1.3 Rendezvous Lifecycle Release-Prep Checklist
+# DARWIN v1.3 Rendezvous Lifecycle Release Checklist
 
-Status: release prep is staged on `v1.3/planning` as `darwin-sim 1.3.0`.
-This checklist does not merge to `main`, tag, create a GitHub release, or
-publish packages.
+v1.3.0 has been merged to `main`, tagged as annotated `v1.3.0`, and published
+as a GitHub release:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.3.0. No package
+publication was performed, and no release assets were uploaded.
 
 - [x] v1.3 planning roadmap seed is checked in at `docs/V1_3_ROADMAP.md`.
 - [x] v1.3 release notes are checked in at
   `docs/RELEASE_NOTES_v1_3_DRAFT.md`.
 - [x] Package version is confirmed as `1.3.0`.
 - [x] CLI version reports `darwin-sim 1.3.0`.
-- [x] README links to v1.3 release-prep docs while preserving that no merge,
-  tag, GitHub release, or package publication is performed by release prep.
+- [x] README links to v1.3 release docs and records the published GitHub
+  release URL.
 - [x] Sprints 1 through 5 implementation scope is documented as
   simulator-local and symbolic.
 - [x] v1.3 lifecycle history docs are checked in at
@@ -558,11 +559,11 @@ publish packages.
   notes, lifecycle history docs, and lifecycle planning/apply docs.
 - [x] v1.3 release notes summarize Sprints 1 through 6, including
   release-candidate hardening scope.
-- [x] CHANGELOG contains a dated `1.3.0` release-prep section.
+- [x] CHANGELOG contains a dated `1.3.0` release section.
 - [x] v1.3 release notes are converted from draft/planning language to
-  release-prep language.
+  released status language.
 - [x] Ruff passes with `python -m ruff check .`.
-- [x] Tests pass with `python -m pytest`.
+- [x] Tests pass with `python -m pytest` with 808 tests.
 - [x] All checked-in scenarios `001` through `060` pass with
   `python scripts/run_all_scenarios.py`.
 - [x] Documentation avoids production networking, sockets, HTTP/WebSocket
@@ -575,13 +576,16 @@ publish packages.
 - [x] Existing mailbox delivery, encrypted delivery, TrafficHub routing,
   alias, identity, stream-offer polling/admission behavior, retained
   histories, and canonical identity behavior remain unchanged.
-- [x] No merge, tag, GitHub release, package publication, new feature
-  behavior, new scenarios, compact snapshot change, automatic cleanup worker,
-  retry loop, durable queue, live timer, networking, DNS, external service,
-  real cryptography, delivery change, TrafficHub routing change, or canonical
-  identity rewrite is added by release prep.
+- [x] Merge to `main`, annotated tag, and GitHub release are complete.
+- [x] No package publication was performed.
+- [x] No release assets were uploaded.
+- [x] No version bump, new feature behavior, new scenarios, compact snapshot
+  change, automatic cleanup worker, retry loop, durable queue, live timer,
+  networking, DNS, external service, real cryptography, delivery change,
+  TrafficHub routing change, or canonical identity rewrite is added by
+  post-release housekeeping.
 
-## v1.3 Release-Prep Validation Commands
+## v1.3 Release Validation Commands
 
 ```bash
 python -m ruff check .

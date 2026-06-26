@@ -1,17 +1,16 @@
 # DARWIN v1.3 Roadmap: Rendezvous Lifecycle and Retained Stream-Offer Status Transitions
 
-Status: release prep is complete on `v1.3/planning` as
-`darwin-sim 1.3.0`. No merge, tag, GitHub release, or package publication has
-been performed by this release-prep step. The latest published GitHub release
-remains v1.2.0 on `main`:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0.
+DARWIN v1.3 is released on `main` as `darwin-sim 1.3.0`. The annotated
+`v1.3.0` tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.3.0. No package
+publication was performed, and no release assets were uploaded.
 
 Release theme: Rendezvous lifecycle and retained stream-offer status
 transitions.
 
 This roadmap records the implemented v1.3 simulator-local scope. It does not
-authorize additional feature work, a merge, tag, GitHub release, or package
-publication.
+authorize additional feature work, package publication, or version bumps beyond
+`1.3.0`.
 
 v1.3 should not become production networking, a real DDoS protection system,
 a firewall product, a privacy or anonymity system, DNS, registrar
@@ -26,7 +25,7 @@ rendezvous and RegistryHub-local state.
 v1.2 introduced stream offer records, held offer queues, private polling
 descent helpers, symbolic lane admission policy, retained poll/admission
 histories, scenarios, and detailed snapshot visibility. A possible v1.3 line
-could focus on making retained stream-offer lifecycle movement easier to
+focused on making retained stream-offer lifecycle movement easier to
 inspect without changing delivery behavior, TrafficHub routing, canonical
 identity, networking, or cryptography.
 
@@ -135,7 +134,7 @@ Acceptance targets:
 - Compact `world.snapshot()` output remains unchanged.
 - No real networking, DNS lookup, external services, delivery enforcement,
   TrafficHub routing changes, canonical identity rewrites, real cryptography,
-  or version bump beyond release prep is added.
+  or version bump beyond `1.3.0` is added.
 
 ## Sprint 2: Symbolic Expiration and Cleanup Planning Helpers
 
@@ -261,7 +260,7 @@ Acceptance targets:
   action-result order.
 - No new lifecycle mutation behavior, cleanup worker, retry loop, durable
   queue, live timer, delivery behavior, networking, DNS, TrafficHub routing,
-  canonical identity rewrite, version bump beyond release prep, or package
+  canonical identity rewrite, version bump beyond `1.3.0`, or package
   publication is added.
 
 ## Sprint 6: Release-Candidate Hardening and Documentation Audit
@@ -275,8 +274,7 @@ Implemented work:
 
 - Include v1.3 roadmap, draft release notes, lifecycle history docs, and
   lifecycle planning/apply docs in documentation readiness and link checks.
-- Keep readiness checks compatible with release-prep state and
-  `darwin-sim 1.3.0`.
+- Keep readiness checks compatible with `darwin-sim 1.3.0`.
 - Confirm checked-in scenario coverage remains contiguous from `001` through
   `060`.
 - Preserve deterministic `docs/SCENARIO_INDEX.md` generation from scenario
@@ -286,7 +284,7 @@ Implemented work:
 
 Acceptance targets:
 
-- No merge, tag, GitHub release, or package publication is added.
+- No package publication or version bump beyond `1.3.0` is added.
 - No new feature behavior or new scenarios are added unless required for
   deterministic index consistency.
 - Compact `world.snapshot()` output remains unchanged.
@@ -299,12 +297,17 @@ Acceptance targets:
   production E2EE, TrafficHub routing changes, or canonical identity rewrites
   are added.
 
-## Release-Prep Status
+## Release Status
 
-Release prep updates the package and CLI version to `darwin-sim 1.3.0`,
-finalizes release-facing notes, updates the changelog and readiness checklist,
-and preserves scenario continuity through `060`. It does not merge to `main`,
-create a tag, create a GitHub release, or publish packages.
+Release prep set the package and CLI version to `darwin-sim 1.3.0`, finalized
+release-facing notes, updated the changelog and readiness checklist, and
+preserved scenario continuity through `060`. The release then completed merge
+to `main`, annotated tag creation, and GitHub release publication. Final
+validation passed `python -m ruff check .`, `python -m pytest` with 808 tests,
+`python scripts/run_all_scenarios.py` for scenarios `001` through `060`, and
+`python -m darwin.cli.main --version` reporting `darwin-sim 1.3.0`. Package
+publication was intentionally not performed, and no release assets were
+uploaded.
 
 ## Intentionally Deferred Work
 
