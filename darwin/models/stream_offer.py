@@ -46,6 +46,14 @@ STREAM_OFFER_TERMINAL_STATUSES: tuple[str, ...] = (
     "quarantined",
 )
 
+STREAM_OFFER_STATUS_TRANSITION_REASONS: tuple[str, ...] = (
+    "status_updated",
+    "expired",
+    "manual_hold",
+    "manual_deny",
+    "manual_quarantine",
+)
+
 RENDEZVOUS_POLL_STATUSES: tuple[str, ...] = (
     "matched",
     "empty",
@@ -130,6 +138,24 @@ class StreamOfferStatus:
     def to_summary(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe status summary."""
         return {"status": self.status}
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class StreamOfferStatusTransitionReason:
+    """Controlled reason for simulator-local stream offer status transitions."""
+
+    reason: str = "status_updated"
+
+    def __post_init__(self) -> None:
+        _validate_status_transition_reason(self.reason)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe reason summary."""
+        return {"reason": self.reason}
 
     def to_dict(self) -> dict[str, object]:
         """Return a deterministic, JSON-safe representation."""
@@ -291,6 +317,177 @@ class StreamOffer:
             "rendezvous_scope": self.rendezvous_scope,
             "created_order": self.created_order,
             "expires_order": self.expires_order,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class StreamOfferStatusTransition:
+    """RegistryHub-local symbolic stream offer lifecycle transition metadata."""
+
+    offer_id: str
+    previous_status: StreamOfferStatus | str
+    new_status: StreamOfferStatus | str
+    reason: StreamOfferStatusTransitionReason | str
+    hub_id: str
+    actor_id: str | None = None
+    request_id: str | None = None
+    metadata: dict[str, Any] | None = None
+    sequence: int | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.offer_id, "offer_id")
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_optional_string(self.actor_id, "actor_id")
+        _validate_optional_string(self.request_id, "request_id")
+        _validate_optional_order(self.sequence, "sequence")
+
+        previous_status = self.previous_status
+        if isinstance(previous_status, str):
+            previous_status = StreamOfferStatus(previous_status)
+        if not isinstance(previous_status, StreamOfferStatus):
+            raise TypeError("previous_status must be a StreamOfferStatus or string")
+        object.__setattr__(self, "previous_status", previous_status)
+
+        new_status = self.new_status
+        if isinstance(new_status, str):
+            new_status = StreamOfferStatus(new_status)
+        if not isinstance(new_status, StreamOfferStatus):
+            raise TypeError("new_status must be a StreamOfferStatus or string")
+        object.__setattr__(self, "new_status", new_status)
+
+        reason = self.reason
+        if isinstance(reason, str):
+            reason = StreamOfferStatusTransitionReason(reason)
+        if not isinstance(reason, StreamOfferStatusTransitionReason):
+            raise TypeError(
+                "reason must be a StreamOfferStatusTransitionReason or string"
+            )
+        object.__setattr__(self, "reason", reason)
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe transition metadata."""
+        return {
+            "offer_id": self.offer_id,
+            "previous_status": self.previous_status.status,
+            "new_status": self.new_status.status,
+            "reason": self.reason.reason,
+            "hub_id": self.hub_id,
+            "actor_id": self.actor_id,
+            "request_id": self.request_id,
+            "metadata": _json_safe_copy(self.metadata or {}),
+            "sequence": self.sequence,
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class StreamOfferLifecyclePlan:
+    """RegistryHub-local read-only stream offer lifecycle planning metadata."""
+
+    hub_id: str
+    checked_at: int
+    expired_offer_ids: tuple[str, ...] | list[str] = ()
+    cleanup_candidate_offer_ids: tuple[str, ...] | list[str] = ()
+    active_offer_ids: tuple[str, ...] | list[str] = ()
+    ignored_offer_ids: tuple[str, ...] | list[str] = ()
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_order(self.checked_at, "checked_at")
+        object.__setattr__(
+            self,
+            "expired_offer_ids",
+            _string_tuple(self.expired_offer_ids, "expired_offer_ids"),
+        )
+        object.__setattr__(
+            self,
+            "cleanup_candidate_offer_ids",
+            _string_tuple(
+                self.cleanup_candidate_offer_ids,
+                "cleanup_candidate_offer_ids",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "active_offer_ids",
+            _string_tuple(self.active_offer_ids, "active_offer_ids"),
+        )
+        object.__setattr__(
+            self,
+            "ignored_offer_ids",
+            _string_tuple(self.ignored_offer_ids, "ignored_offer_ids"),
+        )
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe lifecycle planning metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "checked_at": self.checked_at,
+            "expired_offer_ids": list(self.expired_offer_ids),
+            "cleanup_candidate_offer_ids": list(self.cleanup_candidate_offer_ids),
+            "active_offer_ids": list(self.active_offer_ids),
+            "ignored_offer_ids": list(self.ignored_offer_ids),
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class StreamOfferLifecycleApplyResult:
+    """RegistryHub-local result for explicitly applying a lifecycle plan."""
+
+    hub_id: str
+    plan_checked_at: int
+    applied_offer_ids: tuple[str, ...] | list[str] = ()
+    skipped_offer_ids: tuple[str, ...] | list[str] = ()
+    missing_offer_ids: tuple[str, ...] | list[str] = ()
+    recorded_transition_count: int = 0
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_order(self.plan_checked_at, "plan_checked_at")
+        object.__setattr__(
+            self,
+            "applied_offer_ids",
+            _string_tuple(self.applied_offer_ids, "applied_offer_ids"),
+        )
+        object.__setattr__(
+            self,
+            "skipped_offer_ids",
+            _string_tuple(self.skipped_offer_ids, "skipped_offer_ids"),
+        )
+        object.__setattr__(
+            self,
+            "missing_offer_ids",
+            _string_tuple(self.missing_offer_ids, "missing_offer_ids"),
+        )
+        _validate_order(self.recorded_transition_count, "recorded_transition_count")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe lifecycle apply result metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "plan_checked_at": self.plan_checked_at,
+            "applied_offer_ids": list(self.applied_offer_ids),
+            "skipped_offer_ids": list(self.skipped_offer_ids),
+            "missing_offer_ids": list(self.missing_offer_ids),
+            "recorded_transition_count": self.recorded_transition_count,
             "metadata": _json_safe_copy(self.metadata or {}),
         }
 
@@ -855,6 +1052,15 @@ def _validate_status(value: str) -> None:
     if value not in STREAM_OFFER_STATUSES:
         raise ValueError(
             "stream offer status must be one of " f"{', '.join(STREAM_OFFER_STATUSES)}"
+        )
+
+
+def _validate_status_transition_reason(value: str) -> None:
+    _validate_required_string(value, "stream offer status transition reason")
+    if value not in STREAM_OFFER_STATUS_TRANSITION_REASONS:
+        raise ValueError(
+            "stream offer status transition reason must be one of "
+            f"{', '.join(STREAM_OFFER_STATUS_TRANSITION_REASONS)}"
         )
 
 

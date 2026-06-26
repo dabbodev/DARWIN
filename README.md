@@ -8,20 +8,23 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-This project is currently released at **simulator v1.2.0** on `main`. The
-annotated `v1.2.0` tag and GitHub release have been published:
+This project has v1.3.0 release prep staged on `v1.3/planning` as
+`darwin-sim 1.3.0`. The latest published GitHub release remains v1.2.0 on
+`main`:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.2.0. No package
-publication was performed.
+publication has been performed.
 
-v1.2 adds simulator-local pull-based lane rendezvous and stream offer
-admission modeling while keeping mailbox delivery, encrypted delivery,
-canonical identity, TrafficHub routing, alias, scenario, snapshot, and
-retained-history behavior unchanged outside the explicit v1.2 stream offer
-surfaces. It does not add real networking, sockets, HTTP/WebSocket behavior,
-DNS lookup, external services, real cryptography, private key storage,
-encryption/decryption, production E2EE, production anonymity/privacy/firewall
-or DDoS guarantees, delivery enforcement, TrafficHub routing changes, or
-canonical identity rewrites.
+v1.3 adds simulator-local rendezvous lifecycle and retained stream-offer
+status transition modeling while keeping mailbox delivery, encrypted delivery,
+canonical identity, TrafficHub routing, alias, stream-offer polling/admission,
+scenario, snapshot, and retained-history behavior unchanged outside the
+explicit v1.3 lifecycle helper surfaces. It does not add real networking,
+sockets, HTTP/WebSocket behavior, DNS lookup, external services, real
+cryptography, private key storage, encryption/decryption, production E2EE,
+production anonymity/privacy/firewall or DDoS guarantees, automatic cleanup
+workers, retry loops, durable queues, live timers, delivery enforcement,
+TrafficHub routing changes, compact snapshot changes, or canonical identity
+rewrites.
 
 The v0.1 simulator answers questions like:
 
@@ -198,9 +201,13 @@ delivery request/gate/result integration.
 
 In the v1.2 release, scenarios `053` through `057` cover symbolic stream
 offer rendezvous, private polling descent, and lane admission policy outcomes.
-The current released scenario set covers `001` through `057`, and the current
-released version on `main` is `darwin-sim 1.2.0`. The annotated `v1.2.0` tag
-and GitHub release exist; no package publication was performed.
+The annotated `v1.2.0` tag and GitHub release exist; no package publication
+was performed.
+
+In the v1.3 release-prep state, scenarios `058` through `060` cover
+simulator-local stream-offer lifecycle planning and explicit apply behavior.
+The checked-in scenario set is contiguous from `001` through `060`, and the
+package and CLI version report `darwin-sim 1.3.0`.
 
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
@@ -228,6 +235,11 @@ behavior, DNS lookup, external services, live polling loops, durable queues,
 retry workers, delivery behavior changes, TrafficHub routing changes,
 production anonymity/privacy/firewall/DDoS guarantees, real cryptography, or
 production E2EE.
+
+The v1.3 release-prep docs cover retained lifecycle transition history,
+read-only lifecycle planning, explicit lifecycle apply, scenario DSL coverage,
+and detailed snapshot visibility. Release prep does not merge, tag, create a
+GitHub release, or publish packages.
 
 ## What v0.1 Supports
 
@@ -969,6 +981,13 @@ For v1.2 pull-based lane rendezvous planning, see:
 - `docs/STREAM_OFFER_AUDIT_HISTORY_v1_2.md`
 - `docs/RELEASE_NOTES_v1_2_DRAFT.md`
 - `docs/SCENARIO_DSL_v0_2.md`
+
+For v1.3 rendezvous lifecycle release-prep docs, see:
+
+- `docs/V1_3_ROADMAP.md`
+- `docs/STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md`
+- `docs/STREAM_OFFER_LIFECYCLE_PLANNING_v1_3.md`
+- `docs/RELEASE_NOTES_v1_3_DRAFT.md`
 
 ## What v0.1 Is Not
 

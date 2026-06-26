@@ -1,0 +1,77 @@
+scenario_id: 059_stream_offer_lifecycle_apply_records_transition
+name: Stream offer lifecycle apply records transition
+category: stream_offer
+description: explicit lifecycle apply expires planned offers and records retained transition history
+tags:
+  - stream_offer
+  - lifecycle
+  - expiration
+  - transition_history
+  - v1.3
+demonstrates:
+  - explicit apply uses a prior lifecycle plan action result
+  - eligible planned held offers are marked expired
+  - transition recording appends retained RegistryHub-local history
+expected_result: planned expired offer is marked expired and one retained transition is recorded
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_lifecycle_apply_recorded
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 2
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_lifecycle_apply_active
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 10
+  - action: plan_stream_offer_expiration
+    registry_hub: registry_chat_001
+    checked_at: 5
+  - action: apply_stream_offer_lifecycle_plan
+    registry_hub: registry_chat_001
+    checked_at: 5
+    actor_id: ops_local
+    request_id: lifecycle_apply_001
+    transition_metadata:
+      source: scenario_059
+assertions:
+  - type: stream_offer_lifecycle_apply_result_contains
+    registry_hub: registry_chat_001
+    plan_checked_at: 5
+    applied_offer_id: offer_lifecycle_apply_recorded
+    recorded_transition_count: 1
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_lifecycle_apply_recorded
+    status: expired
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_lifecycle_apply_active
+    status: held
+    expected_count: 1
+  - type: stream_offer_status_transition_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_lifecycle_apply_recorded
+    previous_status: held
+    new_status: expired
+    reason: expired
+    actor_id: ops_local
+    request_id: lifecycle_apply_001
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    expected_count: 0

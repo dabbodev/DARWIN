@@ -528,3 +528,64 @@ python -m darwin.cli.main --version
 python -m darwin.cli.main scenario-index
 python -m darwin.cli.main list-scenarios
 ```
+
+# DARWIN v1.3 Rendezvous Lifecycle Release-Prep Checklist
+
+Status: release prep is staged on `v1.3/planning` as `darwin-sim 1.3.0`.
+This checklist does not merge to `main`, tag, create a GitHub release, or
+publish packages.
+
+- [x] v1.3 planning roadmap seed is checked in at `docs/V1_3_ROADMAP.md`.
+- [x] v1.3 release notes are checked in at
+  `docs/RELEASE_NOTES_v1_3_DRAFT.md`.
+- [x] Package version is confirmed as `1.3.0`.
+- [x] CLI version reports `darwin-sim 1.3.0`.
+- [x] README links to v1.3 release-prep docs while preserving that no merge,
+  tag, GitHub release, or package publication is performed by release prep.
+- [x] Sprints 1 through 5 implementation scope is documented as
+  simulator-local and symbolic.
+- [x] v1.3 lifecycle history docs are checked in at
+  `docs/STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md`.
+- [x] v1.3 lifecycle planning/apply docs are checked in at
+  `docs/STREAM_OFFER_LIFECYCLE_PLANNING_v1_3.md`.
+- [x] v1.3 scenario DSL coverage was added after helper behavior stabilized.
+- [x] Scenarios `058` through `060` validate and run.
+- [x] Planning-branch scenario metadata is contiguous from `001` through
+  `060`.
+- [x] Scenario index is current and generated from deterministic scenario
+  metadata.
+- [x] v1.3 documentation readiness checks include the roadmap, release
+  notes, lifecycle history docs, and lifecycle planning/apply docs.
+- [x] v1.3 release notes summarize Sprints 1 through 6, including
+  release-candidate hardening scope.
+- [x] CHANGELOG contains a dated `1.3.0` release-prep section.
+- [x] v1.3 release notes are converted from draft/planning language to
+  release-prep language.
+- [x] Ruff passes with `python -m ruff check .`.
+- [x] Tests pass with `python -m pytest`.
+- [x] All checked-in scenarios `001` through `060` pass with
+  `python scripts/run_all_scenarios.py`.
+- [x] Documentation avoids production networking, sockets, HTTP/WebSocket
+  behavior, DNS lookup, registrar integration, public CA behavior, external
+  services, real cryptography, key generation, private key storage, production
+  E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
+  queues, live timers, live clocks, live polling, delivery behavior changes,
+  compact snapshot changes, TrafficHub routing changes, canonical identity
+  rewrites, and production anonymity/privacy/firewall/DDoS guarantees.
+- [x] Existing mailbox delivery, encrypted delivery, TrafficHub routing,
+  alias, identity, stream-offer polling/admission behavior, retained
+  histories, and canonical identity behavior remain unchanged.
+- [x] No merge, tag, GitHub release, package publication, new feature
+  behavior, new scenarios, compact snapshot change, automatic cleanup worker,
+  retry loop, durable queue, live timer, networking, DNS, external service,
+  real cryptography, delivery change, TrafficHub routing change, or canonical
+  identity rewrite is added by release prep.
+
+## v1.3 Release-Prep Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+```

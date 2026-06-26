@@ -9,6 +9,10 @@ from darwin.models.device import Device
 from darwin.models.hub import RegistryHub, TrafficHub
 from darwin.models.lane import LogicalLane
 from darwin.models.route import LinkMetrics
+from darwin.models.stream_offer import (
+    StreamOfferLifecycleApplyResult,
+    StreamOfferLifecyclePlan,
+)
 from darwin.sim.event_log import EventLog
 from darwin.traffic.routing import attach_device, connect_neighbor
 
@@ -250,6 +254,10 @@ class World:
                         decision.to_summary()
                         for decision in hub.lane_admission_decision_history
                     ],
+                    "stream_offer_status_transition_history": [
+                        transition.to_summary()
+                        for transition in hub.stream_offer_status_transition_history
+                    ],
                     "adapter_endpoints": {
                         endpoint_id: endpoint.to_summary()
                         for endpoint_id, endpoint in sorted(
@@ -386,6 +394,12 @@ class World:
                 for hub_id, hub in sorted(self.traffic_hubs.items())
             },
             "alias_authority_claims": self._alias_authority_claim_snapshots(),
+            "stream_offer_lifecycle_plans": (
+                self._stream_offer_lifecycle_plan_snapshots()
+            ),
+            "stream_offer_lifecycle_apply_results": (
+                self._stream_offer_lifecycle_apply_result_snapshots()
+            ),
         }
 
     def _alias_authority_claim_snapshots(self) -> list[dict[str, object]]:
@@ -408,3 +422,19 @@ class World:
                 }
             )
         return claims
+
+    def _stream_offer_lifecycle_plan_snapshots(self) -> list[dict[str, object]]:
+        return [
+            result.to_summary()
+            for result in self.action_results
+            if isinstance(result, StreamOfferLifecyclePlan)
+        ]
+
+    def _stream_offer_lifecycle_apply_result_snapshots(
+        self,
+    ) -> list[dict[str, object]]:
+        return [
+            result.to_summary()
+            for result in self.action_results
+            if isinstance(result, StreamOfferLifecycleApplyResult)
+        ]

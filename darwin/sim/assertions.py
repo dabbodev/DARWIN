@@ -10,6 +10,9 @@ from darwin.models.encryption import EncryptionPolicyDecision
 from darwin.models.stream_offer import (
     LaneAdmissionDecision,
     RendezvousPollResult,
+    StreamOfferLifecycleApplyResult,
+    StreamOfferLifecyclePlan,
+    StreamOfferStatusTransition,
 )
 from darwin.registry.aliases import resolve_alias
 from darwin.registry.authority_audit import (
@@ -36,6 +39,7 @@ from darwin.registry.stream_offers import (
     query_held_stream_offers,
     query_lane_admission_decisions,
     query_rendezvous_poll_results,
+    query_stream_offer_status_transitions,
 )
 from darwin.registry.trace_explain import explain_authority_trace
 from darwin.sim.world import World
@@ -1624,6 +1628,182 @@ def _lane_admission_decision_contains(
     )
 
 
+def _stream_offer_lifecycle_plan_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = {
+        "hub_id": hub_id,
+        "checked_at": _optional_int_field(assertion, "checked_at"),
+        "expired_offer_id": _optional_filter_str(assertion, "expired_offer_id"),
+        "expired_offer_ids": _optional_str_sequence_filter(
+            assertion,
+            "expired_offer_ids",
+        ),
+        "cleanup_candidate_offer_id": _optional_filter_str(
+            assertion,
+            "cleanup_candidate_offer_id",
+        ),
+        "cleanup_candidate_offer_ids": _optional_str_sequence_filter(
+            assertion,
+            "cleanup_candidate_offer_ids",
+        ),
+        "active_offer_id": _optional_filter_str(assertion, "active_offer_id"),
+        "active_offer_ids": _optional_str_sequence_filter(
+            assertion,
+            "active_offer_ids",
+        ),
+        "ignored_offer_id": _optional_filter_str(assertion, "ignored_offer_id"),
+        "ignored_offer_ids": _optional_str_sequence_filter(
+            assertion,
+            "ignored_offer_ids",
+        ),
+    }
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, StreamOfferLifecyclePlan)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_stream_offer_lifecycle_plan_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"stream offer lifecycle plan contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
+def _stream_offer_lifecycle_apply_result_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = {
+        "hub_id": hub_id,
+        "plan_checked_at": _optional_int_field(assertion, "plan_checked_at"),
+        "applied_offer_id": _optional_filter_str(assertion, "applied_offer_id"),
+        "applied_offer_ids": _optional_str_sequence_filter(
+            assertion,
+            "applied_offer_ids",
+        ),
+        "skipped_offer_id": _optional_filter_str(assertion, "skipped_offer_id"),
+        "skipped_offer_ids": _optional_str_sequence_filter(
+            assertion,
+            "skipped_offer_ids",
+        ),
+        "missing_offer_id": _optional_filter_str(assertion, "missing_offer_id"),
+        "missing_offer_ids": _optional_str_sequence_filter(
+            assertion,
+            "missing_offer_ids",
+        ),
+        "recorded_transition_count": _optional_int_field(
+            assertion,
+            "recorded_transition_count",
+        ),
+    }
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, StreamOfferLifecycleApplyResult)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_stream_offer_lifecycle_apply_result_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"stream offer lifecycle apply result contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
+def _stream_offer_status_transition_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    filters = {
+        "registry_hub": hub_id,
+        "offer_id": _optional_filter_str(assertion, "offer_id"),
+        "hub_id": _optional_filter_str(assertion, "hub_id"),
+        "previous_status": _optional_filter_str(assertion, "previous_status"),
+        "new_status": _optional_filter_str(assertion, "new_status"),
+        "status": _optional_filter_str(assertion, "status"),
+        "reason": _optional_filter_str(assertion, "reason"),
+        "actor_id": _optional_filter_str(assertion, "actor_id"),
+        "request_id": _optional_filter_str(assertion, "request_id"),
+    }
+    source = "action_results"
+    records: list[dict[str, object]]
+    if hub is not None and hub.stream_offer_status_transition_history:
+        source = "retained_history"
+        records = [
+            transition.to_summary()
+            for transition in query_stream_offer_status_transitions(
+                hub,
+                offer_id=filters["offer_id"],
+                hub_id=filters["hub_id"] or hub_id,
+                previous_status=filters["previous_status"],
+                new_status=filters["new_status"],
+                status=filters["status"],
+                reason=filters["reason"],
+                actor_id=filters["actor_id"],
+                request_id=filters["request_id"],
+            )
+        ]
+        records = [
+            record
+            for record in records
+            if _matches_stream_offer_status_transition_filters(record, filters)
+        ]
+    else:
+        records = [
+            result.to_summary()
+            for result in world.action_results
+            if isinstance(result, StreamOfferStatusTransition)
+        ]
+        records = [
+            record
+            for record in records
+            if _matches_stream_offer_status_transition_filters(record, filters)
+        ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"stream offer status transition contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub is not None,
+            "source": source,
+        },
+    )
+
+
 def _result(
     assertion_type: str,
     passed: bool,
@@ -2043,6 +2223,87 @@ def _matches_lane_admission_decision_filters(
     return True
 
 
+def _matches_stream_offer_lifecycle_plan_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    if record.get("hub_id") != filters["hub_id"]:
+        return False
+    if filters["checked_at"] is not None and record.get("checked_at") != filters["checked_at"]:
+        return False
+    return (
+        _list_field_matches(record, filters, "expired_offer_ids", "expired_offer_id")
+        and _list_field_matches(
+            record,
+            filters,
+            "cleanup_candidate_offer_ids",
+            "cleanup_candidate_offer_id",
+        )
+        and _list_field_matches(record, filters, "active_offer_ids", "active_offer_id")
+        and _list_field_matches(record, filters, "ignored_offer_ids", "ignored_offer_id")
+    )
+
+
+def _matches_stream_offer_lifecycle_apply_result_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    if record.get("hub_id") != filters["hub_id"]:
+        return False
+    for field_name in ("plan_checked_at", "recorded_transition_count"):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    return (
+        _list_field_matches(record, filters, "applied_offer_ids", "applied_offer_id")
+        and _list_field_matches(record, filters, "skipped_offer_ids", "skipped_offer_id")
+        and _list_field_matches(record, filters, "missing_offer_ids", "missing_offer_id")
+    )
+
+
+def _matches_stream_offer_status_transition_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    if record.get("hub_id") != (filters["hub_id"] or filters["registry_hub"]):
+        return False
+    for field_name in (
+        "offer_id",
+        "previous_status",
+        "new_status",
+        "reason",
+        "actor_id",
+        "request_id",
+    ):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    return not (
+        filters["status"] is not None
+        and record.get("previous_status") != filters["status"]
+        and record.get("new_status") != filters["status"]
+    )
+
+
+def _list_field_matches(
+    record: dict[str, object],
+    filters: dict[str, object],
+    list_field_name: str,
+    item_filter_name: str,
+) -> bool:
+    values = record.get(list_field_name)
+    if not isinstance(values, list):
+        return False
+    item = filters[item_filter_name]
+    if item is not None and item not in values:
+        return False
+    expected_items = filters[list_field_name]
+    return not (
+        expected_items is not None
+        and not set(expected_items).issubset(set(values))
+    )
+
+
 def _encrypted_delivery_audit_query_filters(
     filters: dict[str, object],
 ) -> dict[str, object]:
@@ -2118,4 +2379,11 @@ _EVALUATORS = {
     "held_stream_offer_contains": _held_stream_offer_contains,
     "rendezvous_poll_result_contains": _rendezvous_poll_result_contains,
     "lane_admission_decision_contains": _lane_admission_decision_contains,
+    "stream_offer_lifecycle_plan_contains": _stream_offer_lifecycle_plan_contains,
+    "stream_offer_lifecycle_apply_result_contains": (
+        _stream_offer_lifecycle_apply_result_contains
+    ),
+    "stream_offer_status_transition_contains": (
+        _stream_offer_status_transition_contains
+    ),
 }

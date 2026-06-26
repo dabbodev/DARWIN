@@ -859,3 +859,85 @@ Checked-in v1.2 stream offer scenarios:
 - `scenarios/057_stream_offer_rendezvous_quarantined.yaml`
 
 The current released scenario set is contiguous through `057`.
+
+## v1.3 Stream Offer Lifecycle Scenarios
+
+The v1.3 release-prep state adds scenario DSL coverage for existing
+simulator-local stream-offer lifecycle planning and explicit apply helpers.
+The package and CLI version report `darwin-sim 1.3.0`.
+
+This DSL surface is symbolic metadata flow only. It does not add automatic
+cleanup workers, retry loops, durable queues, live timers, live clocks, live
+polling, sockets, HTTP/WebSocket behavior, DNS lookup, registrar integration,
+public CA behavior, external services, real cryptography, production E2EE,
+key generation, private key storage, delivery enforcement, TrafficHub routing
+changes, compact snapshot changes, or canonical identity rewrites.
+
+Supported v1.3 stream offer lifecycle actions:
+
+- `plan_stream_offer_expiration`
+  - Required: `registry_hub`, `checked_at`
+  - Optional: `metadata`
+  - The action calls `plan_stream_offer_expiration(...)` with the explicit
+    deterministic simulator order in `checked_at`, appends the
+    `StreamOfferLifecyclePlan` to action results, and logs a compact summary.
+    Planning is read-only: it does not mutate retained held offers, record
+    transitions, delete offers, deliver messages, route TrafficHub traffic, or
+    use wall-clock time.
+- `apply_stream_offer_lifecycle_plan`
+  - Required: `registry_hub`
+  - Optional action-result plan selection: `checked_at`
+  - Optional explicit caller plan fields: `plan_checked_at` or `checked_at`,
+    `expired_offer_ids`, `cleanup_candidate_offer_ids`, `active_offer_ids`,
+    `ignored_offer_ids`, `plan_metadata`
+  - Optional apply fields: `record_transition` defaulting to `true`,
+    `actor_id`, `request_id`, `transition_metadata`, `metadata`
+  - The action uses a prior `StreamOfferLifecyclePlan` action result for the
+    same RegistryHub, optionally narrowed by `checked_at`, or an explicit
+    caller-provided plan described by `plan_checked_at` and offer ID lists.
+    It calls `apply_stream_offer_lifecycle_plan(...)`, appends the
+    `StreamOfferLifecycleApplyResult` to action results, and logs a compact
+    summary. Apply is the only lifecycle DSL action that mutates held offer
+    statuses. It never deletes held offers.
+
+Supported v1.3 stream offer lifecycle assertions:
+
+- `stream_offer_lifecycle_plan_contains`
+  - Required: `registry_hub`
+  - Optional filters: `checked_at`, `expired_offer_id`,
+    `expired_offer_ids`, `cleanup_candidate_offer_id`,
+    `cleanup_candidate_offer_ids`, `active_offer_id`, `active_offer_ids`,
+    `ignored_offer_id`, `ignored_offer_ids`
+  - Optional count checks: `expected_count`, `min_count`
+- `stream_offer_lifecycle_apply_result_contains`
+  - Required: `registry_hub`
+  - Optional filters: `plan_checked_at`, `applied_offer_id`,
+    `applied_offer_ids`, `skipped_offer_id`, `skipped_offer_ids`,
+    `missing_offer_id`, `missing_offer_ids`, `recorded_transition_count`
+  - Optional count checks: `expected_count`, `min_count`
+- `stream_offer_status_transition_contains`
+  - Required: `registry_hub`
+  - Optional filters: `offer_id`, `hub_id`, `previous_status`, `new_status`,
+    `status`, `reason`, `actor_id`, `request_id`
+  - Optional count checks: `expected_count`, `min_count`
+
+`stream_offer_status_transition_contains` prefers retained
+`RegistryHub.stream_offer_status_transition_history` before falling back to
+scenario action results. Lifecycle plan and apply-result assertions read
+scenario action results because plans and apply results are returned to
+callers and are not retained on the hub by default.
+
+Detailed snapshots include copied lifecycle plan and apply-result action
+summaries at top level under `stream_offer_lifecycle_plans` and
+`stream_offer_lifecycle_apply_results`. Retained transition summaries remain
+under each RegistryHub at
+`registry_hubs.<hub_id>.stream_offer_status_transition_history`. Compact
+`world.snapshot()` output remains unchanged.
+
+Checked-in v1.3 stream offer lifecycle scenarios:
+
+- `scenarios/058_stream_offer_lifecycle_expiration_plan.yaml`
+- `scenarios/059_stream_offer_lifecycle_apply_records_transition.yaml`
+- `scenarios/060_stream_offer_lifecycle_apply_without_transition.yaml`
+
+The current checked-in scenario set is contiguous through `060`.

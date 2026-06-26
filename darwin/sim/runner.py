@@ -45,6 +45,7 @@ from darwin.models.stream_offer import (
     RendezvousPollResult,
     RendezvousRequest,
     StreamOffer,
+    StreamOfferLifecyclePlan,
     make_lane_admission_policy,
     make_rendezvous_request,
     make_stream_offer,
@@ -147,6 +148,9 @@ from darwin.registry.sessions import (
     verify_hmac_rolling_proof_for_session as verify_hmac_session_proof_op,
 )
 from darwin.registry.stream_offers import (
+    apply_stream_offer_lifecycle_plan as apply_stream_offer_lifecycle_plan_op,
+)
+from darwin.registry.stream_offers import (
     evaluate_lane_admission_policy as evaluate_lane_admission_policy_op,
 )
 from darwin.registry.stream_offers import (
@@ -157,6 +161,9 @@ from darwin.registry.stream_offers import (
 )
 from darwin.registry.stream_offers import (
     mark_stream_offers_discoverable as mark_stream_offers_discoverable_op,
+)
+from darwin.registry.stream_offers import (
+    plan_stream_offer_expiration as plan_stream_offer_expiration_op,
 )
 from darwin.registry.stream_offers import (
     poll_held_stream_offers as poll_held_stream_offers_op,
@@ -351,6 +358,8 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         "hold_stream_offer": _step_hold_stream_offer,
         "poll_held_stream_offers": _step_poll_held_stream_offers,
         "mark_stream_offers_discoverable": _step_mark_stream_offers_discoverable,
+        "plan_stream_offer_expiration": _step_plan_stream_offer_expiration,
+        "apply_stream_offer_lifecycle_plan": _step_apply_stream_offer_lifecycle_plan,
         "evaluate_lane_admission_policy": _step_evaluate_lane_admission_policy,
         "advance_time": _step_advance_time,
     }
@@ -1946,6 +1955,56 @@ def _step_mark_stream_offers_discoverable(
     )
 
 
+def _step_plan_stream_offer_expiration(world: World, fields: dict[str, Any]) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    result = plan_stream_offer_expiration_op(
+        hub,
+        checked_at=int(fields["checked_at"]),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    world.action_results.append(result)
+    world.log(
+        (
+            "planned stream offer expiration "
+            f"at {hub.hub_id}: {len(result.expired_offer_ids)} expired"
+        ),
+        event_type="stream_offer_lifecycle_planned",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="planned",
+        data=result.to_summary(),
+    )
+
+
+def _step_apply_stream_offer_lifecycle_plan(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    plan = _stream_offer_lifecycle_plan(world, fields, hub.hub_id)
+    result = apply_stream_offer_lifecycle_plan_op(
+        hub,
+        plan,
+        record_transition=_bool_field(fields, "record_transition", True),
+        actor_id=_optional_str(fields.get("actor_id")),
+        request_id=_optional_str(fields.get("request_id")),
+        transition_metadata=_optional_dict(fields.get("transition_metadata")),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    world.action_results.append(result)
+    world.log(
+        (
+            "applied stream offer lifecycle plan "
+            f"at {hub.hub_id}: {len(result.applied_offer_ids)} applied"
+        ),
+        event_type="stream_offer_lifecycle_applied",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="applied",
+        data=result.to_summary(),
+    )
+
+
 def _step_evaluate_lane_admission_policy(
     world: World,
     fields: dict[str, Any],
@@ -2097,6 +2156,45 @@ def _find_rendezvous_poll_result(
         if isinstance(result, RendezvousPollResult) and result.request_id == request_id:
             return result
     return None
+
+
+def _stream_offer_lifecycle_plan(
+    world: World,
+    fields: dict[str, Any],
+    hub_id: str,
+) -> StreamOfferLifecyclePlan:
+    if "expired_offer_ids" in fields or "plan_checked_at" in fields:
+        checked_at = fields.get("plan_checked_at", fields.get("checked_at"))
+        if checked_at is None:
+            raise KeyError(
+                "explicit lifecycle plans require plan_checked_at or checked_at"
+            )
+        return StreamOfferLifecyclePlan(
+            hub_id=hub_id,
+            checked_at=int(checked_at),
+            expired_offer_ids=_optional_str_list(fields.get("expired_offer_ids")) or [],
+            cleanup_candidate_offer_ids=(
+                _optional_str_list(fields.get("cleanup_candidate_offer_ids")) or []
+            ),
+            active_offer_ids=_optional_str_list(fields.get("active_offer_ids")) or [],
+            ignored_offer_ids=_optional_str_list(fields.get("ignored_offer_ids")) or [],
+            metadata=_optional_dict(fields.get("plan_metadata")),
+        )
+
+    plan_checked_at = fields.get("checked_at")
+    for result in reversed(world.action_results):
+        if not isinstance(result, StreamOfferLifecyclePlan):
+            continue
+        if result.hub_id != hub_id:
+            continue
+        if plan_checked_at is not None and result.checked_at != int(plan_checked_at):
+            continue
+        return result
+
+    raise KeyError(
+        "apply_stream_offer_lifecycle_plan requires a prior lifecycle plan result "
+        "or explicit plan_checked_at and expired_offer_ids"
+    )
 
 
 def _bool_field(fields: dict[str, Any], field_name: str, default: bool) -> bool:
