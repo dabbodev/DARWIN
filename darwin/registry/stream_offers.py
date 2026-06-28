@@ -464,6 +464,70 @@ def summarize_stream_offer_lifecycle_explanations(
     return [explanation.to_summary() for explanation in explanations]
 
 
+def record_stream_offer_lifecycle_explanation(
+    registry_hub: RegistryHub,
+    explanation: StreamOfferLifecycleExplanation,
+) -> StreamOfferLifecycleExplanation:
+    """Append one lifecycle explanation to RegistryHub-local history."""
+    _validate_registry_hub(registry_hub)
+    _validate_lifecycle_explanation(explanation)
+    registry_hub.stream_offer_lifecycle_explanation_history.append(explanation)
+    return explanation
+
+
+def record_stream_offer_lifecycle_explanations(
+    registry_hub: RegistryHub,
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...],
+) -> list[StreamOfferLifecycleExplanation]:
+    """Append lifecycle explanations to RegistryHub-local history in order."""
+    _validate_registry_hub(registry_hub)
+    explanation_records = _lifecycle_explanation_records(explanations)
+    registry_hub.stream_offer_lifecycle_explanation_history.extend(explanation_records)
+    return list(explanation_records)
+
+
+def query_stream_offer_lifecycle_explanations(
+    registry_hub: RegistryHub,
+    *,
+    hub_id: str | None = None,
+    offer_id: str | None = None,
+    category: str | None = None,
+    reason: str | None = None,
+    status: str | None = None,
+    source: str | None = None,
+) -> list[StreamOfferLifecycleExplanation]:
+    """Return retained lifecycle explanations matching additive filters."""
+    _validate_registry_hub(registry_hub)
+    _validate_optional_string(hub_id, "hub_id")
+    _validate_optional_string(offer_id, "offer_id")
+    _validate_optional_string(category, "category")
+    _validate_optional_string(reason, "reason")
+    _validate_optional_string(status, "status")
+    _validate_optional_string(source, "source")
+
+    return [
+        explanation
+        for explanation in registry_hub.stream_offer_lifecycle_explanation_history
+        if (hub_id is None or explanation.hub_id == hub_id)
+        and (offer_id is None or explanation.offer_id == offer_id)
+        and (category is None or explanation.category == category)
+        and (reason is None or explanation.reason == reason)
+        and (status is None or explanation.status == status)
+        and (source is None or explanation.source == source)
+    ]
+
+
+def summarize_stream_offer_lifecycle_explanation_history(
+    registry_hub: RegistryHub,
+) -> list[dict[str, object]]:
+    """Return copied JSON-safe retained lifecycle explanations in append order."""
+    _validate_registry_hub(registry_hub)
+    return summarize_stream_offer_lifecycle_explanations(
+        registry_hub.stream_offer_lifecycle_explanation_history
+    )
+
+
 def summarize_stream_offer_lifecycle_audit(
     registry_hub: RegistryHub,
     *,

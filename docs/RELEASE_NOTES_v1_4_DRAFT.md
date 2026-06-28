@@ -3,7 +3,7 @@
 Status: planning draft only. DARWIN v1.4.0 is unreleased, untagged, and not
 merged to `main`. The latest released version remains `darwin-sim 1.3.0`.
 
-Sprint 1 and Sprint 2 implementation work has started on the v1.4 planning
+Sprint 1 through Sprint 3 implementation work has started on the v1.4 planning
 branch. These notes remain draft release-note material for a possible
 simulator-first line around lifecycle policy explanation and stream-offer audit
 summaries.
@@ -27,9 +27,10 @@ Possible future slices may include:
   optional explanation category. Sprint 2 adds this helper surface on the
   planning branch.
 - Retained explanation records only if consistent with existing
-  RegistryHub-local audit-history patterns.
+  RegistryHub-local audit-history patterns. Sprint 3 adds this explicitly
+  recorded helper surface on the planning branch.
 - Scenario DSL coverage after helper and model behavior is stable.
-- Detailed snapshot visibility only after retained data exists.
+- Limited detailed snapshot visibility for retained explanation history.
 - Release-readiness documentation after scenario coverage exists.
 
 ## Compatibility Expectations
@@ -56,10 +57,11 @@ later roadmap explicitly changes them:
 - Sprint 1 is limited to read-only lifecycle explanation helpers and docs.
 - Sprint 2 is limited to read-only grouped lifecycle audit summary helpers and
   docs.
+- Sprint 3 is limited to explicitly retained RegistryHub-local lifecycle
+  explanation history and docs.
 - No v1.4 scenarios exist yet.
 - No v1.4 version bump has been performed.
 - No v1.4 release has been merged, tagged, published, or packaged.
-- Retained explanation records remain candidate planning surfaces only.
 
 ## Draft Sprint 1 Note
 
@@ -81,6 +83,18 @@ diagnostic metadata. They do not mutate held offers, apply plans, record
 history, retain explanations, delete offers, change compact snapshots, trigger
 delivery, change TrafficHub routing, contact networks, use DNS, call external
 services, or add real cryptography.
+
+## Draft Sprint 3 Note
+
+Sprint 3 adds `RegistryHub.stream_offer_lifecycle_explanation_history` plus
+explicit record, query, and summary helpers for retained
+`StreamOfferLifecycleExplanation` records. The helpers preserve deterministic
+append ordering and copied JSON-safe summaries, and detailed snapshots include
+copied retained explanation history while compact snapshots remain unchanged.
+They do not auto-record explanations, mutate held offers, mutate lifecycle
+plans or apply results, mutate transition history, delete offers, run cleanup,
+schedule retries, trigger delivery, change TrafficHub routing, contact
+networks, use DNS, call external services, or add real cryptography.
 
 ## Non-Goals
 

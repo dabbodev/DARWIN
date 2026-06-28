@@ -1,8 +1,8 @@
 # DARWIN v1.4 Roadmap Draft: Lifecycle Policy Explanation and Stream-Offer Audit Summaries
 
-Status: planning draft with Sprint 1 and Sprint 2 implementation work on the
-v1.4 planning branch. DARWIN v1.4 is unreleased, untagged, and not merged to
-`main`. The latest released version remains `darwin-sim 1.3.0`.
+Status: planning draft with Sprint 1 through Sprint 3 implementation work on
+the v1.4 planning branch. DARWIN v1.4 is unreleased, untagged, and not merged
+to `main`. The latest released version remains `darwin-sim 1.3.0`.
 
 Recommended candidate theme: Lifecycle policy explanation and stream-offer
 audit summaries.
@@ -160,19 +160,23 @@ Acceptance targets:
 
 ## Candidate Sprint 3: Optional Retained Explanation Records
 
-Status: candidate planning only.
+Status: implemented on the v1.4 planning branch.
 
 Goal: consider retained explanation records only if they clearly fit existing
 audit-history patterns.
 
 Possible future work:
 
-- Decide whether explanation records should be retained at all.
-- If retained, keep records explicitly created, deterministic, compact, and
-  RegistryHub-local.
-- Add query and summarize helpers before any scenario DSL exposure.
-- Keep explanation retention separate from production logging, compliance
-  evidence, delivery records, or security telemetry.
+- Added `RegistryHub.stream_offer_lifecycle_explanation_history` as explicitly
+  recorded RegistryHub-local simulator metadata.
+- Added record, query, and summary helpers for retained
+  `StreamOfferLifecycleExplanation` records.
+- Preserved deterministic append ordering and copied JSON-safe summaries.
+- Added detailed snapshot visibility for the retained history while keeping
+  compact `world.snapshot()` output unchanged.
+- Kept explanation retention separate from production logging, compliance
+  evidence, delivery records, security telemetry, cleanup, retry, delivery,
+  networking, DNS, TrafficHub routing, and cryptography behavior.
 
 Acceptance targets:
 
@@ -180,8 +184,8 @@ Acceptance targets:
   durable queue is introduced.
 - Retention does not change lifecycle planning, lifecycle apply, delivery,
   TrafficHub routing, or canonical identity behavior.
-- Detailed snapshot visibility is deferred until retained data exists and its
-  shape is stable.
+- Detailed snapshot visibility is limited to copied retained explanation
+  summaries; compact snapshots remain unchanged.
 
 ## Candidate Sprint 4: Scenario DSL Coverage
 

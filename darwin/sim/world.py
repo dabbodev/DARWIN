@@ -258,6 +258,10 @@ class World:
                         transition.to_summary()
                         for transition in hub.stream_offer_status_transition_history
                     ],
+                    "stream_offer_lifecycle_explanation_history": [
+                        explanation.to_summary()
+                        for explanation in hub.stream_offer_lifecycle_explanation_history
+                    ],
                     "adapter_endpoints": {
                         endpoint_id: endpoint.to_summary()
                         for endpoint_id, endpoint in sorted(

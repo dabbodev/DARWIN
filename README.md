@@ -1006,6 +1006,7 @@ For v1.4 lifecycle explanation and audit-summary planning drafts, see:
 - `docs/V1_4_ROADMAP.md`
 - `docs/STREAM_OFFER_LIFECYCLE_EXPLANATIONS_v1_4.md`
 - `docs/STREAM_OFFER_LIFECYCLE_AUDIT_SUMMARIES_v1_4.md`
+- `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_HISTORY_v1_4.md`
 - `docs/RELEASE_NOTES_v1_4_DRAFT.md`
 
 ## What v0.1 Is Not
