@@ -593,3 +593,38 @@ python -m pytest
 python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
 ```
+
+# DARWIN v1.4 Lifecycle Explanation Planning Checklist
+
+v1.4 is planning draft only. It is unreleased, untagged, not merged to `main`,
+and not published. The latest released version remains `darwin-sim 1.3.0`.
+
+- [x] v1.4 planning roadmap seed is checked in at `docs/V1_4_ROADMAP.md`.
+- [x] v1.4 draft release-notes placeholder is checked in at
+  `docs/RELEASE_NOTES_v1_4_DRAFT.md`.
+- [x] README links to the v1.4 planning drafts while preserving v1.3.0 as the
+  latest released version.
+- [x] CHANGELOG is not advanced beyond the released `1.3.0` section.
+- [x] Package and CLI version remain `darwin-sim 1.3.0`.
+- [x] No v1.4 feature behavior, scenarios, or tests for new behavior are added
+  by the planning seed.
+- [x] Planning scope is limited to lifecycle policy explanation and
+  stream-offer audit summary candidates.
+- [x] Documentation avoids production networking, sockets, HTTP/WebSocket
+  behavior, DNS lookup, registrar integration, public CA behavior, external
+  services, real cryptography, key generation, private key storage, production
+  E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
+  queues, live timers, live clocks, live polling, delivery behavior changes,
+  TrafficHub routing changes, canonical identity rewrites, and production
+  anonymity/privacy/firewall/DDoS guarantees.
+- [x] No merge, tag, GitHub release, release assets, package publication, or
+  version bump is performed by planning work.
+
+## v1.4 Planning Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+```
