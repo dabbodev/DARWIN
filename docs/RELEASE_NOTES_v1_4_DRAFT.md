@@ -3,9 +3,9 @@
 Status: planning draft only. DARWIN v1.4.0 is unreleased, untagged, and not
 merged to `main`. The latest released version remains `darwin-sim 1.3.0`.
 
-No v1.4 feature behavior has been implemented by this draft. These notes are a
-placeholder for a possible future simulator-first line around lifecycle policy
-explanation and stream-offer audit summaries.
+Sprint 1 implementation work has started on the v1.4 planning branch. These
+notes remain draft release-note material for a possible simulator-first line
+around lifecycle policy explanation and stream-offer audit summaries.
 
 This draft is symbolic simulator planning only. It is not real networking, not
 a network service, not production DDoS protection, not a firewall, not a
@@ -18,8 +18,10 @@ Lifecycle policy explanation and stream-offer audit summaries.
 
 Possible future slices may include:
 
-- Read-only explanation helpers for stream-offer lifecycle plans.
-- Read-only explanation helpers for lifecycle apply results.
+- Read-only explanation helpers for stream-offer lifecycle plans. Sprint 1 adds
+  this helper surface on the planning branch.
+- Read-only explanation helpers for lifecycle apply results. Sprint 1 adds this
+  helper surface on the planning branch.
 - Summarized lifecycle audit views grouped by hub, offer, status, and reason.
 - Retained explanation records only if consistent with existing
   RegistryHub-local audit-history patterns.
@@ -47,12 +49,22 @@ later roadmap explicitly changes them:
 
 ## Current Limitations
 
-- v1.4 is not implemented.
+- v1.4 is not released.
+- Sprint 1 is limited to read-only lifecycle explanation helpers and docs.
 - No v1.4 scenarios exist yet.
 - No v1.4 version bump has been performed.
 - No v1.4 release has been merged, tagged, published, or packaged.
-- Proposed explanation and summary helpers are candidate planning surfaces
-  only.
+- Grouped lifecycle audit summaries remain candidate planning surfaces only.
+
+## Draft Sprint 1 Note
+
+Sprint 1 adds `StreamOfferLifecycleExplanation` plus read-only helpers for
+explaining existing lifecycle plans and apply results. The helpers classify
+plan entries and apply-result outcomes into compact deterministic metadata and
+return copied JSON-safe summaries. They do not mutate held offers, apply plans,
+record transitions, delete offers, change compact snapshots, trigger delivery,
+change TrafficHub routing, contact networks, use DNS, call external services,
+or add real cryptography.
 
 ## Non-Goals
 

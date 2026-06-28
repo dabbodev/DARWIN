@@ -1,7 +1,8 @@
 # DARWIN v1.4 Roadmap Draft: Lifecycle Policy Explanation and Stream-Offer Audit Summaries
 
-Status: planning draft only. DARWIN v1.4 is unreleased, untagged, and not
-merged to `main`. The latest released version remains `darwin-sim 1.3.0`.
+Status: planning draft with Sprint 1 implementation work on the v1.4 planning
+branch. DARWIN v1.4 is unreleased, untagged, and not merged to `main`. The
+latest released version remains `darwin-sim 1.3.0`.
 
 Recommended candidate theme: Lifecycle policy explanation and stream-offer
 audit summaries.
@@ -104,7 +105,7 @@ Retained explanation records:
 
 ## Candidate Sprint 1: Lifecycle Plan Explanation Helpers
 
-Status: candidate planning only.
+Status: implemented on the v1.4 planning branch.
 
 Goal: add the smallest read-only helper surface for explaining lifecycle plan
 classification results.
@@ -113,13 +114,13 @@ Possible future work:
 
 - Review existing `StreamOfferLifecyclePlan` summary fields and v1.3 planning
   helper boundaries.
-- Add a compact explanation model only if the existing plan summary is not
-  enough.
-- Add a deterministic helper that explains a provided plan without mutating
-  hub state.
-- Keep explanations copied and JSON-safe.
-- Document that explanation text is simulator-local metadata, not policy
-  enforcement.
+- Added compact `StreamOfferLifecycleExplanation` metadata for plan and apply
+  explanations.
+- Added deterministic helpers that explain provided plan/apply result models
+  without mutating hub state.
+- Kept explanations copied and JSON-safe.
+- Documented that explanation metadata is simulator-local diagnostics, not
+  policy enforcement.
 
 Acceptance targets:
 
@@ -256,17 +257,18 @@ Acceptance targets:
 
 ## Recommended First Implementation Sprint
 
-Start with Candidate Sprint 1 only if v1.4 implementation is later approved.
-Lifecycle plan explanation is the smallest safe slice because it can operate
-over already-existing copied plan metadata without changing lifecycle apply,
-retained histories, scenario DSL, snapshots, delivery behavior, TrafficHub
-routing, canonical identity, networking, or cryptography.
+Sprint 1 is the first implementation slice. Lifecycle plan/apply-result
+explanation is the smallest safe slice because it operates over already-existing
+copied lifecycle metadata without changing lifecycle apply semantics, retained
+histories, scenario DSL, snapshots, delivery behavior, TrafficHub routing,
+canonical identity, networking, or cryptography.
 
 ## Release Status
 
-v1.4 is a planning draft only. No v1.4 code, tests for new behavior, scenarios,
-version bump, merge, tag, GitHub release, package publication, or release
-assets are part of this roadmap seed.
+v1.4 remains unreleased planning work. Sprint 1 code and tests for read-only
+stream-offer lifecycle explanations exist on the planning branch. No v1.4
+scenarios, version bump, merge, tag, GitHub release, package publication, or
+release assets are part of this roadmap seed.
 
 The latest released DARWIN version remains `darwin-sim 1.3.0` with annotated
 tag `v1.3.0` and GitHub release:

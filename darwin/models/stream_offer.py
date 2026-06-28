@@ -54,6 +54,25 @@ STREAM_OFFER_STATUS_TRANSITION_REASONS: tuple[str, ...] = (
     "manual_quarantine",
 )
 
+STREAM_OFFER_LIFECYCLE_EXPLANATION_CATEGORIES: tuple[str, ...] = (
+    "expired",
+    "active",
+    "applied",
+    "skipped",
+    "missing",
+    "terminal",
+)
+
+STREAM_OFFER_LIFECYCLE_EXPLANATION_REASONS: tuple[str, ...] = (
+    "expired_by_plan",
+    "active_by_plan",
+    "terminal_cleanup_candidate",
+    "ignored_by_plan",
+    "applied_by_result",
+    "skipped_by_result",
+    "missing_by_result",
+)
+
 RENDEZVOUS_POLL_STATUSES: tuple[str, ...] = (
     "matched",
     "empty",
@@ -489,6 +508,47 @@ class StreamOfferLifecycleApplyResult:
             "missing_offer_ids": list(self.missing_offer_ids),
             "recorded_transition_count": self.recorded_transition_count,
             "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class StreamOfferLifecycleExplanation:
+    """Read-only simulator-local explanation for a lifecycle plan or result."""
+
+    hub_id: str
+    offer_id: str
+    category: str
+    reason: str
+    status: str
+    checked_at: int | None = None
+    source: str | None = None
+    details: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_required_string(self.offer_id, "offer_id")
+        _validate_lifecycle_explanation_category(self.category)
+        _validate_lifecycle_explanation_reason(self.reason)
+        _validate_required_string(self.status, "status")
+        _validate_optional_order(self.checked_at, "checked_at")
+        _validate_optional_string(self.source, "source")
+        object.__setattr__(self, "details", _json_safe_copy(self.details or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe lifecycle explanation metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "offer_id": self.offer_id,
+            "category": self.category,
+            "reason": self.reason,
+            "status": self.status,
+            "checked_at": self.checked_at,
+            "source": self.source,
+            "details": _json_safe_copy(self.details or {}),
         }
 
     def to_dict(self) -> dict[str, object]:
@@ -1061,6 +1121,24 @@ def _validate_status_transition_reason(value: str) -> None:
         raise ValueError(
             "stream offer status transition reason must be one of "
             f"{', '.join(STREAM_OFFER_STATUS_TRANSITION_REASONS)}"
+        )
+
+
+def _validate_lifecycle_explanation_category(value: str) -> None:
+    _validate_required_string(value, "stream offer lifecycle explanation category")
+    if value not in STREAM_OFFER_LIFECYCLE_EXPLANATION_CATEGORIES:
+        raise ValueError(
+            "stream offer lifecycle explanation category must be one of "
+            f"{', '.join(STREAM_OFFER_LIFECYCLE_EXPLANATION_CATEGORIES)}"
+        )
+
+
+def _validate_lifecycle_explanation_reason(value: str) -> None:
+    _validate_required_string(value, "stream offer lifecycle explanation reason")
+    if value not in STREAM_OFFER_LIFECYCLE_EXPLANATION_REASONS:
+        raise ValueError(
+            "stream offer lifecycle explanation reason must be one of "
+            f"{', '.join(STREAM_OFFER_LIFECYCLE_EXPLANATION_REASONS)}"
         )
 
 

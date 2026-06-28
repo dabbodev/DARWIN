@@ -20,6 +20,7 @@ from darwin.models.stream_offer import (
     RendezvousRequest,
     StreamOffer,
     StreamOfferLifecycleApplyResult,
+    StreamOfferLifecycleExplanation,
     StreamOfferLifecyclePlan,
     StreamOfferMode,
     StreamOfferStatus,
@@ -292,6 +293,174 @@ def summarize_stream_offer_lifecycle_apply_result(
     """Return a copied JSON-safe stream offer lifecycle apply result summary."""
     _validate_lifecycle_apply_result(result)
     return result.to_summary()
+
+
+def explain_stream_offer_lifecycle_plan(
+    plan: StreamOfferLifecyclePlan,
+) -> list[StreamOfferLifecycleExplanation]:
+    """Return read-only explanations for lifecycle plan classifications."""
+    _validate_lifecycle_plan(plan)
+    cleanup_candidate_offer_ids = set(plan.cleanup_candidate_offer_ids)
+    explained_offer_ids: set[str] = set()
+    explanations: list[StreamOfferLifecycleExplanation] = []
+
+    for offer_id in plan.expired_offer_ids:
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=plan.hub_id,
+                offer_id=offer_id,
+                category="expired",
+                reason="expired_by_plan",
+                status="expired",
+                checked_at=plan.checked_at,
+                source="lifecycle_plan",
+                details={
+                    "plan_field": "expired_offer_ids",
+                    "cleanup_candidate": offer_id in cleanup_candidate_offer_ids,
+                    "read_only": True,
+                },
+            )
+        )
+        explained_offer_ids.add(offer_id)
+
+    for offer_id in plan.cleanup_candidate_offer_ids:
+        if offer_id in explained_offer_ids:
+            continue
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=plan.hub_id,
+                offer_id=offer_id,
+                category="terminal",
+                reason="terminal_cleanup_candidate",
+                status="cleanup_candidate",
+                checked_at=plan.checked_at,
+                source="lifecycle_plan",
+                details={
+                    "plan_field": "cleanup_candidate_offer_ids",
+                    "cleanup_candidate": True,
+                    "read_only": True,
+                },
+            )
+        )
+        explained_offer_ids.add(offer_id)
+
+    for offer_id in plan.active_offer_ids:
+        if offer_id in explained_offer_ids:
+            continue
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=plan.hub_id,
+                offer_id=offer_id,
+                category="active",
+                reason="active_by_plan",
+                status="active",
+                checked_at=plan.checked_at,
+                source="lifecycle_plan",
+                details={
+                    "plan_field": "active_offer_ids",
+                    "cleanup_candidate": False,
+                    "read_only": True,
+                },
+            )
+        )
+        explained_offer_ids.add(offer_id)
+
+    for offer_id in plan.ignored_offer_ids:
+        if offer_id in explained_offer_ids:
+            continue
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=plan.hub_id,
+                offer_id=offer_id,
+                category="skipped",
+                reason="ignored_by_plan",
+                status="ignored",
+                checked_at=plan.checked_at,
+                source="lifecycle_plan",
+                details={
+                    "plan_field": "ignored_offer_ids",
+                    "cleanup_candidate": False,
+                    "read_only": True,
+                },
+            )
+        )
+        explained_offer_ids.add(offer_id)
+
+    return explanations
+
+
+def explain_stream_offer_lifecycle_apply_result(
+    result: StreamOfferLifecycleApplyResult,
+) -> list[StreamOfferLifecycleExplanation]:
+    """Return read-only explanations for lifecycle apply result outcomes."""
+    _validate_lifecycle_apply_result(result)
+    explanations: list[StreamOfferLifecycleExplanation] = []
+
+    for offer_id in result.applied_offer_ids:
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=result.hub_id,
+                offer_id=offer_id,
+                category="applied",
+                reason="applied_by_result",
+                status="applied",
+                checked_at=result.plan_checked_at,
+                source="lifecycle_apply_result",
+                details={
+                    "result_field": "applied_offer_ids",
+                    "recorded_transition_count": result.recorded_transition_count,
+                    "read_only": True,
+                },
+            )
+        )
+
+    for offer_id in result.skipped_offer_ids:
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=result.hub_id,
+                offer_id=offer_id,
+                category="skipped",
+                reason="skipped_by_result",
+                status="skipped",
+                checked_at=result.plan_checked_at,
+                source="lifecycle_apply_result",
+                details={
+                    "result_field": "skipped_offer_ids",
+                    "read_only": True,
+                },
+            )
+        )
+
+    for offer_id in result.missing_offer_ids:
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=result.hub_id,
+                offer_id=offer_id,
+                category="missing",
+                reason="missing_by_result",
+                status="missing",
+                checked_at=result.plan_checked_at,
+                source="lifecycle_apply_result",
+                details={
+                    "result_field": "missing_offer_ids",
+                    "read_only": True,
+                },
+            )
+        )
+
+    return explanations
+
+
+def summarize_stream_offer_lifecycle_explanations(
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...],
+) -> list[dict[str, object]]:
+    """Return copied JSON-safe lifecycle explanation summaries in order."""
+    if not isinstance(explanations, list | tuple):
+        raise TypeError("explanations must be a list or tuple")
+    for explanation in explanations:
+        _validate_lifecycle_explanation(explanation)
+    return [explanation.to_summary() for explanation in explanations]
 
 
 def update_held_stream_offer_status(
@@ -1170,6 +1339,13 @@ def _validate_lifecycle_apply_result(result: StreamOfferLifecycleApplyResult) ->
         raise TypeError("result must be a StreamOfferLifecycleApplyResult")
 
 
+def _validate_lifecycle_explanation(
+    explanation: StreamOfferLifecycleExplanation,
+) -> None:
+    if not isinstance(explanation, StreamOfferLifecycleExplanation):
+        raise TypeError("explanation must be a StreamOfferLifecycleExplanation")
+
+
 def _validate_offer(offer: StreamOffer) -> None:
     if not isinstance(offer, StreamOffer):
         raise TypeError("offer must be a StreamOffer")
@@ -1224,3 +1400,37 @@ def _validate_optional_order(value: int | None, field_name: str) -> None:
     if value is None:
         return
     _validate_order(value, field_name)
+
+
+def _lifecycle_explanation(
+    *,
+    hub_id: str,
+    offer_id: str,
+    category: str,
+    reason: str,
+    status: str,
+    checked_at: int,
+    source: str,
+    details: dict[str, object],
+) -> StreamOfferLifecycleExplanation:
+    return StreamOfferLifecycleExplanation(
+        hub_id=hub_id,
+        offer_id=offer_id,
+        category=category,
+        reason=reason,
+        status=status,
+        checked_at=checked_at,
+        source=source,
+        details={
+            "simulator_local": True,
+            "policy_decision": False,
+            "registry_hub_mutated": False,
+            "offer_mutated": False,
+            "transitions_recorded": False,
+            "offers_deleted": False,
+            "delivery_behavior_changed": False,
+            "traffic_hub_routing_changed": False,
+            "networking": False,
+            **details,
+        },
+    )

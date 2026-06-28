@@ -244,8 +244,9 @@ check .`, `python -m pytest` with 808 tests,
 publication was performed.
 
 v1.4 planning is draft and unreleased. The seed theme is lifecycle policy
-explanation and stream-offer audit summaries. It does not add feature behavior,
-scenarios, networking, DNS, external services, real cryptography, production
+explanation and stream-offer audit summaries. Sprint 1 adds read-only
+stream-offer lifecycle explanation helpers on the planning branch. It does not
+add scenarios, networking, DNS, external services, real cryptography, production
 E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
 queues, live timers, TrafficHub routing changes, canonical identity rewrites,
 a version bump, a tag, a release, or package publication.
@@ -1001,6 +1002,7 @@ For v1.3 rendezvous lifecycle release docs, see:
 For v1.4 lifecycle explanation planning drafts, see:
 
 - `docs/V1_4_ROADMAP.md`
+- `docs/STREAM_OFFER_LIFECYCLE_EXPLANATIONS_v1_4.md`
 - `docs/RELEASE_NOTES_v1_4_DRAFT.md`
 
 ## What v0.1 Is Not
