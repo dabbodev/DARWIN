@@ -557,6 +557,63 @@ class StreamOfferLifecycleExplanation:
 
 
 @dataclass(frozen=True, slots=True)
+class StreamOfferLifecycleAuditSummary:
+    """Read-only grouped lifecycle audit metadata for stream offers."""
+
+    hub_id: str
+    total_transitions: int = 0
+    by_offer_id: dict[str, int] | None = None
+    by_status: dict[str, int] | None = None
+    by_reason: dict[str, int] | None = None
+    by_category: dict[str, int] | None = None
+    explanation_count: int = 0
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_order(self.total_transitions, "total_transitions")
+        _validate_order(self.explanation_count, "explanation_count")
+        object.__setattr__(
+            self,
+            "by_offer_id",
+            _count_dict(self.by_offer_id or {}, "by_offer_id"),
+        )
+        object.__setattr__(
+            self,
+            "by_status",
+            _count_dict(self.by_status or {}, "by_status"),
+        )
+        object.__setattr__(
+            self,
+            "by_reason",
+            _count_dict(self.by_reason or {}, "by_reason"),
+        )
+        object.__setattr__(
+            self,
+            "by_category",
+            _count_dict(self.by_category or {}, "by_category"),
+        )
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe grouped audit metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "total_transitions": self.total_transitions,
+            "by_offer_id": dict(self.by_offer_id or {}),
+            "by_status": dict(self.by_status or {}),
+            "by_reason": dict(self.by_reason or {}),
+            "by_category": dict(self.by_category or {}),
+            "explanation_count": self.explanation_count,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
 class RendezvousRequest:
     """Simulator-local metadata for a future private hub poll request."""
 
@@ -1218,6 +1275,17 @@ def _string_tuple(values: tuple[str, ...] | list[str], field_name: str) -> tuple
     for value in values:
         _validate_required_string(value, field_name)
     return tuple(values)
+
+
+def _count_dict(values: dict[str, int], field_name: str) -> dict[str, int]:
+    if not isinstance(values, dict):
+        raise TypeError(f"{field_name} must be a dict")
+    copied: dict[str, int] = {}
+    for key, count in values.items():
+        _validate_required_string(key, field_name)
+        _validate_order(count, field_name)
+        copied[key] = count
+    return {key: copied[key] for key in sorted(copied)}
 
 
 def _json_safe_copy(value: Any) -> object:

@@ -1,8 +1,8 @@
 # DARWIN v1.4 Roadmap Draft: Lifecycle Policy Explanation and Stream-Offer Audit Summaries
 
-Status: planning draft with Sprint 1 implementation work on the v1.4 planning
-branch. DARWIN v1.4 is unreleased, untagged, and not merged to `main`. The
-latest released version remains `darwin-sim 1.3.0`.
+Status: planning draft with Sprint 1 and Sprint 2 implementation work on the
+v1.4 planning branch. DARWIN v1.4 is unreleased, untagged, and not merged to
+`main`. The latest released version remains `darwin-sim 1.3.0`.
 
 Recommended candidate theme: Lifecycle policy explanation and stream-offer
 audit summaries.
@@ -131,45 +131,23 @@ Acceptance targets:
   TrafficHub routing changes, canonical identity rewrites, real cryptography,
   or version bump beyond `1.3.0` is added.
 
-## Candidate Sprint 2: Lifecycle Apply-Result Explanation Helpers
+## Candidate Sprint 2: Grouped Stream-Offer Lifecycle Audit Summaries
 
-Status: candidate planning only.
-
-Goal: make explicit lifecycle apply outcomes easier to inspect without
-changing apply behavior.
-
-Possible future work:
-
-- Explain applied, skipped, stale, terminal, and missing offer outcomes from
-  existing apply result metadata.
-- Preserve deterministic ordering and copied summary shapes.
-- Keep default lifecycle planning read-only until the existing explicit apply
-  helper is called.
-- Document that explanations do not imply delivery, cleanup, retry, or
-  retention guarantees.
-
-Acceptance targets:
-
-- Existing lifecycle apply semantics remain unchanged.
-- No held offers are deleted by explanation helpers.
-- Transition history remains simulator audit metadata only.
-- Compact `world.snapshot()` output remains unchanged unless a later approved
-  sprint explicitly scopes otherwise.
-
-## Candidate Sprint 3: Grouped Stream-Offer Lifecycle Audit Summaries
-
-Status: candidate planning only.
+Status: implemented on the v1.4 planning branch.
 
 Goal: provide deterministic read-only summaries over retained lifecycle audit
 metadata.
 
 Possible future work:
 
-- Add grouped summaries by hub, offer, status, and reason.
-- Preserve additive filtering and deterministic append-order behavior
-  consistent with existing query helpers.
-- Keep detailed per-record access separate from grouped summary output.
-- Avoid compliance, security, privacy, firewall, DDoS, and delivery claims.
+- Added `StreamOfferLifecycleAuditSummary` grouped diagnostic metadata.
+- Added grouped summaries by offer, status, reason, and optional explanation
+  category.
+- Preserved deterministic ordering and copied JSON-safe summary shapes.
+- Kept detailed per-record access separate from grouped summary output.
+- Documented that audit summaries are simulator-local diagnostics, not
+  policy enforcement, cleanup, retry, delivery, security, privacy, firewall,
+  DDoS, network, DNS, or cryptography infrastructure.
 
 Acceptance targets:
 
@@ -177,8 +155,10 @@ Acceptance targets:
 - Summary output is copied and JSON-safe.
 - Existing retained transition histories remain RegistryHub-local simulator
   state, not production logs or durable audit trails.
+- Existing lifecycle plan/apply semantics remain unchanged.
+- Compact `world.snapshot()` output remains unchanged.
 
-## Candidate Sprint 4: Optional Retained Explanation Records
+## Candidate Sprint 3: Optional Retained Explanation Records
 
 Status: candidate planning only.
 
@@ -203,7 +183,7 @@ Acceptance targets:
 - Detailed snapshot visibility is deferred until retained data exists and its
   shape is stable.
 
-## Candidate Sprint 5: Scenario DSL Coverage
+## Candidate Sprint 4: Scenario DSL Coverage
 
 Status: candidate planning only.
 
@@ -228,7 +208,7 @@ Acceptance targets:
   sockets, perform DNS lookup, contact external services, generate keys,
   encrypt payloads, enforce delivery, or claim production security.
 
-## Candidate Sprint 6: Detailed Snapshot Visibility and Release Readiness
+## Candidate Sprint 5: Detailed Snapshot Visibility and Release Readiness
 
 Status: candidate planning only.
 
@@ -266,9 +246,10 @@ canonical identity, networking, or cryptography.
 ## Release Status
 
 v1.4 remains unreleased planning work. Sprint 1 code and tests for read-only
-stream-offer lifecycle explanations exist on the planning branch. No v1.4
-scenarios, version bump, merge, tag, GitHub release, package publication, or
-release assets are part of this roadmap seed.
+stream-offer lifecycle explanations exist on the planning branch. Sprint 2 code
+and tests for grouped lifecycle audit summaries also exist on the planning
+branch. No v1.4 scenarios, version bump, merge, tag, GitHub release, package
+publication, or release assets are part of this roadmap seed.
 
 The latest released DARWIN version remains `darwin-sim 1.3.0` with annotated
 tag `v1.3.0` and GitHub release:

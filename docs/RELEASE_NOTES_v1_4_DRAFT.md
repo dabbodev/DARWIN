@@ -3,9 +3,10 @@
 Status: planning draft only. DARWIN v1.4.0 is unreleased, untagged, and not
 merged to `main`. The latest released version remains `darwin-sim 1.3.0`.
 
-Sprint 1 implementation work has started on the v1.4 planning branch. These
-notes remain draft release-note material for a possible simulator-first line
-around lifecycle policy explanation and stream-offer audit summaries.
+Sprint 1 and Sprint 2 implementation work has started on the v1.4 planning
+branch. These notes remain draft release-note material for a possible
+simulator-first line around lifecycle policy explanation and stream-offer audit
+summaries.
 
 This draft is symbolic simulator planning only. It is not real networking, not
 a network service, not production DDoS protection, not a firewall, not a
@@ -22,7 +23,9 @@ Possible future slices may include:
   this helper surface on the planning branch.
 - Read-only explanation helpers for lifecycle apply results. Sprint 1 adds this
   helper surface on the planning branch.
-- Summarized lifecycle audit views grouped by hub, offer, status, and reason.
+- Summarized lifecycle audit views grouped by hub, offer, status, reason, and
+  optional explanation category. Sprint 2 adds this helper surface on the
+  planning branch.
 - Retained explanation records only if consistent with existing
   RegistryHub-local audit-history patterns.
 - Scenario DSL coverage after helper and model behavior is stable.
@@ -51,10 +54,12 @@ later roadmap explicitly changes them:
 
 - v1.4 is not released.
 - Sprint 1 is limited to read-only lifecycle explanation helpers and docs.
+- Sprint 2 is limited to read-only grouped lifecycle audit summary helpers and
+  docs.
 - No v1.4 scenarios exist yet.
 - No v1.4 version bump has been performed.
 - No v1.4 release has been merged, tagged, published, or packaged.
-- Grouped lifecycle audit summaries remain candidate planning surfaces only.
+- Retained explanation records remain candidate planning surfaces only.
 
 ## Draft Sprint 1 Note
 
@@ -65,6 +70,17 @@ return copied JSON-safe summaries. They do not mutate held offers, apply plans,
 record transitions, delete offers, change compact snapshots, trigger delivery,
 change TrafficHub routing, contact networks, use DNS, call external services,
 or add real cryptography.
+
+## Draft Sprint 2 Note
+
+Sprint 2 adds `StreamOfferLifecycleAuditSummary` plus read-only helpers for
+grouping retained stream-offer lifecycle transition history by offer ID, target
+status, and reason, with optional caller-provided lifecycle explanations grouped
+by category and reason. The helpers return deterministic copied JSON-safe
+diagnostic metadata. They do not mutate held offers, apply plans, record
+history, retain explanations, delete offers, change compact snapshots, trigger
+delivery, change TrafficHub routing, contact networks, use DNS, call external
+services, or add real cryptography.
 
 ## Non-Goals
 

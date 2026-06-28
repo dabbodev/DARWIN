@@ -20,6 +20,7 @@ from darwin.models.stream_offer import (
     RendezvousRequest,
     StreamOffer,
     StreamOfferLifecycleApplyResult,
+    StreamOfferLifecycleAuditSummary,
     StreamOfferLifecycleExplanation,
     StreamOfferLifecyclePlan,
     StreamOfferMode,
@@ -461,6 +462,100 @@ def summarize_stream_offer_lifecycle_explanations(
     for explanation in explanations:
         _validate_lifecycle_explanation(explanation)
     return [explanation.to_summary() for explanation in explanations]
+
+
+def summarize_stream_offer_lifecycle_audit(
+    registry_hub: RegistryHub,
+    *,
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...]
+    | None = None,
+    metadata: dict[str, object] | None = None,
+) -> StreamOfferLifecycleAuditSummary:
+    """Return a grouped read-only lifecycle audit summary for a RegistryHub."""
+    _validate_registry_hub(registry_hub)
+    explanation_records = _lifecycle_explanation_records(explanations)
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+
+    by_offer_id: dict[str, int] = {}
+    by_status: dict[str, int] = {}
+    by_reason: dict[str, int] = {}
+    by_category: dict[str, int] = {}
+
+    for transition in registry_hub.stream_offer_status_transition_history:
+        _validate_status_transition(transition)
+        _increment_count(by_offer_id, transition.offer_id)
+        _increment_count(by_status, transition.new_status.status)
+        _increment_count(by_reason, transition.reason.reason)
+
+    for explanation in explanation_records:
+        _increment_count(by_offer_id, explanation.offer_id)
+        _increment_count(by_status, explanation.status)
+        _increment_count(by_reason, explanation.reason)
+        _increment_count(by_category, explanation.category)
+
+    summary_metadata: dict[str, object] = {
+        "simulator_local": True,
+        "read_only": True,
+        "audit_summary_only": True,
+        "policy_decision": False,
+        "registry_hub_mutated": False,
+        "offer_mutated": False,
+        "transitions_recorded": False,
+        "offers_deleted": False,
+        "delivery_behavior_changed": False,
+        "traffic_hub_routing_changed": False,
+        "networking": False,
+        "included_explanations": bool(explanation_records),
+    }
+    if metadata is not None:
+        summary_metadata.update(metadata)
+
+    return StreamOfferLifecycleAuditSummary(
+        hub_id=registry_hub.hub_id,
+        total_transitions=len(registry_hub.stream_offer_status_transition_history),
+        by_offer_id=_sorted_count_dict(by_offer_id),
+        by_status=_sorted_count_dict(by_status),
+        by_reason=_sorted_count_dict(by_reason),
+        by_category=_sorted_count_dict(by_category),
+        explanation_count=len(explanation_records),
+        metadata=summary_metadata,
+    )
+
+
+def summarize_stream_offer_lifecycle_audit_by_offer(
+    registry_hub: RegistryHub,
+    *,
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...]
+    | None = None,
+) -> dict[str, int]:
+    """Return grouped lifecycle audit counts by offer ID."""
+    return dict(
+        summarize_stream_offer_lifecycle_audit(
+            registry_hub,
+            explanations=explanations,
+        ).by_offer_id
+        or {}
+    )
+
+
+def summarize_stream_offer_lifecycle_audit_by_reason(
+    registry_hub: RegistryHub,
+    *,
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...]
+    | None = None,
+) -> dict[str, int]:
+    """Return grouped lifecycle audit counts by transition/explanation reason."""
+    return dict(
+        summarize_stream_offer_lifecycle_audit(
+            registry_hub,
+            explanations=explanations,
+        ).by_reason
+        or {}
+    )
 
 
 def update_held_stream_offer_status(
@@ -1346,6 +1441,20 @@ def _validate_lifecycle_explanation(
         raise TypeError("explanation must be a StreamOfferLifecycleExplanation")
 
 
+def _lifecycle_explanation_records(
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...]
+    | None,
+) -> tuple[StreamOfferLifecycleExplanation, ...]:
+    if explanations is None:
+        return ()
+    if not isinstance(explanations, list | tuple):
+        raise TypeError("explanations must be a list, tuple, or None")
+    for explanation in explanations:
+        _validate_lifecycle_explanation(explanation)
+    return tuple(explanations)
+
+
 def _validate_offer(offer: StreamOffer) -> None:
     if not isinstance(offer, StreamOffer):
         raise TypeError("offer must be a StreamOffer")
@@ -1434,3 +1543,11 @@ def _lifecycle_explanation(
             **details,
         },
     )
+
+
+def _increment_count(counts: dict[str, int], key: str) -> None:
+    counts[key] = counts.get(key, 0) + 1
+
+
+def _sorted_count_dict(counts: dict[str, int]) -> dict[str, int]:
+    return {key: counts[key] for key in sorted(counts)}
