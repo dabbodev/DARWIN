@@ -3,8 +3,8 @@
 Status: planning draft only. DARWIN v1.4.0 is unreleased, untagged, and not
 merged to `main`. The latest released version remains `darwin-sim 1.3.0`.
 
-Sprint 1 through Sprint 5 implementation work has started on the v1.4 planning
-branch. These notes remain draft release-note material for a possible
+Sprint 1 through Sprint 6 work exists on the v1.4 planning branch. These notes
+remain draft release-note material for a possible
 simulator-first line around lifecycle policy explanation and stream-offer audit
 summaries.
 
@@ -34,7 +34,8 @@ Possible future slices may include:
 - Detailed snapshot/debug visibility for retained explanation history,
   explanation action results, and audit summary action results. Sprint 5 adds
   this hardening on the planning branch.
-- Release-readiness documentation after scenario coverage exists.
+- Release-candidate hardening and documentation audit after scenario coverage
+  exists. Sprint 6 adds this audit on the planning branch.
 
 ## Compatibility Expectations
 
@@ -66,6 +67,8 @@ later roadmap explicitly changes them:
   explanations and audit summaries.
 - Sprint 5 is limited to detailed snapshot/debug visibility and docs for
   existing explanation and audit artifacts.
+- Sprint 6 is limited to release-candidate documentation audit and
+  release-readiness check hardening.
 - No v1.4 version bump has been performed.
 - No v1.4 release has been merged, tagged, published, or packaged.
 
@@ -130,6 +133,21 @@ networking, DNS, external services, delivery changes, TrafficHub routing
 changes, canonical identity rewrites, real cryptography, a version bump, a
 merge, a tag, a release, or package publication.
 
+## Draft Sprint 6 Note
+
+Sprint 6 hardens release-readiness and documentation checks for the v1.4
+planning branch. It ensures the v1.4 roadmap, draft release notes, lifecycle
+explanation docs, audit summary docs, and retained explanation history docs are
+included in documentation link/readiness coverage; confirms checked-in scenario
+coverage remains contiguous from `001` through `063`; and keeps
+`docs/SCENARIO_INDEX.md` generated from deterministic scenario metadata. This
+sprint is release-candidate hardening and documentation audit only. It does
+not add new feature behavior, new scenarios, lifecycle mutation behavior,
+cleanup workers, retry loops, durable queues, live timers, networking, DNS,
+external services, delivery behavior changes, TrafficHub routing changes,
+compact snapshot changes, canonical identity rewrites, real cryptography, a
+version bump, a merge, a tag, a release, or package publication.
+
 ## Non-Goals
 
 v1.4 planning does not add:
@@ -157,6 +175,7 @@ v1.4 planning does not add:
 - encryption or decryption;
 - production E2EE;
 - delivery enforcement;
+- delivery behavior changes;
 - mailbox delivery behavior changes;
 - encrypted delivery behavior changes;
 - TrafficHub routing changes;
@@ -169,9 +188,11 @@ v1.4 planning does not add:
 
 ## Release Readiness
 
-Release readiness has not started. A future release-prep pass should only
-convert this draft to release-facing status after approved implementation
-slices, scenario coverage, documentation checks, and full validation exist.
+Release-candidate documentation audit has started on the planning branch, but
+v1.4 is still not released. A future release-prep pass should only convert
+this draft to release-facing status after an explicit release task approves a
+version bump, final release language, merge, tag, GitHub release, and any
+package-publication decision. No package publication has been performed.
 
 Planning validation should keep reporting `darwin-sim 1.3.0` until an explicit
 future version-bump sprint changes package metadata.

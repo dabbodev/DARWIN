@@ -1,6 +1,6 @@
 # DARWIN v1.4 Roadmap Draft: Lifecycle Policy Explanation and Stream-Offer Audit Summaries
 
-Status: planning draft with Sprint 1 through Sprint 5 implementation work on
+Status: planning draft with Sprint 1 through Sprint 6 work on
 the v1.4 planning branch. DARWIN v1.4 is unreleased, untagged, and not merged
 to `main`. The latest released version remains `darwin-sim 1.3.0`.
 
@@ -58,7 +58,8 @@ Out of scope:
   identity proof.
 - Live polling, live timers, live clocks, automatic cleanup workers,
   background services, durable queues, or retry loops.
-- Delivery enforcement or mailbox delivery behavior changes.
+- Delivery enforcement, mailbox delivery behavior changes, or delivery
+  behavior changes.
 - TrafficHub routing changes.
 - Canonical identity rewrites.
 - Production DDoS protection, firewall guarantees, abuse mitigation,
@@ -246,6 +247,38 @@ Acceptance targets:
   delivery, privacy, anonymity, firewall, DDoS, cleanup, queue, timer,
   TrafficHub, and canonical identity claims.
 
+## Candidate Sprint 6: Release-Candidate Hardening and Documentation Audit
+
+Status: implemented on the v1.4 planning branch.
+
+Goal: harden release-readiness checks and audit documentation without adding
+new feature behavior.
+
+Implemented work:
+
+- Included v1.4 roadmap, draft release notes, lifecycle explanation docs,
+  audit summary docs, and retained explanation history docs in
+  documentation readiness/link coverage.
+- Confirmed checked-in scenario metadata remains contiguous from `001` through
+  `063`.
+- Confirmed `docs/SCENARIO_INDEX.md` remains generated from deterministic
+  scenario metadata.
+- Refreshed README, release checklist, roadmap, and draft release notes for
+  v1.4 release-candidate planning status without converting v1.4 to released
+  status.
+
+Acceptance targets:
+
+- No version bump, merge, tag, GitHub release, release assets, package
+  publication, or final release language is added.
+- No new scenarios are added unless needed to fix deterministic scenario
+  index/readiness consistency.
+- No new feature behavior, lifecycle mutation behavior, compact snapshot
+  change, delivery behavior change, TrafficHub routing change, canonical
+  identity rewrite, networking, DNS lookup, external service, real
+  cryptography, cleanup worker, retry loop, durable queue, or live timer is
+  added.
+
 ## Recommended First Implementation Sprint
 
 Sprint 1 is the first implementation slice. Lifecycle plan/apply-result
@@ -260,9 +293,10 @@ v1.4 remains unreleased planning work. Sprint 1 code and tests for read-only
 stream-offer lifecycle explanations exist on the planning branch. Sprint 2 code
 and tests for grouped lifecycle audit summaries also exist on the planning
 branch. Sprint 3 retained explanation history, Sprint 4 scenario DSL coverage,
-and Sprint 5 detailed snapshot/debug visibility also exist on the planning
-branch. No version bump, merge, tag, GitHub release, package publication, or
-release assets are part of this roadmap seed.
+Sprint 5 detailed snapshot/debug visibility, and Sprint 6 release-candidate
+documentation audit also exist on the planning branch. No version bump, merge,
+tag, GitHub release, package publication, or release assets are part of this
+roadmap seed.
 
 The latest released DARWIN version remains `darwin-sim 1.3.0` with annotated
 tag `v1.3.0` and GitHub release:

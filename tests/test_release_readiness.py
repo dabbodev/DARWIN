@@ -11,6 +11,13 @@ V1_3_PLANNING_DOCS = [
     PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md",
     PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_PLANNING_v1_3.md",
 ]
+V1_4_PLANNING_DOCS = [
+    PROJECT_ROOT / "docs" / "V1_4_ROADMAP.md",
+    PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_4_DRAFT.md",
+    PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_EXPLANATIONS_v1_4.md",
+    PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_AUDIT_SUMMARIES_v1_4.md",
+    PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_EXPLANATION_HISTORY_v1_4.md",
+]
 V1_3_RELEASE_CANDIDATE_CAVEATS = [
     "simulator-local",
     "symbolic",
@@ -28,6 +35,30 @@ V1_3_RELEASE_CANDIDATE_CAVEATS = [
     "retry loops",
     "durable queues",
     "live timers",
+    "TrafficHub routing changes",
+    "delivery behavior changes",
+    "compact snapshot changes",
+    "canonical identity rewrites",
+]
+V1_4_RELEASE_CANDIDATE_CAVEATS = [
+    "simulator-local",
+    "symbolic",
+    "real networking",
+    "sockets",
+    "DNS lookup",
+    "external services",
+    "real cryptography",
+    "production E2EE",
+    "production anonymity",
+    "production privacy",
+    "production firewall",
+    "production DDoS",
+    "automatic cleanup workers",
+    "retry loops",
+    "durable queues",
+    "live timers",
+    "live polling",
+    "lifecycle mutation behavior",
     "TrafficHub routing changes",
     "delivery behavior changes",
     "compact snapshot changes",
@@ -68,6 +99,7 @@ def test_documentation_links_exist():
         PROJECT_ROOT / "docs" / "STREAM_OFFER_AUDIT_HISTORY_v1_2.md",
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_2_DRAFT.md",
         *V1_3_PLANNING_DOCS,
+        *V1_4_PLANNING_DOCS,
     ]
 
     referenced_paths = {
@@ -128,6 +160,36 @@ def test_v1_3_docs_are_release_status_ready():
     assert "Sprint 6: Release-Candidate Hardening" in roadmap
 
     for caveat in V1_3_RELEASE_CANDIDATE_CAVEATS:
+        assert caveat in combined_docs
+
+
+def test_v1_4_docs_are_planning_release_candidate_ready():
+    release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_4_DRAFT.md").read_text(
+        encoding="utf-8"
+    )
+    roadmap = (PROJECT_ROOT / "docs" / "V1_4_ROADMAP.md").read_text(
+        encoding="utf-8"
+    )
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    checklist = (PROJECT_ROOT / "RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+    combined_docs = "\n".join(
+        path.read_text(encoding="utf-8") for path in V1_4_PLANNING_DOCS
+    )
+
+    assert "planning draft only" in release_notes
+    assert "unreleased, untagged" in release_notes
+    assert "not\nmerged to `main`" in release_notes
+    assert "latest released version remains `darwin-sim 1.3.0`" in release_notes
+    assert "Sprint 1 through Sprint 6" in release_notes
+    assert "Scenarios `061` through `063`" in release_notes
+    assert "checked-in scenarios through `063`" in release_notes
+    assert "No v1.4 version bump" in release_notes
+    assert "No package publication" in release_notes
+    assert "Candidate Sprint 6: Release-Candidate Hardening" in roadmap
+    assert "scenarios `061` through `063`" in readme
+    assert "v1.4 release-candidate hardening" in checklist
+
+    for caveat in V1_4_RELEASE_CANDIDATE_CAVEATS:
         assert caveat in combined_docs
 
 

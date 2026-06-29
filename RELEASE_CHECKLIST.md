@@ -600,23 +600,44 @@ v1.4 is planning draft only. It is unreleased, untagged, not merged to `main`,
 and not published. The latest released version remains `darwin-sim 1.3.0`.
 
 - [x] v1.4 planning roadmap seed is checked in at `docs/V1_4_ROADMAP.md`.
-- [x] v1.4 draft release-notes placeholder is checked in at
+- [x] v1.4 draft release notes are checked in at
   `docs/RELEASE_NOTES_v1_4_DRAFT.md`.
+- [x] v1.4 lifecycle explanation docs are checked in at
+  `docs/STREAM_OFFER_LIFECYCLE_EXPLANATIONS_v1_4.md`.
+- [x] v1.4 lifecycle audit summary docs are checked in at
+  `docs/STREAM_OFFER_LIFECYCLE_AUDIT_SUMMARIES_v1_4.md`.
+- [x] v1.4 retained explanation history docs are checked in at
+  `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_HISTORY_v1_4.md`.
 - [x] README links to the v1.4 planning drafts while preserving v1.3.0 as the
   latest released version.
 - [x] CHANGELOG is not advanced beyond the released `1.3.0` section.
 - [x] Package and CLI version remain `darwin-sim 1.3.0`.
-- [x] No v1.4 feature behavior, scenarios, or tests for new behavior are added
-  by the planning seed.
+- [x] Sprints 1 through 5 implementation scope is documented as
+  simulator-local and symbolic.
+- [x] Sprint 6 is v1.4 release-candidate hardening and documentation audit
+  only.
+- [x] Scenarios `061` through `063` validate and run.
+- [x] Planning-branch scenario metadata is contiguous from `001` through
+  `063`.
+- [x] Scenario index is current and generated from deterministic scenario
+  metadata.
+- [x] v1.4 documentation readiness checks include the roadmap, draft release
+  notes, lifecycle explanation docs, audit summary docs, and retained
+  explanation history docs.
+- [x] v1.4 draft release notes summarize Sprint 1 through Sprint 6 without
+  converting the branch to released status.
+- [x] No new v1.4 feature behavior or scenarios are added by
+  release-candidate hardening.
 - [x] Planning scope is limited to lifecycle policy explanation and
   stream-offer audit summary candidates.
 - [x] Documentation avoids production networking, sockets, HTTP/WebSocket
   behavior, DNS lookup, registrar integration, public CA behavior, external
   services, real cryptography, key generation, private key storage, production
   E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
-  queues, live timers, live clocks, live polling, delivery behavior changes,
-  TrafficHub routing changes, canonical identity rewrites, and production
-  anonymity/privacy/firewall/DDoS guarantees.
+  queues, live timers, live clocks, live polling, lifecycle mutation behavior
+  beyond existing explicit helpers, delivery behavior changes, TrafficHub
+  routing changes, compact snapshot changes, canonical identity rewrites, and
+  production anonymity/privacy/firewall/DDoS guarantees.
 - [x] No merge, tag, GitHub release, release assets, package publication, or
   version bump is performed by planning work.
 

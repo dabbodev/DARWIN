@@ -244,12 +244,18 @@ check .`, `python -m pytest` with 808 tests,
 publication was performed.
 
 v1.4 planning is draft and unreleased. The seed theme is lifecycle policy
-explanation and stream-offer audit summaries. Sprint 1 adds read-only
-stream-offer lifecycle explanation helpers on the planning branch. Sprint 2
-adds read-only grouped stream-offer lifecycle audit summary helpers on the
-planning branch. It does not add scenarios, networking, DNS, external services,
-real cryptography, production E2EE, delivery enforcement, automatic cleanup
-workers, retry loops, durable queues, live timers, TrafficHub routing changes,
+explanation and stream-offer audit summaries. Sprints 1 through 5 add read-only
+lifecycle explanation helpers, grouped audit summaries, explicitly retained
+RegistryHub-local explanation history, scenario DSL coverage, detailed
+snapshot/debug visibility, and scenarios `061` through `063` on the planning
+branch. Sprint 6 is release-candidate hardening and documentation audit only.
+v1.4 remains simulator-local and symbolic. It does not add new feature
+behavior, networking, sockets, HTTP/WebSocket behavior, DNS lookup, external
+services, real cryptography, production E2EE, production
+anonymity/privacy/firewall/DDoS guarantees, delivery enforcement, automatic
+cleanup workers, retry loops, durable queues, live timers, live polling,
+lifecycle mutation behavior beyond existing explicit helpers, TrafficHub
+routing changes, delivery behavior changes, compact snapshot changes,
 canonical identity rewrites, a version bump, a tag, a release, or package
 publication.
 
