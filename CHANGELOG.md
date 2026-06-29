@@ -1,5 +1,58 @@
 # Changelog
 
+## [1.4.0] - 2026-06-29
+
+DARWIN v1.4.0 release prep has been completed on `v1.4/planning`. It has not
+been merged to `main`, tagged, published as a GitHub release, published as a
+package, or shipped with release assets.
+
+Added:
+
+- v1.4 Sprint 1 read-only stream-offer lifecycle explanation helpers for
+  lifecycle plans and apply results.
+- v1.4 Sprint 2 read-only grouped stream-offer lifecycle audit summary helpers
+  over retained transition history and optional explanation categories.
+- v1.4 Sprint 3 explicitly retained RegistryHub-local lifecycle explanation
+  history with copied JSON-safe summaries.
+- v1.4 Sprint 4 scenario DSL actions and assertions for lifecycle
+  explanations, retained explanation history, and grouped audit summaries.
+- v1.4 scenarios `061` through `063` for plan explanation, retained
+  apply-result explanation history, and grouped audit summaries.
+- v1.4 Sprint 5 detailed snapshot/debug visibility for retained explanation
+  history, explanation action results, and audit summary action results, while
+  compact `world.snapshot()` output remains unchanged.
+- v1.4 Sprint 6 release-candidate documentation/readiness hardening with
+  scenario continuity through `063`.
+- v1.4 release prep set the package and CLI version to
+  `darwin-sim 1.4.0`.
+
+Compatibility and limits:
+
+- Existing mailbox delivery behavior remains unchanged.
+- Existing encrypted delivery behavior remains unchanged.
+- Existing TrafficHub routing behavior remains unchanged.
+- Existing alias, identity, stream-offer polling/admission, scenario,
+  snapshot, retained-history, and canonical identity behavior remains
+  unchanged outside the explicit v1.4 lifecycle explanation and audit-summary
+  helper surfaces.
+- The branch scenario set runs contiguously from `001` through `063`, with
+  scenarios `061` through `063` covering v1.4 symbolic lifecycle explanation
+  and audit-summary outcomes.
+- No real networking, sockets, HTTP/WebSocket behavior, DNS lookup, registrar
+  integration, public CA behavior, external services, real cryptography, key
+  generation, private key storage, production E2EE, delivery enforcement,
+  automatic cleanup workers, retry loops, durable queues, live timers, live
+  clocks, live polling, lifecycle mutation behavior, TrafficHub routing
+  changes, compact snapshot changes, canonical identity rewrites, production
+  anonymity/privacy/firewall/DDoS guarantees, merge, tag, GitHub release,
+  package publication, uploaded release assets, or additional feature
+  artifacts are added by this release-prep work.
+- Final v1.4.0 validation is expected to pass `python -m ruff check .`,
+  `python -m pytest` with 836 tests,
+  `python scripts/run_all_scenarios.py` for scenarios `001` through `063`,
+  and `python -m darwin.cli.main --version` reporting
+  `darwin-sim 1.4.0`.
+
 ## [1.3.0] - 2026-06-26
 
 DARWIN v1.3.0 has been merged to `main`, tagged as annotated `v1.3.0`, and

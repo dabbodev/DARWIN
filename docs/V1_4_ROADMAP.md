@@ -1,15 +1,16 @@
 # DARWIN v1.4 Roadmap Draft: Lifecycle Policy Explanation and Stream-Offer Audit Summaries
 
-Status: planning draft with Sprint 1 through Sprint 6 work on
-the v1.4 planning branch. DARWIN v1.4 is unreleased, untagged, and not merged
-to `main`. The latest released version remains `darwin-sim 1.3.0`.
+Status: release-prep candidate with Sprint 1 through Sprint 6 work on
+the v1.4 planning branch. DARWIN v1.4.0 is unreleased, untagged, and not
+merged to `main`. The branch package and CLI version are `darwin-sim 1.4.0`;
+the latest published release remains `darwin-sim 1.3.0`.
 
 Recommended candidate theme: Lifecycle policy explanation and stream-offer
 audit summaries.
 
-This roadmap seeds possible v1.4 work. It does not authorize feature
-implementation, package publication, a version bump, a release, or a commitment
-to the exact sprint order below.
+This roadmap records the v1.4 planning and release-prep scope. It does not
+authorize additional feature implementation, package publication, a release, or
+a commitment beyond the explicit branch release-prep version bump.
 
 v1.4 should remain simulator-first and symbolic. It should not become
 production networking, a real DDoS protection system, a firewall product, a
@@ -66,7 +67,7 @@ Out of scope:
   privacy, anonymity, metadata-hiding, or traffic-analysis guarantees.
 - Real cryptography, key generation, private key storage, production E2EE, or
   secure messaging.
-- Version bumps beyond `1.3.0` during planning.
+- Version bumps beyond `1.4.0` during release prep.
 - Merge, tag, GitHub release, package publication, or release assets.
 
 ## Candidate Concepts
@@ -130,7 +131,7 @@ Acceptance targets:
 - No real networking, DNS lookup, external services, live timers, automatic
   cleanup workers, durable queues, retry loops, delivery enforcement,
   TrafficHub routing changes, canonical identity rewrites, real cryptography,
-  or version bump beyond `1.3.0` is added.
+  or version bump beyond `1.4.0` is added.
 
 ## Candidate Sprint 2: Grouped Stream-Offer Lifecycle Audit Summaries
 
@@ -233,15 +234,16 @@ Implemented work:
 - Added focused snapshot/debug tests for copied summaries, deterministic
   ordering, JSON-safe detailed output, and unchanged compact
   `world.snapshot()` output.
-- Refreshed v1.4 documentation and draft release notes without converting the
-  branch to release status.
+- Refreshed v1.4 documentation and draft release notes for release-prep
+  status without claiming merge, tag, GitHub release, package publication, or
+  release assets.
 
 Acceptance targets:
 
-- No package publication, merge, tag, GitHub release, release assets, or
-  version bump is performed by planning work.
-- v1.3.0 remains the latest released version until a later explicit release
-  prep changes that status.
+- No package publication, merge, tag, GitHub release, or release assets are
+  performed by planning or release-prep work.
+- v1.3.0 remains the latest published release until a later explicit merge,
+  tag, and GitHub release changes that status.
 - Compact `world.snapshot()` output remains unchanged.
 - Docs avoid production networking, DNS, external service, cryptography,
   delivery, privacy, anonymity, firewall, DDoS, cleanup, queue, timer,
@@ -264,13 +266,13 @@ Implemented work:
 - Confirmed `docs/SCENARIO_INDEX.md` remains generated from deterministic
   scenario metadata.
 - Refreshed README, release checklist, roadmap, and draft release notes for
-  v1.4 release-candidate planning status without converting v1.4 to released
-  status.
+  v1.4 release-candidate and release-prep status without claiming merge, tag,
+  GitHub release, package publication, or release assets.
 
 Acceptance targets:
 
-- No version bump, merge, tag, GitHub release, release assets, package
-  publication, or final release language is added.
+- No version bump beyond `1.4.0`, merge, tag, GitHub release, release assets,
+  package publication, or final release publication language is added.
 - No new scenarios are added unless needed to fix deterministic scenario
   index/readiness consistency.
 - No new feature behavior, lifecycle mutation behavior, compact snapshot
@@ -289,16 +291,17 @@ canonical identity, networking, or cryptography.
 
 ## Release Status
 
-v1.4 remains unreleased planning work. Sprint 1 code and tests for read-only
-stream-offer lifecycle explanations exist on the planning branch. Sprint 2 code
-and tests for grouped lifecycle audit summaries also exist on the planning
-branch. Sprint 3 retained explanation history, Sprint 4 scenario DSL coverage,
-Sprint 5 detailed snapshot/debug visibility, and Sprint 6 release-candidate
-documentation audit also exist on the planning branch. No version bump, merge,
+v1.4.0 remains unreleased release-prep work on `v1.4/planning`. Sprint 1 code
+and tests for read-only stream-offer lifecycle explanations exist on the
+planning branch. Sprint 2 code and tests for grouped lifecycle audit summaries
+also exist on the planning branch. Sprint 3 retained explanation history,
+Sprint 4 scenario DSL coverage, Sprint 5 detailed snapshot/debug visibility,
+and Sprint 6 release-candidate documentation audit also exist on the planning
+branch. The branch package and CLI version are `darwin-sim 1.4.0`; no merge,
 tag, GitHub release, package publication, or release assets are part of this
-roadmap seed.
+release-prep step.
 
-The latest released DARWIN version remains `darwin-sim 1.3.0` with annotated
+The latest published DARWIN release remains `darwin-sim 1.3.0` with annotated
 tag `v1.3.0` and GitHub release:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.3.0.
 
@@ -319,4 +322,4 @@ https://github.com/dabbodev/DARWIN/releases/tag/v1.3.0.
 - Compact snapshot changes unless explicitly scoped by a later sprint.
 - Canonical identity rewrites.
 - Package publication, release assets, merge, tag, GitHub release, or version
-  bump beyond `1.3.0` during planning.
+  bump beyond `1.4.0` during release prep.

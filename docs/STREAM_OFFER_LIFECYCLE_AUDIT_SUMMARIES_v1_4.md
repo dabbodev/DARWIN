@@ -122,4 +122,4 @@ Sprint 2 does not add:
 - compact snapshot changes;
 - package publication;
 - release assets;
-- merge, tag, GitHub release, or version bump beyond `1.3.0`.
+- merge, tag, GitHub release, or version bump beyond `1.4.0`.

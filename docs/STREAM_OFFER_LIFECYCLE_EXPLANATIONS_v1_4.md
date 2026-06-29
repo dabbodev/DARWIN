@@ -146,4 +146,4 @@ Sprint 1 does not add:
 - retained explanation history;
 - package publication;
 - release assets;
-- merge, tag, GitHub release, or version bump beyond `1.3.0`.
+- merge, tag, GitHub release, or version bump beyond `1.4.0`.
