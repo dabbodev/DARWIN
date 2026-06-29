@@ -11,6 +11,8 @@ from darwin.models.stream_offer import (
     LaneAdmissionDecision,
     RendezvousPollResult,
     StreamOfferLifecycleApplyResult,
+    StreamOfferLifecycleAuditSummary,
+    StreamOfferLifecycleExplanation,
     StreamOfferLifecyclePlan,
     StreamOfferStatusTransition,
 )
@@ -39,6 +41,7 @@ from darwin.registry.stream_offers import (
     query_held_stream_offers,
     query_lane_admission_decisions,
     query_rendezvous_poll_results,
+    query_stream_offer_lifecycle_explanations,
     query_stream_offer_status_transitions,
 )
 from darwin.registry.trace_explain import explain_authority_trace
@@ -1738,6 +1741,139 @@ def _stream_offer_lifecycle_apply_result_contains(
     )
 
 
+def _stream_offer_lifecycle_explanation_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    filters = _stream_offer_lifecycle_explanation_filters(assertion, hub_id)
+    source = "action_results"
+    records: list[dict[str, object]]
+    if hub is not None and hub.stream_offer_lifecycle_explanation_history:
+        source = "retained_history"
+        records = [
+            explanation.to_summary()
+            for explanation in query_stream_offer_lifecycle_explanations(
+                hub,
+                hub_id=filters["hub_id"],
+                offer_id=filters["offer_id"],
+                category=filters["category"],
+                reason=filters["reason"],
+                status=filters["status"],
+                source=filters["source"],
+            )
+        ]
+    else:
+        records = [
+            result.to_summary()
+            for result in world.action_results
+            if isinstance(result, StreamOfferLifecycleExplanation)
+        ]
+    records = [
+        record
+        for record in records
+        if _matches_stream_offer_lifecycle_explanation_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"stream offer lifecycle explanation contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub is not None,
+            "source": source,
+        },
+    )
+
+
+def _stream_offer_lifecycle_explanation_history_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    hub = world.registry_hubs.get(hub_id)
+    filters = _stream_offer_lifecycle_explanation_filters(assertion, hub_id)
+    records: list[dict[str, object]] = []
+    if hub is not None:
+        records = [
+            explanation.to_summary()
+            for explanation in query_stream_offer_lifecycle_explanations(
+                hub,
+                hub_id=filters["hub_id"],
+                offer_id=filters["offer_id"],
+                category=filters["category"],
+                reason=filters["reason"],
+                status=filters["status"],
+                source=filters["source"],
+            )
+        ]
+        records = [
+            record
+            for record in records
+            if _matches_stream_offer_lifecycle_explanation_filters(record, filters)
+        ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"stream offer lifecycle explanation history contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub is not None,
+            "source": "retained_history",
+        },
+    )
+
+
+def _stream_offer_lifecycle_audit_summary_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = {
+        "hub_id": hub_id,
+        "total_transitions": _optional_int_field(assertion, "total_transitions"),
+        "explanation_count": _optional_int_field(assertion, "explanation_count"),
+        "offer_id": _optional_filter_str(assertion, "offer_id"),
+        "offer_count": _optional_int_field(assertion, "offer_count"),
+        "status": _optional_filter_str(assertion, "status"),
+        "status_count": _optional_int_field(assertion, "status_count"),
+        "reason": _optional_filter_str(assertion, "reason"),
+        "reason_count": _optional_int_field(assertion, "reason_count"),
+        "category": _optional_filter_str(assertion, "category"),
+        "category_count": _optional_int_field(assertion, "category_count"),
+    }
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, StreamOfferLifecycleAuditSummary)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_stream_offer_lifecycle_audit_summary_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"stream offer lifecycle audit summary contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
 def _stream_offer_status_transition_contains(
     world: World,
     assertion_type: str,
@@ -2261,6 +2397,62 @@ def _matches_stream_offer_lifecycle_apply_result_filters(
     )
 
 
+def _stream_offer_lifecycle_explanation_filters(
+    assertion: dict[str, Any],
+    hub_id: str,
+) -> dict[str, object]:
+    return {
+        "hub_id": hub_id,
+        "offer_id": _optional_filter_str(assertion, "offer_id"),
+        "category": _optional_filter_str(assertion, "category"),
+        "reason": _optional_filter_str(assertion, "reason"),
+        "status": _optional_filter_str(assertion, "status"),
+        "source": _optional_filter_str(assertion, "source"),
+        "checked_at": _optional_int_field(assertion, "checked_at"),
+    }
+
+
+def _matches_stream_offer_lifecycle_explanation_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    for field_name in (
+        "hub_id",
+        "offer_id",
+        "category",
+        "reason",
+        "status",
+        "source",
+        "checked_at",
+    ):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    return True
+
+
+def _matches_stream_offer_lifecycle_audit_summary_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    for field_name in ("hub_id", "total_transitions", "explanation_count"):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    return (
+        _count_field_matches(record, filters, "by_offer_id", "offer_id", "offer_count")
+        and _count_field_matches(record, filters, "by_status", "status", "status_count")
+        and _count_field_matches(record, filters, "by_reason", "reason", "reason_count")
+        and _count_field_matches(
+            record,
+            filters,
+            "by_category",
+            "category",
+            "category_count",
+        )
+    )
+
+
 def _matches_stream_offer_status_transition_filters(
     record: dict[str, object],
     filters: dict[str, object],
@@ -2283,6 +2475,28 @@ def _matches_stream_offer_status_transition_filters(
         and record.get("previous_status") != filters["status"]
         and record.get("new_status") != filters["status"]
     )
+
+
+def _count_field_matches(
+    record: dict[str, object],
+    filters: dict[str, object],
+    count_field_name: str,
+    key_filter_name: str,
+    count_filter_name: str,
+) -> bool:
+    key = filters[key_filter_name]
+    count = filters[count_filter_name]
+    if key is None and count is None:
+        return True
+    values = record.get(count_field_name)
+    if not isinstance(values, dict):
+        return False
+    if key is None:
+        return False
+    actual_count = values.get(key)
+    if count is not None:
+        return actual_count == count
+    return actual_count is not None
 
 
 def _list_field_matches(
@@ -2382,6 +2596,15 @@ _EVALUATORS = {
     "stream_offer_lifecycle_plan_contains": _stream_offer_lifecycle_plan_contains,
     "stream_offer_lifecycle_apply_result_contains": (
         _stream_offer_lifecycle_apply_result_contains
+    ),
+    "stream_offer_lifecycle_explanation_contains": (
+        _stream_offer_lifecycle_explanation_contains
+    ),
+    "stream_offer_lifecycle_explanation_history_contains": (
+        _stream_offer_lifecycle_explanation_history_contains
+    ),
+    "stream_offer_lifecycle_audit_summary_contains": (
+        _stream_offer_lifecycle_audit_summary_contains
     ),
     "stream_offer_status_transition_contains": (
         _stream_offer_status_transition_contains

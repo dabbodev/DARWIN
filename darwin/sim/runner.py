@@ -154,6 +154,12 @@ from darwin.registry.stream_offers import (
     evaluate_lane_admission_policy as evaluate_lane_admission_policy_op,
 )
 from darwin.registry.stream_offers import (
+    explain_stream_offer_lifecycle_apply_result as explain_lifecycle_apply_result_op,
+)
+from darwin.registry.stream_offers import (
+    explain_stream_offer_lifecycle_plan as explain_lifecycle_plan_op,
+)
+from darwin.registry.stream_offers import (
     get_held_stream_offer as get_held_stream_offer_op,
 )
 from darwin.registry.stream_offers import (
@@ -173,6 +179,12 @@ from darwin.registry.stream_offers import (
 )
 from darwin.registry.stream_offers import (
     record_rendezvous_poll_result as record_rendezvous_poll_result_op,
+)
+from darwin.registry.stream_offers import (
+    record_stream_offer_lifecycle_explanations as record_lifecycle_explanations_op,
+)
+from darwin.registry.stream_offers import (
+    summarize_stream_offer_lifecycle_audit as summarize_lifecycle_audit_op,
 )
 from darwin.sim.assertions import AssertionResult, evaluate_assertions
 from darwin.sim.scenarios import Scenario, load_scenario
@@ -360,6 +372,18 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         "mark_stream_offers_discoverable": _step_mark_stream_offers_discoverable,
         "plan_stream_offer_expiration": _step_plan_stream_offer_expiration,
         "apply_stream_offer_lifecycle_plan": _step_apply_stream_offer_lifecycle_plan,
+        "explain_stream_offer_lifecycle_plan": (
+            _step_explain_stream_offer_lifecycle_plan
+        ),
+        "explain_stream_offer_lifecycle_apply_result": (
+            _step_explain_stream_offer_lifecycle_apply_result
+        ),
+        "record_stream_offer_lifecycle_explanations": (
+            _step_record_stream_offer_lifecycle_explanations
+        ),
+        "summarize_stream_offer_lifecycle_audit": (
+            _step_summarize_stream_offer_lifecycle_audit
+        ),
         "evaluate_lane_admission_policy": _step_evaluate_lane_admission_policy,
         "advance_time": _step_advance_time,
     }
@@ -2005,6 +2029,103 @@ def _step_apply_stream_offer_lifecycle_plan(
     )
 
 
+def _step_explain_stream_offer_lifecycle_plan(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    plan = _stream_offer_lifecycle_plan(world, fields, hub.hub_id)
+    explanations = explain_lifecycle_plan_op(plan)
+    world.action_results.extend(explanations)
+    if _bool_field(fields, "record_explanations", False):
+        record_lifecycle_explanations_op(hub, explanations)
+    world.log(
+        (
+            "explained stream offer lifecycle plan "
+            f"at {hub.hub_id}: {len(explanations)} explanations"
+        ),
+        event_type="stream_offer_lifecycle_plan_explained",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="explained",
+        data={"explanations": [explanation.to_summary() for explanation in explanations]},
+    )
+
+
+def _step_explain_stream_offer_lifecycle_apply_result(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    result = _stream_offer_lifecycle_apply_result(world, fields, hub.hub_id)
+    explanations = explain_lifecycle_apply_result_op(result)
+    world.action_results.extend(explanations)
+    if _bool_field(fields, "record_explanations", False):
+        record_lifecycle_explanations_op(hub, explanations)
+    world.log(
+        (
+            "explained stream offer lifecycle apply result "
+            f"at {hub.hub_id}: {len(explanations)} explanations"
+        ),
+        event_type="stream_offer_lifecycle_apply_result_explained",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="explained",
+        data={"explanations": [explanation.to_summary() for explanation in explanations]},
+    )
+
+
+def _step_record_stream_offer_lifecycle_explanations(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    explanations = _stream_offer_lifecycle_explanations(world, fields, hub.hub_id)
+    recorded = record_lifecycle_explanations_op(hub, explanations)
+    world.log(
+        (
+            "recorded stream offer lifecycle explanations "
+            f"at {hub.hub_id}: {len(recorded)}"
+        ),
+        event_type="stream_offer_lifecycle_explanations_recorded",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="recorded",
+        data={"explanations": [explanation.to_summary() for explanation in recorded]},
+    )
+
+
+def _step_summarize_stream_offer_lifecycle_audit(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    explanations = []
+    if _bool_field(fields, "include_action_explanations", False):
+        explanations.extend(
+            _stream_offer_lifecycle_explanations(world, fields, hub.hub_id)
+        )
+    if _bool_field(fields, "include_retained_explanations", False):
+        explanations.extend(hub.stream_offer_lifecycle_explanation_history)
+    result = summarize_lifecycle_audit_op(
+        hub,
+        explanations=explanations or None,
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    world.action_results.append(result)
+    world.log(
+        (
+            "summarized stream offer lifecycle audit "
+            f"at {hub.hub_id}: {result.total_transitions} transitions"
+        ),
+        event_type="stream_offer_lifecycle_audit_summarized",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="summarized",
+        data=result.to_summary(),
+    )
+
+
 def _step_evaluate_lane_admission_policy(
     world: World,
     fields: dict[str, Any],
@@ -2195,6 +2316,59 @@ def _stream_offer_lifecycle_plan(
         "apply_stream_offer_lifecycle_plan requires a prior lifecycle plan result "
         "or explicit plan_checked_at and expired_offer_ids"
     )
+
+
+def _stream_offer_lifecycle_apply_result(
+    world: World,
+    fields: dict[str, Any],
+    hub_id: str,
+) -> Any:
+    plan_checked_at = fields.get("plan_checked_at", fields.get("checked_at"))
+    for result in reversed(world.action_results):
+        if not hasattr(result, "applied_offer_ids"):
+            continue
+        if not hasattr(result, "plan_checked_at"):
+            continue
+        if getattr(result, "hub_id", None) != hub_id:
+            continue
+        if plan_checked_at is not None and result.plan_checked_at != int(plan_checked_at):
+            continue
+        return result
+
+    raise KeyError(
+        "explain_stream_offer_lifecycle_apply_result requires a prior lifecycle "
+        "apply result for the same hub"
+    )
+
+
+def _stream_offer_lifecycle_explanations(
+    world: World,
+    fields: dict[str, Any],
+    hub_id: str,
+) -> list[Any]:
+    category = _optional_str(fields.get("category"))
+    reason = _optional_str(fields.get("reason"))
+    status = _optional_str(fields.get("status"))
+    source = _optional_str(fields.get("source"))
+    offer_id = _optional_str(fields.get("offer_id"))
+    explanations = []
+    for result in world.action_results:
+        if not hasattr(result, "category") or not hasattr(result, "reason"):
+            continue
+        if getattr(result, "hub_id", None) != hub_id:
+            continue
+        if offer_id is not None and getattr(result, "offer_id", None) != offer_id:
+            continue
+        if category is not None and getattr(result, "category", None) != category:
+            continue
+        if reason is not None and getattr(result, "reason", None) != reason:
+            continue
+        if status is not None and getattr(result, "status", None) != status:
+            continue
+        if source is not None and getattr(result, "source", None) != source:
+            continue
+        explanations.append(result)
+    return explanations
 
 
 def _bool_field(fields: dict[str, Any], field_name: str, default: bool) -> bool:

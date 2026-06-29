@@ -1,0 +1,119 @@
+scenario_id: 062_stream_offer_lifecycle_apply_explanation_retained
+name: Stream offer lifecycle apply explanation retained
+category: stream_offer
+description: apply-result explanations classify applied, skipped, and missing outcomes and retain only on explicit request
+tags:
+  - stream_offer
+  - lifecycle
+  - explanation
+  - retained_history
+  - v1.4
+demonstrates:
+  - apply-result explanation reads an existing lifecycle apply result
+  - applied, skipped, and missing outcomes are classified deterministically
+  - retained explanation history is written only with record_explanations
+  - explanation recording is simulator-local and does not mutate transition history
+expected_result: apply-result explanations are appended to retained explanation history only after the explicit record option
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_apply_explained
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 2
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_apply_terminal
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    status: accepted
+    created_order: 0
+    expires_order: 1
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_apply_stale
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 9
+  - action: apply_stream_offer_lifecycle_plan
+    registry_hub: registry_chat_001
+    plan_checked_at: 5
+    expired_offer_ids:
+      - offer_apply_explained
+      - offer_apply_terminal
+      - offer_apply_stale
+      - offer_apply_missing
+    record_transition: false
+  - action: explain_stream_offer_lifecycle_apply_result
+    registry_hub: registry_chat_001
+    plan_checked_at: 5
+    record_explanations: true
+assertions:
+  - type: stream_offer_lifecycle_apply_result_contains
+    registry_hub: registry_chat_001
+    plan_checked_at: 5
+    applied_offer_id: offer_apply_explained
+    skipped_offer_ids:
+      - offer_apply_terminal
+      - offer_apply_stale
+    missing_offer_id: offer_apply_missing
+    recorded_transition_count: 0
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_apply_explained
+    category: applied
+    reason: applied_by_result
+    status: applied
+    source: lifecycle_apply_result
+    checked_at: 5
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_apply_terminal
+    category: skipped
+    reason: skipped_by_result
+    status: skipped
+    source: lifecycle_apply_result
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_apply_missing
+    category: missing
+    reason: missing_by_result
+    status: missing
+    source: lifecycle_apply_result
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    expected_count: 4
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_apply_explained
+    status: expired
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_apply_terminal
+    status: accepted
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_apply_stale
+    status: held
+    expected_count: 1
+  - type: stream_offer_status_transition_contains
+    registry_hub: registry_chat_001
+    expected_count: 0

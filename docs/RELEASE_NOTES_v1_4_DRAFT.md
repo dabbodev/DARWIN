@@ -3,7 +3,7 @@
 Status: planning draft only. DARWIN v1.4.0 is unreleased, untagged, and not
 merged to `main`. The latest released version remains `darwin-sim 1.3.0`.
 
-Sprint 1 through Sprint 3 implementation work has started on the v1.4 planning
+Sprint 1 through Sprint 4 implementation work has started on the v1.4 planning
 branch. These notes remain draft release-note material for a possible
 simulator-first line around lifecycle policy explanation and stream-offer audit
 summaries.
@@ -29,7 +29,8 @@ Possible future slices may include:
 - Retained explanation records only if consistent with existing
   RegistryHub-local audit-history patterns. Sprint 3 adds this explicitly
   recorded helper surface on the planning branch.
-- Scenario DSL coverage after helper and model behavior is stable.
+- Scenario DSL coverage after helper and model behavior is stable. Sprint 4
+  adds this coverage on the planning branch.
 - Limited detailed snapshot visibility for retained explanation history.
 - Release-readiness documentation after scenario coverage exists.
 
@@ -48,8 +49,8 @@ later roadmap explicitly changes them:
   sprint explicitly scopes otherwise.
 - The latest released package and CLI version remain `darwin-sim 1.3.0`
   during planning.
-- The released scenario set remains contiguous from `001` through `060`
-  during planning.
+- The latest released scenario set remains contiguous from `001` through
+  `060`. The v1.4 planning branch now has checked-in scenarios through `063`.
 
 ## Current Limitations
 
@@ -59,7 +60,8 @@ later roadmap explicitly changes them:
   docs.
 - Sprint 3 is limited to explicitly retained RegistryHub-local lifecycle
   explanation history and docs.
-- No v1.4 scenarios exist yet.
+- v1.4 planning scenarios `061` through `063` exist for lifecycle
+  explanations and audit summaries.
 - No v1.4 version bump has been performed.
 - No v1.4 release has been merged, tagged, published, or packaged.
 
@@ -95,6 +97,18 @@ They do not auto-record explanations, mutate held offers, mutate lifecycle
 plans or apply results, mutate transition history, delete offers, run cleanup,
 schedule retries, trigger delivery, change TrafficHub routing, contact
 networks, use DNS, call external services, or add real cryptography.
+
+## Draft Sprint 4 Note
+
+Sprint 4 adds scenario DSL coverage for lifecycle plan explanations,
+apply-result explanations, explicit retained explanation recording, and grouped
+lifecycle audit summaries. Scenarios `061` through `063` cover read-only plan
+classification, explicit retained apply-result explanation history, and audit
+summary grouping by offer, status, reason, and category. The DSL actions do not
+change lifecycle plan/apply semantics, mutate held offers outside the existing
+explicit apply action, mutate transition history, delete offers, change compact
+snapshots, trigger delivery, change TrafficHub routing, contact networks, use
+DNS, call external services, or add real cryptography.
 
 ## Non-Goals
 

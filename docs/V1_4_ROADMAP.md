@@ -1,6 +1,6 @@
 # DARWIN v1.4 Roadmap Draft: Lifecycle Policy Explanation and Stream-Offer Audit Summaries
 
-Status: planning draft with Sprint 1 through Sprint 3 implementation work on
+Status: planning draft with Sprint 1 through Sprint 4 implementation work on
 the v1.4 planning branch. DARWIN v1.4 is unreleased, untagged, and not merged
 to `main`. The latest released version remains `darwin-sim 1.3.0`.
 
@@ -189,25 +189,27 @@ Acceptance targets:
 
 ## Candidate Sprint 4: Scenario DSL Coverage
 
-Status: candidate planning only.
+Status: implemented on the v1.4 planning branch.
 
 Goal: expose stable explanation and summary helpers through scenario YAML only
 after helper behavior is covered by focused tests.
 
-Possible future work:
+Implemented work:
 
-- Add read-only scenario actions for lifecycle plan explanations.
-- Add read-only scenario actions for lifecycle apply-result explanations.
-- Add read-only assertions for grouped lifecycle audit summaries.
-- Add scenarios only after helper/model behavior is stable.
-- Keep scenario output explicit that explanations and summaries are symbolic
+- Added read-only scenario actions for lifecycle plan explanations.
+- Added read-only scenario actions for lifecycle apply-result explanations.
+- Added an explicit scenario action for retained explanation recording.
+- Added a read-only scenario action for grouped lifecycle audit summaries.
+- Added focused assertions for lifecycle explanations, retained explanation
+  history, and grouped lifecycle audit summaries.
+- Added scenarios `061` through `063` after helper/model behavior was stable.
+- Kept scenario output explicit that explanations and summaries are symbolic
   simulator metadata.
 
 Acceptance targets:
 
 - Existing scenarios `001` through `060` continue to pass unchanged.
-- New scenarios, if added in a later implementation sprint, remain contiguous
-  and documented.
+- New scenarios remain contiguous through `063` and are documented.
 - Scenario actions do not deliver messages, change TrafficHub routes, open
   sockets, perform DNS lookup, contact external services, generate keys,
   encrypt payloads, enforce delivery, or claim production security.
@@ -252,7 +254,9 @@ canonical identity, networking, or cryptography.
 v1.4 remains unreleased planning work. Sprint 1 code and tests for read-only
 stream-offer lifecycle explanations exist on the planning branch. Sprint 2 code
 and tests for grouped lifecycle audit summaries also exist on the planning
-branch. No v1.4 scenarios, version bump, merge, tag, GitHub release, package
+branch. Sprint 3 retained explanation history and Sprint 4 scenario DSL
+coverage also exist on the planning branch. No version bump, merge, tag,
+GitHub release, package
 publication, or release assets are part of this roadmap seed.
 
 The latest released DARWIN version remains `darwin-sim 1.3.0` with annotated

@@ -223,6 +223,10 @@ STEP_REQUIRED_FIELDS = {
     "mark_stream_offers_discoverable": ("registry_hub", "offer_ids"),
     "plan_stream_offer_expiration": ("registry_hub", "checked_at"),
     "apply_stream_offer_lifecycle_plan": ("registry_hub",),
+    "explain_stream_offer_lifecycle_plan": ("registry_hub",),
+    "explain_stream_offer_lifecycle_apply_result": ("registry_hub",),
+    "record_stream_offer_lifecycle_explanations": ("registry_hub",),
+    "summarize_stream_offer_lifecycle_audit": ("registry_hub",),
     "evaluate_lane_admission_policy": (
         "registry_hub",
         "policy_id",
@@ -295,6 +299,9 @@ ASSERTION_REQUIRED_FIELDS = {
     "lane_admission_decision_contains": ("registry_hub",),
     "stream_offer_lifecycle_plan_contains": ("registry_hub",),
     "stream_offer_lifecycle_apply_result_contains": ("registry_hub",),
+    "stream_offer_lifecycle_explanation_contains": ("registry_hub",),
+    "stream_offer_lifecycle_explanation_history_contains": ("registry_hub",),
+    "stream_offer_lifecycle_audit_summary_contains": ("registry_hub",),
     "stream_offer_status_transition_contains": ("registry_hub",),
 }
 
@@ -715,6 +722,23 @@ def _validate_assertion_type_fields(
         ):
             _validate_optional_string_list_or_string(assertion, field_name, location, errors)
         return
+    if assertion_type in {
+        "stream_offer_lifecycle_explanation_contains",
+        "stream_offer_lifecycle_explanation_history_contains",
+    }:
+        _validate_optional_non_negative_int(assertion, "checked_at", location, errors)
+        return
+    if assertion_type == "stream_offer_lifecycle_audit_summary_contains":
+        for field_name in (
+            "total_transitions",
+            "explanation_count",
+            "offer_count",
+            "status_count",
+            "reason_count",
+            "category_count",
+        ):
+            _validate_optional_non_negative_int(assertion, field_name, location, errors)
+        return
     if assertion_type == "mailbox_encryption_policy_registered":
         _validate_optional_bool(assertion, "allow_plaintext_fallback", location, errors)
         return
@@ -808,6 +832,27 @@ def _validate_step_type_fields(
             "ignored_offer_ids",
         ):
             _validate_optional_string_list_or_string(step, field_name, location, errors)
+    if action == "explain_stream_offer_lifecycle_plan":
+        _validate_optional_bool(step, "record_explanations", location, errors)
+        for field_name in ("checked_at", "plan_checked_at"):
+            _validate_optional_non_negative_int(step, field_name, location, errors)
+        for field_name in (
+            "expired_offer_ids",
+            "cleanup_candidate_offer_ids",
+            "active_offer_ids",
+            "ignored_offer_ids",
+        ):
+            _validate_optional_string_list_or_string(step, field_name, location, errors)
+    if action == "explain_stream_offer_lifecycle_apply_result":
+        _validate_optional_bool(step, "record_explanations", location, errors)
+        for field_name in ("checked_at", "plan_checked_at"):
+            _validate_optional_non_negative_int(step, field_name, location, errors)
+    if action == "record_stream_offer_lifecycle_explanations":
+        for field_name in ("checked_at",):
+            _validate_optional_non_negative_int(step, field_name, location, errors)
+    if action == "summarize_stream_offer_lifecycle_audit":
+        _validate_optional_bool(step, "include_action_explanations", location, errors)
+        _validate_optional_bool(step, "include_retained_explanations", location, errors)
     if action == "evaluate_lane_admission_policy":
         _validate_optional_bool(step, "require_discoverable", location, errors)
         _validate_optional_non_negative_int(step, "max_visibility_tier", location, errors)
