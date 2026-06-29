@@ -1,6 +1,6 @@
 # DARWIN v1.4 Roadmap Draft: Lifecycle Policy Explanation and Stream-Offer Audit Summaries
 
-Status: planning draft with Sprint 1 through Sprint 4 implementation work on
+Status: planning draft with Sprint 1 through Sprint 5 implementation work on
 the v1.4 planning branch. DARWIN v1.4 is unreleased, untagged, and not merged
 to `main`. The latest released version remains `darwin-sim 1.3.0`.
 
@@ -216,20 +216,24 @@ Acceptance targets:
 
 ## Candidate Sprint 5: Detailed Snapshot Visibility and Release Readiness
 
-Status: candidate planning only.
+Status: implemented on the v1.4 planning branch.
 
 Goal: add visibility and release-readiness docs only after retained data,
 summary shapes, and scenario coverage exist.
 
-Possible future work:
+Implemented work:
 
-- Add detailed snapshot visibility for retained explanation records only if
-  retained data exists.
-- Keep compact `world.snapshot()` unchanged unless explicitly scoped later.
-- Refresh scenario index, documentation links, and release-readiness checks.
-- Convert draft release notes to release-facing language only during explicit
-  release prep.
-- Run full validation before any release decision.
+- Confirmed detailed snapshot visibility for retained explanation records under
+  each RegistryHub.
+- Confirmed top-level detailed snapshot visibility for recent lifecycle
+  explanation action results.
+- Confirmed top-level detailed snapshot visibility for recent lifecycle audit
+  summary action results.
+- Added focused snapshot/debug tests for copied summaries, deterministic
+  ordering, JSON-safe detailed output, and unchanged compact
+  `world.snapshot()` output.
+- Refreshed v1.4 documentation and draft release notes without converting the
+  branch to release status.
 
 Acceptance targets:
 
@@ -237,6 +241,7 @@ Acceptance targets:
   version bump is performed by planning work.
 - v1.3.0 remains the latest released version until a later explicit release
   prep changes that status.
+- Compact `world.snapshot()` output remains unchanged.
 - Docs avoid production networking, DNS, external service, cryptography,
   delivery, privacy, anonymity, firewall, DDoS, cleanup, queue, timer,
   TrafficHub, and canonical identity claims.
@@ -254,10 +259,10 @@ canonical identity, networking, or cryptography.
 v1.4 remains unreleased planning work. Sprint 1 code and tests for read-only
 stream-offer lifecycle explanations exist on the planning branch. Sprint 2 code
 and tests for grouped lifecycle audit summaries also exist on the planning
-branch. Sprint 3 retained explanation history and Sprint 4 scenario DSL
-coverage also exist on the planning branch. No version bump, merge, tag,
-GitHub release, package
-publication, or release assets are part of this roadmap seed.
+branch. Sprint 3 retained explanation history, Sprint 4 scenario DSL coverage,
+and Sprint 5 detailed snapshot/debug visibility also exist on the planning
+branch. No version bump, merge, tag, GitHub release, package publication, or
+release assets are part of this roadmap seed.
 
 The latest released DARWIN version remains `darwin-sim 1.3.0` with annotated
 tag `v1.3.0` and GitHub release:

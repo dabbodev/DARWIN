@@ -97,6 +97,20 @@ Explanation helpers do not:
 They do not read wall-clock time, use live clocks, start timers, poll in the
 background, or require scenario context.
 
+## Snapshot Visibility
+
+Sprint 5 exposes recent explanation action results in detailed world
+snapshots:
+
+```text
+stream_offer_lifecycle_explanations
+```
+
+The snapshot entries are copied `StreamOfferLifecycleExplanation.to_summary()`
+records in action-result order. Mutating detailed snapshot output does not
+mutate explanation records or RegistryHub state. Compact `world.snapshot()`
+output remains unchanged and does not include explanation action results.
+
 ## Non-Goals
 
 Sprint 1 does not add:
@@ -130,7 +144,6 @@ Sprint 1 does not add:
 - canonical identity rewrites;
 - scenario DSL actions or assertions;
 - retained explanation history;
-- detailed snapshot changes;
 - package publication;
 - release assets;
 - merge, tag, GitHub release, or version bump beyond `1.3.0`.

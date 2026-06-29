@@ -3,7 +3,7 @@
 Status: planning draft only. DARWIN v1.4.0 is unreleased, untagged, and not
 merged to `main`. The latest released version remains `darwin-sim 1.3.0`.
 
-Sprint 1 through Sprint 4 implementation work has started on the v1.4 planning
+Sprint 1 through Sprint 5 implementation work has started on the v1.4 planning
 branch. These notes remain draft release-note material for a possible
 simulator-first line around lifecycle policy explanation and stream-offer audit
 summaries.
@@ -31,7 +31,9 @@ Possible future slices may include:
   recorded helper surface on the planning branch.
 - Scenario DSL coverage after helper and model behavior is stable. Sprint 4
   adds this coverage on the planning branch.
-- Limited detailed snapshot visibility for retained explanation history.
+- Detailed snapshot/debug visibility for retained explanation history,
+  explanation action results, and audit summary action results. Sprint 5 adds
+  this hardening on the planning branch.
 - Release-readiness documentation after scenario coverage exists.
 
 ## Compatibility Expectations
@@ -62,6 +64,8 @@ later roadmap explicitly changes them:
   explanation history and docs.
 - v1.4 planning scenarios `061` through `063` exist for lifecycle
   explanations and audit summaries.
+- Sprint 5 is limited to detailed snapshot/debug visibility and docs for
+  existing explanation and audit artifacts.
 - No v1.4 version bump has been performed.
 - No v1.4 release has been merged, tagged, published, or packaged.
 
@@ -109,6 +113,22 @@ change lifecycle plan/apply semantics, mutate held offers outside the existing
 explicit apply action, mutate transition history, delete offers, change compact
 snapshots, trigger delivery, change TrafficHub routing, contact networks, use
 DNS, call external services, or add real cryptography.
+
+## Draft Sprint 5 Note
+
+Sprint 5 hardens detailed snapshot/debug visibility for existing v1.4
+explanation and audit artifacts. Detailed snapshots include retained
+explanation history under
+`registry_hubs.<hub_id>.stream_offer_lifecycle_explanation_history`, recent
+explanation action results under `stream_offer_lifecycle_explanations`, and
+recent audit summary action results under
+`stream_offer_lifecycle_audit_summaries`. Snapshot entries use copied
+JSON-safe summary shapes and preserve deterministic ordering. Compact
+`world.snapshot()` output remains unchanged. This sprint does not add lifecycle
+mutation behavior, cleanup workers, retry loops, durable queues, live timers,
+networking, DNS, external services, delivery changes, TrafficHub routing
+changes, canonical identity rewrites, real cryptography, a version bump, a
+merge, a tag, a release, or package publication.
 
 ## Non-Goals
 

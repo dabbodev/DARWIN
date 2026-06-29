@@ -67,15 +67,21 @@ apply results, transition history, or any TrafficHub state.
 
 ## Snapshot Visibility
 
-Detailed world snapshots include copied explanation summaries under each
-RegistryHub:
+Detailed world snapshots include copied retained explanation summaries under
+each RegistryHub:
 
 ```text
 registry_hubs.<hub_id>.stream_offer_lifecycle_explanation_history
 ```
 
+Sprint 5 keeps this retained-history visibility and verifies that it is
+available in scenario result snapshots after explicit
+`record_stream_offer_lifecycle_explanations` use. Snapshot entries preserve
+retained append order and use copied
+`StreamOfferLifecycleExplanation.to_summary()` records.
+
 Compact `world.snapshot()` output remains unchanged and does not include
-explanation history.
+explanation history or explanation action results.
 
 ## Read-Only Boundaries
 
@@ -133,4 +139,3 @@ Sprint 3 does not add:
 - package publication;
 - release assets;
 - merge, tag, GitHub release, or version bump beyond `1.3.0`.
-

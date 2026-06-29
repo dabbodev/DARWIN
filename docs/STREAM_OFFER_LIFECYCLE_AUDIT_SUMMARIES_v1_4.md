@@ -71,6 +71,21 @@ Mutating a copied summary dictionary returned by `to_summary()` does not mutate
 the summary model, retained history, explanation records, held offers, or any
 RegistryHub state.
 
+## Snapshot Visibility
+
+Sprint 5 exposes recent lifecycle audit summary action results in detailed
+world snapshots:
+
+```text
+stream_offer_lifecycle_audit_summaries
+```
+
+The snapshot entries are copied
+`StreamOfferLifecycleAuditSummary.to_summary()` records in action-result order.
+Grouped count dictionaries remain deterministic and sorted by key. Compact
+`world.snapshot()` output remains unchanged and does not include audit summary
+action results.
+
 ## Non-Goals
 
 Sprint 2 does not add:
