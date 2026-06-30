@@ -11,6 +11,13 @@ V1_3_PLANNING_DOCS = [
     PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md",
     PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_PLANNING_v1_3.md",
 ]
+V1_4_RELEASE_PREP_DOCS = [
+    PROJECT_ROOT / "docs" / "V1_4_ROADMAP.md",
+    PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_4_DRAFT.md",
+    PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_EXPLANATIONS_v1_4.md",
+    PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_AUDIT_SUMMARIES_v1_4.md",
+    PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_EXPLANATION_HISTORY_v1_4.md",
+]
 V1_3_RELEASE_CANDIDATE_CAVEATS = [
     "simulator-local",
     "symbolic",
@@ -28,6 +35,30 @@ V1_3_RELEASE_CANDIDATE_CAVEATS = [
     "retry loops",
     "durable queues",
     "live timers",
+    "TrafficHub routing changes",
+    "delivery behavior changes",
+    "compact snapshot changes",
+    "canonical identity rewrites",
+]
+V1_4_RELEASE_CANDIDATE_CAVEATS = [
+    "simulator-local",
+    "symbolic",
+    "real networking",
+    "sockets",
+    "DNS lookup",
+    "external services",
+    "real cryptography",
+    "production E2EE",
+    "production anonymity",
+    "production privacy",
+    "production firewall",
+    "production DDoS",
+    "automatic cleanup workers",
+    "retry loops",
+    "durable queues",
+    "live timers",
+    "live polling",
+    "lifecycle mutation behavior",
     "TrafficHub routing changes",
     "delivery behavior changes",
     "compact snapshot changes",
@@ -68,6 +99,7 @@ def test_documentation_links_exist():
         PROJECT_ROOT / "docs" / "STREAM_OFFER_AUDIT_HISTORY_v1_2.md",
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_2_DRAFT.md",
         *V1_3_PLANNING_DOCS,
+        *V1_4_RELEASE_PREP_DOCS,
     ]
 
     referenced_paths = {
@@ -94,14 +126,14 @@ def test_version_consistency():
         encoding="utf-8"
     )
     current_release_notes = (
-        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_3_DRAFT.md"
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_4_DRAFT.md"
     ).read_text(encoding="utf-8")
 
     assert darwin.__version__ == project_version
     assert f"[{project_version}]" in changelog or f"## v{project_version}" in changelog
     assert f"v{project_version}" in current_release_notes
-    assert "darwin-sim 1.3.0" in current_release_notes
-    assert "Scenarios `058` through `060`" in current_release_notes
+    assert "darwin-sim 1.4.0" in current_release_notes
+    assert "Scenarios `061` through `063`" in current_release_notes
     assert "real networking" in current_release_notes
     assert "TrafficHub routing changes" in current_release_notes
     assert "v0.1.0" in release_notes
@@ -131,14 +163,50 @@ def test_v1_3_docs_are_release_status_ready():
         assert caveat in combined_docs
 
 
-def test_checked_in_scenarios_are_contiguous_through_060():
+def test_v1_4_docs_are_release_prep_ready():
+    release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_4_DRAFT.md").read_text(
+        encoding="utf-8"
+    )
+    roadmap = (PROJECT_ROOT / "docs" / "V1_4_ROADMAP.md").read_text(
+        encoding="utf-8"
+    )
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    checklist = (PROJECT_ROOT / "RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+    combined_docs = "\n".join(
+        path.read_text(encoding="utf-8") for path in V1_4_RELEASE_PREP_DOCS
+    )
+
+    assert "release-prep candidate" in release_notes
+    assert "unreleased, untagged" in release_notes
+    assert "not merged to `main`" in release_notes
+    assert "branch package and CLI\nversion are `darwin-sim 1.4.0`" in release_notes
+    assert "latest published release remains" in release_notes
+    assert "`darwin-sim 1.3.0` until a later explicit merge" in release_notes
+    assert "Sprint 1 through Sprint 6" in release_notes
+    assert "Scenarios `061` through `063`" in release_notes
+    assert "checked-in scenarios through `063`" in release_notes
+    assert (
+        "v1.4 release prep sets the package and CLI version to `darwin-sim 1.4.0`"
+        in release_notes
+    )
+    assert "No package publication" in release_notes
+    assert "Candidate Sprint 6: Release-Candidate Hardening" in roadmap
+    assert "scenarios `061` through" in readme
+    assert "`063` on the planning branch" in readme
+    assert "v1.4 release prep" in checklist
+
+    for caveat in V1_4_RELEASE_CANDIDATE_CAVEATS:
+        assert caveat in combined_docs
+
+
+def test_checked_in_scenarios_are_contiguous_through_063():
     scenario_numbers = sorted(
         path.name[:3]
         for path in (PROJECT_ROOT / "scenarios").glob("*.yaml")
         if path.name[:3].isdigit()
     )
 
-    assert scenario_numbers == [f"{number:03}" for number in range(1, 61)]
+    assert scenario_numbers == [f"{number:03}" for number in range(1, 64)]
 
 
 def test_license_consistency():

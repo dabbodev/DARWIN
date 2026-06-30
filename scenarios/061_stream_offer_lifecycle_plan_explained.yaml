@@ -1,0 +1,115 @@
+scenario_id: 061_stream_offer_lifecycle_plan_explained
+name: Stream offer lifecycle plan explained
+category: stream_offer
+description: lifecycle plan explanations classify expired, active, terminal, and skipped offer categories without mutation
+tags:
+  - stream_offer
+  - lifecycle
+  - explanation
+  - planning
+  - v1.4
+demonstrates:
+  - plan explanation reads an existing lifecycle plan action result
+  - explicit caller plan explanation can cover skipped ignored offers
+  - plan explanations are not retained unless explicitly requested
+  - explanation actions do not mutate held offer status or transition history
+expected_result: plan explanations are available in action results while held offers and retained explanation history remain unchanged
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_plan_expired
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 2
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_plan_active
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 10
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_plan_terminal
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    status: accepted
+    created_order: 0
+    expires_order: 1
+  - action: plan_stream_offer_expiration
+    registry_hub: registry_chat_001
+    checked_at: 5
+  - action: explain_stream_offer_lifecycle_plan
+    registry_hub: registry_chat_001
+    checked_at: 5
+  - action: explain_stream_offer_lifecycle_plan
+    registry_hub: registry_chat_001
+    plan_checked_at: 5
+    ignored_offer_ids:
+      - offer_plan_skipped
+assertions:
+  - type: stream_offer_lifecycle_explanation_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_plan_expired
+    category: expired
+    reason: expired_by_plan
+    status: expired
+    source: lifecycle_plan
+    checked_at: 5
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_plan_active
+    category: active
+    reason: active_by_plan
+    status: active
+    source: lifecycle_plan
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_plan_terminal
+    category: terminal
+    reason: terminal_cleanup_candidate
+    status: cleanup_candidate
+    source: lifecycle_plan
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_plan_skipped
+    category: skipped
+    reason: ignored_by_plan
+    status: ignored
+    source: lifecycle_plan
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    expected_count: 0
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_plan_expired
+    status: held
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_plan_active
+    status: held
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_plan_terminal
+    status: accepted
+    expected_count: 1
+  - type: stream_offer_status_transition_contains
+    registry_hub: registry_chat_001
+    expected_count: 0

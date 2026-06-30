@@ -11,6 +11,8 @@ from darwin.models.lane import LogicalLane
 from darwin.models.route import LinkMetrics
 from darwin.models.stream_offer import (
     StreamOfferLifecycleApplyResult,
+    StreamOfferLifecycleAuditSummary,
+    StreamOfferLifecycleExplanation,
     StreamOfferLifecyclePlan,
 )
 from darwin.sim.event_log import EventLog
@@ -258,6 +260,10 @@ class World:
                         transition.to_summary()
                         for transition in hub.stream_offer_status_transition_history
                     ],
+                    "stream_offer_lifecycle_explanation_history": [
+                        explanation.to_summary()
+                        for explanation in hub.stream_offer_lifecycle_explanation_history
+                    ],
                     "adapter_endpoints": {
                         endpoint_id: endpoint.to_summary()
                         for endpoint_id, endpoint in sorted(
@@ -400,6 +406,12 @@ class World:
             "stream_offer_lifecycle_apply_results": (
                 self._stream_offer_lifecycle_apply_result_snapshots()
             ),
+            "stream_offer_lifecycle_explanations": (
+                self._stream_offer_lifecycle_explanation_snapshots()
+            ),
+            "stream_offer_lifecycle_audit_summaries": (
+                self._stream_offer_lifecycle_audit_summary_snapshots()
+            ),
         }
 
     def _alias_authority_claim_snapshots(self) -> list[dict[str, object]]:
@@ -437,4 +449,22 @@ class World:
             result.to_summary()
             for result in self.action_results
             if isinstance(result, StreamOfferLifecycleApplyResult)
+        ]
+
+    def _stream_offer_lifecycle_explanation_snapshots(
+        self,
+    ) -> list[dict[str, object]]:
+        return [
+            result.to_summary()
+            for result in self.action_results
+            if isinstance(result, StreamOfferLifecycleExplanation)
+        ]
+
+    def _stream_offer_lifecycle_audit_summary_snapshots(
+        self,
+    ) -> list[dict[str, object]]:
+        return [
+            result.to_summary()
+            for result in self.action_results
+            if isinstance(result, StreamOfferLifecycleAuditSummary)
         ]

@@ -161,14 +161,14 @@ def test_v1_2_checked_in_stream_offer_scenarios_validate_and_run():
     assert not failures
 
 
-def test_v1_2_scenario_sweep_remains_contiguous_001_through_060():
+def test_v1_2_scenario_sweep_remains_contiguous_001_through_063():
     scenario_numbers = sorted(
         int(path.name[:3])
         for path in list_scenario_files(SCENARIOS_DIR)
         if path.name[:3].isdigit()
     )
 
-    assert scenario_numbers == list(range(1, 61))
+    assert scenario_numbers == list(range(1, 64))
 
 
 def test_v1_2_existing_scenarios_001_through_052_still_pass():

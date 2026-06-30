@@ -54,6 +54,25 @@ STREAM_OFFER_STATUS_TRANSITION_REASONS: tuple[str, ...] = (
     "manual_quarantine",
 )
 
+STREAM_OFFER_LIFECYCLE_EXPLANATION_CATEGORIES: tuple[str, ...] = (
+    "expired",
+    "active",
+    "applied",
+    "skipped",
+    "missing",
+    "terminal",
+)
+
+STREAM_OFFER_LIFECYCLE_EXPLANATION_REASONS: tuple[str, ...] = (
+    "expired_by_plan",
+    "active_by_plan",
+    "terminal_cleanup_candidate",
+    "ignored_by_plan",
+    "applied_by_result",
+    "skipped_by_result",
+    "missing_by_result",
+)
+
 RENDEZVOUS_POLL_STATUSES: tuple[str, ...] = (
     "matched",
     "empty",
@@ -488,6 +507,104 @@ class StreamOfferLifecycleApplyResult:
             "skipped_offer_ids": list(self.skipped_offer_ids),
             "missing_offer_ids": list(self.missing_offer_ids),
             "recorded_transition_count": self.recorded_transition_count,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class StreamOfferLifecycleExplanation:
+    """Read-only simulator-local explanation for a lifecycle plan or result."""
+
+    hub_id: str
+    offer_id: str
+    category: str
+    reason: str
+    status: str
+    checked_at: int | None = None
+    source: str | None = None
+    details: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_required_string(self.offer_id, "offer_id")
+        _validate_lifecycle_explanation_category(self.category)
+        _validate_lifecycle_explanation_reason(self.reason)
+        _validate_required_string(self.status, "status")
+        _validate_optional_order(self.checked_at, "checked_at")
+        _validate_optional_string(self.source, "source")
+        object.__setattr__(self, "details", _json_safe_copy(self.details or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe lifecycle explanation metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "offer_id": self.offer_id,
+            "category": self.category,
+            "reason": self.reason,
+            "status": self.status,
+            "checked_at": self.checked_at,
+            "source": self.source,
+            "details": _json_safe_copy(self.details or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class StreamOfferLifecycleAuditSummary:
+    """Read-only grouped lifecycle audit metadata for stream offers."""
+
+    hub_id: str
+    total_transitions: int = 0
+    by_offer_id: dict[str, int] | None = None
+    by_status: dict[str, int] | None = None
+    by_reason: dict[str, int] | None = None
+    by_category: dict[str, int] | None = None
+    explanation_count: int = 0
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_order(self.total_transitions, "total_transitions")
+        _validate_order(self.explanation_count, "explanation_count")
+        object.__setattr__(
+            self,
+            "by_offer_id",
+            _count_dict(self.by_offer_id or {}, "by_offer_id"),
+        )
+        object.__setattr__(
+            self,
+            "by_status",
+            _count_dict(self.by_status or {}, "by_status"),
+        )
+        object.__setattr__(
+            self,
+            "by_reason",
+            _count_dict(self.by_reason or {}, "by_reason"),
+        )
+        object.__setattr__(
+            self,
+            "by_category",
+            _count_dict(self.by_category or {}, "by_category"),
+        )
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe grouped audit metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "total_transitions": self.total_transitions,
+            "by_offer_id": dict(self.by_offer_id or {}),
+            "by_status": dict(self.by_status or {}),
+            "by_reason": dict(self.by_reason or {}),
+            "by_category": dict(self.by_category or {}),
+            "explanation_count": self.explanation_count,
             "metadata": _json_safe_copy(self.metadata or {}),
         }
 
@@ -1064,6 +1181,24 @@ def _validate_status_transition_reason(value: str) -> None:
         )
 
 
+def _validate_lifecycle_explanation_category(value: str) -> None:
+    _validate_required_string(value, "stream offer lifecycle explanation category")
+    if value not in STREAM_OFFER_LIFECYCLE_EXPLANATION_CATEGORIES:
+        raise ValueError(
+            "stream offer lifecycle explanation category must be one of "
+            f"{', '.join(STREAM_OFFER_LIFECYCLE_EXPLANATION_CATEGORIES)}"
+        )
+
+
+def _validate_lifecycle_explanation_reason(value: str) -> None:
+    _validate_required_string(value, "stream offer lifecycle explanation reason")
+    if value not in STREAM_OFFER_LIFECYCLE_EXPLANATION_REASONS:
+        raise ValueError(
+            "stream offer lifecycle explanation reason must be one of "
+            f"{', '.join(STREAM_OFFER_LIFECYCLE_EXPLANATION_REASONS)}"
+        )
+
+
 def _validate_poll_status(value: str) -> None:
     _validate_required_string(value, "rendezvous poll status")
     if value not in RENDEZVOUS_POLL_STATUSES:
@@ -1140,6 +1275,17 @@ def _string_tuple(values: tuple[str, ...] | list[str], field_name: str) -> tuple
     for value in values:
         _validate_required_string(value, field_name)
     return tuple(values)
+
+
+def _count_dict(values: dict[str, int], field_name: str) -> dict[str, int]:
+    if not isinstance(values, dict):
+        raise TypeError(f"{field_name} must be a dict")
+    copied: dict[str, int] = {}
+    for key, count in values.items():
+        _validate_required_string(key, field_name)
+        _validate_order(count, field_name)
+        copied[key] = count
+    return {key: copied[key] for key in sorted(copied)}
 
 
 def _json_safe_copy(value: Any) -> object:

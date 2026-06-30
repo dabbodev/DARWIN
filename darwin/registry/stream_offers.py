@@ -20,6 +20,8 @@ from darwin.models.stream_offer import (
     RendezvousRequest,
     StreamOffer,
     StreamOfferLifecycleApplyResult,
+    StreamOfferLifecycleAuditSummary,
+    StreamOfferLifecycleExplanation,
     StreamOfferLifecyclePlan,
     StreamOfferMode,
     StreamOfferStatus,
@@ -292,6 +294,332 @@ def summarize_stream_offer_lifecycle_apply_result(
     """Return a copied JSON-safe stream offer lifecycle apply result summary."""
     _validate_lifecycle_apply_result(result)
     return result.to_summary()
+
+
+def explain_stream_offer_lifecycle_plan(
+    plan: StreamOfferLifecyclePlan,
+) -> list[StreamOfferLifecycleExplanation]:
+    """Return read-only explanations for lifecycle plan classifications."""
+    _validate_lifecycle_plan(plan)
+    cleanup_candidate_offer_ids = set(plan.cleanup_candidate_offer_ids)
+    explained_offer_ids: set[str] = set()
+    explanations: list[StreamOfferLifecycleExplanation] = []
+
+    for offer_id in plan.expired_offer_ids:
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=plan.hub_id,
+                offer_id=offer_id,
+                category="expired",
+                reason="expired_by_plan",
+                status="expired",
+                checked_at=plan.checked_at,
+                source="lifecycle_plan",
+                details={
+                    "plan_field": "expired_offer_ids",
+                    "cleanup_candidate": offer_id in cleanup_candidate_offer_ids,
+                    "read_only": True,
+                },
+            )
+        )
+        explained_offer_ids.add(offer_id)
+
+    for offer_id in plan.cleanup_candidate_offer_ids:
+        if offer_id in explained_offer_ids:
+            continue
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=plan.hub_id,
+                offer_id=offer_id,
+                category="terminal",
+                reason="terminal_cleanup_candidate",
+                status="cleanup_candidate",
+                checked_at=plan.checked_at,
+                source="lifecycle_plan",
+                details={
+                    "plan_field": "cleanup_candidate_offer_ids",
+                    "cleanup_candidate": True,
+                    "read_only": True,
+                },
+            )
+        )
+        explained_offer_ids.add(offer_id)
+
+    for offer_id in plan.active_offer_ids:
+        if offer_id in explained_offer_ids:
+            continue
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=plan.hub_id,
+                offer_id=offer_id,
+                category="active",
+                reason="active_by_plan",
+                status="active",
+                checked_at=plan.checked_at,
+                source="lifecycle_plan",
+                details={
+                    "plan_field": "active_offer_ids",
+                    "cleanup_candidate": False,
+                    "read_only": True,
+                },
+            )
+        )
+        explained_offer_ids.add(offer_id)
+
+    for offer_id in plan.ignored_offer_ids:
+        if offer_id in explained_offer_ids:
+            continue
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=plan.hub_id,
+                offer_id=offer_id,
+                category="skipped",
+                reason="ignored_by_plan",
+                status="ignored",
+                checked_at=plan.checked_at,
+                source="lifecycle_plan",
+                details={
+                    "plan_field": "ignored_offer_ids",
+                    "cleanup_candidate": False,
+                    "read_only": True,
+                },
+            )
+        )
+        explained_offer_ids.add(offer_id)
+
+    return explanations
+
+
+def explain_stream_offer_lifecycle_apply_result(
+    result: StreamOfferLifecycleApplyResult,
+) -> list[StreamOfferLifecycleExplanation]:
+    """Return read-only explanations for lifecycle apply result outcomes."""
+    _validate_lifecycle_apply_result(result)
+    explanations: list[StreamOfferLifecycleExplanation] = []
+
+    for offer_id in result.applied_offer_ids:
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=result.hub_id,
+                offer_id=offer_id,
+                category="applied",
+                reason="applied_by_result",
+                status="applied",
+                checked_at=result.plan_checked_at,
+                source="lifecycle_apply_result",
+                details={
+                    "result_field": "applied_offer_ids",
+                    "recorded_transition_count": result.recorded_transition_count,
+                    "read_only": True,
+                },
+            )
+        )
+
+    for offer_id in result.skipped_offer_ids:
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=result.hub_id,
+                offer_id=offer_id,
+                category="skipped",
+                reason="skipped_by_result",
+                status="skipped",
+                checked_at=result.plan_checked_at,
+                source="lifecycle_apply_result",
+                details={
+                    "result_field": "skipped_offer_ids",
+                    "read_only": True,
+                },
+            )
+        )
+
+    for offer_id in result.missing_offer_ids:
+        explanations.append(
+            _lifecycle_explanation(
+                hub_id=result.hub_id,
+                offer_id=offer_id,
+                category="missing",
+                reason="missing_by_result",
+                status="missing",
+                checked_at=result.plan_checked_at,
+                source="lifecycle_apply_result",
+                details={
+                    "result_field": "missing_offer_ids",
+                    "read_only": True,
+                },
+            )
+        )
+
+    return explanations
+
+
+def summarize_stream_offer_lifecycle_explanations(
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...],
+) -> list[dict[str, object]]:
+    """Return copied JSON-safe lifecycle explanation summaries in order."""
+    if not isinstance(explanations, list | tuple):
+        raise TypeError("explanations must be a list or tuple")
+    for explanation in explanations:
+        _validate_lifecycle_explanation(explanation)
+    return [explanation.to_summary() for explanation in explanations]
+
+
+def record_stream_offer_lifecycle_explanation(
+    registry_hub: RegistryHub,
+    explanation: StreamOfferLifecycleExplanation,
+) -> StreamOfferLifecycleExplanation:
+    """Append one lifecycle explanation to RegistryHub-local history."""
+    _validate_registry_hub(registry_hub)
+    _validate_lifecycle_explanation(explanation)
+    registry_hub.stream_offer_lifecycle_explanation_history.append(explanation)
+    return explanation
+
+
+def record_stream_offer_lifecycle_explanations(
+    registry_hub: RegistryHub,
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...],
+) -> list[StreamOfferLifecycleExplanation]:
+    """Append lifecycle explanations to RegistryHub-local history in order."""
+    _validate_registry_hub(registry_hub)
+    explanation_records = _lifecycle_explanation_records(explanations)
+    registry_hub.stream_offer_lifecycle_explanation_history.extend(explanation_records)
+    return list(explanation_records)
+
+
+def query_stream_offer_lifecycle_explanations(
+    registry_hub: RegistryHub,
+    *,
+    hub_id: str | None = None,
+    offer_id: str | None = None,
+    category: str | None = None,
+    reason: str | None = None,
+    status: str | None = None,
+    source: str | None = None,
+) -> list[StreamOfferLifecycleExplanation]:
+    """Return retained lifecycle explanations matching additive filters."""
+    _validate_registry_hub(registry_hub)
+    _validate_optional_string(hub_id, "hub_id")
+    _validate_optional_string(offer_id, "offer_id")
+    _validate_optional_string(category, "category")
+    _validate_optional_string(reason, "reason")
+    _validate_optional_string(status, "status")
+    _validate_optional_string(source, "source")
+
+    return [
+        explanation
+        for explanation in registry_hub.stream_offer_lifecycle_explanation_history
+        if (hub_id is None or explanation.hub_id == hub_id)
+        and (offer_id is None or explanation.offer_id == offer_id)
+        and (category is None or explanation.category == category)
+        and (reason is None or explanation.reason == reason)
+        and (status is None or explanation.status == status)
+        and (source is None or explanation.source == source)
+    ]
+
+
+def summarize_stream_offer_lifecycle_explanation_history(
+    registry_hub: RegistryHub,
+) -> list[dict[str, object]]:
+    """Return copied JSON-safe retained lifecycle explanations in append order."""
+    _validate_registry_hub(registry_hub)
+    return summarize_stream_offer_lifecycle_explanations(
+        registry_hub.stream_offer_lifecycle_explanation_history
+    )
+
+
+def summarize_stream_offer_lifecycle_audit(
+    registry_hub: RegistryHub,
+    *,
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...]
+    | None = None,
+    metadata: dict[str, object] | None = None,
+) -> StreamOfferLifecycleAuditSummary:
+    """Return a grouped read-only lifecycle audit summary for a RegistryHub."""
+    _validate_registry_hub(registry_hub)
+    explanation_records = _lifecycle_explanation_records(explanations)
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+
+    by_offer_id: dict[str, int] = {}
+    by_status: dict[str, int] = {}
+    by_reason: dict[str, int] = {}
+    by_category: dict[str, int] = {}
+
+    for transition in registry_hub.stream_offer_status_transition_history:
+        _validate_status_transition(transition)
+        _increment_count(by_offer_id, transition.offer_id)
+        _increment_count(by_status, transition.new_status.status)
+        _increment_count(by_reason, transition.reason.reason)
+
+    for explanation in explanation_records:
+        _increment_count(by_offer_id, explanation.offer_id)
+        _increment_count(by_status, explanation.status)
+        _increment_count(by_reason, explanation.reason)
+        _increment_count(by_category, explanation.category)
+
+    summary_metadata: dict[str, object] = {
+        "simulator_local": True,
+        "read_only": True,
+        "audit_summary_only": True,
+        "policy_decision": False,
+        "registry_hub_mutated": False,
+        "offer_mutated": False,
+        "transitions_recorded": False,
+        "offers_deleted": False,
+        "delivery_behavior_changed": False,
+        "traffic_hub_routing_changed": False,
+        "networking": False,
+        "included_explanations": bool(explanation_records),
+    }
+    if metadata is not None:
+        summary_metadata.update(metadata)
+
+    return StreamOfferLifecycleAuditSummary(
+        hub_id=registry_hub.hub_id,
+        total_transitions=len(registry_hub.stream_offer_status_transition_history),
+        by_offer_id=_sorted_count_dict(by_offer_id),
+        by_status=_sorted_count_dict(by_status),
+        by_reason=_sorted_count_dict(by_reason),
+        by_category=_sorted_count_dict(by_category),
+        explanation_count=len(explanation_records),
+        metadata=summary_metadata,
+    )
+
+
+def summarize_stream_offer_lifecycle_audit_by_offer(
+    registry_hub: RegistryHub,
+    *,
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...]
+    | None = None,
+) -> dict[str, int]:
+    """Return grouped lifecycle audit counts by offer ID."""
+    return dict(
+        summarize_stream_offer_lifecycle_audit(
+            registry_hub,
+            explanations=explanations,
+        ).by_offer_id
+        or {}
+    )
+
+
+def summarize_stream_offer_lifecycle_audit_by_reason(
+    registry_hub: RegistryHub,
+    *,
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...]
+    | None = None,
+) -> dict[str, int]:
+    """Return grouped lifecycle audit counts by transition/explanation reason."""
+    return dict(
+        summarize_stream_offer_lifecycle_audit(
+            registry_hub,
+            explanations=explanations,
+        ).by_reason
+        or {}
+    )
 
 
 def update_held_stream_offer_status(
@@ -1170,6 +1498,27 @@ def _validate_lifecycle_apply_result(result: StreamOfferLifecycleApplyResult) ->
         raise TypeError("result must be a StreamOfferLifecycleApplyResult")
 
 
+def _validate_lifecycle_explanation(
+    explanation: StreamOfferLifecycleExplanation,
+) -> None:
+    if not isinstance(explanation, StreamOfferLifecycleExplanation):
+        raise TypeError("explanation must be a StreamOfferLifecycleExplanation")
+
+
+def _lifecycle_explanation_records(
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...]
+    | None,
+) -> tuple[StreamOfferLifecycleExplanation, ...]:
+    if explanations is None:
+        return ()
+    if not isinstance(explanations, list | tuple):
+        raise TypeError("explanations must be a list, tuple, or None")
+    for explanation in explanations:
+        _validate_lifecycle_explanation(explanation)
+    return tuple(explanations)
+
+
 def _validate_offer(offer: StreamOffer) -> None:
     if not isinstance(offer, StreamOffer):
         raise TypeError("offer must be a StreamOffer")
@@ -1224,3 +1573,45 @@ def _validate_optional_order(value: int | None, field_name: str) -> None:
     if value is None:
         return
     _validate_order(value, field_name)
+
+
+def _lifecycle_explanation(
+    *,
+    hub_id: str,
+    offer_id: str,
+    category: str,
+    reason: str,
+    status: str,
+    checked_at: int,
+    source: str,
+    details: dict[str, object],
+) -> StreamOfferLifecycleExplanation:
+    return StreamOfferLifecycleExplanation(
+        hub_id=hub_id,
+        offer_id=offer_id,
+        category=category,
+        reason=reason,
+        status=status,
+        checked_at=checked_at,
+        source=source,
+        details={
+            "simulator_local": True,
+            "policy_decision": False,
+            "registry_hub_mutated": False,
+            "offer_mutated": False,
+            "transitions_recorded": False,
+            "offers_deleted": False,
+            "delivery_behavior_changed": False,
+            "traffic_hub_routing_changed": False,
+            "networking": False,
+            **details,
+        },
+    )
+
+
+def _increment_count(counts: dict[str, int], key: str) -> None:
+    counts[key] = counts.get(key, 0) + 1
+
+
+def _sorted_count_dict(counts: dict[str, int]) -> dict[str, int]:
+    return {key: counts[key] for key in sorted(counts)}

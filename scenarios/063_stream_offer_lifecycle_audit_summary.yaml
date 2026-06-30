@@ -1,0 +1,105 @@
+scenario_id: 063_stream_offer_lifecycle_audit_summary
+name: Stream offer lifecycle audit summary
+category: stream_offer
+description: audit summary groups transition history and retained explanation history by offer, status, reason, and category
+tags:
+  - stream_offer
+  - lifecycle
+  - audit_summary
+  - retained_history
+  - v1.4
+demonstrates:
+  - audit summary reads retained transition history
+  - audit summary can explicitly include retained explanation history
+  - grouped counts are deterministic by offer, status, reason, and category
+  - summary actions are read-only and do not mutate held offer status
+expected_result: lifecycle audit summary includes one transition and one retained explanation without additional lifecycle mutation
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_expired
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 2
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_active
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 10
+  - action: plan_stream_offer_expiration
+    registry_hub: registry_chat_001
+    checked_at: 5
+  - action: apply_stream_offer_lifecycle_plan
+    registry_hub: registry_chat_001
+    checked_at: 5
+    actor_id: ops_local
+    request_id: lifecycle_audit_001
+    transition_metadata:
+      source: scenario_063
+  - action: explain_stream_offer_lifecycle_apply_result
+    registry_hub: registry_chat_001
+    plan_checked_at: 5
+    record_explanations: true
+  - action: summarize_stream_offer_lifecycle_audit
+    registry_hub: registry_chat_001
+    include_retained_explanations: true
+assertions:
+  - type: stream_offer_lifecycle_audit_summary_contains
+    registry_hub: registry_chat_001
+    total_transitions: 1
+    explanation_count: 1
+    offer_id: offer_audit_expired
+    offer_count: 2
+    expected_count: 1
+  - type: stream_offer_lifecycle_audit_summary_contains
+    registry_hub: registry_chat_001
+    status: expired
+    status_count: 1
+    reason: expired
+    reason_count: 1
+    expected_count: 1
+  - type: stream_offer_lifecycle_audit_summary_contains
+    registry_hub: registry_chat_001
+    status: applied
+    status_count: 1
+    reason: applied_by_result
+    reason_count: 1
+    category: applied
+    category_count: 1
+    expected_count: 1
+  - type: stream_offer_status_transition_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_expired
+    previous_status: held
+    new_status: expired
+    reason: expired
+    actor_id: ops_local
+    request_id: lifecycle_audit_001
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_expired
+    category: applied
+    reason: applied_by_result
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_expired
+    status: expired
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_active
+    status: held
+    expected_count: 1

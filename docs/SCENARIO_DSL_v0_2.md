@@ -941,3 +941,97 @@ Checked-in v1.3 stream offer lifecycle scenarios:
 - `scenarios/060_stream_offer_lifecycle_apply_without_transition.yaml`
 
 The current released scenario set is contiguous through `060`.
+
+## v1.4 Stream Offer Lifecycle Explanation Scenarios
+
+The v1.4 planning branch adds scenario DSL coverage for read-only
+stream-offer lifecycle explanations and grouped audit summaries. Release prep
+sets the branch package and CLI version to `darwin-sim 1.4.0`; the latest
+published release remains `darwin-sim 1.3.0`.
+
+This DSL surface is symbolic simulator metadata only. It does not add
+automatic cleanup workers, retry loops, durable queues, live timers, live
+clocks, live polling, sockets, HTTP/WebSocket behavior, DNS lookup, registrar
+integration, public CA behavior, external services, real cryptography,
+production E2EE, key generation, private key storage, delivery enforcement,
+TrafficHub routing changes, compact snapshot changes, or canonical identity
+rewrites.
+
+Supported v1.4 lifecycle explanation and audit actions:
+
+- `explain_stream_offer_lifecycle_plan`
+  - Required: `registry_hub`
+  - Optional action-result plan selection: `checked_at`
+  - Optional explicit caller plan fields: `plan_checked_at` or `checked_at`,
+    `expired_offer_ids`, `cleanup_candidate_offer_ids`, `active_offer_ids`,
+    `ignored_offer_ids`, `plan_metadata`
+  - Optional retention field: `record_explanations` defaulting to `false`
+  - The action reads a prior `StreamOfferLifecyclePlan` action result or an
+    explicit caller-provided plan and appends read-only
+    `StreamOfferLifecycleExplanation` results to scenario action results.
+    It records explanations only when `record_explanations: true` is supplied.
+- `explain_stream_offer_lifecycle_apply_result`
+  - Required: `registry_hub`
+  - Optional apply-result selection: `plan_checked_at` or `checked_at`
+  - Optional retention field: `record_explanations` defaulting to `false`
+  - The action reads a prior `StreamOfferLifecycleApplyResult` action result
+    and appends read-only explanation results. It records explanations only
+    when `record_explanations: true` is supplied.
+- `record_stream_offer_lifecycle_explanations`
+  - Required: `registry_hub`
+  - Optional filters over prior action-result explanations: `offer_id`,
+    `category`, `reason`, `status`, `source`, `checked_at`
+  - The action explicitly appends matching prior explanation action results to
+    `RegistryHub.stream_offer_lifecycle_explanation_history`.
+- `summarize_stream_offer_lifecycle_audit`
+  - Required: `registry_hub`
+  - Optional: `include_action_explanations`,
+    `include_retained_explanations`, `metadata`
+  - The action reads retained lifecycle transition history and, when
+    explicitly requested, prior action-result explanations and/or retained
+    explanation history. It appends a read-only
+    `StreamOfferLifecycleAuditSummary` to scenario action results.
+
+Supported v1.4 lifecycle explanation and audit assertions:
+
+- `stream_offer_lifecycle_explanation_contains`
+  - Required: `registry_hub`
+  - Optional filters: `offer_id`, `category`, `reason`, `status`, `source`,
+    `checked_at`
+  - Optional count checks: `expected_count`, `min_count`
+  - The assertion prefers retained explanation history when present and falls
+    back to explanation action results otherwise.
+- `stream_offer_lifecycle_explanation_history_contains`
+  - Required: `registry_hub`
+  - Optional filters: `offer_id`, `category`, `reason`, `status`, `source`,
+    `checked_at`
+  - Optional count checks: `expected_count`, `min_count`
+  - The assertion reads only retained
+    `RegistryHub.stream_offer_lifecycle_explanation_history`.
+- `stream_offer_lifecycle_audit_summary_contains`
+  - Required: `registry_hub`
+  - Optional filters: `total_transitions`, `explanation_count`, `offer_id`,
+    `offer_count`, `status`, `status_count`, `reason`, `reason_count`,
+    `category`, `category_count`
+  - Optional count checks: `expected_count`, `min_count`
+  - The assertion reads audit summary action results.
+
+Explanation and audit summary actions do not mutate held offer status,
+lifecycle plans, lifecycle apply results, retained transition history,
+delivery state, TrafficHub routes, canonical identities, or compact snapshots.
+The only new retention path is explicit simulator-local explanation recording.
+
+Detailed snapshots include copied explanation and audit-summary action results
+under `stream_offer_lifecycle_explanations` and
+`stream_offer_lifecycle_audit_summaries`. Retained explanation history remains
+under each RegistryHub at
+`registry_hubs.<hub_id>.stream_offer_lifecycle_explanation_history`. Compact
+`world.snapshot()` output remains unchanged.
+
+Checked-in v1.4 stream offer lifecycle explanation scenarios:
+
+- `scenarios/061_stream_offer_lifecycle_plan_explained.yaml`
+- `scenarios/062_stream_offer_lifecycle_apply_explanation_retained.yaml`
+- `scenarios/063_stream_offer_lifecycle_audit_summary.yaml`
+
+The current v1.4 branch scenario set is contiguous through `063`.

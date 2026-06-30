@@ -13,6 +13,10 @@ DARWIN v1.3.0 is released on `main` as `darwin-sim 1.3.0`. The annotated
 https://github.com/dabbodev/DARWIN/releases/tag/v1.3.0. No package
 publication was performed, and no release assets were uploaded.
 
+DARWIN v1.4.0 release prep is complete on `v1.4/planning` as
+`darwin-sim 1.4.0`. It has not been merged to `main`, tagged, published as a
+GitHub release, published as a package, or shipped with release assets.
+
 v1.3 adds simulator-local rendezvous lifecycle and retained stream-offer
 status transition modeling while keeping mailbox delivery, encrypted delivery,
 canonical identity, TrafficHub routing, alias, stream-offer polling/admission,
@@ -242,6 +246,22 @@ check .`, `python -m pytest` with 808 tests,
 `python scripts/run_all_scenarios.py` for scenarios `001` through `060`, and
 `python -m darwin.cli.main --version` reporting `darwin-sim 1.3.0`. No package
 publication was performed.
+
+v1.4.0 release prep is complete on `v1.4/planning`. The release theme is
+lifecycle policy explanation and stream-offer audit summaries. Sprints 1
+through 5 add read-only lifecycle explanation helpers, grouped audit
+summaries, explicitly retained RegistryHub-local explanation history, scenario
+DSL coverage, detailed snapshot/debug visibility, and scenarios `061` through
+`063` on the planning branch. Sprint 6 is release-candidate hardening and
+documentation audit only. v1.4 remains simulator-local and symbolic. It does
+not add new feature behavior, networking, sockets, HTTP/WebSocket behavior,
+DNS lookup, external services, real cryptography, production E2EE, production
+anonymity/privacy/firewall/DDoS guarantees, delivery enforcement, automatic
+cleanup workers, retry loops, durable queues, live timers, live polling,
+lifecycle mutation behavior beyond existing explicit helpers, TrafficHub
+routing changes, delivery behavior changes, compact snapshot changes,
+canonical identity rewrites, a tag, a release, GitHub release, package
+publication, or release assets.
 
 ## What v0.1 Supports
 
@@ -990,6 +1010,14 @@ For v1.3 rendezvous lifecycle release docs, see:
 - `docs/STREAM_OFFER_LIFECYCLE_HISTORY_v1_3.md`
 - `docs/STREAM_OFFER_LIFECYCLE_PLANNING_v1_3.md`
 - `docs/RELEASE_NOTES_v1_3_DRAFT.md`
+
+For v1.4 lifecycle explanation and audit-summary release-prep docs, see:
+
+- `docs/V1_4_ROADMAP.md`
+- `docs/STREAM_OFFER_LIFECYCLE_EXPLANATIONS_v1_4.md`
+- `docs/STREAM_OFFER_LIFECYCLE_AUDIT_SUMMARIES_v1_4.md`
+- `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_HISTORY_v1_4.md`
+- `docs/RELEASE_NOTES_v1_4_DRAFT.md`
 
 ## What v0.1 Is Not
 
