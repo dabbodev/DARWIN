@@ -1,16 +1,16 @@
-# DARWIN v1.4 Roadmap Draft: Lifecycle Policy Explanation and Stream-Offer Audit Summaries
+# DARWIN v1.4 Roadmap: Lifecycle Policy Explanation and Stream-Offer Audit Summaries
 
-Status: release-prep candidate with Sprint 1 through Sprint 6 work on
-the v1.4 planning branch. DARWIN v1.4.0 is unreleased, untagged, and not
-merged to `main`. The branch package and CLI version are `darwin-sim 1.4.0`;
-the latest published release remains `darwin-sim 1.3.0`.
+DARWIN v1.4 is released on `main` as `darwin-sim 1.4.0`. The annotated
+`v1.4.0` tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package
+publication was performed, and no release assets were uploaded.
 
 Recommended candidate theme: Lifecycle policy explanation and stream-offer
 audit summaries.
 
-This roadmap records the v1.4 planning and release-prep scope. It does not
-authorize additional feature implementation, package publication, a release, or
-a commitment beyond the explicit branch release-prep version bump.
+This roadmap records the implemented v1.4 simulator-local scope. It does not
+authorize additional feature implementation, package publication, release
+assets, or version bumps beyond `1.4.0`.
 
 v1.4 should remain simulator-first and symbolic. It should not become
 production networking, a real DDoS protection system, a firewall product, a
@@ -67,8 +67,8 @@ Out of scope:
   privacy, anonymity, metadata-hiding, or traffic-analysis guarantees.
 - Real cryptography, key generation, private key storage, production E2EE, or
   secure messaging.
-- Version bumps beyond `1.4.0` during release prep.
-- Merge, tag, GitHub release, package publication, or release assets.
+- Version bumps beyond `1.4.0`.
+- Package publication or release assets.
 
 ## Candidate Concepts
 
@@ -107,7 +107,7 @@ Retained explanation records:
 
 ## Candidate Sprint 1: Lifecycle Plan Explanation Helpers
 
-Status: implemented on the v1.4 planning branch.
+Status: implemented for v1.4.
 
 Goal: add the smallest read-only helper surface for explaining lifecycle plan
 classification results.
@@ -135,7 +135,7 @@ Acceptance targets:
 
 ## Candidate Sprint 2: Grouped Stream-Offer Lifecycle Audit Summaries
 
-Status: implemented on the v1.4 planning branch.
+Status: implemented for v1.4.
 
 Goal: provide deterministic read-only summaries over retained lifecycle audit
 metadata.
@@ -162,7 +162,7 @@ Acceptance targets:
 
 ## Candidate Sprint 3: Optional Retained Explanation Records
 
-Status: implemented on the v1.4 planning branch.
+Status: implemented for v1.4.
 
 Goal: consider retained explanation records only if they clearly fit existing
 audit-history patterns.
@@ -191,7 +191,7 @@ Acceptance targets:
 
 ## Candidate Sprint 4: Scenario DSL Coverage
 
-Status: implemented on the v1.4 planning branch.
+Status: implemented for v1.4.
 
 Goal: expose stable explanation and summary helpers through scenario YAML only
 after helper behavior is covered by focused tests.
@@ -218,7 +218,7 @@ Acceptance targets:
 
 ## Candidate Sprint 5: Detailed Snapshot Visibility and Release Readiness
 
-Status: implemented on the v1.4 planning branch.
+Status: implemented for v1.4.
 
 Goal: add visibility and release-readiness docs only after retained data,
 summary shapes, and scenario coverage exist.
@@ -235,15 +235,12 @@ Implemented work:
   ordering, JSON-safe detailed output, and unchanged compact
   `world.snapshot()` output.
 - Refreshed v1.4 documentation and draft release notes for release-prep
-  status without claiming merge, tag, GitHub release, package publication, or
-  release assets.
+  status without claiming package publication or release assets.
 
 Acceptance targets:
 
-- No package publication, merge, tag, GitHub release, or release assets are
-  performed by planning or release-prep work.
-- v1.3.0 remains the latest published release until a later explicit merge,
-  tag, and GitHub release changes that status.
+- No package publication or release assets are performed by planning or
+  release-prep work.
 - Compact `world.snapshot()` output remains unchanged.
 - Docs avoid production networking, DNS, external service, cryptography,
   delivery, privacy, anonymity, firewall, DDoS, cleanup, queue, timer,
@@ -251,7 +248,7 @@ Acceptance targets:
 
 ## Candidate Sprint 6: Release-Candidate Hardening and Documentation Audit
 
-Status: implemented on the v1.4 planning branch.
+Status: implemented for v1.4.
 
 Goal: harden release-readiness checks and audit documentation without adding
 new feature behavior.
@@ -266,13 +263,13 @@ Implemented work:
 - Confirmed `docs/SCENARIO_INDEX.md` remains generated from deterministic
   scenario metadata.
 - Refreshed README, release checklist, roadmap, and draft release notes for
-  v1.4 release-candidate and release-prep status without claiming merge, tag,
-  GitHub release, package publication, or release assets.
+  v1.4 release-candidate and release-prep status without claiming package
+  publication or release assets.
 
 Acceptance targets:
 
-- No version bump beyond `1.4.0`, merge, tag, GitHub release, release assets,
-  package publication, or final release publication language is added.
+- No version bump beyond `1.4.0`, release assets, package publication, or
+  final release publication language is added.
 - No new scenarios are added unless needed to fix deterministic scenario
   index/readiness consistency.
 - No new feature behavior, lifecycle mutation behavior, compact snapshot
@@ -291,19 +288,14 @@ canonical identity, networking, or cryptography.
 
 ## Release Status
 
-v1.4.0 remains unreleased release-prep work on `v1.4/planning`. Sprint 1 code
-and tests for read-only stream-offer lifecycle explanations exist on the
-planning branch. Sprint 2 code and tests for grouped lifecycle audit summaries
-also exist on the planning branch. Sprint 3 retained explanation history,
-Sprint 4 scenario DSL coverage, Sprint 5 detailed snapshot/debug visibility,
-and Sprint 6 release-candidate documentation audit also exist on the planning
-branch. The branch package and CLI version are `darwin-sim 1.4.0`; no merge,
-tag, GitHub release, package publication, or release assets are part of this
-release-prep step.
-
-The latest published DARWIN release remains `darwin-sim 1.3.0` with annotated
-tag `v1.3.0` and GitHub release:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.3.0.
+v1.4.0 is released on `main` as `darwin-sim 1.4.0`. Sprint 1 code and tests
+for read-only stream-offer lifecycle explanations are released. Sprint 2 code
+and tests for grouped lifecycle audit summaries are released. Sprint 3 retained
+explanation history, Sprint 4 scenario DSL coverage, Sprint 5 detailed
+snapshot/debug visibility, and Sprint 6 release-candidate documentation audit
+are released. The annotated `v1.4.0` tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package publication
+was performed, and no release assets were uploaded.
 
 ## Intentionally Deferred Work
 
@@ -321,5 +313,4 @@ https://github.com/dabbodev/DARWIN/releases/tag/v1.3.0.
 - TrafficHub routing changes.
 - Compact snapshot changes unless explicitly scoped by a later sprint.
 - Canonical identity rewrites.
-- Package publication, release assets, merge, tag, GitHub release, or version
-  bump beyond `1.4.0` during release prep.
+- Package publication, release assets, or version bump beyond `1.4.0`.

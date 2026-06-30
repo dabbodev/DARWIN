@@ -944,10 +944,9 @@ The current released scenario set is contiguous through `060`.
 
 ## v1.4 Stream Offer Lifecycle Explanation Scenarios
 
-The v1.4 planning branch adds scenario DSL coverage for read-only
-stream-offer lifecycle explanations and grouped audit summaries. Release prep
-sets the branch package and CLI version to `darwin-sim 1.4.0`; the latest
-published release remains `darwin-sim 1.3.0`.
+The v1.4 release adds scenario DSL coverage for read-only stream-offer
+lifecycle explanations and grouped audit summaries. The released package and
+CLI version report `darwin-sim 1.4.0`.
 
 This DSL surface is symbolic simulator metadata only. It does not add
 automatic cleanup workers, retry loops, durable queues, live timers, live
@@ -1034,4 +1033,4 @@ Checked-in v1.4 stream offer lifecycle explanation scenarios:
 - `scenarios/062_stream_offer_lifecycle_apply_explanation_retained.yaml`
 - `scenarios/063_stream_offer_lifecycle_audit_summary.yaml`
 
-The current v1.4 branch scenario set is contiguous through `063`.
+The current released scenario set is contiguous through `063`.

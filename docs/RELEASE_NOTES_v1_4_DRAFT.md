@@ -1,20 +1,18 @@
 # DARWIN v1.4.0 Draft Release Notes
 
-Status: release-prep candidate on `v1.4/planning`. DARWIN v1.4.0 is
-unreleased, untagged, and not merged to `main`. The branch package and CLI
-version are `darwin-sim 1.4.0`; the latest published release remains
-`darwin-sim 1.3.0` until a later explicit merge, tag, GitHub release, or
-publication step.
+Status: released on `main` as `darwin-sim 1.4.0`. The annotated `v1.4.0` tag
+and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package
+publication was performed, and no release assets were uploaded.
 
-Sprint 1 through Sprint 6 work exists on the v1.4 planning branch. These
-release notes summarize the release-facing scope for lifecycle policy
-explanation and stream-offer audit summaries. No package publication has been
-performed, and no release assets have been uploaded.
+Sprint 1 through Sprint 6 work has been released. These release notes summarize
+the release-facing scope for lifecycle policy explanation and stream-offer
+audit summaries.
 
-This release-prep candidate is symbolic simulator metadata flow only. It is
-not real networking, not a network service, not production DDoS protection,
-not a firewall, not a privacy or anonymity system, not DNS, not an external
-service, and not real cryptography or production E2EE.
+This release is symbolic simulator metadata flow only. It is not real
+networking, not a network service, not production DDoS protection, not a
+firewall, not a privacy or anonymity system, not DNS, not an external service,
+and not real cryptography or production E2EE.
 
 ## Release Theme
 
@@ -36,7 +34,7 @@ v1.4 adds:
   explanation action results, and audit summary action results.
 - Release-candidate hardening and documentation/readiness coverage through
   checked-in scenarios through `063`.
-- v1.4 release prep sets the package and CLI version to `darwin-sim 1.4.0`.
+- v1.4 release prep set the package and CLI version to `darwin-sim 1.4.0`.
 
 ## Compatibility
 
@@ -48,11 +46,10 @@ v1.4 adds:
   remains unchanged outside explicitly scoped v1.4 helper surfaces.
 - Existing retained lifecycle transition history remains unchanged.
 - Compact `world.snapshot()` output remains unchanged.
-- The branch scenario set is contiguous from `001` through `063`.
+- The released scenario set is contiguous from `001` through `063`.
 - Scenarios `061` through `063` cover v1.4 lifecycle explanation and audit
   summary behavior.
-- No merge, tag, GitHub release, package publication, or release-asset upload
-  has been performed.
+- No package publication or release-asset upload was performed.
 
 ## Sprint Summary
 
@@ -104,8 +101,8 @@ recent audit summary action results under
 JSON-safe summary shapes and preserve deterministic ordering. Compact
 `world.snapshot()` output remains unchanged.
 
-Sprint 6 hardens release-readiness and documentation checks for the v1.4
-planning branch. It ensures the v1.4 roadmap, draft release notes, lifecycle
+Sprint 6 hardens release-readiness and documentation checks for v1.4. It
+ensures the v1.4 roadmap, draft release notes, lifecycle
 explanation docs, audit summary docs, and retained explanation history docs
 are included in documentation link/readiness coverage; confirms checked-in
 scenario coverage remains contiguous from `001` through `063`; and keeps
@@ -129,8 +126,10 @@ security, or change compact `world.snapshot()` output.
 
 ## Current Limitations
 
-- v1.4.0 is prepared on `v1.4/planning` but has not been merged, tagged,
-  released on GitHub, published as a package, or shipped with release assets.
+- v1.4.0 is released on `main` as `darwin-sim 1.4.0`.
+- The annotated `v1.4.0` tag and GitHub release exist:
+  https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0.
+- No package publication was performed, and no release assets were uploaded.
 - Lifecycle explanations are read-only summaries over existing lifecycle plan
   and apply-result metadata.
 - Lifecycle audit summaries are read-only grouped summaries over retained
@@ -177,16 +176,15 @@ v1.4 does not add:
 - canonical identity rewrites;
 - package publication;
 - release assets;
-- merge, tag, or GitHub release;
 - version bumps beyond `1.4.0`.
 
 ## Release Readiness
 
-Release-prep validation for v1.4.0 is expected to pass
+The final v1.4.0 validation passed
 `python -m ruff check .`, `python -m pytest` with 836 tests,
 `python scripts/run_all_scenarios.py` for scenarios `001` through `063`, and
 `python -m darwin.cli.main --version` reporting `darwin-sim 1.4.0`.
 
-The v1.4.0 branch remains ready for a later explicit merge, annotated tag,
-GitHub release, and package-publication decision. Those steps are outside this
-release-prep task.
+The v1.4.0 release is complete after full validation, merge to `main`,
+annotated tag creation, and GitHub release publication. Package publication was
+intentionally not performed, and no release assets were uploaded.

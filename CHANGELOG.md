@@ -2,9 +2,10 @@
 
 ## [1.4.0] - 2026-06-29
 
-DARWIN v1.4.0 release prep has been completed on `v1.4/planning`. It has not
-been merged to `main`, tagged, published as a GitHub release, published as a
-package, or shipped with release assets.
+DARWIN v1.4.0 has been merged to `main`, tagged as annotated `v1.4.0`, and
+published as a GitHub release:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package
+publication was performed, and no release assets were uploaded.
 
 Added:
 
@@ -35,7 +36,7 @@ Compatibility and limits:
   snapshot, retained-history, and canonical identity behavior remains
   unchanged outside the explicit v1.4 lifecycle explanation and audit-summary
   helper surfaces.
-- The branch scenario set runs contiguously from `001` through `063`, with
+- The released scenario set runs contiguously from `001` through `063`, with
   scenarios `061` through `063` covering v1.4 symbolic lifecycle explanation
   and audit-summary outcomes.
 - No real networking, sockets, HTTP/WebSocket behavior, DNS lookup, registrar
@@ -44,10 +45,10 @@ Compatibility and limits:
   automatic cleanup workers, retry loops, durable queues, live timers, live
   clocks, live polling, lifecycle mutation behavior, TrafficHub routing
   changes, compact snapshot changes, canonical identity rewrites, production
-  anonymity/privacy/firewall/DDoS guarantees, merge, tag, GitHub release,
-  package publication, uploaded release assets, or additional feature
-  artifacts are added by this release-prep work.
-- Final v1.4.0 validation is expected to pass `python -m ruff check .`,
+  anonymity/privacy/firewall/DDoS guarantees, package publication, uploaded
+  release assets, or additional feature artifacts are added by this simulator
+  work.
+- The final v1.4.0 validation passed `python -m ruff check .`,
   `python -m pytest` with 836 tests,
   `python scripts/run_all_scenarios.py` for scenarios `001` through `063`,
   and `python -m darwin.cli.main --version` reporting

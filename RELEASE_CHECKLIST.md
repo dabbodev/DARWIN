@@ -594,13 +594,12 @@ python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
 ```
 
-# DARWIN v1.4 Lifecycle Explanation Release-Prep Checklist
+# DARWIN v1.4 Lifecycle Explanation Release Checklist
 
-v1.4.0 release prep is complete on `v1.4/planning`. It is unreleased,
-untagged, not merged to `main`, and not published. The branch package and CLI
-version are `darwin-sim 1.4.0`; the latest published release remains
-`darwin-sim 1.3.0` until a later explicit merge, tag, GitHub release, or
-publication step.
+v1.4.0 is released on `main` as `darwin-sim 1.4.0`. The annotated `v1.4.0`
+tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package publication
+was performed, and no release assets were uploaded.
 
 - [x] v1.4 planning roadmap seed is checked in at `docs/V1_4_ROADMAP.md`.
 - [x] v1.4 draft release notes are checked in at
@@ -611,9 +610,8 @@ publication step.
   `docs/STREAM_OFFER_LIFECYCLE_AUDIT_SUMMARIES_v1_4.md`.
 - [x] v1.4 retained explanation history docs are checked in at
   `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_HISTORY_v1_4.md`.
-- [x] README links to the v1.4 release-prep docs while preserving v1.3.0 as
-  the latest published release.
-- [x] CHANGELOG contains a dated `1.4.0` release-prep section.
+- [x] README links to the v1.4 release docs.
+- [x] CHANGELOG contains a dated `1.4.0` release section.
 - [x] Package version is confirmed as `1.4.0`.
 - [x] CLI version reports `darwin-sim 1.4.0`.
 - [x] Sprints 1 through 5 implementation scope is documented as
@@ -621,16 +619,14 @@ publication step.
 - [x] Sprint 6 is v1.4 release-candidate hardening and documentation audit
   only.
 - [x] Scenarios `061` through `063` validate and run.
-- [x] Planning-branch scenario metadata is contiguous from `001` through
-  `063`.
+- [x] Released scenario metadata is contiguous from `001` through `063`.
 - [x] Scenario index is current and generated from deterministic scenario
   metadata.
 - [x] v1.4 documentation readiness checks include the roadmap, draft release
   notes, lifecycle explanation docs, audit summary docs, and retained
   explanation history docs.
 - [x] v1.4 draft release notes summarize Sprint 1 through Sprint 6 and
-  release-prep status without claiming merge, tag, GitHub release, package
-  publication, or release assets.
+  release status without claiming package publication or release assets.
 - [x] No new v1.4 feature behavior or scenarios are added by
   release-candidate hardening.
 - [x] Planning scope is limited to lifecycle policy explanation and
@@ -648,10 +644,10 @@ publication step.
   workers, retry loops, durable queues, live timers, networking, DNS, external
   services, real cryptography, delivery changes, TrafficHub routing changes,
   or canonical identity rewrites.
-- [x] No merge, tag, GitHub release, release assets, or package publication is
-  performed by release prep.
+- [x] Merge to `main`, annotated tag, and GitHub release are complete.
+- [x] No release assets or package publication were performed.
 
-## v1.4 Release-Prep Validation Commands
+## v1.4 Release Validation Commands
 
 ```bash
 python -m ruff check .

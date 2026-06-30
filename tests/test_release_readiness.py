@@ -163,7 +163,7 @@ def test_v1_3_docs_are_release_status_ready():
         assert caveat in combined_docs
 
 
-def test_v1_4_docs_are_release_prep_ready():
+def test_v1_4_docs_are_release_status_ready():
     release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_4_DRAFT.md").read_text(
         encoding="utf-8"
     )
@@ -176,24 +176,24 @@ def test_v1_4_docs_are_release_prep_ready():
         path.read_text(encoding="utf-8") for path in V1_4_RELEASE_PREP_DOCS
     )
 
-    assert "release-prep candidate" in release_notes
-    assert "unreleased, untagged" in release_notes
-    assert "not merged to `main`" in release_notes
-    assert "branch package and CLI\nversion are `darwin-sim 1.4.0`" in release_notes
-    assert "latest published release remains" in release_notes
-    assert "`darwin-sim 1.3.0` until a later explicit merge" in release_notes
+    assert "released on `main` as `darwin-sim 1.4.0`" in release_notes
+    assert "https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0" in release_notes
+    assert "No package publication was performed" in release_notes
+    assert "no release assets were uploaded" in release_notes
     assert "Sprint 1 through Sprint 6" in release_notes
     assert "Scenarios `061` through `063`" in release_notes
     assert "checked-in scenarios through `063`" in release_notes
     assert (
-        "v1.4 release prep sets the package and CLI version to `darwin-sim 1.4.0`"
+        "v1.4 release prep set the package and CLI version to `darwin-sim 1.4.0`"
         in release_notes
     )
-    assert "No package publication" in release_notes
-    assert "Candidate Sprint 6: Release-Candidate Hardening" in roadmap
+    assert "The final v1.4.0 validation passed" in release_notes
+    assert "python -m pytest` with 836 tests" in release_notes
+    assert "DARWIN v1.4 is released on `main` as `darwin-sim 1.4.0`" in roadmap
+    assert "Sprint 6: Release-Candidate Hardening" in roadmap
     assert "scenarios `061` through" in readme
-    assert "`063` on the planning branch" in readme
-    assert "v1.4 release prep" in checklist
+    assert "through `063`" in readme
+    assert "v1.4.0 is released on `main` as `darwin-sim 1.4.0`" in checklist
 
     for caveat in V1_4_RELEASE_CANDIDATE_CAVEATS:
         assert caveat in combined_docs
