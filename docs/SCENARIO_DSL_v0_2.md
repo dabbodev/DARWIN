@@ -1046,8 +1046,8 @@ automatic cleanup workers, retry loops, durable queues, live timers, live
 clocks, live polling, sockets, HTTP/WebSocket behavior, DNS lookup, registrar
 integration, public CA behavior, external services, real cryptography,
 production E2EE, key generation, private key storage, delivery enforcement,
-TrafficHub routing changes, compact snapshot changes, detailed snapshot
-changes, or canonical identity rewrites.
+TrafficHub routing changes, compact snapshot changes, or canonical identity
+rewrites.
 
 Supported v1.5 lifecycle retention and pruning actions:
 
@@ -1122,7 +1122,14 @@ Retention classification and pruning-plan actions are read-only. The pruning
 apply action is explicit and does not mutate held offers, stream offers,
 lifecycle plans, lifecycle apply results, transition history, polling history,
 admission history, delivery state, TrafficHub state or routing, canonical
-identity, compact snapshots, or detailed snapshots.
+identity, or compact snapshots.
+
+Detailed snapshots include copied v1.5 retention and pruning action-result
+summaries at top level under
+`stream_offer_lifecycle_retention_decisions`,
+`stream_offer_lifecycle_pruning_plans`, and
+`stream_offer_lifecycle_pruning_apply_results`. Compact `world.snapshot()`
+output remains unchanged.
 
 Checked-in v1.5 lifecycle retention and pruning scenarios:
 

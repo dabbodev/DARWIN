@@ -10,7 +10,7 @@ Recommended candidate theme: Lifecycle explanation retention policy and audit
 pruning summaries.
 
 This roadmap records candidate planning scope and the implemented Sprint 1
-through Sprint 4 planning slices. It does not authorize version bumps, package
+through Sprint 5 planning slices. It does not authorize version bumps, package
 publication, release assets, tagging, release creation, or changes to released
 v1.4 behavior.
 
@@ -239,10 +239,35 @@ Acceptance targets:
 - Compact `world.snapshot()` output remains unchanged.
 - No automatic cleanup workers, retry loops, durable queues, live timers,
   live clocks, networking, DNS lookup, external services, real cryptography,
-  delivery changes, TrafficHub routing changes, detailed snapshot changes, or
-  canonical identity rewrites are introduced.
+  delivery changes, TrafficHub routing changes, or canonical identity rewrites
+  are introduced.
 
-## Candidate Sprint 5: Grouped Retention and Audit Summaries
+## Sprint 5: Detailed Snapshot Visibility
+
+Status: implemented on `v1.5/planning`.
+
+Goal: add detailed snapshot/debug visibility only after retained policy,
+pruning-plan, or summary data exists.
+
+Implemented:
+
+- Top-level detailed snapshot field
+  `stream_offer_lifecycle_retention_decisions`.
+- Top-level detailed snapshot field `stream_offer_lifecycle_pruning_plans`.
+- Top-level detailed snapshot field
+  `stream_offer_lifecycle_pruning_apply_results`.
+- Copied JSON-safe summaries for existing v1.5 action results.
+- Deterministic action-result ordering matching existing detailed lifecycle
+  snapshot conventions.
+
+Acceptance targets:
+
+- No compact snapshot change is introduced.
+- Detailed snapshot data does not imply production privacy, security,
+  compliance, storage, delivery, routing, networking, DNS, or cryptography
+  behavior.
+
+## Candidate Sprint 6: Grouped Retention and Audit Summaries
 
 Status: draft planning only; not implemented.
 
@@ -266,28 +291,6 @@ Acceptance targets:
 - Existing retained histories remain RegistryHub-local simulator state, not
   production logs or compliance records.
 - Compact `world.snapshot()` output remains unchanged.
-
-## Candidate Sprint 6: Detailed Snapshot Visibility
-
-Status: draft planning only; not implemented.
-
-Goal: add detailed snapshot/debug visibility only after retained policy,
-pruning-plan, or summary data exists.
-
-Possible future work:
-
-- Consider detailed snapshot visibility for recent retention policies, pruning
-  plans, and grouped retention summaries.
-- Keep detailed output copied, JSON-safe, deterministic, and explicitly
-  diagnostic.
-- Preserve compact `world.snapshot()` output unchanged.
-
-Acceptance targets:
-
-- No compact snapshot change is introduced.
-- Detailed snapshot data does not imply production privacy, security,
-  compliance, storage, delivery, routing, networking, DNS, or cryptography
-  behavior.
 
 ## Candidate Sprint 7: Release-Readiness Documentation
 
@@ -324,7 +327,7 @@ cryptography, changing compact snapshots, or bumping the released version.
 
 ## Release Status
 
-v1.5 is unreleased. Sprint 1 through Sprint 4 planning work exists on the
+v1.5 is unreleased. Sprint 1 through Sprint 5 planning work exists on the
 planning branch, including focused v1.5 scenario coverage through `066`, but
 no release-candidate work, version bump, merge to `main`, tag, GitHub release,
 package publication, or release assets exist.

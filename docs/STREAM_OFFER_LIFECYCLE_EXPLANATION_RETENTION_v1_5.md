@@ -78,6 +78,16 @@ a copied JSON-safe summary. Mutating the summary does not mutate the decision,
 the policy, explanation records, retained history, held offers, lifecycle
 plans, apply results, transition history, or TrafficHub state.
 
+## Detailed Snapshot Visibility
+
+Sprint 5 exposes retention decision action results in detailed simulator
+snapshots under the top-level
+`stream_offer_lifecycle_retention_decisions` field. Entries use the existing
+copied JSON-safe retention decision summary shape.
+
+Compact `world.snapshot()` output remains unchanged and does not include
+retention decision action results.
+
 ## Classification Rules
 
 Classification is deterministic and input-order preserving.
@@ -164,7 +174,6 @@ Sprint 1 does not add:
 - TrafficHub routing changes;
 - canonical identity rewrites;
 - scenario DSL actions or assertions;
-- detailed snapshot changes;
 - compact snapshot changes;
 - prune/apply mutation behavior;
 - package publication;

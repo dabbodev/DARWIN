@@ -104,6 +104,18 @@ The apply helper requires an explicit `RegistryHub` and explicit
 scenario context, does not use live clocks, and does not run unless a caller
 invokes it directly.
 
+## Detailed Snapshot Visibility
+
+Sprint 5 exposes pruning action results in detailed simulator snapshots under
+top-level diagnostic fields:
+
+- `stream_offer_lifecycle_pruning_plans`
+- `stream_offer_lifecycle_pruning_apply_results`
+
+Entries use the existing copied JSON-safe pruning plan and pruning apply-result
+summary shapes. Compact `world.snapshot()` output remains unchanged and does
+not include pruning plan or pruning apply-result action results.
+
 ## Planning Rules
 
 Pruning plans preserve Sprint 1 retention classification semantics:

@@ -13,6 +13,9 @@ from darwin.models.stream_offer import (
     StreamOfferLifecycleApplyResult,
     StreamOfferLifecycleAuditSummary,
     StreamOfferLifecycleExplanation,
+    StreamOfferLifecycleExplanationPruningApplyResult,
+    StreamOfferLifecycleExplanationPruningPlan,
+    StreamOfferLifecycleExplanationRetentionDecision,
     StreamOfferLifecyclePlan,
 )
 from darwin.sim.event_log import EventLog
@@ -412,6 +415,15 @@ class World:
             "stream_offer_lifecycle_audit_summaries": (
                 self._stream_offer_lifecycle_audit_summary_snapshots()
             ),
+            "stream_offer_lifecycle_retention_decisions": (
+                self._stream_offer_lifecycle_retention_decision_snapshots()
+            ),
+            "stream_offer_lifecycle_pruning_plans": (
+                self._stream_offer_lifecycle_pruning_plan_snapshots()
+            ),
+            "stream_offer_lifecycle_pruning_apply_results": (
+                self._stream_offer_lifecycle_pruning_apply_result_snapshots()
+            ),
         }
 
     def _alias_authority_claim_snapshots(self) -> list[dict[str, object]]:
@@ -467,4 +479,31 @@ class World:
             result.to_summary()
             for result in self.action_results
             if isinstance(result, StreamOfferLifecycleAuditSummary)
+        ]
+
+    def _stream_offer_lifecycle_retention_decision_snapshots(
+        self,
+    ) -> list[dict[str, object]]:
+        return [
+            result.to_summary()
+            for result in self.action_results
+            if isinstance(result, StreamOfferLifecycleExplanationRetentionDecision)
+        ]
+
+    def _stream_offer_lifecycle_pruning_plan_snapshots(
+        self,
+    ) -> list[dict[str, object]]:
+        return [
+            result.to_summary()
+            for result in self.action_results
+            if isinstance(result, StreamOfferLifecycleExplanationPruningPlan)
+        ]
+
+    def _stream_offer_lifecycle_pruning_apply_result_snapshots(
+        self,
+    ) -> list[dict[str, object]]:
+        return [
+            result.to_summary()
+            for result in self.action_results
+            if isinstance(result, StreamOfferLifecycleExplanationPruningApplyResult)
         ]

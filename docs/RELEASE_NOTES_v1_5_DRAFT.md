@@ -6,7 +6,7 @@ annotated `v1.4.0` tag and GitHub release exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package
 publication was performed, and no release assets were uploaded.
 
-Sprint 1 through Sprint 4 planning work has been added on the v1.5 planning
+Sprint 1 through Sprint 5 planning work has been added on the v1.5 planning
 branch, including focused scenario DSL coverage through `066`. No
 release-candidate work, version bump, merge to `main`, tag, GitHub release,
 package publication, or release assets exist yet. These notes remain a draft
@@ -136,17 +136,23 @@ pruning-plan actions are read-only. The apply action mutates only
 `RegistryHub.stream_offer_lifecycle_explanation_history`; it does not mutate
 held offers, stream offers, lifecycle plans, lifecycle apply results,
 transition history, polling or admission history, delivery state, TrafficHub
-state or routing, canonical identity, compact snapshots, or detailed
-snapshots.
+state or routing, canonical identity, or compact snapshots.
 
-Sprint 5 may add grouped retention and audit summaries over retained
+Sprint 5 adds detailed snapshot/debug visibility for v1.5 lifecycle retention
+and pruning action results:
+
+- `stream_offer_lifecycle_retention_decisions`
+- `stream_offer_lifecycle_pruning_plans`
+- `stream_offer_lifecycle_pruning_apply_results`
+
+The fields are copied JSON-safe detailed-snapshot summaries of existing action
+results. Compact `world.snapshot()` output remains unchanged, and no retention
+classification, pruning-plan, or pruning-apply semantics change.
+
+Sprint 6 may add grouped retention and audit summaries over retained
 explanation history and pruning-plan metadata. The summaries should remain
 simulator-local diagnostics, not durable audit trails, production telemetry,
 security evidence, privacy guarantees, or compliance records.
-
-Sprint 6 may add detailed snapshot/debug visibility only after retained
-policy, pruning-plan, or summary data exists. Compact `world.snapshot()` output
-should remain unchanged.
 
 Sprint 7 may harden release-readiness documentation only after scenario
 coverage exists. Planning work must not create release assets, package
@@ -167,7 +173,7 @@ remains unreleased, and the package and CLI version remain
 ## Current Limitations
 
 - v1.5 is unreleased.
-- Sprint 1 through Sprint 4 planning work has been implemented.
+- Sprint 1 through Sprint 5 planning work has been implemented.
 - Focused helper and scenario tests have been added.
 - v1.5 scenarios `064` through `066` have been added on the planning branch.
 - No version bump has been performed.
