@@ -105,6 +105,7 @@ from darwin.registry.operations import (
     resolve_label,
 )
 from darwin.registry.stream_offers import (
+    apply_stream_offer_lifecycle_explanation_pruning_plan,
     apply_stream_offer_lifecycle_plan,
     classify_stream_offer_lifecycle_explanations_for_retention,
     evaluate_lane_admission_policy,
@@ -136,6 +137,7 @@ from darwin.registry.stream_offers import (
     summarize_stream_offer_lifecycle_audit_by_offer,
     summarize_stream_offer_lifecycle_audit_by_reason,
     summarize_stream_offer_lifecycle_explanation_history,
+    summarize_stream_offer_lifecycle_explanation_pruning_apply_result,
     summarize_stream_offer_lifecycle_explanation_pruning_by_category,
     summarize_stream_offer_lifecycle_explanation_pruning_by_reason,
     summarize_stream_offer_lifecycle_explanation_pruning_plan,
@@ -157,6 +159,7 @@ __all__ = [
     "alias_exists",
     "AliasConflictQueryResult",
     "AliasHistoryQueryResult",
+    "apply_stream_offer_lifecycle_explanation_pruning_plan",
     "apply_stream_offer_lifecycle_plan",
     "AuthorityDecisionQueryResult",
     "AuthorityOutcomeQueryResult",
@@ -267,6 +270,7 @@ __all__ = [
     "summarize_stream_offer_lifecycle_audit_by_offer",
     "summarize_stream_offer_lifecycle_audit_by_reason",
     "summarize_stream_offer_lifecycle_explanation_history",
+    "summarize_stream_offer_lifecycle_explanation_pruning_apply_result",
     "summarize_stream_offer_lifecycle_explanation_pruning_by_category",
     "summarize_stream_offer_lifecycle_explanation_pruning_by_reason",
     "summarize_stream_offer_lifecycle_explanation_pruning_plan",

@@ -90,16 +90,33 @@ networks, use DNS, call external services, change compact snapshots, change
 delivery, change TrafficHub routing, rewrite canonical identity, or add real
 cryptography.
 
-Sprint 3 may add grouped retention and audit summaries over retained
+Sprint 3 adds an explicit opt-in pruning apply helper for retained lifecycle
+explanation history:
+
+- `StreamOfferLifecycleExplanationPruningApplyResult`
+- `apply_stream_offer_lifecycle_explanation_pruning_plan(...)`
+- `summarize_stream_offer_lifecycle_explanation_pruning_apply_result(...)`
+
+The helper requires an explicit `RegistryHub` and explicit pruning plan. It
+removes only currently retained explanation-history records whose deterministic
+keys match plan candidates, preserves the order of remaining history, and
+reports pruned, retained, ignored, and missing candidate keys. It only mutates
+`RegistryHub.stream_offer_lifecycle_explanation_history`; it does not mutate
+held offers, lifecycle plans, lifecycle apply results, transition history,
+polling or admission history, delivery state, TrafficHub state or routing,
+canonical identity, or compact snapshots.
+
+Sprint 3 remains simulator-local and caller-driven. It does not add automatic
+cleanup, a background worker, retry loop, durable queue, live timer, live
+clock, delivery enforcement, networking, DNS, external service integration,
+real cryptography, production E2EE, production data-retention infrastructure,
+privacy guarantees, anonymity guarantees, firewall guarantees, or DDoS
+guarantees.
+
+Sprint 4 may add grouped retention and audit summaries over retained
 explanation history and pruning-plan metadata. The summaries should remain
 simulator-local diagnostics, not durable audit trails, production telemetry,
 security evidence, privacy guarantees, or compliance records.
-
-Sprint 4 may consider an explicit opt-in prune/apply helper only after the
-read-only policy, plan, and summary helpers are stable. Any such helper should
-remain caller-driven and must not become automatic cleanup, a background
-worker, a retry loop, a durable queue, a live timer, delivery enforcement,
-networking, DNS, external service integration, or cryptography behavior.
 
 Sprint 5 may add scenario DSL coverage only after helper and model behavior is
 stable. Scenario actions should remain explicit that retention and pruning

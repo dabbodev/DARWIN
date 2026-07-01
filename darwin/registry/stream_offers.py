@@ -22,6 +22,7 @@ from darwin.models.stream_offer import (
     StreamOfferLifecycleApplyResult,
     StreamOfferLifecycleAuditSummary,
     StreamOfferLifecycleExplanation,
+    StreamOfferLifecycleExplanationPruningApplyResult,
     StreamOfferLifecycleExplanationPruningPlan,
     StreamOfferLifecycleExplanationRetentionDecision,
     StreamOfferLifecycleExplanationRetentionPolicy,
@@ -770,6 +771,108 @@ def summarize_stream_offer_lifecycle_explanation_pruning_by_category(
     """Return deterministic pruning candidate counts by explanation category."""
     _validate_lifecycle_pruning_plan(plan)
     return dict(plan.candidate_by_category or {})
+
+
+def apply_stream_offer_lifecycle_explanation_pruning_plan(
+    registry_hub: RegistryHub,
+    plan: StreamOfferLifecycleExplanationPruningPlan,
+    *,
+    metadata: dict[str, object] | None = None,
+) -> StreamOfferLifecycleExplanationPruningApplyResult:
+    """Explicitly remove retained lifecycle explanation records selected by a plan."""
+    _validate_registry_hub(registry_hub)
+    _validate_lifecycle_pruning_plan(plan)
+    if registry_hub.hub_id != plan.hub_id:
+        raise ValueError("plan hub_id must match registry_hub.hub_id")
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+
+    candidate_key_set = set(plan.candidate_explanation_keys)
+    retained_key_set = set(plan.retained_explanation_keys)
+    ignored_key_set = set(plan.ignored_explanation_keys)
+    pruned_explanation_keys: list[str] = []
+    retained_explanation_keys: list[str] = []
+    ignored_explanation_keys: list[str] = []
+    remaining_explanations: list[StreamOfferLifecycleExplanation] = []
+
+    for index, explanation in enumerate(
+        registry_hub.stream_offer_lifecycle_explanation_history
+    ):
+        explanation_key = _lifecycle_explanation_key(index, explanation)
+        if explanation_key in candidate_key_set:
+            pruned_explanation_keys.append(explanation_key)
+            continue
+
+        remaining_explanations.append(explanation)
+        if explanation_key in retained_key_set:
+            retained_explanation_keys.append(explanation_key)
+        if explanation_key in ignored_key_set:
+            ignored_explanation_keys.append(explanation_key)
+
+    pruned_key_set = set(pruned_explanation_keys)
+    missing_explanation_keys = [
+        explanation_key
+        for explanation_key in plan.candidate_explanation_keys
+        if explanation_key not in pruned_key_set
+    ]
+    registry_hub.stream_offer_lifecycle_explanation_history[:] = remaining_explanations
+
+    result_metadata: dict[str, object] = {
+        "simulator_local": True,
+        "explicit_apply": True,
+        "read_only": False,
+        "pruning_apply_result_only": True,
+        "registry_hub_mutated": bool(pruned_explanation_keys),
+        "retained_history_mutated": bool(pruned_explanation_keys),
+        "explanations_deleted": bool(pruned_explanation_keys),
+        "offers_deleted": False,
+        "held_offers_mutated": False,
+        "lifecycle_plans_mutated": False,
+        "lifecycle_apply_results_mutated": False,
+        "transition_history_mutated": False,
+        "polling_history_mutated": False,
+        "admission_history_mutated": False,
+        "delivery_behavior_changed": False,
+        "traffic_hub_state_changed": False,
+        "traffic_hub_routing_changed": False,
+        "compact_snapshot_changed": False,
+        "automatic_cleanup": False,
+        "cleanup_scheduled": False,
+        "background_worker": False,
+        "retry_loop": False,
+        "durable_queue": False,
+        "live_timer": False,
+        "live_clock": False,
+        "networking": False,
+        "dns_lookup": False,
+        "external_services": False,
+        "cryptography": False,
+        "canonical_identity_rewritten": False,
+    }
+    if metadata is not None:
+        result_metadata.update(metadata)
+
+    return StreamOfferLifecycleExplanationPruningApplyResult(
+        hub_id=registry_hub.hub_id,
+        policy_id=plan.policy_id,
+        pruned_explanation_keys=pruned_explanation_keys,
+        retained_explanation_keys=retained_explanation_keys,
+        ignored_explanation_keys=ignored_explanation_keys,
+        missing_explanation_keys=missing_explanation_keys,
+        pruned_count=len(pruned_explanation_keys),
+        retained_count=len(retained_explanation_keys),
+        ignored_count=len(ignored_explanation_keys),
+        missing_count=len(missing_explanation_keys),
+        metadata=result_metadata,
+    )
+
+
+def summarize_stream_offer_lifecycle_explanation_pruning_apply_result(
+    result: StreamOfferLifecycleExplanationPruningApplyResult,
+) -> dict[str, object]:
+    """Return a copied JSON-safe pruning apply result summary."""
+    _validate_lifecycle_pruning_apply_result(result)
+    return result.to_summary()
 
 
 def summarize_stream_offer_lifecycle_audit(
@@ -1773,6 +1876,15 @@ def _validate_lifecycle_pruning_plan(
     if not isinstance(plan, StreamOfferLifecycleExplanationPruningPlan):
         raise TypeError(
             "plan must be a StreamOfferLifecycleExplanationPruningPlan"
+        )
+
+
+def _validate_lifecycle_pruning_apply_result(
+    result: StreamOfferLifecycleExplanationPruningApplyResult,
+) -> None:
+    if not isinstance(result, StreamOfferLifecycleExplanationPruningApplyResult):
+        raise TypeError(
+            "result must be a StreamOfferLifecycleExplanationPruningApplyResult"
         )
 
 

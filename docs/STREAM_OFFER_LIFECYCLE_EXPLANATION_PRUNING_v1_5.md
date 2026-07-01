@@ -5,6 +5,12 @@ explanations. A pruning plan identifies deterministic candidate keys from a
 retention decision, but it does not delete, prune, mutate, schedule cleanup, or
 trigger delivery.
 
+v1.5 Sprint 3 adds an explicit opt-in apply helper. The apply helper is a
+simulator-local mutation of retained explanation-history metadata only. It
+removes currently retained records whose deterministic keys match pruning-plan
+candidate keys, reports retained, ignored, pruned, and missing keys, and
+preserves the order of all remaining retained explanation-history records.
+
 Pruning plans are symbolic simulator-local diagnostic and planning metadata
 only. They are not production retention enforcement, durable audit trails,
 network logs, security evidence, privacy guarantees, anonymity guarantees, or
@@ -32,6 +38,26 @@ It contains:
 - grouped candidate counts by category, reason, and source
 - optional JSON-safe `metadata`
 
+Sprint 3 adds:
+
+```text
+StreamOfferLifecycleExplanationPruningApplyResult
+```
+
+It contains:
+
+- `hub_id`
+- `policy_id`
+- deterministic `pruned_explanation_keys`
+- deterministic `retained_explanation_keys`
+- deterministic `ignored_explanation_keys`
+- deterministic `missing_explanation_keys`
+- `pruned_count`
+- `retained_count`
+- `ignored_count`
+- `missing_count`
+- optional JSON-safe `metadata`
+
 Lifecycle explanations still do not have durable explanation IDs. Pruning plans
 reuse the deterministic sequence-style explanation keys produced by the Sprint
 1 retention classifier:
@@ -52,6 +78,11 @@ Sprint 2 adds:
 - `summarize_stream_offer_lifecycle_explanation_pruning_by_reason(...)`
 - `summarize_stream_offer_lifecycle_explanation_pruning_by_category(...)`
 
+Sprint 3 adds:
+
+- `apply_stream_offer_lifecycle_explanation_pruning_plan(...)`
+- `summarize_stream_offer_lifecycle_explanation_pruning_apply_result(...)`
+
 The planning helper can accept an explicit
 `StreamOfferLifecycleExplanationRetentionDecision`, or it can accept explicit
 `StreamOfferLifecycleExplanation` records plus a
@@ -66,6 +97,12 @@ Summary helpers return copied JSON-safe metadata. Mutating a returned summary
 does not mutate the plan, retention decision, policy, lifecycle explanation
 records, retained history, held offers, lifecycle plans, apply results,
 transition history, TrafficHub state, or compact snapshots.
+
+The apply helper requires an explicit `RegistryHub` and explicit
+`StreamOfferLifecycleExplanationPruningPlan`. It only mutates
+`registry_hub.stream_offer_lifecycle_explanation_history`. It does not require
+scenario context, does not use live clocks, and does not run unless a caller
+invokes it directly.
 
 ## Planning Rules
 
@@ -88,14 +125,27 @@ Grouped pruning summaries count candidate records only. If the helper receives
 only an explicit decision and no explanation records, key lists and counts are
 still deterministic, and grouped candidate counts are empty.
 
+## Explicit Apply Rules
+
+`apply_stream_offer_lifecycle_explanation_pruning_plan(...)` compares the plan's
+candidate keys with the current retained explanation-history keys. Candidate
+records that still exist in retained history are removed. Candidate keys that no
+longer exist are reported as missing. Plan retained and ignored keys that still
+exist are reported and preserved.
+
+The helper preserves the relative order of every remaining explanation-history
+record. It does not rewrite explanation records, create replacement records, or
+recalculate plan decisions.
+
 ## Read-Only Boundaries
 
 Sprint 2 identifies pruning candidates but does not delete, prune, mutate,
-schedule cleanup, or trigger delivery.
+schedule cleanup, or trigger delivery. Sprint 3's apply helper is the only
+mutation added here, and it is limited to explicit caller-driven edits to
+retained lifecycle explanation history.
 
-Pruning plans do not:
+Pruning plans and pruning apply do not:
 
-- mutate retained explanation history;
 - mutate held offers;
 - mutate lifecycle plans;
 - mutate lifecycle apply results;
@@ -122,5 +172,8 @@ Pruning plans do not:
 - change compact `world.snapshot()` output;
 - add scenario DSL actions or assertions.
 
-Future prune/apply behavior, if ever added, must be explicit caller-driven work
-in a later sprint. Sprint 2 is planning metadata only.
+The Sprint 3 apply helper is not automatic cleanup, a worker, a retry loop, a
+durable queue, a live timer, a delivery trigger, production retention
+infrastructure, production privacy infrastructure, anonymity infrastructure,
+firewall behavior, or DDoS protection. It provides no production privacy,
+anonymity, firewall, or DDoS guarantees.

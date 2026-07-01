@@ -795,6 +795,72 @@ class StreamOfferLifecycleExplanationPruningPlan:
 
 
 @dataclass(frozen=True, slots=True)
+class StreamOfferLifecycleExplanationPruningApplyResult:
+    """Result for explicitly applying a lifecycle explanation pruning plan."""
+
+    hub_id: str
+    policy_id: str
+    pruned_explanation_keys: tuple[str, ...] | list[str] = ()
+    retained_explanation_keys: tuple[str, ...] | list[str] = ()
+    ignored_explanation_keys: tuple[str, ...] | list[str] = ()
+    missing_explanation_keys: tuple[str, ...] | list[str] = ()
+    pruned_count: int = 0
+    retained_count: int = 0
+    ignored_count: int = 0
+    missing_count: int = 0
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_required_string(self.policy_id, "policy_id")
+        object.__setattr__(
+            self,
+            "pruned_explanation_keys",
+            _string_tuple(self.pruned_explanation_keys, "pruned_explanation_keys"),
+        )
+        object.__setattr__(
+            self,
+            "retained_explanation_keys",
+            _string_tuple(self.retained_explanation_keys, "retained_explanation_keys"),
+        )
+        object.__setattr__(
+            self,
+            "ignored_explanation_keys",
+            _string_tuple(self.ignored_explanation_keys, "ignored_explanation_keys"),
+        )
+        object.__setattr__(
+            self,
+            "missing_explanation_keys",
+            _string_tuple(self.missing_explanation_keys, "missing_explanation_keys"),
+        )
+        _validate_order(self.pruned_count, "pruned_count")
+        _validate_order(self.retained_count, "retained_count")
+        _validate_order(self.ignored_count, "ignored_count")
+        _validate_order(self.missing_count, "missing_count")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe pruning apply result metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "policy_id": self.policy_id,
+            "pruned_explanation_keys": list(self.pruned_explanation_keys),
+            "retained_explanation_keys": list(self.retained_explanation_keys),
+            "ignored_explanation_keys": list(self.ignored_explanation_keys),
+            "missing_explanation_keys": list(self.missing_explanation_keys),
+            "pruned_count": self.pruned_count,
+            "retained_count": self.retained_count,
+            "ignored_count": self.ignored_count,
+            "missing_count": self.missing_count,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
 class StreamOfferLifecycleAuditSummary:
     """Read-only grouped lifecycle audit metadata for stream offers."""
 

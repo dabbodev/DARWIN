@@ -180,7 +180,34 @@ Acceptance targets:
   queues, contact networks, use DNS, call external services, or add real
   cryptography.
 
-## Candidate Sprint 3: Grouped Retention and Audit Summaries
+## Sprint 3: Explicit Opt-In Prune Apply Helper
+
+Status: implemented on `v1.5/planning`.
+
+Goal: add a caller-driven helper that applies a pruning plan to retained
+lifecycle explanation history only.
+
+Implemented:
+
+- `StreamOfferLifecycleExplanationPruningApplyResult`.
+- `apply_stream_offer_lifecycle_explanation_pruning_plan(...)`.
+- `summarize_stream_offer_lifecycle_explanation_pruning_apply_result(...)`.
+- Explicit removal of currently retained explanation-history records whose
+  deterministic keys match pruning-plan candidate keys.
+- Deterministic reporting of pruned, retained, ignored, and missing candidate
+  keys.
+
+Acceptance targets:
+
+- No automatic pruning or background cleanup exists.
+- Apply behavior is explicit, caller-driven, and simulator-local.
+- Only `RegistryHub.stream_offer_lifecycle_explanation_history` is mutated.
+- Held offers, lifecycle plans, lifecycle apply results, transition history,
+  delivery, TrafficHub routing, canonical identity, and compact snapshot
+  behavior remain unchanged outside the explicitly scoped helper.
+- Compact `world.snapshot()` output remains unchanged.
+
+## Candidate Sprint 4: Grouped Retention and Audit Summaries
 
 Status: draft planning only; not implemented.
 
@@ -204,31 +231,6 @@ Acceptance targets:
 - Existing retained histories remain RegistryHub-local simulator state, not
   production logs or compliance records.
 - Compact `world.snapshot()` output remains unchanged.
-
-## Candidate Sprint 4: Explicit Opt-In Prune Apply Helper
-
-Status: draft planning only; not implemented.
-
-Goal: consider an explicit caller-driven prune/apply helper only after
-read-only policy, plan, and summary helpers are stable.
-
-Possible future work:
-
-- Add an apply helper that accepts an explicit pruning plan and removes only
-  records selected by that plan.
-- Return copied JSON-safe summaries for removed, skipped, stale, missing, or
-  ineligible records.
-- Keep the helper separate from background cleanup, live timers, retry loops,
-  durable queues, delivery, routing, networking, DNS, external services, and
-  cryptography.
-
-Acceptance targets:
-
-- No automatic pruning or background cleanup exists.
-- Apply behavior is explicit, caller-driven, and simulator-local.
-- Existing lifecycle explanation, audit summary, delivery, TrafficHub routing,
-  canonical identity, and compact snapshot behavior remains unchanged outside
-  the explicitly scoped helper.
 
 ## Candidate Sprint 5: Scenario DSL Coverage
 
