@@ -655,3 +655,47 @@ python -m pytest
 python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
 ```
+
+# DARWIN v1.5 Lifecycle Explanation Retention Planning Checklist
+
+v1.5 is draft planning only and unreleased. DARWIN v1.4.0 remains the latest
+released version on `main` as `darwin-sim 1.4.0`. The annotated `v1.4.0` tag
+and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package publication
+was performed, and no release assets were uploaded.
+
+- [x] v1.5 planning roadmap seed is checked in at `docs/V1_5_ROADMAP.md`.
+- [x] v1.5 draft release-notes placeholder is checked in at
+  `docs/RELEASE_NOTES_v1_5_DRAFT.md`.
+- [x] README links to the v1.5 planning docs while preserving v1.4.0 as the
+  latest released version.
+- [x] Planning scope is limited to lifecycle explanation retention policy and
+  audit pruning summary candidates.
+- [x] Planning docs avoid production networking, sockets, HTTP/WebSocket
+  behavior, DNS lookup, registrar integration, public CA behavior, external
+  services, real cryptography, key generation, private key storage, production
+  E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
+  queues, live timers, live clocks, live polling, delivery behavior changes,
+  TrafficHub routing changes, compact snapshot changes, canonical identity
+  rewrites, and production anonymity/privacy/firewall/DDoS guarantees.
+- [x] Planning does not add new feature behavior, new scenarios, lifecycle
+  mutation behavior, compact snapshot changes, automatic cleanup workers,
+  retry loops, durable queues, live timers, networking, DNS, external
+  services, real cryptography, delivery changes, TrafficHub routing changes,
+  canonical identity rewrites, package publication, release assets, merge to
+  `main`, tags, GitHub releases, or version bumps.
+- [ ] Future v1.5 implementation scope is explicitly narrowed before any
+  feature work begins.
+- [ ] Future v1.5 scenario coverage remains contiguous after any scenarios are
+  intentionally added.
+- [ ] Future v1.5 release-candidate validation is run after implementation
+  scope exists.
+
+## v1.5 Planning Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+```

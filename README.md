@@ -1021,6 +1021,11 @@ For v1.4 lifecycle explanation and audit-summary release docs, see:
 - `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_HISTORY_v1_4.md`
 - `docs/RELEASE_NOTES_v1_4_DRAFT.md`
 
+For v1.5 lifecycle explanation retention-policy planning docs, see:
+
+- `docs/V1_5_ROADMAP.md`
+- `docs/RELEASE_NOTES_v1_5_DRAFT.md`
+
 ## What v0.1 Is Not
 
 DARWIN simulator v0.1 is not:
