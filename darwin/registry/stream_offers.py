@@ -22,6 +22,7 @@ from darwin.models.stream_offer import (
     StreamOfferLifecycleApplyResult,
     StreamOfferLifecycleAuditSummary,
     StreamOfferLifecycleExplanation,
+    StreamOfferLifecycleExplanationPruningPlan,
     StreamOfferLifecycleExplanationRetentionDecision,
     StreamOfferLifecycleExplanationRetentionPolicy,
     StreamOfferLifecyclePlan,
@@ -645,6 +646,130 @@ def summarize_stream_offer_lifecycle_explanation_retention_decision(
     """Return a copied JSON-safe retention classification summary."""
     _validate_lifecycle_retention_decision(decision)
     return decision.to_summary()
+
+
+def plan_stream_offer_lifecycle_explanation_pruning(
+    decision: StreamOfferLifecycleExplanationRetentionDecision | None = None,
+    *,
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...]
+    | None = None,
+    policy: StreamOfferLifecycleExplanationRetentionPolicy | None = None,
+    metadata: dict[str, object] | None = None,
+) -> StreamOfferLifecycleExplanationPruningPlan:
+    """Return a read-only pruning plan from a retention decision or policy."""
+    if decision is None:
+        if policy is None:
+            raise TypeError("decision or policy must be provided")
+        _validate_lifecycle_retention_policy(policy)
+        retention_decision = classify_stream_offer_lifecycle_explanations_for_retention(
+            explanations,
+            policy,
+        )
+        decision_source = "classified_from_policy"
+    else:
+        _validate_lifecycle_retention_decision(decision)
+        retention_decision = decision
+        decision_source = "explicit_decision"
+        if policy is not None:
+            _validate_lifecycle_retention_policy(policy)
+            if policy.hub_id != decision.hub_id or policy.policy_id != decision.policy_id:
+                raise ValueError("policy must match decision hub_id and policy_id")
+
+    explanation_records = _lifecycle_explanation_records(explanations)
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+
+    candidate_explanation_keys = retention_decision.prune_candidate_explanation_keys
+    retained_explanation_keys = retention_decision.kept_explanation_keys
+    ignored_explanation_keys = retention_decision.ignored_explanation_keys
+    candidate_key_set = set(candidate_explanation_keys)
+    candidate_by_category: dict[str, int] = {}
+    candidate_by_reason: dict[str, int] = {}
+    candidate_by_source: dict[str, int] = {}
+
+    for index, explanation in enumerate(explanation_records):
+        explanation_key = _lifecycle_explanation_key(index, explanation)
+        if explanation_key not in candidate_key_set:
+            continue
+        _increment_count(candidate_by_category, explanation.category)
+        _increment_count(candidate_by_reason, explanation.reason)
+        _increment_count(
+            candidate_by_source,
+            "none" if explanation.source is None else explanation.source,
+        )
+
+    by_decision_category = {
+        "ignored": len(ignored_explanation_keys),
+        "kept": len(retained_explanation_keys),
+        "prune_candidate": len(candidate_explanation_keys),
+    }
+    plan_metadata: dict[str, object] = {
+        "simulator_local": True,
+        "read_only": True,
+        "pruning_plan_only": True,
+        "decision_source": decision_source,
+        "registry_hub_mutated": False,
+        "retained_history_mutated": False,
+        "explanations_deleted": False,
+        "offers_deleted": False,
+        "pruning_applied": False,
+        "cleanup_scheduled": False,
+        "background_worker": False,
+        "retry_loop": False,
+        "durable_queue": False,
+        "live_timer": False,
+        "delivery_behavior_changed": False,
+        "traffic_hub_routing_changed": False,
+        "networking": False,
+        "dns_lookup": False,
+        "external_services": False,
+        "cryptography": False,
+        "compact_snapshot_changed": False,
+        "candidate_group_counts_included": bool(explanation_records),
+    }
+    if metadata is not None:
+        plan_metadata.update(metadata)
+
+    return StreamOfferLifecycleExplanationPruningPlan(
+        hub_id=retention_decision.hub_id,
+        policy_id=retention_decision.policy_id,
+        candidate_explanation_keys=candidate_explanation_keys,
+        retained_explanation_keys=retained_explanation_keys,
+        ignored_explanation_keys=ignored_explanation_keys,
+        candidate_count=len(candidate_explanation_keys),
+        retained_count=len(retained_explanation_keys),
+        ignored_count=len(ignored_explanation_keys),
+        by_decision_category=by_decision_category,
+        candidate_by_category=_sorted_count_dict(candidate_by_category),
+        candidate_by_reason=_sorted_count_dict(candidate_by_reason),
+        candidate_by_source=_sorted_count_dict(candidate_by_source),
+        metadata=plan_metadata,
+    )
+
+
+def summarize_stream_offer_lifecycle_explanation_pruning_plan(
+    plan: StreamOfferLifecycleExplanationPruningPlan,
+) -> dict[str, object]:
+    """Return a copied JSON-safe pruning plan summary."""
+    _validate_lifecycle_pruning_plan(plan)
+    return plan.to_summary()
+
+
+def summarize_stream_offer_lifecycle_explanation_pruning_by_reason(
+    plan: StreamOfferLifecycleExplanationPruningPlan,
+) -> dict[str, int]:
+    """Return deterministic pruning candidate counts by explanation reason."""
+    _validate_lifecycle_pruning_plan(plan)
+    return dict(plan.candidate_by_reason or {})
+
+
+def summarize_stream_offer_lifecycle_explanation_pruning_by_category(
+    plan: StreamOfferLifecycleExplanationPruningPlan,
+) -> dict[str, int]:
+    """Return deterministic pruning candidate counts by explanation category."""
+    _validate_lifecycle_pruning_plan(plan)
+    return dict(plan.candidate_by_category or {})
 
 
 def summarize_stream_offer_lifecycle_audit(
@@ -1639,6 +1764,15 @@ def _validate_lifecycle_retention_decision(
     if not isinstance(decision, StreamOfferLifecycleExplanationRetentionDecision):
         raise TypeError(
             "decision must be a StreamOfferLifecycleExplanationRetentionDecision"
+        )
+
+
+def _validate_lifecycle_pruning_plan(
+    plan: StreamOfferLifecycleExplanationPruningPlan,
+) -> None:
+    if not isinstance(plan, StreamOfferLifecycleExplanationPruningPlan):
+        raise TypeError(
+            "plan must be a StreamOfferLifecycleExplanationPruningPlan"
         )
 
 

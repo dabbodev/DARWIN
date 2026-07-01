@@ -149,20 +149,27 @@ Acceptance targets:
   TrafficHub routing changes, canonical identity rewrites, real cryptography,
   compact snapshot changes, or version bump beyond released `1.4.0` is added.
 
-## Candidate Sprint 2: Deterministic Read-Only Pruning Plans
+## Sprint 2: Deterministic Read-Only Pruning Plans
 
-Status: draft planning only; not implemented.
+Status: implemented as read-only model/helper work.
 
 Goal: identify pruning candidates without deleting anything by default.
 
-Possible future work:
+Implemented:
 
-- Add read-only plan helpers that classify retained explanation records as
-  kept, review candidates, or prune candidates under explicit simulator policy.
+- `StreamOfferLifecycleExplanationPruningPlan`.
+- `plan_stream_offer_lifecycle_explanation_pruning(...)`.
+- `summarize_stream_offer_lifecycle_explanation_pruning_plan(...)`.
+- `summarize_stream_offer_lifecycle_explanation_pruning_by_reason(...)`.
+- `summarize_stream_offer_lifecycle_explanation_pruning_by_category(...)`.
+- Read-only plan helpers that map Sprint 1 retention decisions into retained,
+  candidate, and ignored explanation keys under explicit simulator policy.
 - Preserve deterministic ordering and copied JSON-safe summary shapes.
-- Include non-mutating totals by hub, policy, category, reason, source, and age
-  bucket where useful.
+- Include non-mutating totals by hub, policy, decision category, candidate
+  category, candidate reason, and candidate source.
 - Keep the helper separate from any apply/delete behavior.
+- Sprint 2 documentation:
+  `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_PRUNING_v1_5.md`.
 
 Acceptance targets:
 

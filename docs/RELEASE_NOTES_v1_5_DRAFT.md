@@ -72,10 +72,23 @@ cleanup, schedule retries, contact networks, use DNS, call external services,
 change compact snapshots, change delivery, change TrafficHub routing, rewrite
 canonical identity, or add real cryptography.
 
-Sprint 2 may add deterministic read-only pruning-plan helpers. The helpers
-should classify retained explanation records as kept, review candidates, or
-prune candidates under explicit simulator policy without deleting anything by
-default.
+Sprint 2 adds deterministic read-only pruning-plan helpers for lifecycle
+explanation history:
+
+- `StreamOfferLifecycleExplanationPruningPlan`
+- `plan_stream_offer_lifecycle_explanation_pruning(...)`
+- `summarize_stream_offer_lifecycle_explanation_pruning_plan(...)`
+- `summarize_stream_offer_lifecycle_explanation_pruning_by_reason(...)`
+- `summarize_stream_offer_lifecycle_explanation_pruning_by_category(...)`
+
+The helpers map Sprint 1 retention decisions into retained, pruning-candidate,
+and ignored explanation keys, with deterministic candidate counts by category,
+reason, and source when explicit explanation records are supplied. Sprint 2 is
+diagnostic only and does not delete, prune, mutate retained histories, schedule
+cleanup, run workers, retry work, create queues, use live timers, contact
+networks, use DNS, call external services, change compact snapshots, change
+delivery, change TrafficHub routing, rewrite canonical identity, or add real
+cryptography.
 
 Sprint 3 may add grouped retention and audit summaries over retained
 explanation history and pruning-plan metadata. The summaries should remain
