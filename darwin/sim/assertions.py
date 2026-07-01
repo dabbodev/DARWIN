@@ -13,6 +13,9 @@ from darwin.models.stream_offer import (
     StreamOfferLifecycleApplyResult,
     StreamOfferLifecycleAuditSummary,
     StreamOfferLifecycleExplanation,
+    StreamOfferLifecycleExplanationPruningApplyResult,
+    StreamOfferLifecycleExplanationPruningPlan,
+    StreamOfferLifecycleExplanationRetentionDecision,
     StreamOfferLifecyclePlan,
     StreamOfferStatusTransition,
 )
@@ -1874,6 +1877,156 @@ def _stream_offer_lifecycle_audit_summary_contains(
     )
 
 
+def _stream_offer_lifecycle_retention_decision_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = _stream_offer_lifecycle_retention_filters(assertion, hub_id)
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, StreamOfferLifecycleExplanationRetentionDecision)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_stream_offer_lifecycle_retention_decision_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"stream offer lifecycle retention decision contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
+def _stream_offer_lifecycle_pruning_plan_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = _stream_offer_lifecycle_retention_filters(assertion, hub_id)
+    filters.update(
+        {
+            "candidate_explanation_keys": filters["prune_candidate_explanation_keys"],
+            "retained_explanation_keys": filters["kept_explanation_keys"],
+            "candidate_count": _optional_int_field(assertion, "candidate_count"),
+            "retained_count": _optional_int_field(assertion, "retained_count"),
+            "ignored_count": _optional_int_field(assertion, "ignored_count"),
+            "category": _optional_filter_str(assertion, "category"),
+            "category_count": _optional_int_field(assertion, "category_count"),
+            "reason": _optional_filter_str(assertion, "reason"),
+            "reason_count": _optional_int_field(assertion, "reason_count"),
+            "source": _optional_filter_str(assertion, "source"),
+            "source_count": _optional_int_field(assertion, "source_count"),
+        }
+    )
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, StreamOfferLifecycleExplanationPruningPlan)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_stream_offer_lifecycle_pruning_plan_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"stream offer lifecycle pruning plan contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
+def _stream_offer_lifecycle_pruning_apply_result_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = {
+        "hub_id": hub_id,
+        "policy_id": _optional_filter_str(assertion, "policy_id"),
+        "pruned_explanation_key": _optional_filter_str(
+            assertion,
+            "pruned_explanation_key",
+        ),
+        "pruned_explanation_keys": _optional_str_sequence_filter(
+            assertion,
+            "pruned_explanation_keys",
+        ),
+        "retained_explanation_key": _optional_filter_str(
+            assertion,
+            "retained_explanation_key",
+        ),
+        "retained_explanation_keys": _optional_str_sequence_filter(
+            assertion,
+            "retained_explanation_keys",
+        ),
+        "ignored_explanation_key": _optional_filter_str(
+            assertion,
+            "ignored_explanation_key",
+        ),
+        "ignored_explanation_keys": _optional_str_sequence_filter(
+            assertion,
+            "ignored_explanation_keys",
+        ),
+        "missing_explanation_key": _optional_filter_str(
+            assertion,
+            "missing_explanation_key",
+        ),
+        "missing_explanation_keys": _optional_str_sequence_filter(
+            assertion,
+            "missing_explanation_keys",
+        ),
+        "pruned_count": _optional_int_field(assertion, "pruned_count"),
+        "retained_count": _optional_int_field(assertion, "retained_count"),
+        "ignored_count": _optional_int_field(assertion, "ignored_count"),
+        "missing_count": _optional_int_field(assertion, "missing_count"),
+    }
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, StreamOfferLifecycleExplanationPruningApplyResult)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_stream_offer_lifecycle_pruning_apply_result_filters(
+            record,
+            filters,
+        )
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"stream offer lifecycle pruning apply result contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
 def _stream_offer_status_transition_contains(
     world: World,
     assertion_type: str,
@@ -2453,6 +2606,192 @@ def _matches_stream_offer_lifecycle_audit_summary_filters(
     )
 
 
+def _stream_offer_lifecycle_retention_filters(
+    assertion: dict[str, Any],
+    hub_id: str,
+) -> dict[str, object]:
+    return {
+        "hub_id": hub_id,
+        "policy_id": _optional_filter_str(assertion, "policy_id"),
+        "kept_explanation_key": _optional_filter_str(
+            assertion,
+            "kept_explanation_key",
+        ),
+        "kept_explanation_keys": _optional_str_sequence_filter(
+            assertion,
+            "kept_explanation_keys",
+        ),
+        "prune_candidate_explanation_key": _optional_filter_str(
+            assertion,
+            "prune_candidate_explanation_key",
+        ),
+        "prune_candidate_explanation_keys": _optional_str_sequence_filter(
+            assertion,
+            "prune_candidate_explanation_keys",
+        ),
+        "ignored_explanation_key": _optional_filter_str(
+            assertion,
+            "ignored_explanation_key",
+        ),
+        "ignored_explanation_keys": _optional_str_sequence_filter(
+            assertion,
+            "ignored_explanation_keys",
+        ),
+        "kept_count": _optional_int_field(assertion, "kept_count"),
+        "prune_candidate_count": _optional_int_field(
+            assertion,
+            "prune_candidate_count",
+        ),
+        "ignored_count": _optional_int_field(assertion, "ignored_count"),
+    }
+
+
+def _matches_stream_offer_lifecycle_retention_decision_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    if record.get("hub_id") != filters["hub_id"]:
+        return False
+    if filters["policy_id"] is not None and record.get("policy_id") != filters["policy_id"]:
+        return False
+    return (
+        _list_field_matches(
+            record,
+            filters,
+            "kept_explanation_keys",
+            "kept_explanation_key",
+        )
+        and _list_field_matches(
+            record,
+            filters,
+            "prune_candidate_explanation_keys",
+            "prune_candidate_explanation_key",
+        )
+        and _list_field_matches(
+            record,
+            filters,
+            "ignored_explanation_keys",
+            "ignored_explanation_key",
+        )
+        and _count_matches(record, filters, "kept_explanation_keys", "kept_count")
+        and _count_matches(
+            record,
+            filters,
+            "prune_candidate_explanation_keys",
+            "prune_candidate_count",
+        )
+        and _count_matches(record, filters, "ignored_explanation_keys", "ignored_count")
+    )
+
+
+def _matches_stream_offer_lifecycle_pruning_plan_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    if record.get("hub_id") != filters["hub_id"]:
+        return False
+    if filters["policy_id"] is not None and record.get("policy_id") != filters["policy_id"]:
+        return False
+    for field_name in ("candidate_count", "retained_count", "ignored_count"):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    return (
+        _list_field_matches(
+            record,
+            filters,
+            "candidate_explanation_keys",
+            "prune_candidate_explanation_key",
+        )
+        and _list_field_matches(
+            record,
+            filters,
+            "retained_explanation_keys",
+            "kept_explanation_key",
+        )
+        and _list_field_matches(
+            record,
+            filters,
+            "ignored_explanation_keys",
+            "ignored_explanation_key",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "candidate_by_category",
+            "category",
+            "category_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "candidate_by_reason",
+            "reason",
+            "reason_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "candidate_by_source",
+            "source",
+            "source_count",
+        )
+    )
+
+
+def _matches_stream_offer_lifecycle_pruning_apply_result_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    if record.get("hub_id") != filters["hub_id"]:
+        return False
+    if filters["policy_id"] is not None and record.get("policy_id") != filters["policy_id"]:
+        return False
+    for field_name in ("pruned_count", "retained_count", "ignored_count", "missing_count"):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    return (
+        _list_field_matches(
+            record,
+            filters,
+            "pruned_explanation_keys",
+            "pruned_explanation_key",
+        )
+        and _list_field_matches(
+            record,
+            filters,
+            "retained_explanation_keys",
+            "retained_explanation_key",
+        )
+        and _list_field_matches(
+            record,
+            filters,
+            "ignored_explanation_keys",
+            "ignored_explanation_key",
+        )
+        and _list_field_matches(
+            record,
+            filters,
+            "missing_explanation_keys",
+            "missing_explanation_key",
+        )
+    )
+
+
+def _count_matches(
+    record: dict[str, object],
+    filters: dict[str, object],
+    list_field_name: str,
+    count_filter_name: str,
+) -> bool:
+    expected_count = filters[count_filter_name]
+    if expected_count is None:
+        return True
+    value = record.get(list_field_name)
+    return isinstance(value, list) and len(value) == expected_count
+
+
 def _matches_stream_offer_status_transition_filters(
     record: dict[str, object],
     filters: dict[str, object],
@@ -2605,6 +2944,15 @@ _EVALUATORS = {
     ),
     "stream_offer_lifecycle_audit_summary_contains": (
         _stream_offer_lifecycle_audit_summary_contains
+    ),
+    "stream_offer_lifecycle_retention_decision_contains": (
+        _stream_offer_lifecycle_retention_decision_contains
+    ),
+    "stream_offer_lifecycle_pruning_plan_contains": (
+        _stream_offer_lifecycle_pruning_plan_contains
+    ),
+    "stream_offer_lifecycle_pruning_apply_result_contains": (
+        _stream_offer_lifecycle_pruning_apply_result_contains
     ),
     "stream_offer_status_transition_contains": (
         _stream_offer_status_transition_contains

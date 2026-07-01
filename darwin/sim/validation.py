@@ -227,6 +227,18 @@ STEP_REQUIRED_FIELDS = {
     "explain_stream_offer_lifecycle_apply_result": ("registry_hub",),
     "record_stream_offer_lifecycle_explanations": ("registry_hub",),
     "summarize_stream_offer_lifecycle_audit": ("registry_hub",),
+    "classify_stream_offer_lifecycle_explanations_for_retention": (
+        "registry_hub",
+        "policy_id",
+    ),
+    "plan_stream_offer_lifecycle_explanation_pruning": (
+        "registry_hub",
+        "policy_id",
+    ),
+    "apply_stream_offer_lifecycle_explanation_pruning_plan": (
+        "registry_hub",
+        "policy_id",
+    ),
     "evaluate_lane_admission_policy": (
         "registry_hub",
         "policy_id",
@@ -302,6 +314,9 @@ ASSERTION_REQUIRED_FIELDS = {
     "stream_offer_lifecycle_explanation_contains": ("registry_hub",),
     "stream_offer_lifecycle_explanation_history_contains": ("registry_hub",),
     "stream_offer_lifecycle_audit_summary_contains": ("registry_hub",),
+    "stream_offer_lifecycle_retention_decision_contains": ("registry_hub",),
+    "stream_offer_lifecycle_pruning_plan_contains": ("registry_hub",),
+    "stream_offer_lifecycle_pruning_apply_result_contains": ("registry_hub",),
     "stream_offer_status_transition_contains": ("registry_hub",),
 }
 
@@ -739,6 +754,39 @@ def _validate_assertion_type_fields(
         ):
             _validate_optional_non_negative_int(assertion, field_name, location, errors)
         return
+    if assertion_type == "stream_offer_lifecycle_retention_decision_contains":
+        _validate_lifecycle_retention_key_filters(assertion, location, errors)
+        for field_name in ("kept_count", "prune_candidate_count", "ignored_count"):
+            _validate_optional_non_negative_int(assertion, field_name, location, errors)
+        return
+    if assertion_type == "stream_offer_lifecycle_pruning_plan_contains":
+        _validate_lifecycle_retention_key_filters(assertion, location, errors)
+        for field_name in (
+            "candidate_count",
+            "retained_count",
+            "ignored_count",
+            "category_count",
+            "reason_count",
+            "source_count",
+        ):
+            _validate_optional_non_negative_int(assertion, field_name, location, errors)
+        return
+    if assertion_type == "stream_offer_lifecycle_pruning_apply_result_contains":
+        for field_name in (
+            "pruned_explanation_keys",
+            "retained_explanation_keys",
+            "ignored_explanation_keys",
+            "missing_explanation_keys",
+        ):
+            _validate_optional_string_list_or_string(assertion, field_name, location, errors)
+        for field_name in (
+            "pruned_count",
+            "retained_count",
+            "ignored_count",
+            "missing_count",
+        ):
+            _validate_optional_non_negative_int(assertion, field_name, location, errors)
+        return
     if assertion_type == "mailbox_encryption_policy_registered":
         _validate_optional_bool(assertion, "allow_plaintext_fallback", location, errors)
         return
@@ -853,6 +901,18 @@ def _validate_step_type_fields(
     if action == "summarize_stream_offer_lifecycle_audit":
         _validate_optional_bool(step, "include_action_explanations", location, errors)
         _validate_optional_bool(step, "include_retained_explanations", location, errors)
+    if action in {
+        "classify_stream_offer_lifecycle_explanations_for_retention",
+        "plan_stream_offer_lifecycle_explanation_pruning",
+    }:
+        _validate_lifecycle_explanation_retention_step(step, location, errors)
+    if action == "apply_stream_offer_lifecycle_explanation_pruning_plan":
+        for field_name in (
+            "candidate_explanation_keys",
+            "retained_explanation_keys",
+            "ignored_explanation_keys",
+        ):
+            _validate_optional_string_list_or_string(step, field_name, location, errors)
     if action == "evaluate_lane_admission_policy":
         _validate_optional_bool(step, "require_discoverable", location, errors)
         _validate_optional_non_negative_int(step, "max_visibility_tier", location, errors)
@@ -865,6 +925,43 @@ def _validate_step_type_fields(
             "denied_target_scopes",
         ):
             _validate_optional_string_list_or_string(step, field_name, location, errors)
+
+
+def _validate_lifecycle_explanation_retention_step(
+    step: dict[str, Any],
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    _validate_optional_bool(step, "include_action_explanations", location, errors)
+    _validate_optional_bool(step, "include_foreign_action_explanations", location, errors)
+    _validate_optional_bool(step, "include_retained_explanations", location, errors)
+    _validate_optional_non_negative_int(step, "checked_at", location, errors)
+    _validate_optional_non_negative_int(step, "max_records", location, errors)
+    for field_name in (
+        "retain_categories",
+        "retain_reasons",
+        "prune_categories",
+        "prune_reasons",
+        "retain_sources",
+        "prune_sources",
+        "candidate_explanation_keys",
+        "retained_explanation_keys",
+        "ignored_explanation_keys",
+    ):
+        _validate_optional_string_list_or_string(step, field_name, location, errors)
+
+
+def _validate_lifecycle_retention_key_filters(
+    assertion: dict[str, Any],
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    for field_name in (
+        "kept_explanation_keys",
+        "prune_candidate_explanation_keys",
+        "ignored_explanation_keys",
+    ):
+        _validate_optional_string_list_or_string(assertion, field_name, location, errors)
 
 
 def _validate_optional_bool(

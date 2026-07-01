@@ -199,14 +199,14 @@ def test_v1_4_docs_are_release_status_ready():
         assert caveat in combined_docs
 
 
-def test_checked_in_scenarios_are_contiguous_through_063():
+def test_checked_in_scenarios_are_contiguous_through_066():
     scenario_numbers = sorted(
         path.name[:3]
         for path in (PROJECT_ROOT / "scenarios").glob("*.yaml")
         if path.name[:3].isdigit()
     )
 
-    assert scenario_numbers == [f"{number:03}" for number in range(1, 64)]
+    assert scenario_numbers == [f"{number:03}" for number in range(1, 67)]
 
 
 def test_license_consistency():

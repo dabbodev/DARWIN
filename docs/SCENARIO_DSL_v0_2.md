@@ -1034,3 +1034,100 @@ Checked-in v1.4 stream offer lifecycle explanation scenarios:
 - `scenarios/063_stream_offer_lifecycle_audit_summary.yaml`
 
 The current released scenario set is contiguous through `063`.
+
+## v1.5 Lifecycle Explanation Retention and Pruning Scenarios
+
+The v1.5 planning branch adds scenario DSL coverage for lifecycle explanation
+retention classification, read-only pruning plans, and explicit pruning apply.
+The package and CLI version still report `darwin-sim 1.4.0`.
+
+This DSL surface is symbolic simulator metadata only. It does not add
+automatic cleanup workers, retry loops, durable queues, live timers, live
+clocks, live polling, sockets, HTTP/WebSocket behavior, DNS lookup, registrar
+integration, public CA behavior, external services, real cryptography,
+production E2EE, key generation, private key storage, delivery enforcement,
+TrafficHub routing changes, compact snapshot changes, detailed snapshot
+changes, or canonical identity rewrites.
+
+Supported v1.5 lifecycle retention and pruning actions:
+
+- `classify_stream_offer_lifecycle_explanations_for_retention`
+  - Required: `registry_hub`, `policy_id`
+  - Optional explanation inputs: `include_retained_explanations` defaulting to
+    `true`, `include_action_explanations` defaulting to `false`,
+    `include_foreign_action_explanations` defaulting to `false`
+  - Optional explanation filters: `offer_id`, `category`, `reason`, `status`,
+    `source`, `checked_at`
+  - Optional policy fields: `retain_categories`, `retain_reasons`,
+    `retain_sources`, `prune_categories`, `prune_reasons`, `prune_sources`,
+    `max_records`, `policy_metadata`
+  - Optional decision metadata: `metadata`
+  - The action builds a simulator-local retention policy, classifies explicit
+    lifecycle explanations, appends a
+    `StreamOfferLifecycleExplanationRetentionDecision` to action results, and
+    does not mutate retained explanation history.
+- `plan_stream_offer_lifecycle_explanation_pruning`
+  - Required: `registry_hub`, `policy_id`
+  - Optional explanation inputs and filters match the classification action.
+  - Optional policy fields match the classification action when no prior
+    retention decision for the same `policy_id` exists.
+  - Optional explicit plan fields: `candidate_explanation_keys`,
+    `retained_explanation_keys`, `ignored_explanation_keys`, `plan_metadata`
+  - The action uses a prior matching retention decision when available, or
+    classifies from the supplied policy fields, and appends a read-only
+    `StreamOfferLifecycleExplanationPruningPlan` to action results. Explicit
+    plan fields are also read-only and exist only for deterministic scenario
+    coverage.
+- `apply_stream_offer_lifecycle_explanation_pruning_plan`
+  - Required: `registry_hub`, `policy_id`
+  - Optional explicit plan fields: `candidate_explanation_keys`,
+    `retained_explanation_keys`, `ignored_explanation_keys`, `plan_metadata`
+  - Optional apply metadata: `metadata`
+  - The action requires a prior matching pruning plan action result or explicit
+    plan fields. It appends a
+    `StreamOfferLifecycleExplanationPruningApplyResult` to action results and
+    mutates only `RegistryHub.stream_offer_lifecycle_explanation_history` by
+    removing retained records whose deterministic keys match candidate keys.
+
+Supported v1.5 lifecycle retention and pruning assertions:
+
+- `stream_offer_lifecycle_retention_decision_contains`
+  - Required: `registry_hub`
+  - Optional filters: `policy_id`, `kept_explanation_key`,
+    `kept_explanation_keys`, `prune_candidate_explanation_key`,
+    `prune_candidate_explanation_keys`, `ignored_explanation_key`,
+    `ignored_explanation_keys`, `kept_count`, `prune_candidate_count`,
+    `ignored_count`
+  - Optional count checks: `expected_count`, `min_count`
+- `stream_offer_lifecycle_pruning_plan_contains`
+  - Required: `registry_hub`
+  - Optional filters: `policy_id`, `prune_candidate_explanation_key`,
+    `prune_candidate_explanation_keys`, `kept_explanation_key`,
+    `kept_explanation_keys`, `ignored_explanation_key`,
+    `ignored_explanation_keys`, `candidate_count`, `retained_count`,
+    `ignored_count`, `category`, `category_count`, `reason`, `reason_count`,
+    `source`, `source_count`
+  - Optional count checks: `expected_count`, `min_count`
+- `stream_offer_lifecycle_pruning_apply_result_contains`
+  - Required: `registry_hub`
+  - Optional filters: `policy_id`, `pruned_explanation_key`,
+    `pruned_explanation_keys`, `retained_explanation_key`,
+    `retained_explanation_keys`, `ignored_explanation_key`,
+    `ignored_explanation_keys`, `missing_explanation_key`,
+    `missing_explanation_keys`, `pruned_count`, `retained_count`,
+    `ignored_count`, `missing_count`
+  - Optional count checks: `expected_count`, `min_count`
+
+Retention classification and pruning-plan actions are read-only. The pruning
+apply action is explicit and does not mutate held offers, stream offers,
+lifecycle plans, lifecycle apply results, transition history, polling history,
+admission history, delivery state, TrafficHub state or routing, canonical
+identity, compact snapshots, or detailed snapshots.
+
+Checked-in v1.5 lifecycle retention and pruning scenarios:
+
+- `scenarios/064_stream_offer_lifecycle_retention_classification.yaml`
+- `scenarios/065_stream_offer_lifecycle_pruning_plan.yaml`
+- `scenarios/066_stream_offer_lifecycle_pruning_apply.yaml`
+
+The current checked-in scenario set is contiguous through `066`.

@@ -6,11 +6,11 @@ annotated `v1.4.0` tag and GitHub release exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package
 publication was performed, and no release assets were uploaded.
 
-Sprint 1 read-only retention policy/classification helpers have been added on
-the v1.5 planning branch. No v1.5 scenario coverage, release-candidate work,
-version bump, merge to `main`, tag, GitHub release, package publication, or
-release assets exist yet. These notes remain a draft placeholder for future
-release-facing scope.
+Sprint 1 through Sprint 4 planning work has been added on the v1.5 planning
+branch, including focused scenario DSL coverage through `066`. No
+release-candidate work, version bump, merge to `main`, tag, GitHub release,
+package publication, or release assets exist yet. These notes remain a draft
+placeholder for future release-facing scope.
 
 This possible release line must remain symbolic simulator metadata flow only.
 It must not become real networking, a network service, production DDoS
@@ -48,8 +48,9 @@ later sprint explicitly narrows and documents an exception:
   snapshot, and scenario behavior remains unchanged outside explicitly scoped
   v1.5 helper surfaces.
 - Compact `world.snapshot()` output remains unchanged.
-- Existing scenarios `001` through `063` continue to pass unchanged until any
-  future scenario additions are intentionally added and documented.
+- Existing scenarios `001` through `063` continue to pass unchanged, and v1.5
+  planning scenarios `064` through `066` are intentionally added and
+  documented.
 - The package and CLI version remain `darwin-sim 1.4.0` during planning.
 
 ## Draft Sprint Summary
@@ -113,14 +114,35 @@ real cryptography, production E2EE, production data-retention infrastructure,
 privacy guarantees, anonymity guarantees, firewall guarantees, or DDoS
 guarantees.
 
-Sprint 4 may add grouped retention and audit summaries over retained
+Sprint 4 adds scenario DSL coverage for lifecycle explanation retention and
+pruning:
+
+- `classify_stream_offer_lifecycle_explanations_for_retention`
+- `plan_stream_offer_lifecycle_explanation_pruning`
+- `apply_stream_offer_lifecycle_explanation_pruning_plan`
+- `stream_offer_lifecycle_retention_decision_contains`
+- `stream_offer_lifecycle_pruning_plan_contains`
+- `stream_offer_lifecycle_pruning_apply_result_contains`
+
+Scenarios `064` through `066` cover retention classification, read-only
+pruning plans, and explicit pruning apply. The scenarios verify that retained
+explanation records can be classified as kept or pruning candidates, that
+retain filters beat prune filters, that pruning plans do not mutate retained
+history, that no pruning occurs without explicit apply, and that explicit
+apply reports pruned, retained, ignored, and missing keys deterministically.
+
+Sprint 4 remains simulator-local and caller-driven. Classification and
+pruning-plan actions are read-only. The apply action mutates only
+`RegistryHub.stream_offer_lifecycle_explanation_history`; it does not mutate
+held offers, stream offers, lifecycle plans, lifecycle apply results,
+transition history, polling or admission history, delivery state, TrafficHub
+state or routing, canonical identity, compact snapshots, or detailed
+snapshots.
+
+Sprint 5 may add grouped retention and audit summaries over retained
 explanation history and pruning-plan metadata. The summaries should remain
 simulator-local diagnostics, not durable audit trails, production telemetry,
 security evidence, privacy guarantees, or compliance records.
-
-Sprint 5 may add scenario DSL coverage only after helper and model behavior is
-stable. Scenario actions should remain explicit that retention and pruning
-metadata is symbolic simulator metadata.
 
 Sprint 6 may add detailed snapshot/debug visibility only after retained
 policy, pruning-plan, or summary data exists. Compact `world.snapshot()` output
@@ -132,20 +154,22 @@ publication, tags, GitHub releases, or version bumps.
 
 ## Scenario Coverage
 
-No v1.5 scenarios exist yet. The released scenario set remains contiguous from
-`001` through `063` for v1.4.0.
+The v1.5 planning branch adds scenarios `064` through `066`:
 
-Future v1.5 scenarios, if added later, should be introduced only after the
-corresponding helper/model behavior is stable and should remain contiguous and
-documented.
+- `scenarios/064_stream_offer_lifecycle_retention_classification.yaml`
+- `scenarios/065_stream_offer_lifecycle_pruning_plan.yaml`
+- `scenarios/066_stream_offer_lifecycle_pruning_apply.yaml`
+
+The checked-in scenario set is contiguous from `001` through `066`. v1.5
+remains unreleased, and the package and CLI version remain
+`darwin-sim 1.4.0`.
 
 ## Current Limitations
 
 - v1.5 is unreleased.
-- Only Sprint 1 read-only retention policy/classification helpers have been
-  implemented.
-- Focused Sprint 1 helper tests have been added.
-- No v1.5 scenarios for new behavior have been added.
+- Sprint 1 through Sprint 4 planning work has been implemented.
+- Focused helper and scenario tests have been added.
+- v1.5 scenarios `064` through `066` have been added on the planning branch.
 - No version bump has been performed.
 - No merge to `main`, tag, GitHub release, package publication, or release
   asset upload has been performed for v1.5.

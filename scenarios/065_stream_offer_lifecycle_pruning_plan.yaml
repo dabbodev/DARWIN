@@ -1,0 +1,123 @@
+scenario_id: 065_stream_offer_lifecycle_pruning_plan
+name: Stream offer lifecycle pruning plan
+category: stream_offer
+description: lifecycle explanation pruning plans identify candidates without mutating retained history
+tags:
+  - stream_offer
+  - lifecycle
+  - retention
+  - pruning_plan
+  - v1.5
+demonstrates:
+  - pruning plans can use a prior retention decision
+  - candidate group counts by category, reason, and source are deterministic
+  - planning does not prune retained lifecycle explanation history
+expected_result: pruning plan action reports one candidate, two retained explanations, and one ignored explanation while retained history remains intact
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+    - hub_id: registry_remote_001
+      scope_path: global.remote
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_pruning_plan_expired
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 2
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_pruning_plan_terminal
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    status: accepted
+    created_order: 0
+    expires_order: 1
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_pruning_plan_active
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 10
+  - action: hold_stream_offer
+    registry_hub: registry_remote_001
+    offer_id: offer_pruning_plan_ignored
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.remote
+    created_order: 0
+    expires_order: 10
+  - action: plan_stream_offer_expiration
+    registry_hub: registry_chat_001
+    checked_at: 5
+  - action: explain_stream_offer_lifecycle_plan
+    registry_hub: registry_chat_001
+    checked_at: 5
+    record_explanations: true
+  - action: plan_stream_offer_expiration
+    registry_hub: registry_remote_001
+    checked_at: 5
+  - action: explain_stream_offer_lifecycle_plan
+    registry_hub: registry_remote_001
+    checked_at: 5
+  - action: classify_stream_offer_lifecycle_explanations_for_retention
+    registry_hub: registry_chat_001
+    policy_id: retention_policy_065
+    include_retained_explanations: true
+    include_foreign_action_explanations: true
+    retain_categories:
+      - terminal
+    prune_categories:
+      - expired
+      - terminal
+  - action: plan_stream_offer_lifecycle_explanation_pruning
+    registry_hub: registry_chat_001
+    policy_id: retention_policy_065
+    include_retained_explanations: true
+    include_foreign_action_explanations: true
+assertions:
+  - type: stream_offer_lifecycle_pruning_plan_contains
+    registry_hub: registry_chat_001
+    policy_id: retention_policy_065
+    candidate_count: 1
+    retained_count: 2
+    ignored_count: 1
+    expected_count: 1
+  - type: stream_offer_lifecycle_pruning_plan_contains
+    registry_hub: registry_chat_001
+    policy_id: retention_policy_065
+    prune_candidate_explanation_key: lifecycle_explanation:0:registry_chat_001:offer_pruning_plan_expired:expired:expired_by_plan:expired:lifecycle_plan:5
+    kept_explanation_key: lifecycle_explanation:1:registry_chat_001:offer_pruning_plan_terminal:terminal:terminal_cleanup_candidate:cleanup_candidate:lifecycle_plan:5
+    ignored_explanation_key: lifecycle_explanation:3:registry_remote_001:offer_pruning_plan_ignored:active:active_by_plan:active:lifecycle_plan:5
+    expected_count: 1
+  - type: stream_offer_lifecycle_pruning_plan_contains
+    registry_hub: registry_chat_001
+    policy_id: retention_policy_065
+    category: expired
+    category_count: 1
+    reason: expired_by_plan
+    reason_count: 1
+    source: lifecycle_plan
+    source_count: 1
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    expected_count: 3
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_pruning_plan_expired
+    category: expired
+    expected_count: 1
+  - type: stream_offer_status_transition_contains
+    registry_hub: registry_chat_001
+    expected_count: 0

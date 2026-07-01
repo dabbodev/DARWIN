@@ -10,9 +10,9 @@ Recommended candidate theme: Lifecycle explanation retention policy and audit
 pruning summaries.
 
 This roadmap records candidate planning scope and the implemented Sprint 1
-read-only retention policy/classification slice. It does not authorize version
-bumps, package publication, release assets, tagging, release creation, or
-changes to released v1.4 behavior.
+through Sprint 4 planning slices. It does not authorize version bumps, package
+publication, release assets, tagging, release creation, or changes to released
+v1.4 behavior.
 
 v1.5 should remain simulator-first and symbolic. It should not become
 production networking, a real DDoS protection system, a firewall product, a
@@ -207,7 +207,42 @@ Acceptance targets:
   behavior remain unchanged outside the explicitly scoped helper.
 - Compact `world.snapshot()` output remains unchanged.
 
-## Candidate Sprint 4: Grouped Retention and Audit Summaries
+## Sprint 4: Scenario DSL Coverage
+
+Status: implemented on `v1.5/planning`.
+
+Goal: expose stable lifecycle explanation retention classification,
+pruning-plan, and explicit pruning-apply helpers through focused scenario YAML.
+
+Implemented:
+
+- Scenario actions:
+  `classify_stream_offer_lifecycle_explanations_for_retention`,
+  `plan_stream_offer_lifecycle_explanation_pruning`, and
+  `apply_stream_offer_lifecycle_explanation_pruning_plan`.
+- Scenario assertions:
+  `stream_offer_lifecycle_retention_decision_contains`,
+  `stream_offer_lifecycle_pruning_plan_contains`, and
+  `stream_offer_lifecycle_pruning_apply_result_contains`.
+- Scenarios `064` through `066` covering retention classification, read-only
+  pruning plans, and explicit pruning apply.
+- Contiguous checked-in scenario metadata through `066`.
+- `docs/SCENARIO_INDEX.md` regenerated from deterministic scenario metadata.
+
+Acceptance targets:
+
+- Classification and pruning-plan scenario actions are read-only.
+- Pruning apply remains explicit and mutates only
+  `RegistryHub.stream_offer_lifecycle_explanation_history`.
+- Retain filters continue to take precedence over prune filters.
+- No pruning occurs without the explicit apply action.
+- Compact `world.snapshot()` output remains unchanged.
+- No automatic cleanup workers, retry loops, durable queues, live timers,
+  live clocks, networking, DNS lookup, external services, real cryptography,
+  delivery changes, TrafficHub routing changes, detailed snapshot changes, or
+  canonical identity rewrites are introduced.
+
+## Candidate Sprint 5: Grouped Retention and Audit Summaries
 
 Status: draft planning only; not implemented.
 
@@ -231,31 +266,6 @@ Acceptance targets:
 - Existing retained histories remain RegistryHub-local simulator state, not
   production logs or compliance records.
 - Compact `world.snapshot()` output remains unchanged.
-
-## Candidate Sprint 5: Scenario DSL Coverage
-
-Status: draft planning only; not implemented.
-
-Goal: expose stable retention-policy, pruning-plan, and grouped-summary helpers
-through scenario YAML only after focused helper/model tests exist.
-
-Possible future work:
-
-- Add read-only scenario actions for retention-policy planning and pruning-plan
-  summaries.
-- Add assertions for grouped retention and audit summaries.
-- Add explicit prune/apply scenario coverage only if the opt-in helper exists.
-- Keep scenario output explicit that retention and pruning metadata is symbolic
-  simulator metadata.
-
-Acceptance targets:
-
-- Existing scenarios `001` through `063` continue to pass unchanged.
-- New scenarios, if added later, remain contiguous and documented.
-- Scenario actions do not deliver messages, change TrafficHub routes, open
-  sockets, perform DNS lookup, contact external services, generate keys,
-  encrypt payloads, enforce delivery, run cleanup workers, or claim production
-  security.
 
 ## Candidate Sprint 6: Detailed Snapshot Visibility
 
@@ -314,10 +324,10 @@ cryptography, changing compact snapshots, or bumping the released version.
 
 ## Release Status
 
-v1.5 is unreleased. Sprint 1 read-only retention policy/classification helpers
-exist on the planning branch, but no v1.5 scenario coverage, release-candidate
-work, version bump, merge to `main`, tag, GitHub release, package publication,
-or release assets exist.
+v1.5 is unreleased. Sprint 1 through Sprint 4 planning work exists on the
+planning branch, including focused v1.5 scenario coverage through `066`, but
+no release-candidate work, version bump, merge to `main`, tag, GitHub release,
+package publication, or release assets exist.
 
 v1.4.0 remains the latest released version on `main` as
 `darwin-sim 1.4.0`. The annotated `v1.4.0` tag and GitHub release exist:
