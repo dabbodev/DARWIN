@@ -106,6 +106,7 @@ from darwin.registry.operations import (
 )
 from darwin.registry.stream_offers import (
     apply_stream_offer_lifecycle_plan,
+    classify_stream_offer_lifecycle_explanations_for_retention,
     evaluate_lane_admission_policy,
     explain_stream_offer_lifecycle_apply_result,
     explain_stream_offer_lifecycle_plan,
@@ -134,6 +135,7 @@ from darwin.registry.stream_offers import (
     summarize_stream_offer_lifecycle_audit_by_offer,
     summarize_stream_offer_lifecycle_audit_by_reason,
     summarize_stream_offer_lifecycle_explanation_history,
+    summarize_stream_offer_lifecycle_explanation_retention_decision,
     summarize_stream_offer_lifecycle_explanations,
     summarize_stream_offer_lifecycle_plan,
     summarize_stream_offer_status_transitions,
@@ -156,6 +158,7 @@ __all__ = [
     "AuthorityOutcomeQueryResult",
     "build_authority_audit_trace",
     "can_discover_lane_definition",
+    "classify_stream_offer_lifecycle_explanations_for_retention",
     "assign_temp_label",
     "bind_mailbox_capability",
     "claim_alias",
@@ -259,6 +262,7 @@ __all__ = [
     "summarize_stream_offer_lifecycle_audit_by_offer",
     "summarize_stream_offer_lifecycle_audit_by_reason",
     "summarize_stream_offer_lifecycle_explanation_history",
+    "summarize_stream_offer_lifecycle_explanation_retention_decision",
     "summarize_stream_offer_lifecycle_explanations",
     "summarize_stream_offer_lifecycle_plan",
     "summarize_stream_offer_lifecycle_apply_result",

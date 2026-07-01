@@ -6,10 +6,11 @@ annotated `v1.4.0` tag and GitHub release exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package
 publication was performed, and no release assets were uploaded.
 
-No v1.5 implementation, scenario coverage, release-candidate work, version
-bump, merge to `main`, tag, GitHub release, package publication, or release
-assets exist yet. These notes are a placeholder for future release-facing
-scope if a v1.5 implementation line is explicitly opened later.
+Sprint 1 read-only retention policy/classification helpers have been added on
+the v1.5 planning branch. No v1.5 scenario coverage, release-candidate work,
+version bump, merge to `main`, tag, GitHub release, package publication, or
+release assets exist yet. These notes remain a draft placeholder for future
+release-facing scope.
 
 This possible release line must remain symbolic simulator metadata flow only.
 It must not become real networking, a network service, production DDoS
@@ -53,12 +54,23 @@ later sprint explicitly narrows and documents an exception:
 
 ## Draft Sprint Summary
 
-Sprint 1 may define read-only retention-policy models for lifecycle
-explanation history. The models should be copied, JSON-safe, caller-provided,
-and diagnostic only. They should not mutate retained histories, delete data,
-run cleanup, schedule retries, contact networks, use DNS, call external
-services, change compact snapshots, change delivery, change TrafficHub
-routing, rewrite canonical identity, or add real cryptography.
+Sprint 1 adds read-only retention-policy models and classification helpers for
+lifecycle explanation history:
+
+- `StreamOfferLifecycleExplanationRetentionPolicy`
+- `StreamOfferLifecycleExplanationRetentionDecision`
+- `make_stream_offer_lifecycle_explanation_retention_policy(...)`
+- `classify_stream_offer_lifecycle_explanations_for_retention(...)`
+- `summarize_stream_offer_lifecycle_explanation_retention_decision(...)`
+
+The helpers classify explicit `StreamOfferLifecycleExplanation` records as
+`kept`, `prune_candidate`, or `ignored` using deterministic sequence-style
+keys. Retain filters take precedence over prune filters; `max_records` is then
+applied deterministically to otherwise kept matching-hub records. Sprint 1 is
+diagnostic only and does not mutate retained histories, delete data, run
+cleanup, schedule retries, contact networks, use DNS, call external services,
+change compact snapshots, change delivery, change TrafficHub routing, rewrite
+canonical identity, or add real cryptography.
 
 Sprint 2 may add deterministic read-only pruning-plan helpers. The helpers
 should classify retained explanation records as kept, review candidates, or
@@ -99,9 +111,11 @@ documented.
 
 ## Current Limitations
 
-- v1.5 is unreleased and planning-only.
-- No v1.5 feature behavior has been implemented.
-- No v1.5 tests or scenarios for new behavior have been added.
+- v1.5 is unreleased.
+- Only Sprint 1 read-only retention policy/classification helpers have been
+  implemented.
+- Focused Sprint 1 helper tests have been added.
+- No v1.5 scenarios for new behavior have been added.
 - No version bump has been performed.
 - No merge to `main`, tag, GitHub release, package publication, or release
   asset upload has been performed for v1.5.

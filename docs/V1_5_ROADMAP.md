@@ -9,9 +9,10 @@ publication was performed, and no release assets were uploaded.
 Recommended candidate theme: Lifecycle explanation retention policy and audit
 pruning summaries.
 
-This roadmap records candidate planning scope only. It does not authorize
-feature implementation, version bumps, package publication, release assets,
-tagging, release creation, or changes to released v1.4 behavior.
+This roadmap records candidate planning scope and the implemented Sprint 1
+read-only retention policy/classification slice. It does not authorize version
+bumps, package publication, release assets, tagging, release creation, or
+changes to released v1.4 behavior.
 
 v1.5 should remain simulator-first and symbolic. It should not become
 production networking, a real DDoS protection system, a firewall product, a
@@ -27,10 +28,9 @@ helpers.
 
 v1.4 added read-only lifecycle plan/apply explanations, grouped lifecycle audit
 summaries, explicitly retained RegistryHub-local explanation history, scenario
-DSL coverage, and detailed snapshot/debug visibility. A possible v1.5 line
-could make retained explanation history easier to inspect and reason about by
-modeling symbolic retention policy, producing read-only pruning plans, and
-summarizing audit/pruning candidates without deleting anything by default.
+DSL coverage, and detailed snapshot/debug visibility. v1.5 Sprint 1 starts by
+modeling symbolic retention policy and producing read-only retention
+classification decisions without deleting anything.
 
 The primary planning question is:
 
@@ -116,27 +116,34 @@ Explicit prune/apply helper:
 - It should not become automatic cleanup, a background worker, a retry loop, a
   durable queue, a live timer, or production retention enforcement.
 
-## Candidate Sprint 1: Read-Only Retention-Policy Models
+## Sprint 1: Read-Only Retention-Policy Models
 
-Status: draft planning only; not implemented.
+Status: implemented as read-only model/helper work.
 
 Goal: define the smallest symbolic policy model for explaining lifecycle
-explanation history retention.
+explanation history retention and classify explicit lifecycle explanation
+records without mutating retained history.
 
-Possible future work:
+Implemented:
 
-- Review v1.4 retained explanation history shapes and RegistryHub-local
-  history boundaries.
-- Consider compact retention-policy metadata for age buckets, source filters,
-  category filters, reason filters, and per-hub or per-offer caps.
-- Keep policy models copied, JSON-safe, and caller-provided.
-- Document that retention policies are simulator diagnostics, not compliance,
-  privacy, security, storage, or production retention guarantees.
+- `StreamOfferLifecycleExplanationRetentionPolicy`.
+- `StreamOfferLifecycleExplanationRetentionDecision`.
+- Retention decision categories: `kept`, `prune_candidate`, and `ignored`.
+- `make_stream_offer_lifecycle_explanation_retention_policy(...)`.
+- `classify_stream_offer_lifecycle_explanations_for_retention(...)`.
+- `summarize_stream_offer_lifecycle_explanation_retention_decision(...)`.
+- Deterministic sequence-style explanation keys derived from explicit input
+  order and explanation fields.
+- Documented precedence: retain filters beat prune filters, then `max_records`
+  caps otherwise kept matching-hub records deterministically.
+- Sprint 1 documentation:
+  `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_RETENTION_v1_5.md`.
 
 Acceptance targets:
 
 - Existing lifecycle explanation history behavior remains unchanged.
-- Policy models are read-only and do not mutate retained histories.
+- Policy models and classification helpers are read-only and do not mutate
+  retained histories.
 - No real networking, DNS lookup, external services, live timers, automatic
   cleanup workers, durable queues, retry loops, delivery enforcement,
   TrafficHub routing changes, canonical identity rewrites, real cryptography,
@@ -298,9 +305,10 @@ cryptography, changing compact snapshots, or bumping the released version.
 
 ## Release Status
 
-v1.5 is unreleased and in draft planning only. No v1.5 implementation,
-scenario coverage, release-candidate work, version bump, merge to `main`,
-tag, GitHub release, package publication, or release assets exist.
+v1.5 is unreleased. Sprint 1 read-only retention policy/classification helpers
+exist on the planning branch, but no v1.5 scenario coverage, release-candidate
+work, version bump, merge to `main`, tag, GitHub release, package publication,
+or release assets exist.
 
 v1.4.0 remains the latest released version on `main` as
 `darwin-sim 1.4.0`. The annotated `v1.4.0` tag and GitHub release exist:

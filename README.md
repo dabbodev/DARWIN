@@ -1024,6 +1024,7 @@ For v1.4 lifecycle explanation and audit-summary release docs, see:
 For v1.5 lifecycle explanation retention-policy planning docs, see:
 
 - `docs/V1_5_ROADMAP.md`
+- `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_RETENTION_v1_5.md`
 - `docs/RELEASE_NOTES_v1_5_DRAFT.md`
 
 ## What v0.1 Is Not

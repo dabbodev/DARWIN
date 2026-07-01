@@ -22,6 +22,8 @@ from darwin.models.stream_offer import (
     StreamOfferLifecycleApplyResult,
     StreamOfferLifecycleAuditSummary,
     StreamOfferLifecycleExplanation,
+    StreamOfferLifecycleExplanationRetentionDecision,
+    StreamOfferLifecycleExplanationRetentionPolicy,
     StreamOfferLifecyclePlan,
     StreamOfferMode,
     StreamOfferStatus,
@@ -526,6 +528,123 @@ def summarize_stream_offer_lifecycle_explanation_history(
     return summarize_stream_offer_lifecycle_explanations(
         registry_hub.stream_offer_lifecycle_explanation_history
     )
+
+
+def classify_stream_offer_lifecycle_explanations_for_retention(
+    explanations: list[StreamOfferLifecycleExplanation]
+    | tuple[StreamOfferLifecycleExplanation, ...],
+    policy: StreamOfferLifecycleExplanationRetentionPolicy,
+    *,
+    metadata: dict[str, object] | None = None,
+) -> StreamOfferLifecycleExplanationRetentionDecision:
+    """Classify explicit lifecycle explanations under a read-only policy."""
+    explanation_records = _lifecycle_explanation_records(explanations)
+    _validate_lifecycle_retention_policy(policy)
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+
+    entries: list[tuple[str, str]] = []
+    keepable_keys: list[str] = []
+
+    for index, explanation in enumerate(explanation_records):
+        explanation_key = _lifecycle_explanation_key(index, explanation)
+        if explanation.hub_id != policy.hub_id:
+            entries.append((explanation_key, "ignored"))
+            continue
+
+        if _matches_lifecycle_retention_filters(
+            explanation,
+            categories=policy.retain_categories,
+            reasons=policy.retain_reasons,
+            sources=policy.retain_sources,
+        ):
+            entries.append((explanation_key, "kept"))
+            keepable_keys.append(explanation_key)
+            continue
+
+        if _matches_lifecycle_retention_filters(
+            explanation,
+            categories=policy.prune_categories,
+            reasons=policy.prune_reasons,
+            sources=policy.prune_sources,
+        ):
+            entries.append((explanation_key, "prune_candidate"))
+            continue
+
+        entries.append((explanation_key, "kept"))
+        keepable_keys.append(explanation_key)
+
+    if policy.max_records is not None:
+        kept_under_cap = set(keepable_keys[: policy.max_records])
+        entries = [
+            (
+                explanation_key,
+                (
+                    "prune_candidate"
+                    if decision_category == "kept"
+                    and explanation_key not in kept_under_cap
+                    else decision_category
+                ),
+            )
+            for explanation_key, decision_category in entries
+        ]
+
+    kept_explanation_keys = [
+        explanation_key
+        for explanation_key, decision_category in entries
+        if decision_category == "kept"
+    ]
+    prune_candidate_explanation_keys = [
+        explanation_key
+        for explanation_key, decision_category in entries
+        if decision_category == "prune_candidate"
+    ]
+    ignored_explanation_keys = [
+        explanation_key
+        for explanation_key, decision_category in entries
+        if decision_category == "ignored"
+    ]
+
+    by_decision_category = {
+        "ignored": len(ignored_explanation_keys),
+        "kept": len(kept_explanation_keys),
+        "prune_candidate": len(prune_candidate_explanation_keys),
+    }
+    decision_metadata: dict[str, object] = {
+        "simulator_local": True,
+        "read_only": True,
+        "retention_decision_only": True,
+        "policy_decision": True,
+        "registry_hub_mutated": False,
+        "retained_history_mutated": False,
+        "explanations_deleted": False,
+        "offers_deleted": False,
+        "delivery_behavior_changed": False,
+        "traffic_hub_routing_changed": False,
+        "networking": False,
+        "filter_precedence": "retain_filters_before_prune_filters",
+        "max_records_applied": policy.max_records is not None,
+    }
+    if metadata is not None:
+        decision_metadata.update(metadata)
+
+    return StreamOfferLifecycleExplanationRetentionDecision(
+        hub_id=policy.hub_id,
+        policy_id=policy.policy_id,
+        kept_explanation_keys=kept_explanation_keys,
+        prune_candidate_explanation_keys=prune_candidate_explanation_keys,
+        ignored_explanation_keys=ignored_explanation_keys,
+        by_decision_category=by_decision_category,
+        metadata=decision_metadata,
+    )
+
+
+def summarize_stream_offer_lifecycle_explanation_retention_decision(
+    decision: StreamOfferLifecycleExplanationRetentionDecision,
+) -> dict[str, object]:
+    """Return a copied JSON-safe retention classification summary."""
+    _validate_lifecycle_retention_decision(decision)
+    return decision.to_summary()
 
 
 def summarize_stream_offer_lifecycle_audit(
@@ -1505,6 +1624,24 @@ def _validate_lifecycle_explanation(
         raise TypeError("explanation must be a StreamOfferLifecycleExplanation")
 
 
+def _validate_lifecycle_retention_policy(
+    policy: StreamOfferLifecycleExplanationRetentionPolicy,
+) -> None:
+    if not isinstance(policy, StreamOfferLifecycleExplanationRetentionPolicy):
+        raise TypeError(
+            "policy must be a StreamOfferLifecycleExplanationRetentionPolicy"
+        )
+
+
+def _validate_lifecycle_retention_decision(
+    decision: StreamOfferLifecycleExplanationRetentionDecision,
+) -> None:
+    if not isinstance(decision, StreamOfferLifecycleExplanationRetentionDecision):
+        raise TypeError(
+            "decision must be a StreamOfferLifecycleExplanationRetentionDecision"
+        )
+
+
 def _lifecycle_explanation_records(
     explanations: list[StreamOfferLifecycleExplanation]
     | tuple[StreamOfferLifecycleExplanation, ...]
@@ -1517,6 +1654,37 @@ def _lifecycle_explanation_records(
     for explanation in explanations:
         _validate_lifecycle_explanation(explanation)
     return tuple(explanations)
+
+
+def _lifecycle_explanation_key(
+    index: int,
+    explanation: StreamOfferLifecycleExplanation,
+) -> str:
+    checked_at = "none" if explanation.checked_at is None else str(explanation.checked_at)
+    source = "none" if explanation.source is None else explanation.source
+    return (
+        f"lifecycle_explanation:{index}:{explanation.hub_id}:"
+        f"{explanation.offer_id}:{explanation.category}:{explanation.reason}:"
+        f"{explanation.status}:{source}:{checked_at}"
+    )
+
+
+def _matches_lifecycle_retention_filters(
+    explanation: StreamOfferLifecycleExplanation,
+    *,
+    categories: tuple[str, ...],
+    reasons: tuple[str, ...],
+    sources: tuple[str, ...],
+) -> bool:
+    return (
+        (bool(categories) and explanation.category in categories)
+        or (bool(reasons) and explanation.reason in reasons)
+        or (
+            bool(sources)
+            and explanation.source is not None
+            and explanation.source in sources
+        )
+    )
 
 
 def _validate_offer(offer: StreamOffer) -> None:
