@@ -658,40 +658,55 @@ python -m darwin.cli.main --version
 
 # DARWIN v1.5 Lifecycle Explanation Retention Planning Checklist
 
-v1.5 is draft planning only and unreleased. DARWIN v1.4.0 remains the latest
-released version on `main` as `darwin-sim 1.4.0`. The annotated `v1.4.0` tag
-and GitHub release exist:
+v1.5 is unreleased release-candidate planning work. DARWIN v1.4.0 remains the
+latest released version on `main` as `darwin-sim 1.4.0`. The annotated
+`v1.4.0` tag and GitHub release exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package publication
 was performed, and no release assets were uploaded.
 
 - [x] v1.5 planning roadmap seed is checked in at `docs/V1_5_ROADMAP.md`.
 - [x] v1.5 draft release-notes placeholder is checked in at
   `docs/RELEASE_NOTES_v1_5_DRAFT.md`.
+- [x] v1.5 lifecycle explanation retention docs are checked in at
+  `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_RETENTION_v1_5.md`.
+- [x] v1.5 lifecycle explanation pruning docs are checked in at
+  `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_PRUNING_v1_5.md`.
 - [x] README links to the v1.5 planning docs while preserving v1.4.0 as the
   latest released version.
 - [x] Planning scope is limited to lifecycle explanation retention policy and
   audit pruning summary candidates.
+- [x] Sprint 1 through Sprint 5 implementation scope is documented as
+  simulator-local and symbolic.
+- [x] v1.5 release-candidate hardening and documentation audit is Sprint 6
+  only and does not add new feature behavior.
+- [x] Scenarios `064` through `066` validate and run.
+- [x] Planning-branch scenario metadata is contiguous from `001` through
+  `066`.
+- [x] Scenario index is current and generated from deterministic scenario
+  metadata.
+- [x] v1.5 documentation readiness checks include the roadmap, draft release
+  notes, lifecycle explanation retention docs, and lifecycle explanation
+  pruning docs.
+- [x] v1.5 draft release notes summarize Sprint 1 through Sprint 6 without
+  claiming a v1.5 release.
 - [x] Planning docs avoid production networking, sockets, HTTP/WebSocket
   behavior, DNS lookup, registrar integration, public CA behavior, external
   services, real cryptography, key generation, private key storage, production
   E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
-  queues, live timers, live clocks, live polling, delivery behavior changes,
-  TrafficHub routing changes, compact snapshot changes, canonical identity
-  rewrites, and production anonymity/privacy/firewall/DDoS guarantees.
-- [x] Planning does not add new feature behavior, new scenarios, lifecycle
-  mutation behavior, compact snapshot changes, automatic cleanup workers,
-  retry loops, durable queues, live timers, networking, DNS, external
+  queues, live timers, live clocks, live polling, retention/pruning behavior
+  beyond explicit simulator helpers, delivery behavior changes, TrafficHub
+  routing changes, compact snapshot changes, canonical identity rewrites, and
+  production anonymity/privacy/firewall/DDoS guarantees.
+- [x] Planning does not add version bumps, release assets, package
+  publication, merge to `main`, tags, GitHub releases, automatic cleanup
+  workers, retry loops, durable queues, live timers, networking, DNS, external
   services, real cryptography, delivery changes, TrafficHub routing changes,
-  canonical identity rewrites, package publication, release assets, merge to
-  `main`, tags, GitHub releases, or version bumps.
-- [ ] Future v1.5 implementation scope is explicitly narrowed before any
-  feature work begins.
-- [ ] Future v1.5 scenario coverage remains contiguous after any scenarios are
-  intentionally added.
-- [ ] Future v1.5 release-candidate validation is run after implementation
-  scope exists.
+  compact snapshot changes, or canonical identity rewrites.
+- [ ] Future final release prep is explicitly requested before any version
+  bump, changelog release entry, merge, tag, GitHub release, package
+  publication, or release asset upload.
 
-## v1.5 Planning Validation Commands
+## v1.5 Release-Candidate Planning Validation Commands
 
 ```bash
 python -m ruff check .

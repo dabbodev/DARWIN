@@ -10,7 +10,7 @@ Recommended candidate theme: Lifecycle explanation retention policy and audit
 pruning summaries.
 
 This roadmap records candidate planning scope and the implemented Sprint 1
-through Sprint 5 planning slices. It does not authorize version bumps, package
+through Sprint 6 planning slices. It does not authorize version bumps, package
 publication, release assets, tagging, release creation, or changes to released
 v1.4 behavior.
 
@@ -267,70 +267,59 @@ Acceptance targets:
   compliance, storage, delivery, routing, networking, DNS, or cryptography
   behavior.
 
-## Candidate Sprint 6: Grouped Retention and Audit Summaries
+## Sprint 6: Release-Candidate Hardening and Documentation Audit
 
-Status: draft planning only; not implemented.
+Status: implemented on `v1.5/planning`.
 
-Goal: make retained lifecycle explanation and pruning-plan metadata easier to
-inspect through grouped summaries.
+Goal: harden release-readiness and documentation checks after scenario coverage
+exists, without adding new feature behavior.
 
-Possible future work:
+Implemented:
 
-- Summarize retained explanation history by hub, offer, category, reason,
-  source, and age bucket.
-- Summarize pruning-plan candidates by keep/review/prune classification.
-- Preserve append-order detail where useful and deterministic group ordering
-  everywhere.
-- Keep grouped summaries as simulator-local diagnostics, not durable audit
-  trails or production telemetry.
-
-Acceptance targets:
-
-- Summary helpers are read-only.
-- Summary output is copied and JSON-safe.
-- Existing retained histories remain RegistryHub-local simulator state, not
-  production logs or compliance records.
-- Compact `world.snapshot()` output remains unchanged.
-
-## Candidate Sprint 7: Release-Readiness Documentation
-
-Status: draft planning only; not implemented.
-
-Goal: harden release-readiness checks and documentation only after scenario
-coverage exists.
-
-Possible future work:
-
-- Refresh README, release checklist, roadmap, draft release notes, scenario
-  index, and related docs after implementation scope is known.
-- Confirm scenario metadata remains contiguous after any new scenario coverage.
-- Keep release-readiness docs clear that v1.5 remains simulator-local and
-  symbolic.
+- v1.5 roadmap, draft release notes, retention docs, and pruning docs are
+  included in documentation readiness and link checks.
+- Release-readiness checks assert v1.5 remains unreleased while the package and
+  CLI version remain `darwin-sim 1.4.0`.
+- Checked-in scenario metadata is confirmed contiguous from `001` through
+  `066`.
+- `docs/SCENARIO_INDEX.md` remains exactly generated from deterministic
+  scenario metadata.
+- README and release checklist carry v1.5 release-candidate planning status
+  without claiming a v1.5 release.
 
 Acceptance targets:
 
+- Sprint 6 is release-candidate hardening and documentation audit only.
 - No package publication, release assets, merge, tag, GitHub release, or
   version bump is performed by planning work.
-- No new feature behavior is added by documentation readiness work.
-- Documentation avoids production networking, DNS, external service,
-  cryptography, delivery, privacy, anonymity, firewall, DDoS, cleanup, queue,
-  timer, TrafficHub, compact snapshot, and canonical identity claims.
+- No new feature behavior or new scenarios are added by documentation
+  readiness work unless required to fix deterministic scenario index
+  consistency.
+- Documentation states that v1.5 remains simulator-local and symbolic.
+- Documentation avoids production networking, sockets, HTTP/WebSocket
+  behavior, DNS lookup, registrar integration, public CA behavior, external
+  services, real cryptography, key generation, private key storage, production
+  E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
+  queues, live timers, live clocks, live polling, retention/pruning behavior
+  beyond explicit simulator helpers, delivery behavior changes, TrafficHub
+  routing changes, compact snapshot changes, canonical identity rewrites, and
+  production anonymity/privacy/firewall/DDoS guarantees.
 
-## Recommended First Implementation Sprint
+## Deferred Release Prep
 
-If v1.5 implementation begins later, Sprint 1 is the smallest safe first
-slice. Read-only retention-policy models can operate over explicit simulator
-metadata without mutating retained explanation history, applying pruning,
-changing lifecycle behavior, changing delivery, changing TrafficHub routing,
-rewriting canonical identity, contacting networks, using DNS, adding real
-cryptography, changing compact snapshots, or bumping the released version.
+Status: not started.
+
+Future release prep, if explicitly requested later, may decide whether to bump
+the package version, update changelog release language, merge to `main`, tag,
+create a GitHub release, publish packages, or upload release assets. None of
+that is part of v1.5 Sprint 6 planning work.
 
 ## Release Status
 
-v1.5 is unreleased. Sprint 1 through Sprint 5 planning work exists on the
-planning branch, including focused v1.5 scenario coverage through `066`, but
-no release-candidate work, version bump, merge to `main`, tag, GitHub release,
-package publication, or release assets exist.
+v1.5 is unreleased. Sprint 1 through Sprint 6 planning work exists on the
+planning branch, including focused v1.5 scenario coverage through `066` and
+release-candidate documentation hardening, but no version bump, merge to
+`main`, tag, GitHub release, package publication, or release assets exist.
 
 v1.4.0 remains the latest released version on `main` as
 `darwin-sim 1.4.0`. The annotated `v1.4.0` tag and GitHub release exist:

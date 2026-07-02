@@ -26,6 +26,20 @@ workers, retry loops, durable queues, live timers, delivery enforcement,
 TrafficHub routing changes, compact snapshot changes, or canonical identity
 rewrites.
 
+The v1.5 planning branch is in unreleased release-candidate hardening for
+lifecycle explanation retention policy and audit pruning summaries. It adds
+simulator-local retention classification helpers, read-only pruning plans, an
+explicit caller-driven pruning apply helper limited to retained lifecycle
+explanation history, scenario coverage through `066`, detailed debug snapshot
+visibility, and documentation/readiness checks. It keeps the package and CLI
+version at `darwin-sim 1.4.0` and does not add real networking, sockets,
+HTTP/WebSocket behavior, DNS lookup, external services, real cryptography,
+production E2EE, production anonymity/privacy/firewall or DDoS guarantees,
+delivery enforcement, automatic cleanup workers, retry loops, durable queues,
+live timers, live clocks, live polling, retention/pruning behavior beyond
+explicit simulator helpers, delivery behavior changes, TrafficHub routing
+changes, compact snapshot changes, or canonical identity rewrites.
+
 The v0.1 simulator answers questions like:
 
 - Can a device register under a scoped Registry Hub?
@@ -213,6 +227,11 @@ In the v1.4 release, scenarios `061` through `063` cover read-only lifecycle
 explanations, explicitly retained explanation history, and grouped audit
 summaries. The released scenario set is contiguous from `001` through `063`,
 and the package and CLI version report `darwin-sim 1.4.0`.
+
+On the unreleased v1.5 planning branch, scenarios `064` through `066` cover
+lifecycle explanation retention classification, read-only pruning plans, and
+explicit pruning apply. The checked-in scenario set is contiguous from `001`
+through `066`, while the package and CLI version remain `darwin-sim 1.4.0`.
 
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
@@ -1025,6 +1044,7 @@ For v1.5 lifecycle explanation retention-policy planning docs, see:
 
 - `docs/V1_5_ROADMAP.md`
 - `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_RETENTION_v1_5.md`
+- `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_PRUNING_v1_5.md`
 - `docs/RELEASE_NOTES_v1_5_DRAFT.md`
 
 ## What v0.1 Is Not

@@ -1,16 +1,17 @@
 # DARWIN v1.5 Draft Release Notes
 
-Status: draft planning placeholder for an unreleased v1.5 line. DARWIN v1.4.0
-remains the latest released version on `main` as `darwin-sim 1.4.0`. The
-annotated `v1.4.0` tag and GitHub release exist:
+Status: draft release-candidate notes for an unreleased v1.5 release-candidate planning line.
+DARWIN v1.4.0 remains the latest released version on `main` as
+`darwin-sim 1.4.0`. The annotated `v1.4.0` tag and GitHub release exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package
 publication was performed, and no release assets were uploaded.
 
-Sprint 1 through Sprint 5 planning work has been added on the v1.5 planning
-branch, including focused scenario DSL coverage through `066`. No
-release-candidate work, version bump, merge to `main`, tag, GitHub release,
-package publication, or release assets exist yet. These notes remain a draft
-placeholder for future release-facing scope.
+Sprint 1 through Sprint 6 planning work has been added on the v1.5 planning
+branch, including focused scenario DSL coverage through `066` and
+release-candidate hardening for documentation/readiness checks. No version
+bump, merge to `main`, tag, GitHub release, package publication, or release
+assets exist yet. These notes remain draft release-candidate material for
+future release-facing scope.
 
 This possible release line must remain symbolic simulator metadata flow only.
 It must not become real networking, a network service, production DDoS
@@ -22,23 +23,23 @@ a background cleanup system.
 
 Lifecycle explanation retention policy and audit pruning summaries.
 
-Candidate v1.5 work may include:
+Implemented v1.5 planning work includes:
 
 - Read-only retention-policy models for lifecycle explanation history.
 - Deterministic pruning-plan helpers that identify candidates without deleting
   anything by default.
-- Grouped retention and audit summaries by hub, offer, category, reason, age
-  bucket, source, or other explicit simulator metadata.
-- An explicit opt-in prune/apply helper only after read-only planning helpers
-  are stable.
-- Scenario DSL coverage only after helper/model slices are stable.
-- Detailed snapshot visibility only after retained policy/pruning data exists.
-- Release-readiness documentation after scenario coverage exists.
+- Grouped pruning summaries by explicit simulator metadata such as candidate
+  category, reason, and source.
+- An explicit opt-in prune/apply helper after read-only planning helpers
+  stabilized.
+- Scenario DSL coverage for retention classification, pruning plans, and
+  explicit pruning apply.
+- Detailed snapshot visibility after retained policy/pruning data exists.
+- Release-readiness documentation and checks after scenario coverage exists.
 
 ## Compatibility Target
 
-Future v1.5 work should preserve these compatibility expectations unless a
-later sprint explicitly narrows and documents an exception:
+v1.5 planning work preserves these compatibility expectations:
 
 - Existing mailbox delivery behavior remains unchanged.
 - Existing encrypted delivery behavior remains unchanged.
@@ -48,9 +49,9 @@ later sprint explicitly narrows and documents an exception:
   snapshot, and scenario behavior remains unchanged outside explicitly scoped
   v1.5 helper surfaces.
 - Compact `world.snapshot()` output remains unchanged.
-- Existing scenarios `001` through `063` continue to pass unchanged, and v1.5
-  planning scenarios `064` through `066` are intentionally added and
-  documented.
+- Existing scenarios `001` through `063` continue to pass unchanged, and
+  Scenarios `064` through `066` are intentionally added and documented.
+- The checked-in scenario set is contiguous from `001` through `066`.
 - The package and CLI version remain `darwin-sim 1.4.0` during planning.
 
 ## Draft Sprint Summary
@@ -149,14 +150,21 @@ The fields are copied JSON-safe detailed-snapshot summaries of existing action
 results. Compact `world.snapshot()` output remains unchanged, and no retention
 classification, pruning-plan, or pruning-apply semantics change.
 
-Sprint 6 may add grouped retention and audit summaries over retained
-explanation history and pruning-plan metadata. The summaries should remain
-simulator-local diagnostics, not durable audit trails, production telemetry,
-security evidence, privacy guarantees, or compliance records.
+Sprint 6: Release-candidate hardening and documentation audit coverage only.
+It includes the v1.5 roadmap, draft release notes, retention docs, and
+pruning docs in documentation readiness/link checks; confirms checked-in
+scenario continuity from `001` through `066`; keeps
+`docs/SCENARIO_INDEX.md` exactly generated from deterministic scenario
+metadata; and updates README/release-checklist planning language without
+claiming a v1.5 release.
 
-Sprint 7 may harden release-readiness documentation only after scenario
-coverage exists. Planning work must not create release assets, package
-publication, tags, GitHub releases, or version bumps.
+Sprint 6 does not add new feature behavior, new scenarios, retention
+classification precedence changes, pruning plan/apply semantic changes,
+compact snapshot changes, automatic cleanup workers, retry loops, durable
+queues, live timers, live clocks, live polling, delivery behavior changes,
+TrafficHub routing changes, networking, DNS lookup, external services, real
+cryptography, production E2EE, production privacy/anonymity/firewall/DDoS
+guarantees, or canonical identity rewrites.
 
 ## Scenario Coverage
 
@@ -223,9 +231,10 @@ v1.5 planning does not add:
 
 ## Release Readiness
 
-Release readiness has not started for v1.5. This placeholder should be updated
-only after implementation, scenario coverage, and release-candidate validation
-exist.
+Release-candidate documentation/readiness hardening has been added for the
+unreleased v1.5 planning branch. Final release prep has not started: there is
+no version bump, changelog release entry, merge to `main`, tag, GitHub
+release, package publication, or release asset upload for v1.5.
 
 Planning validation should continue to pass `python -m ruff check .`,
 `python -m pytest`, `python scripts/run_all_scenarios.py`, and
