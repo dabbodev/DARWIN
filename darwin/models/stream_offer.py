@@ -73,6 +73,12 @@ STREAM_OFFER_LIFECYCLE_EXPLANATION_REASONS: tuple[str, ...] = (
     "missing_by_result",
 )
 
+STREAM_OFFER_LIFECYCLE_RETENTION_DECISION_CATEGORIES: tuple[str, ...] = (
+    "kept",
+    "prune_candidate",
+    "ignored",
+)
+
 RENDEZVOUS_POLL_STATUSES: tuple[str, ...] = (
     "matched",
     "empty",
@@ -557,6 +563,304 @@ class StreamOfferLifecycleExplanation:
 
 
 @dataclass(frozen=True, slots=True)
+class StreamOfferLifecycleExplanationRetentionPolicy:
+    """Read-only policy metadata for classifying lifecycle explanations."""
+
+    policy_id: str
+    hub_id: str
+    retain_categories: tuple[str, ...] | list[str] = ()
+    retain_reasons: tuple[str, ...] | list[str] = ()
+    prune_categories: tuple[str, ...] | list[str] = ()
+    prune_reasons: tuple[str, ...] | list[str] = ()
+    retain_sources: tuple[str, ...] | list[str] = ()
+    prune_sources: tuple[str, ...] | list[str] = ()
+    max_records: int | None = None
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.policy_id, "policy_id")
+        _validate_required_string(self.hub_id, "hub_id")
+        object.__setattr__(
+            self,
+            "retain_categories",
+            _lifecycle_explanation_category_tuple(
+                self.retain_categories,
+                "retain_categories",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "retain_reasons",
+            _lifecycle_explanation_reason_tuple(
+                self.retain_reasons,
+                "retain_reasons",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "prune_categories",
+            _lifecycle_explanation_category_tuple(
+                self.prune_categories,
+                "prune_categories",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "prune_reasons",
+            _lifecycle_explanation_reason_tuple(
+                self.prune_reasons,
+                "prune_reasons",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "retain_sources",
+            _string_tuple(self.retain_sources, "retain_sources"),
+        )
+        object.__setattr__(
+            self,
+            "prune_sources",
+            _string_tuple(self.prune_sources, "prune_sources"),
+        )
+        _validate_optional_order(self.max_records, "max_records")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe retention policy metadata."""
+        return {
+            "policy_id": self.policy_id,
+            "hub_id": self.hub_id,
+            "retain_categories": list(self.retain_categories),
+            "retain_reasons": list(self.retain_reasons),
+            "prune_categories": list(self.prune_categories),
+            "prune_reasons": list(self.prune_reasons),
+            "retain_sources": list(self.retain_sources),
+            "prune_sources": list(self.prune_sources),
+            "max_records": self.max_records,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class StreamOfferLifecycleExplanationRetentionDecision:
+    """Read-only classification result for lifecycle explanation retention."""
+
+    hub_id: str
+    policy_id: str
+    kept_explanation_keys: tuple[str, ...] | list[str] = ()
+    prune_candidate_explanation_keys: tuple[str, ...] | list[str] = ()
+    ignored_explanation_keys: tuple[str, ...] | list[str] = ()
+    by_decision_category: dict[str, int] | None = None
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_required_string(self.policy_id, "policy_id")
+        object.__setattr__(
+            self,
+            "kept_explanation_keys",
+            _string_tuple(self.kept_explanation_keys, "kept_explanation_keys"),
+        )
+        object.__setattr__(
+            self,
+            "prune_candidate_explanation_keys",
+            _string_tuple(
+                self.prune_candidate_explanation_keys,
+                "prune_candidate_explanation_keys",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "ignored_explanation_keys",
+            _string_tuple(self.ignored_explanation_keys, "ignored_explanation_keys"),
+        )
+        object.__setattr__(
+            self,
+            "by_decision_category",
+            _retention_decision_count_dict(
+                self.by_decision_category or {},
+                "by_decision_category",
+            ),
+        )
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe retention classification metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "policy_id": self.policy_id,
+            "kept_explanation_keys": list(self.kept_explanation_keys),
+            "prune_candidate_explanation_keys": list(
+                self.prune_candidate_explanation_keys
+            ),
+            "ignored_explanation_keys": list(self.ignored_explanation_keys),
+            "by_decision_category": dict(self.by_decision_category or {}),
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class StreamOfferLifecycleExplanationPruningPlan:
+    """Read-only pruning candidate plan for lifecycle explanations."""
+
+    hub_id: str
+    policy_id: str
+    candidate_explanation_keys: tuple[str, ...] | list[str] = ()
+    retained_explanation_keys: tuple[str, ...] | list[str] = ()
+    ignored_explanation_keys: tuple[str, ...] | list[str] = ()
+    candidate_count: int = 0
+    retained_count: int = 0
+    ignored_count: int = 0
+    by_decision_category: dict[str, int] | None = None
+    candidate_by_category: dict[str, int] | None = None
+    candidate_by_reason: dict[str, int] | None = None
+    candidate_by_source: dict[str, int] | None = None
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_required_string(self.policy_id, "policy_id")
+        object.__setattr__(
+            self,
+            "candidate_explanation_keys",
+            _string_tuple(self.candidate_explanation_keys, "candidate_explanation_keys"),
+        )
+        object.__setattr__(
+            self,
+            "retained_explanation_keys",
+            _string_tuple(self.retained_explanation_keys, "retained_explanation_keys"),
+        )
+        object.__setattr__(
+            self,
+            "ignored_explanation_keys",
+            _string_tuple(self.ignored_explanation_keys, "ignored_explanation_keys"),
+        )
+        _validate_order(self.candidate_count, "candidate_count")
+        _validate_order(self.retained_count, "retained_count")
+        _validate_order(self.ignored_count, "ignored_count")
+        object.__setattr__(
+            self,
+            "by_decision_category",
+            _retention_decision_count_dict(
+                self.by_decision_category or {},
+                "by_decision_category",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "candidate_by_category",
+            _count_dict(self.candidate_by_category or {}, "candidate_by_category"),
+        )
+        object.__setattr__(
+            self,
+            "candidate_by_reason",
+            _count_dict(self.candidate_by_reason or {}, "candidate_by_reason"),
+        )
+        object.__setattr__(
+            self,
+            "candidate_by_source",
+            _count_dict(self.candidate_by_source or {}, "candidate_by_source"),
+        )
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe pruning plan metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "policy_id": self.policy_id,
+            "candidate_explanation_keys": list(self.candidate_explanation_keys),
+            "retained_explanation_keys": list(self.retained_explanation_keys),
+            "ignored_explanation_keys": list(self.ignored_explanation_keys),
+            "candidate_count": self.candidate_count,
+            "retained_count": self.retained_count,
+            "ignored_count": self.ignored_count,
+            "by_decision_category": dict(self.by_decision_category or {}),
+            "candidate_by_category": dict(self.candidate_by_category or {}),
+            "candidate_by_reason": dict(self.candidate_by_reason or {}),
+            "candidate_by_source": dict(self.candidate_by_source or {}),
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class StreamOfferLifecycleExplanationPruningApplyResult:
+    """Result for explicitly applying a lifecycle explanation pruning plan."""
+
+    hub_id: str
+    policy_id: str
+    pruned_explanation_keys: tuple[str, ...] | list[str] = ()
+    retained_explanation_keys: tuple[str, ...] | list[str] = ()
+    ignored_explanation_keys: tuple[str, ...] | list[str] = ()
+    missing_explanation_keys: tuple[str, ...] | list[str] = ()
+    pruned_count: int = 0
+    retained_count: int = 0
+    ignored_count: int = 0
+    missing_count: int = 0
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_required_string(self.policy_id, "policy_id")
+        object.__setattr__(
+            self,
+            "pruned_explanation_keys",
+            _string_tuple(self.pruned_explanation_keys, "pruned_explanation_keys"),
+        )
+        object.__setattr__(
+            self,
+            "retained_explanation_keys",
+            _string_tuple(self.retained_explanation_keys, "retained_explanation_keys"),
+        )
+        object.__setattr__(
+            self,
+            "ignored_explanation_keys",
+            _string_tuple(self.ignored_explanation_keys, "ignored_explanation_keys"),
+        )
+        object.__setattr__(
+            self,
+            "missing_explanation_keys",
+            _string_tuple(self.missing_explanation_keys, "missing_explanation_keys"),
+        )
+        _validate_order(self.pruned_count, "pruned_count")
+        _validate_order(self.retained_count, "retained_count")
+        _validate_order(self.ignored_count, "ignored_count")
+        _validate_order(self.missing_count, "missing_count")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe pruning apply result metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "policy_id": self.policy_id,
+            "pruned_explanation_keys": list(self.pruned_explanation_keys),
+            "retained_explanation_keys": list(self.retained_explanation_keys),
+            "ignored_explanation_keys": list(self.ignored_explanation_keys),
+            "missing_explanation_keys": list(self.missing_explanation_keys),
+            "pruned_count": self.pruned_count,
+            "retained_count": self.retained_count,
+            "ignored_count": self.ignored_count,
+            "missing_count": self.missing_count,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
 class StreamOfferLifecycleAuditSummary:
     """Read-only grouped lifecycle audit metadata for stream offers."""
 
@@ -1031,6 +1335,51 @@ def make_lane_admission_policy(
     )
 
 
+def make_stream_offer_lifecycle_explanation_retention_policy(
+    *,
+    policy_id: str,
+    hub_id: str,
+    retain_categories: list[str] | None = None,
+    retain_reasons: list[str] | None = None,
+    prune_categories: list[str] | None = None,
+    prune_reasons: list[str] | None = None,
+    retain_sources: list[str] | None = None,
+    prune_sources: list[str] | None = None,
+    max_records: int | None = None,
+    metadata: dict[str, Any] | None = None,
+) -> StreamOfferLifecycleExplanationRetentionPolicy:
+    """Return a pure simulator-local lifecycle explanation retention policy."""
+    policy_metadata: dict[str, object] = {
+        "simulator_local": True,
+        "read_only": True,
+        "retention_policy_only": True,
+        "retained_history_mutated": False,
+        "explanations_deleted": False,
+        "offers_deleted": False,
+        "delivery_behavior_changed": False,
+        "traffic_hub_routing_changed": False,
+        "networking": False,
+    }
+    if metadata is not None:
+        safe_metadata = _json_safe_copy(metadata)
+        if not isinstance(safe_metadata, dict):
+            raise TypeError("metadata must be a JSON-safe dict")
+        policy_metadata.update(safe_metadata)
+
+    return StreamOfferLifecycleExplanationRetentionPolicy(
+        policy_id=policy_id,
+        hub_id=hub_id,
+        retain_categories=retain_categories or [],
+        retain_reasons=retain_reasons or [],
+        prune_categories=prune_categories or [],
+        prune_reasons=prune_reasons or [],
+        retain_sources=retain_sources or [],
+        prune_sources=prune_sources or [],
+        max_records=max_records,
+        metadata=policy_metadata,
+    )
+
+
 def is_stream_offer_active(offer: StreamOffer) -> bool:
     """Return whether an offer has a non-terminal structural status."""
     _validate_offer(offer)
@@ -1199,6 +1548,15 @@ def _validate_lifecycle_explanation_reason(value: str) -> None:
         )
 
 
+def _validate_lifecycle_retention_decision_category(value: str) -> None:
+    _validate_required_string(value, "stream offer lifecycle retention decision category")
+    if value not in STREAM_OFFER_LIFECYCLE_RETENTION_DECISION_CATEGORIES:
+        raise ValueError(
+            "stream offer lifecycle retention decision category must be one of "
+            f"{', '.join(STREAM_OFFER_LIFECYCLE_RETENTION_DECISION_CATEGORIES)}"
+        )
+
+
 def _validate_poll_status(value: str) -> None:
     _validate_required_string(value, "rendezvous poll status")
     if value not in RENDEZVOUS_POLL_STATUSES:
@@ -1286,6 +1644,42 @@ def _count_dict(values: dict[str, int], field_name: str) -> dict[str, int]:
         _validate_order(count, field_name)
         copied[key] = count
     return {key: copied[key] for key in sorted(copied)}
+
+
+def _retention_decision_count_dict(
+    values: dict[str, int],
+    field_name: str,
+) -> dict[str, int]:
+    if not isinstance(values, dict):
+        raise TypeError(f"{field_name} must be a dict")
+    copied: dict[str, int] = {}
+    for key, count in values.items():
+        _validate_lifecycle_retention_decision_category(key)
+        _validate_order(count, field_name)
+        copied[key] = count
+    return {key: copied[key] for key in sorted(copied)}
+
+
+def _lifecycle_explanation_category_tuple(
+    values: tuple[str, ...] | list[str],
+    field_name: str,
+) -> tuple[str, ...]:
+    if not isinstance(values, tuple | list):
+        raise TypeError(f"{field_name} must be a list or tuple")
+    for value in values:
+        _validate_lifecycle_explanation_category(value)
+    return tuple(values)
+
+
+def _lifecycle_explanation_reason_tuple(
+    values: tuple[str, ...] | list[str],
+    field_name: str,
+) -> tuple[str, ...]:
+    if not isinstance(values, tuple | list):
+        raise TypeError(f"{field_name} must be a list or tuple")
+    for value in values:
+        _validate_lifecycle_explanation_reason(value)
+    return tuple(values)
 
 
 def _json_safe_copy(value: Any) -> object:

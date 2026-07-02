@@ -1,0 +1,106 @@
+scenario_id: 064_stream_offer_lifecycle_retention_classification
+name: Stream offer lifecycle retention classification
+category: stream_offer
+description: retained lifecycle explanations are classified as kept, prune candidates, or ignored with retain filters taking precedence
+tags:
+  - stream_offer
+  - lifecycle
+  - retention
+  - pruning
+  - v1.5
+demonstrates:
+  - retained lifecycle explanation history can be classified without mutation
+  - retained explanations can be kept or marked as pruning candidates
+  - foreign explanation action results are classified as ignored
+  - retain filters take precedence over prune filters
+expected_result: retention classification produces deterministic kept, pruning-candidate, and ignored keys without pruning retained history
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+    - hub_id: registry_remote_001
+      scope_path: global.remote
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_retention_expired
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 2
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_retention_terminal
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    status: accepted
+    created_order: 0
+    expires_order: 1
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_retention_active
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 10
+  - action: hold_stream_offer
+    registry_hub: registry_remote_001
+    offer_id: offer_retention_ignored
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.remote
+    created_order: 0
+    expires_order: 10
+  - action: plan_stream_offer_expiration
+    registry_hub: registry_chat_001
+    checked_at: 5
+  - action: explain_stream_offer_lifecycle_plan
+    registry_hub: registry_chat_001
+    checked_at: 5
+    record_explanations: true
+  - action: plan_stream_offer_expiration
+    registry_hub: registry_remote_001
+    checked_at: 5
+  - action: explain_stream_offer_lifecycle_plan
+    registry_hub: registry_remote_001
+    checked_at: 5
+  - action: classify_stream_offer_lifecycle_explanations_for_retention
+    registry_hub: registry_chat_001
+    policy_id: retention_policy_064
+    include_retained_explanations: true
+    include_foreign_action_explanations: true
+    retain_categories:
+      - terminal
+    prune_categories:
+      - expired
+      - terminal
+assertions:
+  - type: stream_offer_lifecycle_retention_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: retention_policy_064
+    kept_count: 2
+    prune_candidate_count: 1
+    ignored_count: 1
+    expected_count: 1
+  - type: stream_offer_lifecycle_retention_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: retention_policy_064
+    kept_explanation_key: lifecycle_explanation:1:registry_chat_001:offer_retention_terminal:terminal:terminal_cleanup_candidate:cleanup_candidate:lifecycle_plan:5
+    prune_candidate_explanation_key: lifecycle_explanation:0:registry_chat_001:offer_retention_expired:expired:expired_by_plan:expired:lifecycle_plan:5
+    ignored_explanation_key: lifecycle_explanation:3:registry_remote_001:offer_retention_ignored:active:active_by_plan:active:lifecycle_plan:5
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    expected_count: 3
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_retention_expired
+    category: expired
+    expected_count: 1

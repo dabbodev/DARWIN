@@ -655,3 +655,69 @@ python -m pytest
 python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
 ```
+
+# DARWIN v1.5 Lifecycle Explanation Retention Release-Prep Checklist
+
+v1.5.0 release prep is complete on `v1.5/planning` as `darwin-sim 1.5.0`.
+DARWIN v1.4.0 remains the latest tagged GitHub release on `main` until a
+separate merge, tag, and release step is explicitly performed. The annotated
+`v1.4.0` tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package publication
+was performed, and no release assets were uploaded.
+
+- [x] v1.5 planning roadmap seed is checked in at `docs/V1_5_ROADMAP.md`.
+- [x] v1.5 draft release-notes placeholder is checked in at
+  `docs/RELEASE_NOTES_v1_5_DRAFT.md`.
+- [x] v1.5 lifecycle explanation retention docs are checked in at
+  `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_RETENTION_v1_5.md`.
+- [x] v1.5 lifecycle explanation pruning docs are checked in at
+  `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_PRUNING_v1_5.md`.
+- [x] README links to the v1.5 release-prep docs while preserving v1.4.0 as
+  the latest tagged GitHub release until merge/tag/release is explicitly
+  performed.
+- [x] Planning scope is limited to lifecycle explanation retention policy and
+  audit pruning summary candidates.
+- [x] Sprint 1 through Sprint 5 implementation scope is documented as
+  simulator-local and symbolic.
+- [x] v1.5 release-prep hardening and documentation audit is Sprint 6 only
+  and does not add new feature behavior.
+- [x] Scenarios `064` through `066` validate and run.
+- [x] Planning-branch scenario metadata is contiguous from `001` through
+  `066`.
+- [x] Scenario index is current and generated from deterministic scenario
+  metadata.
+- [x] v1.5 documentation readiness checks include the roadmap, draft release
+  notes, lifecycle explanation retention docs, and lifecycle explanation
+  pruning docs.
+- [x] v1.5 draft release notes summarize Sprint 1 through Sprint 6 without
+  claiming merge to `main`, tag, GitHub release, package publication, release
+  assets, or production behavior.
+- [x] CHANGELOG contains a dated `1.5.0` release-prep section.
+- [x] Package version is confirmed as `1.5.0`.
+- [x] CLI version reports `darwin-sim 1.5.0`.
+- [x] Planning docs avoid production networking, sockets, HTTP/WebSocket
+  behavior, DNS lookup, registrar integration, public CA behavior, external
+  services, real cryptography, key generation, private key storage, production
+  E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
+  queues, live timers, live clocks, live polling, retention/pruning behavior
+  beyond explicit simulator helpers, delivery behavior changes, TrafficHub
+  routing changes, compact snapshot changes, canonical identity rewrites, and
+  production anonymity/privacy/firewall/DDoS guarantees.
+- [x] Release prep does not add release assets, package publication, merge to
+  `main`, tags, GitHub releases, automatic cleanup
+  workers, retry loops, durable queues, live timers, networking, DNS, external
+  services, real cryptography, delivery changes, TrafficHub routing changes,
+  compact snapshot changes, or canonical identity rewrites.
+- [x] No merge to `main`, tag, GitHub release, package publication, or release
+  asset upload was performed.
+- [ ] Future merge, tag, GitHub release, package publication, or release asset
+  upload is explicitly requested before it is performed.
+
+## v1.5 Release-Prep Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+```

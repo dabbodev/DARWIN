@@ -45,10 +45,12 @@ from darwin.models.stream_offer import (
     RendezvousPollResult,
     RendezvousRequest,
     StreamOffer,
+    StreamOfferLifecycleExplanationPruningPlan,
     StreamOfferLifecyclePlan,
     make_lane_admission_policy,
     make_rendezvous_request,
     make_stream_offer,
+    make_stream_offer_lifecycle_explanation_retention_policy,
 )
 from darwin.registry.adapter_endpoints import (
     register_adapter_endpoint as register_adapter_endpoint_op,
@@ -148,6 +150,10 @@ from darwin.registry.sessions import (
     verify_hmac_rolling_proof_for_session as verify_hmac_session_proof_op,
 )
 from darwin.registry.stream_offers import (
+    apply_stream_offer_lifecycle_explanation_pruning_plan,
+    classify_stream_offer_lifecycle_explanations_for_retention,
+)
+from darwin.registry.stream_offers import (
     apply_stream_offer_lifecycle_plan as apply_stream_offer_lifecycle_plan_op,
 )
 from darwin.registry.stream_offers import (
@@ -170,6 +176,9 @@ from darwin.registry.stream_offers import (
 )
 from darwin.registry.stream_offers import (
     plan_stream_offer_expiration as plan_stream_offer_expiration_op,
+)
+from darwin.registry.stream_offers import (
+    plan_stream_offer_lifecycle_explanation_pruning as plan_lifecycle_explanation_pruning_op,
 )
 from darwin.registry.stream_offers import (
     poll_held_stream_offers as poll_held_stream_offers_op,
@@ -383,6 +392,15 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         ),
         "summarize_stream_offer_lifecycle_audit": (
             _step_summarize_stream_offer_lifecycle_audit
+        ),
+        "classify_stream_offer_lifecycle_explanations_for_retention": (
+            _step_classify_stream_offer_lifecycle_explanations_for_retention
+        ),
+        "plan_stream_offer_lifecycle_explanation_pruning": (
+            _step_plan_stream_offer_lifecycle_explanation_pruning
+        ),
+        "apply_stream_offer_lifecycle_explanation_pruning_plan": (
+            _step_apply_stream_offer_lifecycle_explanation_pruning_plan
         ),
         "evaluate_lane_admission_policy": _step_evaluate_lane_admission_policy,
         "advance_time": _step_advance_time,
@@ -2126,6 +2144,122 @@ def _step_summarize_stream_offer_lifecycle_audit(
     )
 
 
+def _step_classify_stream_offer_lifecycle_explanations_for_retention(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    policy = _stream_offer_lifecycle_explanation_retention_policy(fields, hub.hub_id)
+    explanations = _stream_offer_lifecycle_explanation_inputs(world, fields, hub.hub_id)
+    result = classify_stream_offer_lifecycle_explanations_for_retention(
+        explanations,
+        policy,
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    world.action_results.append(result)
+    world.log(
+        (
+            "classified stream offer lifecycle explanations for retention "
+            f"at {hub.hub_id}: "
+            f"{len(result.prune_candidate_explanation_keys)} prune candidates"
+        ),
+        event_type="stream_offer_lifecycle_retention_classified",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="classified",
+        data=result.to_summary(),
+    )
+
+
+def _step_plan_stream_offer_lifecycle_explanation_pruning(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    if "candidate_explanation_keys" in fields:
+        result = _stream_offer_lifecycle_explanation_pruning_plan(
+            world,
+            fields,
+            hub.hub_id,
+        )
+        world.action_results.append(result)
+        world.log(
+            (
+                "planned stream offer lifecycle explanation pruning "
+                f"at {hub.hub_id}: {result.candidate_count} candidates"
+            ),
+            event_type="stream_offer_lifecycle_explanation_pruning_planned",
+            target=hub.hub_id,
+            hub_id=hub.hub_id,
+            status="planned",
+            data=result.to_summary(),
+        )
+        return
+
+    explanations = _stream_offer_lifecycle_explanation_inputs(world, fields, hub.hub_id)
+    decision = _stream_offer_lifecycle_retention_decision(
+        world,
+        fields,
+        hub.hub_id,
+    )
+    if decision is None:
+        result = plan_lifecycle_explanation_pruning_op(
+            explanations=explanations,
+            policy=_stream_offer_lifecycle_explanation_retention_policy(
+                fields,
+                hub.hub_id,
+            ),
+            metadata=_optional_dict(fields.get("metadata")),
+        )
+    else:
+        result = plan_lifecycle_explanation_pruning_op(
+            decision,
+            explanations=explanations,
+            metadata=_optional_dict(fields.get("metadata")),
+        )
+    world.action_results.append(result)
+    world.log(
+        (
+            "planned stream offer lifecycle explanation pruning "
+            f"at {hub.hub_id}: {result.candidate_count} candidates"
+        ),
+        event_type="stream_offer_lifecycle_explanation_pruning_planned",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="planned",
+        data=result.to_summary(),
+    )
+
+
+def _step_apply_stream_offer_lifecycle_explanation_pruning_plan(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    plan = _stream_offer_lifecycle_explanation_pruning_plan(
+        world,
+        fields,
+        hub.hub_id,
+    )
+    result = apply_stream_offer_lifecycle_explanation_pruning_plan(
+        hub,
+        plan,
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    world.action_results.append(result)
+    world.log(
+        (
+            "applied stream offer lifecycle explanation pruning plan "
+            f"at {hub.hub_id}: {result.pruned_count} pruned"
+        ),
+        event_type="stream_offer_lifecycle_explanation_pruning_applied",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="applied",
+        data=result.to_summary(),
+    )
+
+
 def _step_evaluate_lane_admission_policy(
     world: World,
     fields: dict[str, Any],
@@ -2344,7 +2478,7 @@ def _stream_offer_lifecycle_apply_result(
 def _stream_offer_lifecycle_explanations(
     world: World,
     fields: dict[str, Any],
-    hub_id: str,
+    hub_id: str | None,
 ) -> list[Any]:
     category = _optional_str(fields.get("category"))
     reason = _optional_str(fields.get("reason"))
@@ -2355,7 +2489,7 @@ def _stream_offer_lifecycle_explanations(
     for result in world.action_results:
         if not hasattr(result, "category") or not hasattr(result, "reason"):
             continue
-        if getattr(result, "hub_id", None) != hub_id:
+        if hub_id is not None and getattr(result, "hub_id", None) != hub_id:
             continue
         if offer_id is not None and getattr(result, "offer_id", None) != offer_id:
             continue
@@ -2369,6 +2503,132 @@ def _stream_offer_lifecycle_explanations(
             continue
         explanations.append(result)
     return explanations
+
+
+def _stream_offer_lifecycle_explanation_inputs(
+    world: World,
+    fields: dict[str, Any],
+    hub_id: str,
+) -> list[Any]:
+    explanations = []
+    if _bool_field(fields, "include_retained_explanations", True):
+        hub = world.registry_hubs[hub_id]
+        explanations.extend(
+            explanation
+            for explanation in hub.stream_offer_lifecycle_explanation_history
+            if _matches_stream_offer_lifecycle_explanation_fields(explanation, fields)
+        )
+    if _bool_field(fields, "include_action_explanations", False):
+        explanations.extend(
+            _stream_offer_lifecycle_explanations(world, fields, hub_id)
+        )
+    if _bool_field(fields, "include_foreign_action_explanations", False):
+        explanations.extend(
+            explanation
+            for explanation in _stream_offer_lifecycle_explanations(
+                world,
+                fields,
+                None,
+            )
+            if getattr(explanation, "hub_id", None) != hub_id
+        )
+    return explanations
+
+
+def _matches_stream_offer_lifecycle_explanation_fields(
+    explanation: Any,
+    fields: dict[str, Any],
+) -> bool:
+    for field_name in ("category", "reason", "status", "source", "offer_id"):
+        expected = _optional_str(fields.get(field_name))
+        if expected is not None and getattr(explanation, field_name, None) != expected:
+            return False
+    checked_at = _optional_int(fields.get("checked_at"))
+    return checked_at is None or getattr(explanation, "checked_at", None) == checked_at
+
+
+def _stream_offer_lifecycle_explanation_retention_policy(
+    fields: dict[str, Any],
+    hub_id: str,
+) -> Any:
+    return make_stream_offer_lifecycle_explanation_retention_policy(
+        policy_id=str(fields["policy_id"]),
+        hub_id=hub_id,
+        retain_categories=_optional_str_list(fields.get("retain_categories")),
+        retain_reasons=_optional_str_list(fields.get("retain_reasons")),
+        prune_categories=_optional_str_list(fields.get("prune_categories")),
+        prune_reasons=_optional_str_list(fields.get("prune_reasons")),
+        retain_sources=_optional_str_list(fields.get("retain_sources")),
+        prune_sources=_optional_str_list(fields.get("prune_sources")),
+        max_records=_optional_int(fields.get("max_records")),
+        metadata=_optional_dict(fields.get("policy_metadata")),
+    )
+
+
+def _stream_offer_lifecycle_retention_decision(
+    world: World,
+    fields: dict[str, Any],
+    hub_id: str,
+) -> Any | None:
+    policy_id = str(fields["policy_id"])
+    for result in reversed(world.action_results):
+        if not hasattr(result, "kept_explanation_keys"):
+            continue
+        if not hasattr(result, "prune_candidate_explanation_keys"):
+            continue
+        if getattr(result, "hub_id", None) != hub_id:
+            continue
+        if getattr(result, "policy_id", None) != policy_id:
+            continue
+        return result
+    return None
+
+
+def _stream_offer_lifecycle_explanation_pruning_plan(
+    world: World,
+    fields: dict[str, Any],
+    hub_id: str,
+) -> StreamOfferLifecycleExplanationPruningPlan:
+    policy_id = str(fields["policy_id"])
+    if "candidate_explanation_keys" in fields:
+        return StreamOfferLifecycleExplanationPruningPlan(
+            hub_id=hub_id,
+            policy_id=policy_id,
+            candidate_explanation_keys=(
+                _optional_str_list(fields.get("candidate_explanation_keys")) or []
+            ),
+            retained_explanation_keys=(
+                _optional_str_list(fields.get("retained_explanation_keys")) or []
+            ),
+            ignored_explanation_keys=(
+                _optional_str_list(fields.get("ignored_explanation_keys")) or []
+            ),
+            candidate_count=len(
+                _optional_str_list(fields.get("candidate_explanation_keys")) or []
+            ),
+            retained_count=len(
+                _optional_str_list(fields.get("retained_explanation_keys")) or []
+            ),
+            ignored_count=len(
+                _optional_str_list(fields.get("ignored_explanation_keys")) or []
+            ),
+            metadata=_optional_dict(fields.get("plan_metadata")),
+        )
+
+    for result in reversed(world.action_results):
+        if not isinstance(result, StreamOfferLifecycleExplanationPruningPlan):
+            continue
+        if result.hub_id != hub_id:
+            continue
+        if result.policy_id != policy_id:
+            continue
+        return result
+
+    raise KeyError(
+        "apply_stream_offer_lifecycle_explanation_pruning_plan requires a prior "
+        "pruning plan result for the same hub and policy_id, or explicit "
+        "candidate_explanation_keys"
+    )
 
 
 def _bool_field(fields: dict[str, Any], field_name: str, default: bool) -> bool:
