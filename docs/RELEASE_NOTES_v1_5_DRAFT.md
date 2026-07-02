@@ -1,17 +1,20 @@
 # DARWIN v1.5 Draft Release Notes
 
-Status: draft release-candidate notes for an unreleased v1.5 release-candidate planning line.
-DARWIN v1.4.0 remains the latest released version on `main` as
-`darwin-sim 1.4.0`. The annotated `v1.4.0` tag and GitHub release exist:
+Status: release-facing notes for the v1.5.0 release-prep branch.
+DARWIN v1.5.0 has been prepared on `v1.5/planning` as `darwin-sim 1.5.0`.
+DARWIN v1.4.0 remains the latest tagged GitHub release on `main` until a
+separate merge, tag, and release step is explicitly performed. The annotated
+`v1.4.0` tag and GitHub release exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package
-publication was performed, and no release assets were uploaded.
+publication was performed for v1.4.0 or by this v1.5.0 release-prep sprint,
+and no release assets were uploaded.
 
 Sprint 1 through Sprint 6 planning work has been added on the v1.5 planning
 branch, including focused scenario DSL coverage through `066` and
-release-candidate hardening for documentation/readiness checks. No version
-bump, merge to `main`, tag, GitHub release, package publication, or release
-assets exist yet. These notes remain draft release-candidate material for
-future release-facing scope.
+release-candidate hardening for documentation/readiness checks. Release prep
+sets the package and CLI version to `darwin-sim 1.5.0`. No merge to `main`,
+tag, GitHub release, package publication, or release asset upload is performed
+by this sprint.
 
 This possible release line must remain symbolic simulator metadata flow only.
 It must not become real networking, a network service, production DDoS
@@ -52,7 +55,7 @@ v1.5 planning work preserves these compatibility expectations:
 - Existing scenarios `001` through `063` continue to pass unchanged, and
   Scenarios `064` through `066` are intentionally added and documented.
 - The checked-in scenario set is contiguous from `001` through `066`.
-- The package and CLI version remain `darwin-sim 1.4.0` during planning.
+- The package and CLI version report `darwin-sim 1.5.0` after release prep.
 
 ## Draft Sprint Summary
 
@@ -156,7 +159,8 @@ pruning docs in documentation readiness/link checks; confirms checked-in
 scenario continuity from `001` through `066`; keeps
 `docs/SCENARIO_INDEX.md` exactly generated from deterministic scenario
 metadata; and updates README/release-checklist planning language without
-claiming a v1.5 release.
+claiming merge, tag, GitHub release, package publication, release assets, or
+production behavior.
 
 Sprint 6 does not add new feature behavior, new scenarios, retention
 classification precedence changes, pruning plan/apply semantic changes,
@@ -175,20 +179,18 @@ The v1.5 planning branch adds scenarios `064` through `066`:
 - `scenarios/066_stream_offer_lifecycle_pruning_apply.yaml`
 
 The checked-in scenario set is contiguous from `001` through `066`. v1.5
-remains unreleased, and the package and CLI version remain
-`darwin-sim 1.4.0`.
+release prep reports package and CLI version `darwin-sim 1.5.0`.
 
 ## Current Limitations
 
-- v1.5 is unreleased.
+- v1.5.0 release prep is complete on `v1.5/planning`.
 - Sprint 1 through Sprint 5 planning work has been implemented.
 - Focused helper and scenario tests have been added.
 - v1.5 scenarios `064` through `066` have been added on the planning branch.
-- No version bump has been performed.
 - No merge to `main`, tag, GitHub release, package publication, or release
   asset upload has been performed for v1.5.
-- DARWIN v1.4.0 remains the latest released version and reports
-  `darwin-sim 1.4.0`.
+- The package and CLI version report `darwin-sim 1.5.0` on this
+  release-prep branch.
 
 ## Non-Goals
 
@@ -227,16 +229,17 @@ v1.5 planning does not add:
 - release assets;
 - merge to `main`;
 - tags or GitHub releases;
-- version bumps beyond released `1.4.0`.
+- version bumps beyond `1.5.0`.
 
 ## Release Readiness
 
 Release-candidate documentation/readiness hardening has been added for the
-unreleased v1.5 planning branch. Final release prep has not started: there is
-no version bump, changelog release entry, merge to `main`, tag, GitHub
-release, package publication, or release asset upload for v1.5.
+v1.5.0 release-prep branch. Release prep set the package and CLI version to
+`darwin-sim 1.5.0` and added the changelog release-prep entry. No merge to
+`main`, tag, GitHub release, package publication, or release asset upload has
+been performed for v1.5.
 
-Planning validation should continue to pass `python -m ruff check .`,
-`python -m pytest`, `python scripts/run_all_scenarios.py`, and
-`python -m darwin.cli.main --version` with the CLI still reporting
-`darwin-sim 1.4.0`.
+Final release-prep validation passed `python -m ruff check .`,
+`python -m pytest` with 862 tests, `python scripts/run_all_scenarios.py` for
+scenarios `001` through `066`, and `python -m darwin.cli.main --version`
+reporting `darwin-sim 1.5.0`.
