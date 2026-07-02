@@ -8,11 +8,9 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-DARWIN v1.5.0 release prep is complete on `v1.5/planning` as
-`darwin-sim 1.5.0`. DARWIN v1.4.0 remains the latest tagged GitHub release on
-`main` until a separate merge, tag, and release step is explicitly performed.
-The annotated `v1.4.0` tag and GitHub release exist:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package
+DARWIN v1.5.0 is released on `main` as `darwin-sim 1.5.0`. The annotated
+`v1.5.0` tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
 publication was performed, and no release assets were uploaded.
 
 v1.4 adds lifecycle policy explanation and stream-offer audit summaries while
@@ -28,18 +26,18 @@ workers, retry loops, durable queues, live timers, delivery enforcement,
 TrafficHub routing changes, compact snapshot changes, or canonical identity
 rewrites.
 
-The v1.5 release-prep branch covers lifecycle explanation retention policy and
-audit pruning summaries. It adds simulator-local retention classification
-helpers, read-only pruning plans, an explicit caller-driven pruning apply
-helper limited to retained lifecycle explanation history, scenario coverage
-through `066`, detailed debug snapshot visibility, and
-documentation/readiness checks. It does not add real networking, sockets,
-HTTP/WebSocket behavior, DNS lookup, external services, real cryptography,
-production E2EE, production anonymity/privacy/firewall or DDoS guarantees,
-delivery enforcement, automatic cleanup workers, retry loops, durable queues,
-live timers, live clocks, live polling, retention/pruning behavior beyond
-explicit simulator helpers, delivery behavior changes, TrafficHub routing
-changes, compact snapshot changes, or canonical identity rewrites.
+The v1.5 release covers lifecycle explanation retention policy and audit
+pruning summaries. It adds simulator-local retention classification helpers,
+read-only pruning plans, an explicit caller-driven pruning apply helper
+limited to retained lifecycle explanation history, scenario coverage through
+`066`, detailed debug snapshot visibility, and documentation/readiness checks.
+It does not add real networking, sockets, HTTP/WebSocket behavior, DNS lookup,
+external services, real cryptography, production E2EE, production
+anonymity/privacy/firewall or DDoS guarantees, delivery enforcement,
+automatic cleanup workers, retry loops, durable queues, live timers, live
+clocks, live polling, retention/pruning behavior beyond explicit simulator
+helpers, delivery behavior changes, TrafficHub routing changes, compact
+snapshot changes, or canonical identity rewrites.
 
 The v0.1 simulator answers questions like:
 
@@ -229,10 +227,10 @@ explanations, explicitly retained explanation history, and grouped audit
 summaries. The released scenario set is contiguous from `001` through `063`,
 and the package and CLI version report `darwin-sim 1.4.0`.
 
-On the v1.5 release-prep branch, scenarios `064` through `066` cover lifecycle
-explanation retention classification, read-only pruning plans, and explicit
-pruning apply. The checked-in scenario set is contiguous from `001` through
-`066`, and the package and CLI version report `darwin-sim 1.5.0`.
+In the v1.5 release, scenarios `064` through `066` cover lifecycle explanation
+retention classification, read-only pruning plans, and explicit pruning apply.
+The released scenario set is contiguous from `001` through `066`, and the
+package and CLI version report `darwin-sim 1.5.0`.
 
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
@@ -285,21 +283,21 @@ polling, lifecycle mutation behavior beyond existing explicit helpers,
 TrafficHub routing changes, delivery behavior changes, compact snapshot
 changes, or canonical identity rewrites.
 
-The v1.5 release-prep docs cover read-only lifecycle explanation retention
+The v1.5 release docs cover read-only lifecycle explanation retention
 classification, read-only pruning plans, explicit retained-history pruning
 apply, scenario DSL coverage, detailed snapshot/debug visibility, and scenarios
-`064` through `066`. Final release-prep validation passed Ruff, pytest with
-862 tests, all scenarios from `001` through `066`, and CLI version reporting
-`darwin-sim 1.5.0`. No merge to `main`, tag, GitHub release, package
-publication, or release asset upload was performed. v1.5 remains
-simulator-local and symbolic. It does not add new feature behavior,
-networking, sockets, HTTP/WebSocket behavior, DNS lookup, external services,
-real cryptography, production E2EE, production anonymity/privacy/firewall/DDoS
-guarantees, delivery enforcement, automatic cleanup workers, retry loops,
-durable queues, live timers, live clocks, live polling, retention/pruning
-behavior beyond explicit simulator helpers, TrafficHub routing changes,
-delivery behavior changes, compact snapshot changes, or canonical identity
-rewrites.
+`064` through `066`. Final validation passed `python -m ruff check .`,
+`python -m pytest` with 862 tests, `python scripts/run_all_scenarios.py` for
+scenarios `001` through `066`, and `python -m darwin.cli.main --version`
+reporting `darwin-sim 1.5.0`. No package publication was performed, and no
+release assets were uploaded. v1.5 remains simulator-local and symbolic. It
+does not add new feature behavior, networking, sockets, HTTP/WebSocket
+behavior, DNS lookup, external services, real cryptography, production E2EE,
+production anonymity/privacy/firewall/DDoS guarantees, delivery enforcement,
+automatic cleanup workers, retry loops, durable queues, live timers, live
+clocks, live polling, retention/pruning behavior beyond explicit simulator
+helpers, TrafficHub routing changes, delivery behavior changes, compact
+snapshot changes, or canonical identity rewrites.
 
 ## What v0.1 Supports
 

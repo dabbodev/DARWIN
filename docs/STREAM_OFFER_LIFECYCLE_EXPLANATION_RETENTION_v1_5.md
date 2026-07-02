@@ -178,4 +178,4 @@ Sprint 1 does not add:
 - prune/apply mutation behavior;
 - package publication;
 - release assets;
-- merge, tag, GitHub release, or version bump beyond `1.5.0`.
+- version bump beyond `1.5.0`.

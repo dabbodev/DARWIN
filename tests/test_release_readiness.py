@@ -231,7 +231,7 @@ def test_v1_4_docs_are_release_status_ready():
         assert caveat in combined_docs
 
 
-def test_v1_5_docs_are_release_prep_ready():
+def test_v1_5_docs_are_release_status_ready():
     release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_5_DRAFT.md").read_text(
         encoding="utf-8"
     )
@@ -245,20 +245,23 @@ def test_v1_5_docs_are_release_prep_ready():
     )
     combined_docs_normalized = re.sub(r"\s+", " ", combined_docs)
 
-    assert "v1.5.0 release-prep branch" in release_notes
+    assert "released on `main` as `darwin-sim 1.5.0`" in release_notes
+    assert "https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0" in release_notes
+    assert "No package publication was performed" in combined_docs_normalized
+    assert "no release assets were uploaded" in combined_docs_normalized
     assert "Sprint 1 through Sprint 6" in release_notes
     assert "Scenarios `064` through `066`" in release_notes
     assert "from `001` through `066`" in release_notes
     assert "Release-candidate hardening" in release_notes
     assert "darwin-sim 1.5.0" in release_notes
-    assert "No merge to `main`" in release_notes
-    assert "tag, GitHub release, package publication, or release asset upload" in release_notes
     assert "Release readiness has not started" not in release_notes
     assert "Sprint 6: Release-Candidate Hardening and Documentation Audit" in roadmap
     assert "release-candidate hardening and documentation audit only" in roadmap
     assert "Release prep set the package and CLI version to `darwin-sim 1.5.0`" in roadmap
+    assert "released on `main` as `darwin-sim 1.5.0`" in roadmap
     assert "docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_PRUNING_v1_5.md" in readme
-    assert "v1.5 release-prep hardening" in checklist
+    assert "v1.5 release-candidate hardening" in checklist
+    assert "v1.5.0 is released on `main` as `darwin-sim 1.5.0`" in checklist
 
     for caveat in V1_5_RELEASE_CANDIDATE_CAVEATS:
         assert caveat in combined_docs_normalized

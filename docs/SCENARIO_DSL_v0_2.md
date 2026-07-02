@@ -1037,9 +1037,9 @@ The current released scenario set is contiguous through `063`.
 
 ## v1.5 Lifecycle Explanation Retention and Pruning Scenarios
 
-The v1.5 release-prep branch adds scenario DSL coverage for lifecycle
-explanation retention classification, read-only pruning plans, and explicit
-pruning apply. The package and CLI version report `darwin-sim 1.5.0`.
+The v1.5 release adds scenario DSL coverage for lifecycle explanation
+retention classification, read-only pruning plans, and explicit pruning apply.
+The package and CLI version report `darwin-sim 1.5.0`.
 
 This DSL surface is symbolic simulator metadata only. It does not add
 automatic cleanup workers, retry loops, durable queues, live timers, live

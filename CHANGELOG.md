@@ -2,9 +2,10 @@
 
 ## [1.5.0] - 2026-07-02
 
-DARWIN v1.5.0 release prep has been completed on `v1.5/planning` as
-`darwin-sim 1.5.0`. No merge to `main`, tag, GitHub release, package
-publication, or release asset upload was performed in this sprint.
+DARWIN v1.5.0 has been merged to `main`, tagged as annotated `v1.5.0`, and
+published as a GitHub release:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
+publication was performed, and no release assets were uploaded.
 
 Added:
 
@@ -35,9 +36,9 @@ Compatibility and limits:
   planning/apply, scenario, snapshot, retained-history, and canonical identity
   behavior remains unchanged outside the explicit v1.5 retention and pruning
   helper surfaces.
-- The release-prep scenario set runs contiguously from `001` through `066`,
-  with scenarios `064` through `066` covering v1.5 symbolic retention and
-  pruning outcomes.
+- The released scenario set runs contiguously from `001` through `066`, with
+  scenarios `064` through `066` covering v1.5 symbolic retention and pruning
+  outcomes.
 - No real networking, sockets, HTTP/WebSocket behavior, DNS lookup, registrar
   integration, public CA behavior, external services, real cryptography, key
   generation, private key storage, production E2EE, delivery enforcement,
@@ -45,9 +46,9 @@ Compatibility and limits:
   clocks, live polling, retention/pruning behavior beyond explicit simulator
   helpers, TrafficHub routing changes, delivery behavior changes, compact
   snapshot changes, canonical identity rewrites, production
-  anonymity/privacy/firewall/DDoS guarantees, merge to `main`, tags, GitHub
-  releases, package publication, uploaded release assets, or additional
-  feature artifacts are added by this release-prep work.
+  anonymity/privacy/firewall/DDoS guarantees, package publication, uploaded
+  release assets, or additional feature artifacts are added by this simulator
+  work.
 - The final v1.5.0 validation passed `python -m ruff check .`,
   `python -m pytest` with 862 tests,
   `python scripts/run_all_scenarios.py` for scenarios `001` through `066`,

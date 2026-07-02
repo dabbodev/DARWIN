@@ -1,19 +1,17 @@
 # DARWIN v1.5 Roadmap: Lifecycle Explanation Retention Policy and Audit Pruning Summaries
 
-Status: release-prep complete on `v1.5/planning` as `darwin-sim 1.5.0`.
-DARWIN v1.4.0 remains the latest tagged GitHub release on `main` until a
-separate merge, tag, and release step is explicitly performed. The annotated
-`v1.4.0` tag and GitHub release exist:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package
+Status: released on `main` as `darwin-sim 1.5.0`. The annotated `v1.5.0` tag
+and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
 publication was performed, and no release assets were uploaded.
 
 Recommended candidate theme: Lifecycle explanation retention policy and audit
 pruning summaries.
 
 This roadmap records candidate planning scope, the implemented Sprint 1
-through Sprint 6 planning slices, and the explicit v1.5.0 release-prep version
-bump. It does not authorize package publication, release assets, tagging,
-release creation, merge to `main`, or changes to released v1.4 behavior.
+through Sprint 6 slices, and the explicit v1.5.0 version bump. It does not
+authorize package publication, release assets, or changes to released v1.5
+behavior.
 
 v1.5 should remain simulator-first and symbolic. It should not become
 production networking, a real DDoS protection system, a firewall product, a
@@ -74,8 +72,7 @@ Out of scope:
   secure messaging.
 - Compact `world.snapshot()` changes.
 - Version bumps beyond `1.5.0`.
-- Package publication, release assets, merge to `main`, tags, or GitHub
-  releases.
+- Package publication or release assets.
 
 ## Candidate Concepts
 
@@ -278,20 +275,20 @@ Implemented:
 
 - v1.5 roadmap, draft release notes, retention docs, and pruning docs are
   included in documentation readiness and link checks.
-- Release-readiness checks assert v1.5 release prep reports package and CLI
-  version `darwin-sim 1.5.0`.
+- Release-readiness checks assert v1.5 reports package and CLI version
+  `darwin-sim 1.5.0`.
 - Checked-in scenario metadata is confirmed contiguous from `001` through
   `066`.
 - `docs/SCENARIO_INDEX.md` remains exactly generated from deterministic
   scenario metadata.
-- README and release checklist carry v1.5 release-candidate planning status
-  without claiming a v1.5 release.
+- README and release checklist carry v1.5 release-candidate status without
+  claiming package publication or release assets.
 
 Acceptance targets:
 
 - Sprint 6 is release-candidate hardening and documentation audit only.
-- No package publication, release assets, merge, tag, GitHub release, or
-  version bump beyond `1.5.0` is performed by planning or release-prep work.
+- No package publication, release assets, or version bump beyond `1.5.0` is
+  performed by release-prep work.
 - No new feature behavior or new scenarios are added by documentation
   readiness work unless required to fix deterministic scenario index
   consistency.
@@ -307,24 +304,20 @@ Acceptance targets:
 
 ## Release Prep
 
-Status: complete on `v1.5/planning`.
+Status: complete and released on `main`.
 
 Release prep set the package and CLI version to `darwin-sim 1.5.0`, updated
-release notes, updated the changelog release-prep entry, and updated
-readiness tests and docs. Future merge to `main`, tag creation, GitHub release
-creation, package publication, or release asset upload requires a separate
-explicit request.
+release notes, updated the changelog release entry, and updated readiness
+tests and docs. Package publication or release asset upload requires a
+separate explicit request.
 
 ## Release Status
 
-v1.5.0 release prep is complete on `v1.5/planning`. Sprint 1 through Sprint 6
-planning work exists on the planning branch, including focused v1.5 scenario
-coverage through `066` and release-candidate documentation hardening. No merge
-to `main`, tag, GitHub release, package publication, or release assets exist.
-
-v1.4.0 remains the latest tagged GitHub release on `main`. The annotated
-`v1.4.0` tag and GitHub release exist:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.4.0. No package
+v1.5.0 is released on `main` as `darwin-sim 1.5.0`. Sprint 1 through Sprint 6
+work is released, including focused v1.5 scenario coverage through `066` and
+release-candidate documentation hardening. The annotated `v1.5.0` tag and
+GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
 publication was performed, and no release assets were uploaded.
 
 ## Intentionally Deferred Work
@@ -343,5 +336,4 @@ publication was performed, and no release assets were uploaded.
 - TrafficHub routing changes.
 - Compact snapshot changes unless explicitly scoped by a later sprint.
 - Canonical identity rewrites.
-- Package publication, release assets, merge to `main`, tags, GitHub releases,
-  or version bump beyond `1.5.0`.
+- Package publication, release assets, or version bump beyond `1.5.0`.
