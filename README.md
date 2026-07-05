@@ -283,6 +283,19 @@ polling, lifecycle mutation behavior beyond existing explicit helpers,
 TrafficHub routing changes, delivery behavior changes, compact snapshot
 changes, or canonical identity rewrites.
 
+v1.6 planning is unreleased draft material only. The candidate theme is
+retained audit compaction and replay summaries: read-only audit compaction
+policy models, deterministic compaction-plan summaries, grouped replay-summary
+helpers, optional explicit apply only after read-only planning stabilizes,
+scenario DSL coverage after helper/model slices, detailed snapshot visibility
+only after retained action results exist, and later release-readiness docs.
+It does not change the latest released version, add feature behavior, bump
+versions, publish packages, create release assets, change compact
+`world.snapshot()`, or add networking, DNS, external services, real
+cryptography, automatic cleanup workers, retry loops, durable queues, live
+timers, delivery changes, TrafficHub routing changes, or canonical identity
+rewrites.
+
 The v1.5 release docs cover read-only lifecycle explanation retention
 classification, read-only pruning plans, explicit retained-history pruning
 apply, scenario DSL coverage, detailed snapshot/debug visibility, and scenarios
@@ -1061,6 +1074,11 @@ For v1.5 lifecycle explanation retention-policy planning docs, see:
 - `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_RETENTION_v1_5.md`
 - `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_PRUNING_v1_5.md`
 - `docs/RELEASE_NOTES_v1_5_DRAFT.md`
+
+For v1.6 retained audit compaction and replay-summary planning docs, see:
+
+- `docs/V1_6_ROADMAP.md`
+- `docs/RELEASE_NOTES_v1_6_DRAFT.md`
 
 ## What v0.1 Is Not
 

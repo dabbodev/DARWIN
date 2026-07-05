@@ -713,3 +713,39 @@ python -m pytest
 python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
 ```
+
+# DARWIN v1.6 Retained Audit Compaction Planning Checklist
+
+v1.6 is unreleased planning only. The latest released version remains
+`darwin-sim 1.5.0` on `main` with the annotated `v1.5.0` tag and GitHub
+release. No package publication was performed for v1.5.0, and no release
+assets were uploaded.
+
+- [x] v1.6 planning roadmap seed is checked in at `docs/V1_6_ROADMAP.md`.
+- [x] v1.6 draft release-notes placeholder is checked in at
+  `docs/RELEASE_NOTES_v1_6_DRAFT.md`.
+- [x] README links to the v1.6 planning docs while preserving v1.5.0 as the
+  latest released version.
+- [x] Planning scope is limited to retained audit compaction and replay-summary
+  candidates.
+- [x] Candidate scope is simulator-local, symbolic, and planning-only.
+- [x] Release readiness, changelog release entries, version bumps, merge, tag,
+  GitHub release, release assets, and package publication remain out of scope.
+- [x] No v1.6 feature behavior, scenario behavior, or tests for new feature
+  behavior are added by the planning seed.
+- [x] Planning docs avoid production networking, sockets, HTTP/WebSocket
+  behavior, DNS lookup, registrar integration, public CA behavior, external
+  services, real cryptography, key generation, private key storage, production
+  E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
+  queues, live timers, live clocks, live polling, delivery behavior changes,
+  TrafficHub routing changes, compact snapshot changes, canonical identity
+  rewrites, and production anonymity/privacy/firewall/DDoS guarantees.
+
+## v1.6 Planning Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main --version
+```
