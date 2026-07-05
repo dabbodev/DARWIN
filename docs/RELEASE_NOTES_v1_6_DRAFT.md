@@ -7,9 +7,9 @@ GitHub release:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
 publication was performed for v1.5.0, and no release assets were uploaded.
 
-This placeholder is a planning seed only. It must not be treated as release
-prep, a version bump, a changelog release entry, a package publication plan, a
-GitHub release plan, or authorization to implement feature behavior.
+This draft remains planning-only. It must not be treated as release prep, a
+version bump, a changelog release entry, a package publication plan, or a
+GitHub release plan.
 
 This release line, if implemented later, should remain symbolic simulator
 metadata flow only. It must not become real networking, a network service,
@@ -52,16 +52,26 @@ expectations unless a later sprint explicitly and narrowly says otherwise:
 - The package and CLI version continue to report `darwin-sim 1.5.0` during
   planning.
 
-## Draft Sprint Placeholder
+## Draft Sprint Notes
 
-No v1.6 sprint has been implemented by this placeholder.
+Sprint 1 on the v1.6 planning branch adds read-only retained audit compaction
+policy and decision metadata:
 
-Candidate sequencing, if accepted later, should start with read-only policy
-models, then read-only compaction plans, then grouped replay summaries. Any
-explicit apply helper should be considered only after read-only semantics are
-stable and should remain caller-driven, simulator-local, and narrowly scoped.
-Scenario coverage, detailed snapshot visibility, and release-readiness docs
-should follow only after helper behavior exists.
+- `RetainedAuditCompactionPolicy`
+- `RetainedAuditCompactionDecision`
+- pure helpers to classify explicit retained audit records and summarize the
+  resulting decision
+
+The initial supported retained-history families are stream-offer lifecycle
+explanation history and stream-offer lifecycle transition history. Unsupported
+retained-history families are ignored deterministically and remain future work.
+
+Sprint 1 does not add deletion, compaction, mutation, rewriting, cleanup
+scheduling, delivery behavior, TrafficHub routing changes, scenario DSL
+coverage, detailed snapshot changes, compact `world.snapshot()` changes, live
+timers, retry loops, durable queues, networking, DNS, external services, real
+cryptography, production security infrastructure, release behavior, or a
+version bump.
 
 ## Scenario Coverage
 

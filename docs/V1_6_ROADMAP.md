@@ -1,9 +1,9 @@
 # DARWIN v1.6 Roadmap: Retained Audit Compaction and Replay Summaries
 
-Status: planning draft only. v1.6 is unreleased, has not started release
-prep, and does not change the current released version. The latest released
-version remains `darwin-sim 1.5.0` on `main` with the annotated `v1.5.0` tag
-and GitHub release:
+Status: planning draft with Sprint 1 read-only helper work in progress. v1.6
+is unreleased, has not started release prep, and does not change the current
+released version. The latest released version remains `darwin-sim 1.5.0` on
+`main` with the annotated `v1.5.0` tag and GitHub release:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
 publication was performed for v1.5.0, and no release assets were uploaded.
 
@@ -126,13 +126,17 @@ Explicit compaction/apply helper:
 
 ## Candidate Sprint Order
 
-Sprint 1 candidate: Read-only audit compaction policy models.
+Sprint 1 implemented on the v1.6 planning branch: Read-only audit compaction
+policy models.
 
 - Define the smallest symbolic policy model for retained simulator audit
   histories.
 - Classify explicit retained records without mutating retained history.
 - Keep candidate status labels descriptive and deterministic.
 - Document that the model is planning-only and read-only.
+- Initial support is intentionally narrow: stream-offer lifecycle explanation
+  history and stream-offer lifecycle transition history. Other retained audit
+  families remain future work.
 
 Sprint 2 candidate: Deterministic read-only compaction plans.
 

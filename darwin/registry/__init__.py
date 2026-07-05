@@ -104,6 +104,12 @@ from darwin.registry.operations import (
     resolve_device_id,
     resolve_label,
 )
+from darwin.registry.retained_audit import (
+    SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES,
+    classify_retained_audit_records_for_compaction,
+    make_retained_audit_compaction_policy,
+    summarize_retained_audit_compaction_decision,
+)
 from darwin.registry.stream_offers import (
     apply_stream_offer_lifecycle_explanation_pruning_plan,
     apply_stream_offer_lifecycle_plan,
@@ -165,6 +171,7 @@ __all__ = [
     "AuthorityOutcomeQueryResult",
     "build_authority_audit_trace",
     "can_discover_lane_definition",
+    "classify_retained_audit_records_for_compaction",
     "classify_stream_offer_lifecycle_explanations_for_retention",
     "assign_temp_label",
     "bind_mailbox_capability",
@@ -218,6 +225,7 @@ __all__ = [
     "mailbox_supports_lane",
     "mark_stream_offers_discoverable",
     "make_basic_messaging_mailbox",
+    "make_retained_audit_compaction_policy",
     "make_stream_offer_status_transition",
     "plan_stream_offer_lifecycle_explanation_pruning",
     "QuarantineEventQueryResult",
@@ -263,6 +271,7 @@ __all__ = [
     "summarize_encrypted_delivery_result",
     "summarize_authority_decision",
     "summarize_authority_path",
+    "summarize_retained_audit_compaction_decision",
     "summarize_held_stream_offers",
     "summarize_lane_admission_decisions",
     "summarize_rendezvous_poll_results",
@@ -280,4 +289,5 @@ __all__ = [
     "summarize_stream_offer_lifecycle_apply_result",
     "summarize_stream_offer_status_transitions",
     "update_held_stream_offer_status",
+    "SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES",
 ]

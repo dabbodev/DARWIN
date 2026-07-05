@@ -136,6 +136,12 @@ from darwin.models.message import (
 )
 from darwin.models.packet import DarwinPacket
 from darwin.models.passport import PassportRecord
+from darwin.models.retained_audit import (
+    RETAINED_AUDIT_COMPACTION_DECISION_CATEGORIES,
+    RetainedAuditCompactionDecision,
+    RetainedAuditCompactionPolicy,
+    make_retained_audit_compaction_policy,
+)
 from darwin.models.route import (
     ForwardingResult,
     LinkMetrics,
@@ -290,6 +296,7 @@ __all__ = [
     "RegistryHub",
     "RENDEZVOUS_POLL_REASONS",
     "RENDEZVOUS_POLL_STATUSES",
+    "RETAINED_AUDIT_COMPACTION_DECISION_CATEGORIES",
     "RouteCostBreakdown",
     "RouteDecision",
     "RouteRecord",
@@ -297,6 +304,8 @@ __all__ = [
     "RendezvousRequest",
     "RendezvousPollResult",
     "RendezvousPollStatus",
+    "RetainedAuditCompactionDecision",
+    "RetainedAuditCompactionPolicy",
     "STREAM_OFFER_ACTIVE_STATUSES",
     "STREAM_OFFER_LIFECYCLE_EXPLANATION_CATEGORIES",
     "STREAM_OFFER_LIFECYCLE_EXPLANATION_REASONS",
@@ -363,6 +372,7 @@ __all__ = [
     "make_in_memory_mailbox_endpoint",
     "make_plaintext_delivery_request",
     "make_policy_check_only_delivery_request",
+    "make_retained_audit_compaction_policy",
     "make_symbolic_encrypted_envelope_metadata",
     "make_symbolic_encrypted_delivery_request",
     "make_symbolic_encryption_identity",
