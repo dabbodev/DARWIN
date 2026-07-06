@@ -140,6 +140,7 @@ from darwin.models.retained_audit import (
     RETAINED_AUDIT_COMPACTION_DECISION_CATEGORIES,
     RetainedAuditCompactionDecision,
     RetainedAuditCompactionPolicy,
+    RetainedAuditReplaySummary,
     make_retained_audit_compaction_policy,
 )
 from darwin.models.route import (
@@ -306,6 +307,7 @@ __all__ = [
     "RendezvousPollStatus",
     "RetainedAuditCompactionDecision",
     "RetainedAuditCompactionPolicy",
+    "RetainedAuditReplaySummary",
     "STREAM_OFFER_ACTIVE_STATUSES",
     "STREAM_OFFER_LIFECYCLE_EXPLANATION_CATEGORIES",
     "STREAM_OFFER_LIFECYCLE_EXPLANATION_REASONS",

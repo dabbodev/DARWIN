@@ -183,6 +183,76 @@ class RetainedAuditCompactionDecision:
         return self.to_summary()
 
 
+@dataclass(frozen=True, slots=True)
+class RetainedAuditReplaySummary:
+    """Read-only grouped replay metadata for explicit retained audit records."""
+
+    hub_id: str
+    history_type: str
+    record_count: int = 0
+    record_keys: tuple[str, ...] | list[str] = ()
+    by_status: dict[str, int] | None = None
+    by_reason: dict[str, int] | None = None
+    by_source: dict[str, int] | None = None
+    by_offer_id: dict[str, int] | None = None
+    first_record_key: str | None = None
+    last_record_key: str | None = None
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_required_string(self.history_type, "history_type")
+        _validate_order(self.record_count, "record_count")
+        object.__setattr__(
+            self,
+            "record_keys",
+            _string_tuple(self.record_keys, "record_keys"),
+        )
+        object.__setattr__(
+            self,
+            "by_status",
+            _count_dict(self.by_status or {}, "by_status"),
+        )
+        object.__setattr__(
+            self,
+            "by_reason",
+            _count_dict(self.by_reason or {}, "by_reason"),
+        )
+        object.__setattr__(
+            self,
+            "by_source",
+            _count_dict(self.by_source or {}, "by_source"),
+        )
+        object.__setattr__(
+            self,
+            "by_offer_id",
+            _count_dict(self.by_offer_id or {}, "by_offer_id"),
+        )
+        _validate_optional_string(self.first_record_key, "first_record_key")
+        _validate_optional_string(self.last_record_key, "last_record_key")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe replay summary metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "history_type": self.history_type,
+            "record_count": self.record_count,
+            "record_keys": list(self.record_keys),
+            "by_status": dict(self.by_status or {}),
+            "by_reason": dict(self.by_reason or {}),
+            "by_source": dict(self.by_source or {}),
+            "by_offer_id": dict(self.by_offer_id or {}),
+            "first_record_key": self.first_record_key,
+            "last_record_key": self.last_record_key,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
 def make_retained_audit_compaction_policy(
     *,
     policy_id: str,
@@ -247,6 +317,12 @@ def _validate_required_string(value: str, field_name: str) -> None:
         raise ValueError(f"{field_name} is required")
     if value.strip() != value or any(character.isspace() for character in value):
         raise ValueError(f"{field_name} must not contain whitespace")
+
+
+def _validate_optional_string(value: str | None, field_name: str) -> None:
+    if value is None:
+        return
+    _validate_required_string(value, field_name)
 
 
 def _validate_order(value: int, field_name: str) -> None:

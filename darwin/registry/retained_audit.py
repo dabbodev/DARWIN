@@ -7,6 +7,7 @@ from typing import Any
 from darwin.models.retained_audit import (
     RetainedAuditCompactionDecision,
     RetainedAuditCompactionPolicy,
+    RetainedAuditReplaySummary,
     make_retained_audit_compaction_policy,
 )
 from darwin.models.stream_offer import (
@@ -17,6 +18,12 @@ from darwin.models.stream_offer import (
 SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES: tuple[str, ...] = (
     "stream_offer_lifecycle_explanation",
     "stream_offer_status_transition",
+)
+
+RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS: tuple[str, ...] = (
+    "all",
+    "retained",
+    "compaction_candidate",
 )
 
 
@@ -181,6 +188,134 @@ def summarize_retained_audit_compaction_decision(
     return decision.to_summary()
 
 
+def summarize_retained_audit_replay(
+    records: list[object] | tuple[object, ...],
+    *,
+    hub_id: str,
+    history_type: str | None = None,
+    decision: RetainedAuditCompactionDecision | None = None,
+    decision_category: str = "all",
+    metadata: dict[str, object] | None = None,
+) -> RetainedAuditReplaySummary:
+    """Return a read-only replay summary for explicit retained audit records."""
+    views, ignored_record_keys, filtered_record_keys = _replay_record_views(
+        records,
+        hub_id=hub_id,
+        history_type=history_type,
+        decision=decision,
+        decision_category=decision_category,
+    )
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+
+    record_keys: list[str] = []
+    by_status: dict[str, int] = {}
+    by_reason: dict[str, int] = {}
+    by_source: dict[str, int] = {}
+    by_offer_id: dict[str, int] = {}
+
+    for view in views:
+        record_keys.append(view.record_key)
+        _increment_count(by_status, view.status or "none")
+        _increment_count(by_reason, view.reason or "none")
+        _increment_count(by_source, view.source or "none")
+        if view.offer_id is not None:
+            _increment_count(by_offer_id, view.offer_id)
+
+    summary_metadata: dict[str, object] = {
+        "simulator_local": True,
+        "read_only": True,
+        "replay_summary_only": True,
+        "registry_hub_mutated": False,
+        "retained_history_mutated": False,
+        "records_deleted": False,
+        "records_compacted": False,
+        "records_rewritten": False,
+        "cleanup_scheduled": False,
+        "background_worker": False,
+        "retry_loop": False,
+        "durable_queue": False,
+        "live_timer": False,
+        "delivery_behavior_changed": False,
+        "traffic_hub_routing_changed": False,
+        "networking": False,
+        "dns_lookup": False,
+        "external_services": False,
+        "cryptography": False,
+        "compact_snapshot_changed": False,
+        "supported_history_types": list(SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES),
+        "history_type_filter": history_type,
+        "decision_category_filter": decision_category,
+        "ignored_record_keys": ignored_record_keys,
+        "filtered_record_keys": filtered_record_keys,
+        "unsupported_records_ignored": any(
+            key.startswith("unsupported:") for key in ignored_record_keys
+        ),
+        "wrong_hub_records_ignored": any(
+            not key.startswith("unsupported:") for key in ignored_record_keys
+        ),
+        "filtered_records_ignored": bool(filtered_record_keys),
+    }
+    if metadata is not None:
+        summary_metadata.update(metadata)
+
+    return RetainedAuditReplaySummary(
+        hub_id=hub_id,
+        history_type=_summary_history_type(views, history_type),
+        record_count=len(record_keys),
+        record_keys=record_keys,
+        by_status=_sorted_count_dict(by_status),
+        by_reason=_sorted_count_dict(by_reason),
+        by_source=_sorted_count_dict(by_source),
+        by_offer_id=_sorted_count_dict(by_offer_id),
+        first_record_key=record_keys[0] if record_keys else None,
+        last_record_key=record_keys[-1] if record_keys else None,
+        metadata=summary_metadata,
+    )
+
+
+def summarize_retained_audit_replay_by_history_type(
+    records: list[object] | tuple[object, ...],
+    *,
+    hub_id: str,
+    decision: RetainedAuditCompactionDecision | None = None,
+    decision_category: str = "all",
+) -> dict[str, int]:
+    """Return replay counts grouped by retained audit history type."""
+    views, _ignored_record_keys, _filtered_record_keys = _replay_record_views(
+        records,
+        hub_id=hub_id,
+        history_type=None,
+        decision=decision,
+        decision_category=decision_category,
+    )
+    by_history_type: dict[str, int] = {}
+    for view in views:
+        _increment_count(by_history_type, view.history_type)
+    return _sorted_count_dict(by_history_type)
+
+
+def summarize_retained_audit_replay_by_reason(
+    records: list[object] | tuple[object, ...],
+    *,
+    hub_id: str,
+    history_type: str | None = None,
+    decision: RetainedAuditCompactionDecision | None = None,
+    decision_category: str = "all",
+) -> dict[str, int]:
+    """Return replay counts grouped by retained audit reason."""
+    return dict(
+        summarize_retained_audit_replay(
+            records,
+            hub_id=hub_id,
+            history_type=history_type,
+            decision=decision,
+            decision_category=decision_category,
+        ).by_reason
+        or {}
+    )
+
+
 class _AuditRecordView:
     def __init__(
         self,
@@ -188,6 +323,7 @@ class _AuditRecordView:
         history_type: str,
         record_key: str,
         hub_id: str | None,
+        offer_id: str | None,
         reason: str | None,
         status: str | None,
         source: str | None,
@@ -195,6 +331,7 @@ class _AuditRecordView:
         self.history_type = history_type
         self.record_key = record_key
         self.hub_id = hub_id
+        self.offer_id = offer_id
         self.reason = reason
         self.status = status
         self.source = source
@@ -217,6 +354,7 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
             history_type="stream_offer_lifecycle_explanation",
             record_key=_lifecycle_explanation_key(index, record),
             hub_id=record.hub_id,
+            offer_id=record.offer_id,
             reason=record.reason,
             status=record.status,
             source=record.source,
@@ -226,6 +364,7 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
             history_type="stream_offer_status_transition",
             record_key=_status_transition_key(index, record),
             hub_id=record.hub_id,
+            offer_id=record.offer_id,
             reason=record.reason.reason,
             status=record.new_status.status,
             source=_metadata_source(record.metadata),
@@ -234,10 +373,93 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
         history_type=f"unsupported:{record.__class__.__name__}",
         record_key=f"unsupported:{index}:{record.__class__.__name__}",
         hub_id=None,
+        offer_id=None,
         reason=None,
         status=None,
         source=None,
     )
+
+
+def _replay_record_views(
+    records: list[object] | tuple[object, ...],
+    *,
+    hub_id: str,
+    history_type: str | None,
+    decision: RetainedAuditCompactionDecision | None,
+    decision_category: str,
+) -> tuple[list[_AuditRecordView], list[str], list[str]]:
+    record_entries = _record_tuple(records)
+    _validate_replay_decision_filter(decision, decision_category, hub_id)
+    allowed_record_keys = _decision_record_key_filter(decision, decision_category)
+
+    views: list[_AuditRecordView] = []
+    ignored_record_keys: list[str] = []
+    filtered_record_keys: list[str] = []
+
+    for index, record in enumerate(record_entries):
+        view = _audit_record_view(index, record)
+        if view.history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES:
+            ignored_record_keys.append(view.record_key)
+            continue
+
+        if view.hub_id != hub_id:
+            ignored_record_keys.append(view.record_key)
+            continue
+
+        if history_type is not None and view.history_type != history_type:
+            filtered_record_keys.append(view.record_key)
+            continue
+
+        if allowed_record_keys is not None and view.record_key not in allowed_record_keys:
+            filtered_record_keys.append(view.record_key)
+            continue
+
+        views.append(view)
+
+    return views, ignored_record_keys, filtered_record_keys
+
+
+def _validate_replay_decision_filter(
+    decision: RetainedAuditCompactionDecision | None,
+    decision_category: str,
+    hub_id: str,
+) -> None:
+    if decision_category not in RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS:
+        raise ValueError(
+            "decision_category must be one of "
+            f"{', '.join(RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS)}"
+        )
+    if decision is None:
+        if decision_category != "all":
+            raise ValueError("decision is required for decision_category filtering")
+        return
+    if not isinstance(decision, RetainedAuditCompactionDecision):
+        raise TypeError("decision must be a RetainedAuditCompactionDecision")
+    if decision.hub_id != hub_id:
+        raise ValueError("decision hub_id must match hub_id")
+
+
+def _decision_record_key_filter(
+    decision: RetainedAuditCompactionDecision | None,
+    decision_category: str,
+) -> set[str] | None:
+    if decision is None or decision_category == "all":
+        return None
+    if decision_category == "retained":
+        return set(decision.retained_record_keys)
+    return set(decision.compaction_candidate_record_keys)
+
+
+def _summary_history_type(
+    views: list[_AuditRecordView],
+    history_type: str | None,
+) -> str:
+    if history_type is not None:
+        return history_type
+    history_types = sorted({view.history_type for view in views})
+    if len(history_types) == 1:
+        return history_types[0]
+    return "mixed"
 
 
 def _matches_compaction_filters(
@@ -300,8 +522,12 @@ def _sorted_count_dict(counts: dict[str, int]) -> dict[str, int]:
 
 
 __all__ = [
+    "RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS",
     "SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES",
     "classify_retained_audit_records_for_compaction",
     "make_retained_audit_compaction_policy",
     "summarize_retained_audit_compaction_decision",
+    "summarize_retained_audit_replay",
+    "summarize_retained_audit_replay_by_history_type",
+    "summarize_retained_audit_replay_by_reason",
 ]

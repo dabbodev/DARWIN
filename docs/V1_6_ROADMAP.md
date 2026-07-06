@@ -1,6 +1,7 @@
 # DARWIN v1.6 Roadmap: Retained Audit Compaction and Replay Summaries
 
-Status: planning draft with Sprint 1 read-only helper work in progress. v1.6
+Status: planning draft with Sprint 1 read-only compaction policy helpers
+implemented and Sprint 2 read-only replay summary helpers implemented. v1.6
 is unreleased, has not started release prep, and does not change the current
 released version. The latest released version remains `darwin-sim 1.5.0` on
 `main` with the annotated `v1.5.0` tag and GitHub release:
@@ -138,17 +139,28 @@ policy models.
   history and stream-offer lifecycle transition history. Other retained audit
   families remain future work.
 
-Sprint 2 candidate: Deterministic read-only compaction plans.
+Sprint 2 implemented on the v1.6 planning branch: Deterministic read-only
+replay-summary helpers.
 
-- Map policy decisions into retained, summarized, review, ignored, or
-  candidate buckets.
-- Preserve deterministic ordering and copied JSON-safe summary shapes.
-- Keep compaction plans separate from apply/delete behavior.
+- Define `RetainedAuditReplaySummary` for explicit retained audit records.
+- Preserve deterministic record-key ordering and copied JSON-safe summary
+  shapes.
+- Group supported retained audit records by history type, status, reason,
+  source, and offer ID where available.
+- Optionally filter replay summaries through existing retained or
+  compaction-candidate record keys from a `RetainedAuditCompactionDecision`.
+- Keep replay summaries separate from apply/delete/compact behavior.
+- Initial support remains intentionally narrow: stream-offer lifecycle
+  explanation history and stream-offer lifecycle transition history.
 
-Sprint 3 candidate: Grouped replay-summary helpers.
+Sprint 3 candidate: Broader grouped replay-summary helpers or read-only
+compaction-plan refinements.
 
-- Summarize retained lifecycle, poll/admission, encrypted delivery, alias, or
-  authority audit histories by explicit simulator metadata.
+- Extend retained lifecycle, poll/admission, encrypted delivery, alias, or
+  authority audit summaries by explicit simulator metadata if a later sprint
+  accepts that scope.
+- Consider deterministic compaction-plan refinements only while keeping them
+  separate from apply/delete behavior.
 - Prefer read-only helper surfaces before scenario or snapshot exposure.
 - Keep summaries diagnostic only.
 
@@ -183,8 +195,9 @@ Sprint 7 candidate: Release-readiness documentation.
 
 - v1.6 content remains clearly marked as planning, draft, and unreleased.
 - v1.5.0 remains the latest released version.
-- No feature behavior, scenario behavior, tests for new feature behavior, or
-  version bump is added by this planning seed.
+- Implemented helper behavior remains limited to explicit read-only planning
+  and diagnostic surfaces with focused tests; no scenario behavior or version
+  bump is added by these planning sprints.
 - Existing mailbox delivery, encrypted delivery, TrafficHub routing, alias,
   identity, stream-offer polling/admission, lifecycle planning/apply, retained
   histories, scenario, detailed snapshot, compact snapshot, and canonical

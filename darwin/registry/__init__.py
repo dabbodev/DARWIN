@@ -105,10 +105,14 @@ from darwin.registry.operations import (
     resolve_label,
 )
 from darwin.registry.retained_audit import (
+    RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS,
     SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES,
     classify_retained_audit_records_for_compaction,
     make_retained_audit_compaction_policy,
     summarize_retained_audit_compaction_decision,
+    summarize_retained_audit_replay,
+    summarize_retained_audit_replay_by_history_type,
+    summarize_retained_audit_replay_by_reason,
 )
 from darwin.registry.stream_offers import (
     apply_stream_offer_lifecycle_explanation_pruning_plan,
@@ -267,11 +271,15 @@ __all__ = [
     "resolve_label",
     "highest_authorized_alias",
     "hold_stream_offer",
+    "RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS",
     "suggest_alias_fallbacks",
     "summarize_encrypted_delivery_result",
     "summarize_authority_decision",
     "summarize_authority_path",
     "summarize_retained_audit_compaction_decision",
+    "summarize_retained_audit_replay",
+    "summarize_retained_audit_replay_by_history_type",
+    "summarize_retained_audit_replay_by_reason",
     "summarize_held_stream_offers",
     "summarize_lane_admission_decisions",
     "summarize_rendezvous_poll_results",

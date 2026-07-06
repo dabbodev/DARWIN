@@ -73,6 +73,27 @@ timers, retry loops, durable queues, networking, DNS, external services, real
 cryptography, production security infrastructure, release behavior, or a
 version bump.
 
+Sprint 2 on the v1.6 planning branch adds read-only retained audit replay
+summary metadata:
+
+- `RetainedAuditReplaySummary`
+- pure helpers to summarize explicit retained audit records, group by retained
+  history type and reason, and optionally filter through retained or
+  compaction-candidate record keys from a
+  `RetainedAuditCompactionDecision`
+
+The Sprint 2 supported retained-history families remain stream-offer
+lifecycle explanation history and stream-offer lifecycle transition history.
+Unsupported retained-history families are handled deterministically and remain
+future work for broader replay summaries.
+
+Sprint 2 does not delete, compact, mutate, rewrite, replace, schedule cleanup,
+replay network traffic, trigger delivery, add scenario DSL coverage, add
+detailed snapshot changes, change compact `world.snapshot()`, add live
+timers, retry loops, durable queues, networking, DNS, external services, real
+cryptography, production security infrastructure, release behavior, or a
+version bump.
+
 ## Scenario Coverage
 
 No v1.6 scenarios are added by this planning placeholder.
@@ -83,8 +104,8 @@ The current released scenario set remains contiguous from `001` through
 ## Current Limitations
 
 - v1.6 is unreleased planning only.
-- No v1.6 helper, scenario, snapshot, release, or version behavior has been
-  implemented by this placeholder.
+- v1.6 helper work remains limited to read-only retained audit compaction
+  classification and replay summary helpers.
 - No package publication or release asset upload is planned by this document.
 - The package and CLI version remain `darwin-sim 1.5.0`.
 
