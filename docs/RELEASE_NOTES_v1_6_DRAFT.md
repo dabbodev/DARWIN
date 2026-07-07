@@ -94,6 +94,27 @@ timers, retry loops, durable queues, networking, DNS, external services, real
 cryptography, production security infrastructure, release behavior, or a
 version bump.
 
+Sprint 3 on the v1.6 planning branch adds an explicit retained audit
+compaction apply helper:
+
+- `RetainedAuditCompactionApplyResult`
+- `apply_retained_audit_compaction_decision(...)`
+- `summarize_retained_audit_compaction_apply_result(...)`
+
+The Sprint 3 helper accepts an explicit `RegistryHub` and explicit
+`RetainedAuditCompactionDecision`, mutates only the selected retained history
+for supported stream-offer lifecycle explanation or status-transition records,
+removes only currently matching compaction-candidate records, preserves
+remaining retained history order, and reports compacted, retained, ignored,
+missing, and unsupported keys deterministically.
+
+Sprint 3 does not run automatically, schedule cleanup, add workers, retry
+loops, durable queues, live timers, live clocks, networking, DNS, external
+services, real cryptography, delivery changes, TrafficHub routing changes,
+scenario DSL coverage, detailed snapshot changes, compact
+`world.snapshot()` changes, canonical identity rewrites, release behavior, or
+a version bump.
+
 ## Scenario Coverage
 
 No v1.6 scenarios are added by this planning placeholder.
@@ -104,8 +125,9 @@ The current released scenario set remains contiguous from `001` through
 ## Current Limitations
 
 - v1.6 is unreleased planning only.
-- v1.6 helper work remains limited to read-only retained audit compaction
-  classification and replay summary helpers.
+- v1.6 helper work remains limited to retained audit compaction
+  classification, replay summary helpers, and the explicit Sprint 3
+  simulator-local compaction apply helper.
 - No package publication or release asset upload is planned by this document.
 - The package and CLI version remain `darwin-sim 1.5.0`.
 

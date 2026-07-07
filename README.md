@@ -1080,6 +1080,7 @@ For v1.6 retained audit compaction and replay-summary planning docs, see:
 - `docs/V1_6_ROADMAP.md`
 - `docs/RETAINED_AUDIT_COMPACTION_POLICY_v1_6.md`
 - `docs/RETAINED_AUDIT_REPLAY_SUMMARIES_v1_6.md`
+- `docs/RETAINED_AUDIT_COMPACTION_APPLY_v1_6.md`
 - `docs/RELEASE_NOTES_v1_6_DRAFT.md`
 
 ## What v0.1 Is Not

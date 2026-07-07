@@ -253,6 +253,85 @@ class RetainedAuditReplaySummary:
         return self.to_summary()
 
 
+@dataclass(frozen=True, slots=True)
+class RetainedAuditCompactionApplyResult:
+    """Result for explicitly applying a retained audit compaction decision."""
+
+    hub_id: str
+    policy_id: str
+    history_type: str
+    compacted_record_keys: tuple[str, ...] | list[str] = ()
+    retained_record_keys: tuple[str, ...] | list[str] = ()
+    ignored_record_keys: tuple[str, ...] | list[str] = ()
+    missing_record_keys: tuple[str, ...] | list[str] = ()
+    unsupported_record_keys: tuple[str, ...] | list[str] = ()
+    compacted_count: int = 0
+    retained_count: int = 0
+    ignored_count: int = 0
+    missing_count: int = 0
+    unsupported_count: int = 0
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_required_string(self.policy_id, "policy_id")
+        _validate_required_string(self.history_type, "history_type")
+        object.__setattr__(
+            self,
+            "compacted_record_keys",
+            _string_tuple(self.compacted_record_keys, "compacted_record_keys"),
+        )
+        object.__setattr__(
+            self,
+            "retained_record_keys",
+            _string_tuple(self.retained_record_keys, "retained_record_keys"),
+        )
+        object.__setattr__(
+            self,
+            "ignored_record_keys",
+            _string_tuple(self.ignored_record_keys, "ignored_record_keys"),
+        )
+        object.__setattr__(
+            self,
+            "missing_record_keys",
+            _string_tuple(self.missing_record_keys, "missing_record_keys"),
+        )
+        object.__setattr__(
+            self,
+            "unsupported_record_keys",
+            _string_tuple(self.unsupported_record_keys, "unsupported_record_keys"),
+        )
+        _validate_order(self.compacted_count, "compacted_count")
+        _validate_order(self.retained_count, "retained_count")
+        _validate_order(self.ignored_count, "ignored_count")
+        _validate_order(self.missing_count, "missing_count")
+        _validate_order(self.unsupported_count, "unsupported_count")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe compaction apply result metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "policy_id": self.policy_id,
+            "history_type": self.history_type,
+            "compacted_record_keys": list(self.compacted_record_keys),
+            "retained_record_keys": list(self.retained_record_keys),
+            "ignored_record_keys": list(self.ignored_record_keys),
+            "missing_record_keys": list(self.missing_record_keys),
+            "unsupported_record_keys": list(self.unsupported_record_keys),
+            "compacted_count": self.compacted_count,
+            "retained_count": self.retained_count,
+            "ignored_count": self.ignored_count,
+            "missing_count": self.missing_count,
+            "unsupported_count": self.unsupported_count,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
 def make_retained_audit_compaction_policy(
     *,
     policy_id: str,

@@ -1,10 +1,11 @@
 # DARWIN v1.6 Roadmap: Retained Audit Compaction and Replay Summaries
 
-Status: planning draft with Sprint 1 read-only compaction policy helpers
-implemented and Sprint 2 read-only replay summary helpers implemented. v1.6
-is unreleased, has not started release prep, and does not change the current
-released version. The latest released version remains `darwin-sim 1.5.0` on
-`main` with the annotated `v1.5.0` tag and GitHub release:
+Status: planning draft with Sprint 1 read-only compaction policy helpers,
+Sprint 2 read-only replay summary helpers, and Sprint 3 explicit compaction
+apply helpers implemented. v1.6 is unreleased, has not started release prep,
+and does not change the current released version. The latest released version
+remains `darwin-sim 1.5.0` on `main` with the annotated `v1.5.0` tag and
+GitHub release:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
 publication was performed for v1.5.0, and no release assets were uploaded.
 
@@ -153,23 +154,31 @@ replay-summary helpers.
 - Initial support remains intentionally narrow: stream-offer lifecycle
   explanation history and stream-offer lifecycle transition history.
 
-Sprint 3 candidate: Broader grouped replay-summary helpers or read-only
+Sprint 3 implemented on the v1.6 planning branch: Explicit retained audit
+compaction apply helper.
+
+- Define `RetainedAuditCompactionApplyResult` for caller-driven apply
+  outcomes.
+- Add `apply_retained_audit_compaction_decision(...)` for explicit
+  simulator-local mutation of only the selected retained audit history.
+- Remove only currently matching compaction-candidate records and preserve
+  remaining retained history order.
+- Report compacted, retained, ignored, missing, and unsupported record keys
+  deterministically.
+- Keep support intentionally narrow: stream-offer lifecycle explanation
+  history and stream-offer lifecycle transition history.
+- Keep scenario DSL coverage, detailed snapshot changes, and compact
+  `world.snapshot()` changes out of this sprint.
+
+Sprint 4 candidate: Broader grouped replay-summary helpers or read-only
 compaction-plan refinements.
 
 - Extend retained lifecycle, poll/admission, encrypted delivery, alias, or
   authority audit summaries by explicit simulator metadata if a later sprint
   accepts that scope.
 - Consider deterministic compaction-plan refinements only while keeping them
-  separate from apply/delete behavior.
-- Prefer read-only helper surfaces before scenario or snapshot exposure.
+  separate from additional apply/delete behavior.
 - Keep summaries diagnostic only.
-
-Sprint 4 candidate: Explicit opt-in compaction apply helper.
-
-- Consider only after read-only planning helpers are stable.
-- Keep the helper explicit, caller-driven, and simulator-local.
-- Limit mutation to the precisely named retained history selected by the
-  caller, if this slice is accepted at all.
 
 Sprint 5 candidate: Scenario DSL coverage.
 

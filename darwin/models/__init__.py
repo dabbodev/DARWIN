@@ -138,6 +138,7 @@ from darwin.models.packet import DarwinPacket
 from darwin.models.passport import PassportRecord
 from darwin.models.retained_audit import (
     RETAINED_AUDIT_COMPACTION_DECISION_CATEGORIES,
+    RetainedAuditCompactionApplyResult,
     RetainedAuditCompactionDecision,
     RetainedAuditCompactionPolicy,
     RetainedAuditReplaySummary,
@@ -306,6 +307,7 @@ __all__ = [
     "RendezvousPollResult",
     "RendezvousPollStatus",
     "RetainedAuditCompactionDecision",
+    "RetainedAuditCompactionApplyResult",
     "RetainedAuditCompactionPolicy",
     "RetainedAuditReplaySummary",
     "STREAM_OFFER_ACTIVE_STATUSES",

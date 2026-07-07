@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from darwin.models.hub import RegistryHub
 from darwin.models.retained_audit import (
+    RetainedAuditCompactionApplyResult,
     RetainedAuditCompactionDecision,
     RetainedAuditCompactionPolicy,
     RetainedAuditReplaySummary,
@@ -316,6 +318,107 @@ def summarize_retained_audit_replay_by_reason(
     )
 
 
+def apply_retained_audit_compaction_decision(
+    registry_hub: RegistryHub,
+    decision: RetainedAuditCompactionDecision,
+    *,
+    metadata: dict[str, object] | None = None,
+) -> RetainedAuditCompactionApplyResult:
+    """Explicitly remove selected compaction-candidate retained audit records."""
+    _validate_registry_hub(registry_hub)
+    _validate_compaction_decision(decision)
+    if registry_hub.hub_id != decision.hub_id:
+        raise ValueError("decision hub_id must match registry_hub.hub_id")
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+
+    if decision.history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES:
+        unsupported_record_keys = _ordered_unique(
+            (
+                *decision.compaction_candidate_record_keys,
+                *decision.retained_record_keys,
+                *decision.ignored_record_keys,
+            )
+        )
+        result_metadata = _compaction_apply_metadata(
+            compacted_record_keys=[],
+            history_type=decision.history_type,
+            selected_history_mutated=False,
+            unsupported_history_type=True,
+            metadata=metadata,
+        )
+        return RetainedAuditCompactionApplyResult(
+            hub_id=registry_hub.hub_id,
+            policy_id=decision.policy_id,
+            history_type=decision.history_type,
+            unsupported_record_keys=unsupported_record_keys,
+            unsupported_count=len(unsupported_record_keys),
+            metadata=result_metadata,
+        )
+
+    candidate_key_set = set(decision.compaction_candidate_record_keys)
+    retained_key_set = set(decision.retained_record_keys)
+    ignored_key_set = set(decision.ignored_record_keys)
+    compacted_record_keys: list[str] = []
+    retained_record_keys: list[str] = []
+    ignored_record_keys: list[str] = []
+    remaining_records: list[object] = []
+
+    selected_history = _selected_retained_history(registry_hub, decision.history_type)
+    for index, record in enumerate(selected_history):
+        view = _audit_record_view(index, record)
+        if view.record_key in candidate_key_set:
+            compacted_record_keys.append(view.record_key)
+            continue
+
+        remaining_records.append(record)
+        if view.record_key in retained_key_set:
+            retained_record_keys.append(view.record_key)
+        if view.record_key in ignored_key_set:
+            ignored_record_keys.append(view.record_key)
+
+    compacted_key_set = set(compacted_record_keys)
+    missing_record_keys = [
+        record_key
+        for record_key in decision.compaction_candidate_record_keys
+        if record_key not in compacted_key_set
+    ]
+    if compacted_record_keys:
+        selected_history[:] = remaining_records
+
+    result_metadata = _compaction_apply_metadata(
+        compacted_record_keys=compacted_record_keys,
+        history_type=decision.history_type,
+        selected_history_mutated=bool(compacted_record_keys),
+        unsupported_history_type=False,
+        metadata=metadata,
+    )
+
+    return RetainedAuditCompactionApplyResult(
+        hub_id=registry_hub.hub_id,
+        policy_id=decision.policy_id,
+        history_type=decision.history_type,
+        compacted_record_keys=compacted_record_keys,
+        retained_record_keys=retained_record_keys,
+        ignored_record_keys=ignored_record_keys,
+        missing_record_keys=missing_record_keys,
+        compacted_count=len(compacted_record_keys),
+        retained_count=len(retained_record_keys),
+        ignored_count=len(ignored_record_keys),
+        missing_count=len(missing_record_keys),
+        metadata=result_metadata,
+    )
+
+
+def summarize_retained_audit_compaction_apply_result(
+    result: RetainedAuditCompactionApplyResult,
+) -> dict[str, object]:
+    """Return a copied JSON-safe retained audit compaction apply result summary."""
+    if not isinstance(result, RetainedAuditCompactionApplyResult):
+        raise TypeError("result must be a RetainedAuditCompactionApplyResult")
+    return result.to_summary()
+
+
 class _AuditRecordView:
     def __init__(
         self,
@@ -346,6 +449,16 @@ def _record_tuple(records: list[object] | tuple[object, ...]) -> tuple[object, .
 def _validate_compaction_policy(policy: RetainedAuditCompactionPolicy) -> None:
     if not isinstance(policy, RetainedAuditCompactionPolicy):
         raise TypeError("policy must be a RetainedAuditCompactionPolicy")
+
+
+def _validate_compaction_decision(decision: RetainedAuditCompactionDecision) -> None:
+    if not isinstance(decision, RetainedAuditCompactionDecision):
+        raise TypeError("decision must be a RetainedAuditCompactionDecision")
+
+
+def _validate_registry_hub(registry_hub: RegistryHub) -> None:
+    if not isinstance(registry_hub, RegistryHub):
+        raise TypeError("registry_hub must be a RegistryHub")
 
 
 def _audit_record_view(index: int, record: object) -> _AuditRecordView:
@@ -450,6 +563,17 @@ def _decision_record_key_filter(
     return set(decision.compaction_candidate_record_keys)
 
 
+def _selected_retained_history(
+    registry_hub: RegistryHub,
+    history_type: str,
+) -> list[object]:
+    if history_type == "stream_offer_lifecycle_explanation":
+        return registry_hub.stream_offer_lifecycle_explanation_history
+    if history_type == "stream_offer_status_transition":
+        return registry_hub.stream_offer_status_transition_history
+    raise ValueError(f"unsupported retained audit history_type: {history_type}")
+
+
 def _summary_history_type(
     views: list[_AuditRecordView],
     history_type: str | None,
@@ -521,11 +645,80 @@ def _sorted_count_dict(counts: dict[str, int]) -> dict[str, int]:
     return {key: counts[key] for key in sorted(counts)}
 
 
+def _ordered_unique(record_keys: tuple[str, ...]) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for record_key in record_keys:
+        if record_key in seen:
+            continue
+        seen.add(record_key)
+        ordered.append(record_key)
+    return ordered
+
+
+def _compaction_apply_metadata(
+    *,
+    compacted_record_keys: list[str],
+    history_type: str,
+    selected_history_mutated: bool,
+    unsupported_history_type: bool,
+    metadata: dict[str, object] | None,
+) -> dict[str, object]:
+    result_metadata: dict[str, object] = {
+        "simulator_local": True,
+        "explicit_apply": True,
+        "read_only": False,
+        "compaction_apply_result_only": True,
+        "registry_hub_mutated": selected_history_mutated,
+        "retained_history_mutated": selected_history_mutated,
+        "selected_history_type": history_type,
+        "selected_history_mutated": selected_history_mutated,
+        "records_compacted": bool(compacted_record_keys),
+        "records_deleted": bool(compacted_record_keys),
+        "records_rewritten": False,
+        "unsupported_history_type": unsupported_history_type,
+        "held_offers_mutated": False,
+        "stream_offers_mutated": False,
+        "lifecycle_plans_mutated": False,
+        "lifecycle_apply_results_mutated": False,
+        "polling_history_mutated": False,
+        "admission_history_mutated": False,
+        "encrypted_delivery_history_mutated": False,
+        "alias_history_mutated": False,
+        "authority_history_mutated": False,
+        "delivery_state_mutated": False,
+        "delivery_behavior_changed": False,
+        "traffic_hub_state_changed": False,
+        "traffic_hub_routing_changed": False,
+        "snapshot_changed": False,
+        "compact_snapshot_changed": False,
+        "canonical_identity_rewritten": False,
+        "automatic_cleanup": False,
+        "cleanup_scheduled": False,
+        "background_worker": False,
+        "retry_loop": False,
+        "durable_queue": False,
+        "live_timer": False,
+        "live_clock": False,
+        "scenario_context_required": False,
+        "networking": False,
+        "dns_lookup": False,
+        "external_services": False,
+        "cryptography": False,
+        "supported_history_types": list(SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES),
+    }
+    if metadata is not None:
+        result_metadata.update(metadata)
+    return result_metadata
+
+
 __all__ = [
     "RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS",
     "SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES",
+    "apply_retained_audit_compaction_decision",
     "classify_retained_audit_records_for_compaction",
     "make_retained_audit_compaction_policy",
+    "summarize_retained_audit_compaction_apply_result",
     "summarize_retained_audit_compaction_decision",
     "summarize_retained_audit_replay",
     "summarize_retained_audit_replay_by_history_type",
