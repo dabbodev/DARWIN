@@ -1,0 +1,143 @@
+scenario_id: 069_retained_audit_compaction_apply
+name: Retained audit compaction apply
+category: stream_offer
+description: explicit retained audit compaction apply removes only selected lifecycle explanation candidates
+tags:
+  - stream_offer
+  - retained_audit
+  - compaction
+  - explicit_apply
+  - v1.6
+demonstrates:
+  - compaction apply requires an explicit prior decision action result
+  - mixed-history decisions report unsupported keys without mutation
+  - supported apply removes only compaction candidates from its selected history
+  - retained and ignored records remain in their retained histories
+  - reapplying the same decision reports its removed candidate as missing
+expected_result: a mixed decision is a deterministic no-op, then explicit explanation-history apply removes one candidate while preserving the retained explanation and ignored transition
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_apply_candidate
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 2
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_apply_retained
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 10
+  - action: plan_stream_offer_expiration
+    registry_hub: registry_chat_001
+    checked_at: 5
+  - action: explain_stream_offer_lifecycle_plan
+    registry_hub: registry_chat_001
+    checked_at: 5
+    record_explanations: true
+  - action: apply_stream_offer_lifecycle_plan
+    registry_hub: registry_chat_001
+    checked_at: 5
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_mixed_policy_069
+    history_types:
+      - stream_offer_lifecycle_explanation
+      - stream_offer_status_transition
+    record_history_types:
+      - stream_offer_lifecycle_explanation
+      - stream_offer_status_transition
+    compact_statuses:
+      - expired
+  - action: apply_retained_audit_compaction_decision
+    registry_hub: registry_chat_001
+    decision_policy_id: retained_audit_mixed_policy_069
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_apply_policy_069
+    history_types:
+      - stream_offer_lifecycle_explanation
+    record_history_types:
+      - stream_offer_lifecycle_explanation
+      - stream_offer_status_transition
+    compact_statuses:
+      - expired
+  - action: apply_retained_audit_compaction_decision
+    registry_hub: registry_chat_001
+    decision_policy_id: retained_audit_apply_policy_069
+  - action: apply_retained_audit_compaction_decision
+    registry_hub: registry_chat_001
+    decision_policy_id: retained_audit_apply_policy_069
+assertions:
+  - type: retained_audit_compaction_apply_result_contains
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_mixed_policy_069
+    history_type: mixed
+    compacted_count: 0
+    unsupported_count: 3
+    unsupported_record_key: lifecycle_explanation:0:registry_chat_001:offer_audit_apply_candidate:expired:expired_by_plan:expired:lifecycle_plan:5
+    expected_count: 1
+  - type: retained_audit_compaction_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_apply_policy_069
+    history_type: stream_offer_lifecycle_explanation
+    retained_count: 1
+    compaction_candidate_count: 1
+    ignored_count: 1
+    ignored_record_key: status_transition:2:registry_chat_001:offer_audit_apply_candidate:held:expired:expired:none:none:none
+    expected_count: 1
+  - type: retained_audit_compaction_apply_result_contains
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_apply_policy_069
+    history_type: stream_offer_lifecycle_explanation
+    compacted_count: 1
+    retained_count: 1
+    ignored_count: 0
+    missing_count: 0
+    unsupported_count: 0
+    compacted_record_key: lifecycle_explanation:0:registry_chat_001:offer_audit_apply_candidate:expired:expired_by_plan:expired:lifecycle_plan:5
+    retained_record_key: lifecycle_explanation:1:registry_chat_001:offer_audit_apply_retained:active:active_by_plan:active:lifecycle_plan:5
+    expected_count: 1
+  - type: retained_audit_compaction_apply_result_contains
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_apply_policy_069
+    history_type: stream_offer_lifecycle_explanation
+    compacted_count: 0
+    missing_count: 1
+    missing_record_key: lifecycle_explanation:0:registry_chat_001:offer_audit_apply_candidate:expired:expired_by_plan:expired:lifecycle_plan:5
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_apply_candidate
+    expected_count: 0
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_apply_retained
+    category: active
+    expected_count: 1
+  - type: stream_offer_status_transition_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_apply_candidate
+    previous_status: held
+    new_status: expired
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_apply_candidate
+    status: expired
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_apply_retained
+    status: held
+    expected_count: 1

@@ -1,20 +1,19 @@
 # DARWIN v1.6 Roadmap: Retained Audit Compaction and Replay Summaries
 
 Status: planning draft with Sprint 1 read-only compaction policy helpers,
-Sprint 2 read-only replay summary helpers, and Sprint 3 explicit compaction
-apply helpers implemented. v1.6 is unreleased, has not started release prep,
-and does not change the current released version. The latest released version
-remains `darwin-sim 1.5.0` on `main` with the annotated `v1.5.0` tag and
-GitHub release:
+Sprint 2 read-only replay summary helpers, Sprint 3 explicit compaction apply
+helpers, and Sprint 4 scenario DSL coverage implemented. v1.6 is unreleased,
+has not started release prep, and does not change the current released
+version. The latest released version remains `darwin-sim 1.5.0` on `main`
+with the annotated `v1.5.0` tag and GitHub release:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
 publication was performed for v1.5.0, and no release assets were uploaded.
 
 Recommended candidate theme: Retained audit compaction and replay summaries.
 
-This roadmap is a planning seed only. It proposes candidate slices for a
-future v1.6 planning branch without authorizing feature implementation,
-version bumps, package publication, release assets, merge, tag, or release
-work.
+This roadmap records implemented simulator-only planning slices and candidate
+later work. It does not authorize version bumps, package publication, release
+assets, merge, tag, or release work.
 
 v1.6 should remain simulator-first and symbolic. It should not become
 production networking, a real DDoS protection system, a firewall product, a
@@ -170,22 +169,30 @@ compaction apply helper.
 - Keep scenario DSL coverage, detailed snapshot changes, and compact
   `world.snapshot()` changes out of this sprint.
 
-Sprint 4 candidate: Broader grouped replay-summary helpers or read-only
+Sprint 4 implemented on the v1.6 planning branch: Scenario DSL coverage.
+
+- Add explicit scenario actions for retained audit classification, replay
+  summaries, and compaction apply using the existing helper semantics.
+- Keep classification and replay-summary actions read-only.
+- Require the apply action to reference a prior typed compaction decision and
+  mutate only the decision's single supported retained history.
+- Add deterministic action-result assertions for decision, replay summary,
+  and apply-result keys, counts, and small grouped fields.
+- Add scenarios `067` through `069` for retain-filter precedence, replay
+  history/reason grouping and category filtering, explicit selected-history
+  apply, unsupported keys, missing keys, and no compaction without apply.
+- Preserve compact and detailed snapshot shapes and keep the package/CLI
+  version at `darwin-sim 1.5.0`.
+
+Sprint 5 candidate: Broader grouped replay-summary helpers or read-only
 compaction-plan refinements.
 
 - Extend retained lifecycle, poll/admission, encrypted delivery, alias, or
-  authority audit summaries by explicit simulator metadata if a later sprint
-  accepts that scope.
+  authority audit summaries only if a later sprint explicitly accepts that
+  scope.
 - Consider deterministic compaction-plan refinements only while keeping them
   separate from additional apply/delete behavior.
 - Keep summaries diagnostic only.
-
-Sprint 5 candidate: Scenario DSL coverage.
-
-- Add focused scenario actions and assertions only after helper semantics are
-  stable.
-- Preserve the existing checked-in scenario continuity expectations.
-- Keep scenario coverage symbolic and deterministic.
 
 Sprint 6 candidate: Detailed snapshot visibility.
 
@@ -204,9 +211,10 @@ Sprint 7 candidate: Release-readiness documentation.
 
 - v1.6 content remains clearly marked as planning, draft, and unreleased.
 - v1.5.0 remains the latest released version.
-- Implemented helper behavior remains limited to explicit read-only planning
-  and diagnostic surfaces with focused tests; no scenario behavior or version
-  bump is added by these planning sprints.
+- Implemented helper behavior remains limited to explicit read-only planning,
+  diagnostic summaries, and caller-driven selected-history apply, with
+  focused tests and simulator-only scenarios; no version bump is added by
+  these planning sprints.
 - Existing mailbox delivery, encrypted delivery, TrafficHub routing, alias,
   identity, stream-offer polling/admission, lifecycle planning/apply, retained
   histories, scenario, detailed snapshot, compact snapshot, and canonical
@@ -221,9 +229,9 @@ Sprint 7 candidate: Release-readiness documentation.
 ## Release Status
 
 v1.6 is unreleased planning only. Release prep has not started. No v1.6
-implementation scope is locked in by this document, and no package
-publication, release assets, merge, tag, GitHub release, or version bump is
-authorized by this roadmap seed.
+release scope is locked in by this document, and no package publication,
+release assets, merge, tag, GitHub release, or version bump is authorized by
+this roadmap.
 
 The latest released version remains v1.5.0 as `darwin-sim 1.5.0`.
 

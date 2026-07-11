@@ -11,28 +11,30 @@ This draft remains planning-only. It must not be treated as release prep, a
 version bump, a changelog release entry, a package publication plan, or a
 GitHub release plan.
 
-This release line, if implemented later, should remain symbolic simulator
-metadata flow only. It must not become real networking, a network service,
-production DDoS protection, a firewall, a privacy or anonymity system, DNS, an
-external service, real cryptography, production E2EE, a delivery enforcement
-layer, a TrafficHub routing change, or a background cleanup system.
+Implemented planning work remains symbolic simulator metadata flow only. It
+must not become real networking, a network service, production DDoS
+protection, a firewall, a privacy or anonymity system, DNS, an external
+service, real cryptography, production E2EE, a delivery enforcement layer, a
+TrafficHub routing change, or a background cleanup system.
 
 ## Draft Release Theme
 
 Retained audit compaction and replay summaries.
 
-Potential v1.6 work may explore:
+Implemented v1.6 planning work now includes:
 
-- Read-only audit compaction policy models for retained simulator histories.
-- Deterministic compaction-plan helpers that summarize candidates without
-  deleting or rewriting retained histories by default.
-- Grouped replay-summary helpers for retained lifecycle, poll/admission,
-  encrypted delivery, alias, or authority audit histories.
-- Explicit opt-in compaction/apply helper only after read-only planning
-  helpers stabilize.
-- Scenario DSL coverage after helper and model slices land.
-- Detailed snapshot visibility only after retained data/action results exist.
-- Release-readiness documentation after scenario coverage.
+- Read-only audit compaction policy and decision models for retained simulator
+  histories.
+- Deterministic classification helpers that summarize candidates without
+  deleting or rewriting retained histories.
+- Grouped replay-summary helpers for lifecycle explanation and status-
+  transition histories only.
+- Explicit opt-in compaction/apply for a decision's single supported retained
+  history.
+- Focused scenario DSL coverage for the stable helper and model slices.
+
+Broader retained-history families, detailed snapshot visibility, and release-
+readiness work remain later candidates.
 
 ## Compatibility Target
 
@@ -47,8 +49,8 @@ expectations unless a later sprint explicitly and narrowly says otherwise:
   snapshot, and scenario behavior remains unchanged outside explicitly scoped
   v1.6 planning/helper surfaces.
 - Compact `world.snapshot()` output remains unchanged.
-- The checked-in scenario set remains contiguous from `001` through `066`
-  until future scenario coverage is intentionally added.
+- The checked-in scenario set is contiguous from `001` through `069` after
+  the intentional Sprint 4 scenario additions.
 - The package and CLI version continue to report `darwin-sim 1.5.0` during
   planning.
 
@@ -115,19 +117,52 @@ scenario DSL coverage, detailed snapshot changes, compact
 `world.snapshot()` changes, canonical identity rewrites, release behavior, or
 a version bump.
 
+Sprint 4 on the v1.6 planning branch adds scenario DSL coverage for the
+existing retained audit helper semantics:
+
+- `classify_retained_audit_records_for_compaction`
+- `summarize_retained_audit_replay`
+- `apply_retained_audit_compaction_decision`
+- `retained_audit_compaction_decision_contains`
+- `retained_audit_replay_summary_contains`
+- `retained_audit_compaction_apply_result_contains`
+
+Classification and replay-summary actions are read-only. The apply action
+requires an explicit prior compaction decision action result, delegates to the
+existing apply helper, and mutates only the decision's selected supported
+retained history. Scenario record inputs are enumerated deterministically so
+single-history decision keys remain compatible with explicit apply.
+
+Sprint 4 adds scenarios `067` through `069` for classification categories,
+retain-filter precedence, replay grouping by retained history type and reason,
+replay filtering by decision category, explicit selected-history apply,
+unsupported and missing record-key reporting, and the absence of automatic
+compaction.
+
+Sprint 4 does not add detailed or compact snapshot changes, automatic cleanup,
+workers, retry loops, durable queues, live timers, live clocks, networking,
+DNS, external services, real cryptography, delivery changes, TrafficHub
+routing changes, canonical identity rewrites, release behavior, or a version
+bump.
+
 ## Scenario Coverage
 
-No v1.6 scenarios are added by this planning placeholder.
+Checked-in v1.6 planning scenarios:
 
-The current released scenario set remains contiguous from `001` through
-`066`, and v1.5.0 reports package and CLI version `darwin-sim 1.5.0`.
+- `067_retained_audit_compaction_classification`
+- `068_retained_audit_replay_summary`
+- `069_retained_audit_compaction_apply`
+
+The checked-in scenario library is contiguous from `001` through `069`. The
+latest released version remains v1.5.0, and the package and CLI continue to
+report `darwin-sim 1.5.0`.
 
 ## Current Limitations
 
 - v1.6 is unreleased planning only.
-- v1.6 helper work remains limited to retained audit compaction
-  classification, replay summary helpers, and the explicit Sprint 3
-  simulator-local compaction apply helper.
+- v1.6 work remains limited to retained audit compaction classification,
+  replay summary helpers, the explicit simulator-local compaction apply
+  helper, and focused Sprint 4 scenario DSL coverage.
 - No package publication or release asset upload is planned by this document.
 - The package and CLI version remain `darwin-sim 1.5.0`.
 

@@ -40,6 +40,7 @@ from darwin.models.lane_signature import (
 )
 from darwin.models.mailbox import MailboxCapability, MailboxIdentity, format_mailbox_address
 from darwin.models.message import MessageEnvelope
+from darwin.models.retained_audit import RetainedAuditCompactionDecision
 from darwin.models.route import LinkMetrics
 from darwin.models.stream_offer import (
     RendezvousPollResult,
@@ -122,6 +123,21 @@ from darwin.registry.relocation import (
 )
 from darwin.registry.relocation import (
     mark_in_transit as mark_in_transit_op,
+)
+from darwin.registry.retained_audit import (
+    SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES,
+    make_retained_audit_compaction_policy,
+    summarize_retained_audit_replay_by_history_type,
+    summarize_retained_audit_replay_by_reason,
+)
+from darwin.registry.retained_audit import (
+    apply_retained_audit_compaction_decision as apply_audit_compaction_op,
+)
+from darwin.registry.retained_audit import (
+    classify_retained_audit_records_for_compaction as classify_audit_compaction_op,
+)
+from darwin.registry.retained_audit import (
+    summarize_retained_audit_replay as summarize_retained_audit_replay_op,
 )
 from darwin.registry.security import (
     detect_duplicate_device_claim as detect_duplicate_device_claim_op,
@@ -401,6 +417,13 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         ),
         "apply_stream_offer_lifecycle_explanation_pruning_plan": (
             _step_apply_stream_offer_lifecycle_explanation_pruning_plan
+        ),
+        "classify_retained_audit_records_for_compaction": (
+            _step_classify_retained_audit_records_for_compaction
+        ),
+        "summarize_retained_audit_replay": _step_summarize_retained_audit_replay,
+        "apply_retained_audit_compaction_decision": (
+            _step_apply_retained_audit_compaction_decision
         ),
         "evaluate_lane_admission_policy": _step_evaluate_lane_admission_policy,
         "advance_time": _step_advance_time,
@@ -2260,6 +2283,194 @@ def _step_apply_stream_offer_lifecycle_explanation_pruning_plan(
     )
 
 
+def _step_classify_retained_audit_records_for_compaction(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    policy_history_types = _optional_str_list(fields.get("history_types")) or []
+    record_history_types = _retained_audit_record_history_types(
+        fields.get("record_history_types"),
+        policy_history_types=policy_history_types,
+    )
+    policy = make_retained_audit_compaction_policy(
+        policy_id=str(fields["policy_id"]),
+        hub_id=hub.hub_id,
+        history_types=policy_history_types,
+        retain_reasons=_optional_str_list(fields.get("retain_reasons")),
+        compact_reasons=_optional_str_list(fields.get("compact_reasons")),
+        retain_statuses=_optional_str_list(fields.get("retain_statuses")),
+        compact_statuses=_optional_str_list(fields.get("compact_statuses")),
+        retain_sources=_optional_str_list(fields.get("retain_sources")),
+        compact_sources=_optional_str_list(fields.get("compact_sources")),
+        max_records=_optional_int(fields.get("max_records")),
+        metadata=_optional_dict(fields.get("policy_metadata")),
+    )
+    preferred_history_type = _single_supported_history_type(policy_history_types)
+    ordered_record_history_types = _ordered_retained_audit_history_types(
+        record_history_types,
+        preferred_history_type=preferred_history_type,
+    )
+    records = _retained_audit_records(
+        hub,
+        ordered_record_history_types,
+    )
+    decision_metadata = _optional_dict(fields.get("metadata"))
+    decision_metadata["scenario_record_history_types"] = list(
+        ordered_record_history_types
+    )
+    decision_metadata["scenario_record_keys"] = list(
+        summarize_retained_audit_replay_op(
+            records,
+            hub_id=hub.hub_id,
+        ).record_keys
+    )
+    result = classify_audit_compaction_op(
+        records,
+        policy,
+        metadata=decision_metadata,
+    )
+    world.action_results.append(result)
+    world.log(
+        (
+            "classified retained audit records for compaction "
+            f"at {hub.hub_id}: "
+            f"{len(result.compaction_candidate_record_keys)} candidates"
+        ),
+        event_type="retained_audit_compaction_classified",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="classified",
+        data=result.to_summary(),
+    )
+
+
+def _step_summarize_retained_audit_replay(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    decision = _referenced_retained_audit_compaction_decision(
+        world,
+        fields,
+        hub.hub_id,
+        required=False,
+    )
+    decision_category = _optional_str(fields.get("decision_category")) or "all"
+    preferred_history_type = (
+        decision.history_type
+        if decision is not None
+        and decision.history_type in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES
+        else None
+    )
+    requested_record_history_types = _retained_audit_record_history_types(
+        fields.get("record_history_types"),
+    )
+    record_history_types = _ordered_retained_audit_history_types(
+        requested_record_history_types,
+        preferred_history_type=preferred_history_type,
+    )
+    decision_record_history_types = _decision_record_history_types(decision)
+    if decision_category != "all" and decision_record_history_types is not None:
+        if fields.get("record_history_types") is None:
+            record_history_types = decision_record_history_types
+        elif record_history_types != decision_record_history_types:
+            raise ValueError(
+                "decision-filtered retained audit replay must use the same "
+                "record_history_types ordering as its compaction decision"
+            )
+    records = _retained_audit_records(
+        hub,
+        record_history_types,
+    )
+    decision_record_keys = _decision_record_keys(decision)
+    if decision_category != "all" and decision_record_keys is not None:
+        current_record_keys = list(
+            summarize_retained_audit_replay_op(
+                records,
+                hub_id=hub.hub_id,
+            ).record_keys
+        )
+        if current_record_keys != decision_record_keys:
+            raise ValueError(
+                "decision-filtered retained audit replay requires an unchanged "
+                "record universe since classification"
+            )
+    history_type = _optional_str(fields.get("history_type"))
+    by_history_type = summarize_retained_audit_replay_by_history_type(
+        records,
+        hub_id=hub.hub_id,
+        decision=decision,
+        decision_category=decision_category,
+    )
+    by_reason = summarize_retained_audit_replay_by_reason(
+        records,
+        hub_id=hub.hub_id,
+        history_type=history_type,
+        decision=decision,
+        decision_category=decision_category,
+    )
+    metadata = _optional_dict(fields.get("metadata"))
+    metadata.update(
+        {
+            "by_history_type": by_history_type,
+            "by_reason": by_reason,
+        }
+    )
+    result = summarize_retained_audit_replay_op(
+        records,
+        hub_id=hub.hub_id,
+        history_type=history_type,
+        decision=decision,
+        decision_category=decision_category,
+        metadata=metadata,
+    )
+    world.action_results.append(result)
+    world.log(
+        (
+            "summarized retained audit replay "
+            f"at {hub.hub_id}: {result.record_count} records"
+        ),
+        event_type="retained_audit_replay_summarized",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="summarized",
+        data=result.to_summary(),
+    )
+
+
+def _step_apply_retained_audit_compaction_decision(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    decision = _referenced_retained_audit_compaction_decision(
+        world,
+        fields,
+        hub.hub_id,
+        required=True,
+    )
+    if decision is None:
+        raise AssertionError("required compaction decision reference was not resolved")
+    result = apply_audit_compaction_op(
+        hub,
+        decision,
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    world.action_results.append(result)
+    world.log(
+        (
+            "applied retained audit compaction decision "
+            f"at {hub.hub_id}: {result.compacted_count} compacted"
+        ),
+        event_type="retained_audit_compaction_applied",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="applied",
+        data=result.to_summary(),
+    )
+
+
 def _step_evaluate_lane_admission_policy(
     world: World,
     fields: dict[str, Any],
@@ -2628,6 +2839,142 @@ def _stream_offer_lifecycle_explanation_pruning_plan(
         "apply_stream_offer_lifecycle_explanation_pruning_plan requires a prior "
         "pruning plan result for the same hub and policy_id, or explicit "
         "candidate_explanation_keys"
+    )
+
+
+def _retained_audit_record_history_types(
+    value: Any,
+    *,
+    policy_history_types: list[str] | None = None,
+) -> list[str]:
+    requested = _optional_str_list(value)
+    if requested is None:
+        requested = [
+            history_type
+            for history_type in policy_history_types or []
+            if history_type in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES
+        ]
+    if not requested:
+        requested = list(SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES)
+    unsupported = [
+        history_type
+        for history_type in requested
+        if history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES
+    ]
+    if unsupported:
+        raise ValueError(
+            "record_history_types must use supported retained audit histories: "
+            + ", ".join(unsupported)
+        )
+    requested_set = set(requested)
+    return [
+        history_type
+        for history_type in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES
+        if history_type in requested_set
+    ]
+
+
+def _retained_audit_records(
+    hub: Any,
+    history_types: list[str],
+    *,
+    preferred_history_type: str | None = None,
+) -> list[object]:
+    ordered_history_types = _ordered_retained_audit_history_types(
+        history_types,
+        preferred_history_type=preferred_history_type,
+    )
+
+    records: list[object] = []
+    for history_type in ordered_history_types:
+        if history_type == "stream_offer_lifecycle_explanation":
+            records.extend(hub.stream_offer_lifecycle_explanation_history)
+        elif history_type == "stream_offer_status_transition":
+            records.extend(hub.stream_offer_status_transition_history)
+    return records
+
+
+def _ordered_retained_audit_history_types(
+    history_types: list[str],
+    *,
+    preferred_history_type: str | None,
+) -> list[str]:
+    ordered_history_types = list(history_types)
+    if preferred_history_type in ordered_history_types:
+        ordered_history_types.remove(preferred_history_type)
+        ordered_history_types.insert(0, preferred_history_type)
+    return ordered_history_types
+
+
+def _single_supported_history_type(history_types: list[str]) -> str | None:
+    if (
+        len(history_types) == 1
+        and history_types[0] in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES
+    ):
+        return history_types[0]
+    return None
+
+
+def _decision_record_history_types(
+    decision: RetainedAuditCompactionDecision | None,
+) -> list[str] | None:
+    if decision is None or not isinstance(decision.metadata, dict):
+        return None
+    value = decision.metadata.get("scenario_record_history_types")
+    if not isinstance(value, list):
+        return None
+    if any(
+        not isinstance(history_type, str)
+        or history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES
+        for history_type in value
+    ):
+        return None
+    return list(value)
+
+
+def _decision_record_keys(
+    decision: RetainedAuditCompactionDecision | None,
+) -> list[str] | None:
+    if decision is None or not isinstance(decision.metadata, dict):
+        return None
+    value = decision.metadata.get("scenario_record_keys")
+    if not isinstance(value, list) or any(
+        not isinstance(record_key, str) for record_key in value
+    ):
+        return None
+    return list(value)
+
+
+def _referenced_retained_audit_compaction_decision(
+    world: World,
+    fields: dict[str, Any],
+    hub_id: str,
+    *,
+    required: bool,
+) -> RetainedAuditCompactionDecision | None:
+    policy_id = fields.get("decision_policy_id")
+    if policy_id is None:
+        if required:
+            raise KeyError(
+                "apply_retained_audit_compaction_decision requires an explicit "
+                "decision_policy_id referencing a prior compaction decision"
+            )
+        return None
+
+    policy_id = str(policy_id)
+    history_type = _optional_str(fields.get("decision_history_type"))
+    for result in reversed(world.action_results):
+        if not isinstance(result, RetainedAuditCompactionDecision):
+            continue
+        if result.hub_id != hub_id or result.policy_id != policy_id:
+            continue
+        if history_type is not None and result.history_type != history_type:
+            continue
+        return result
+
+    raise KeyError(
+        "retained audit action requires a prior compaction decision result for "
+        f"hub {hub_id} and policy {policy_id}"
     )
 
 

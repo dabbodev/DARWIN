@@ -1,0 +1,122 @@
+scenario_id: 068_retained_audit_replay_summary
+name: Retained audit replay summary
+category: stream_offer
+description: retained lifecycle audit replay summaries group deterministic records and filter them by compaction decision category
+tags:
+  - stream_offer
+  - retained_audit
+  - replay_summary
+  - decision_filter
+  - v1.6
+demonstrates:
+  - replay summaries group retained records by history type and reason
+  - replay summaries preserve deterministic retained-record order and keys
+  - replay summaries can filter by retained and compaction-candidate decisions
+  - replay summary actions do not mutate either supported retained history
+expected_result: replay summaries report one explanation and one transition, then isolate each record through explicit compaction-decision category filters
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_replay
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 2
+  - action: plan_stream_offer_expiration
+    registry_hub: registry_chat_001
+    checked_at: 5
+  - action: apply_stream_offer_lifecycle_plan
+    registry_hub: registry_chat_001
+    checked_at: 5
+    actor_id: ops_replay
+    request_id: replay_068
+    transition_metadata:
+      source: lifecycle_apply_result
+  - action: explain_stream_offer_lifecycle_apply_result
+    registry_hub: registry_chat_001
+    plan_checked_at: 5
+    record_explanations: true
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_policy_068
+    history_types:
+      - stream_offer_lifecycle_explanation
+      - stream_offer_status_transition
+    record_history_types:
+      - stream_offer_lifecycle_explanation
+      - stream_offer_status_transition
+    retain_reasons:
+      - applied_by_result
+    compact_reasons:
+      - expired
+  - action: summarize_retained_audit_replay
+    registry_hub: registry_chat_001
+    record_history_types:
+      - stream_offer_lifecycle_explanation
+      - stream_offer_status_transition
+    decision_policy_id: retained_audit_policy_068
+  - action: summarize_retained_audit_replay
+    registry_hub: registry_chat_001
+    record_history_types:
+      - stream_offer_lifecycle_explanation
+      - stream_offer_status_transition
+    decision_policy_id: retained_audit_policy_068
+    decision_category: retained
+  - action: summarize_retained_audit_replay
+    registry_hub: registry_chat_001
+    record_history_types:
+      - stream_offer_lifecycle_explanation
+      - stream_offer_status_transition
+    decision_policy_id: retained_audit_policy_068
+    decision_category: compaction_candidate
+assertions:
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_chat_001
+    history_type: mixed
+    record_count: 2
+    decision_category: all
+    grouped_history_type: stream_offer_lifecycle_explanation
+    grouped_history_type_count: 1
+    reason: applied_by_result
+    reason_count: 1
+    expected_count: 1
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_chat_001
+    history_type: mixed
+    record_count: 2
+    decision_category: all
+    grouped_history_type: stream_offer_status_transition
+    grouped_history_type_count: 1
+    reason: expired
+    reason_count: 1
+    expected_count: 1
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_chat_001
+    history_type: stream_offer_lifecycle_explanation
+    record_count: 1
+    decision_category: retained
+    record_key: lifecycle_explanation:0:registry_chat_001:offer_audit_replay:applied:applied_by_result:applied:lifecycle_apply_result:5
+    expected_count: 1
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_chat_001
+    history_type: stream_offer_status_transition
+    record_count: 1
+    decision_category: compaction_candidate
+    record_key: status_transition:1:registry_chat_001:offer_audit_replay:held:expired:expired:ops_replay:replay_068:none
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_replay
+    reason: applied_by_result
+    expected_count: 1
+  - type: stream_offer_status_transition_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_replay
+    reason: expired
+    expected_count: 1

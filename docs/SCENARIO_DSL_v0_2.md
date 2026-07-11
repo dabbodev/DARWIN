@@ -1137,4 +1137,127 @@ Checked-in v1.5 lifecycle retention and pruning scenarios:
 - `scenarios/065_stream_offer_lifecycle_pruning_plan.yaml`
 - `scenarios/066_stream_offer_lifecycle_pruning_apply.yaml`
 
-The current checked-in scenario set is contiguous through `066`.
+The v1.5 checked-in scenario set was contiguous through `066`.
+
+## v1.6 Retained Audit Compaction and Replay Summary Scenarios
+
+The unreleased v1.6 planning branch adds scenario DSL coverage for the
+existing retained audit compaction and replay-summary helpers. Supported
+retained-history families remain intentionally narrow:
+
+- `stream_offer_lifecycle_explanation`
+- `stream_offer_status_transition`
+
+This DSL surface remains simulator-local and deterministic. Classification
+and replay-summary actions are read-only. Compaction occurs only through the
+explicit apply action and only from a referenced prior decision action result.
+None of these actions reads a live clock or starts automatic work.
+
+Supported v1.6 retained audit actions:
+
+- `classify_retained_audit_records_for_compaction`
+  - Required: `registry_hub`, `policy_id`
+  - Optional retained-history input: `record_history_types`; it accepts one or
+    both supported retained-history family names.
+  - Optional policy fields: `history_types`, `retain_reasons`,
+    `compact_reasons`, `retain_statuses`, `compact_statuses`,
+    `retain_sources`, `compact_sources`, `max_records`, `policy_metadata`
+  - Optional decision metadata: `metadata`
+  - The action reads copied references to the selected retained histories,
+    calls the existing classification helper, and appends a
+    `RetainedAuditCompactionDecision` to scenario action results. It does not
+    apply the decision or mutate retained history.
+  - If a policy selects one supported history while `record_history_types`
+    includes both, the selected history is enumerated first. This preserves
+    deterministic record-key indexes for a later explicit apply; records from
+    the other supported family are classified as ignored.
+  - The decision records that scenario-local history selection and ordering so
+    later decision-category replay filters can reconstruct the same record-key
+    universe.
+- `summarize_retained_audit_replay`
+  - Required: `registry_hub`
+  - Optional retained-history input and filter: `record_history_types`,
+    `history_type`
+  - Optional prior-decision reference: `decision_policy_id`,
+    `decision_history_type`
+  - Optional decision filter: `decision_category`, one of `all`, `retained`,
+    or `compaction_candidate`; non-`all` filters require
+    `decision_policy_id`.
+  - A non-`all` filter defaults to the referenced decision's recorded history
+    selection. If `record_history_types` is also supplied, it must reproduce
+    the same deterministic ordering; mismatched inputs fail instead of
+    silently shifting positional record keys.
+  - The referenced histories must also contain the same ordered record-key
+    universe seen during classification. If an explicit apply or another
+    mutation has changed that universe, category-filtered replay fails instead
+    of silently matching shifted positional keys. Use an unfiltered replay
+    summary to inspect the current retained histories after mutation.
+  - Optional summary metadata: `metadata`
+  - The action calls the existing replay summary, history-type grouping, and
+    reason-grouping helpers. It appends a `RetainedAuditReplaySummary` to
+    action results, with deterministic `by_history_type` and `by_reason`
+    action groupings copied into summary metadata. It does not mutate either
+    retained history.
+- `apply_retained_audit_compaction_decision`
+  - Required: `registry_hub`, `decision_policy_id`
+  - Optional decision disambiguation: `decision_history_type`
+  - Optional apply metadata: `metadata`
+  - The action reverse-scans prior typed action results for the matching hub,
+    policy, and optional history type. It fails if no explicit prior
+    `RetainedAuditCompactionDecision` exists and never classifies implicitly.
+  - The existing apply helper removes only currently matching
+    compaction-candidate records from the decision's single supported
+    `history_type`. Mixed or unsupported decision history types are
+    deterministic no-ops that report unsupported keys.
+
+Supported v1.6 retained audit assertions:
+
+- `retained_audit_compaction_decision_contains`
+  - Required: `registry_hub`
+  - Optional identity filters: `policy_id`, `history_type`
+  - Optional singular or plural key filters for `retained`,
+    `compaction_candidate`, and `ignored` record keys
+  - Optional internal counts: `retained_count`,
+    `compaction_candidate_count`, `ignored_count`
+  - Optional candidate grouping key/count pairs for history type, reason,
+    status, and source
+- `retained_audit_replay_summary_contains`
+  - Required: `registry_hub`
+  - Optional filters: `history_type`, `record_key`, `record_keys`,
+    `record_count`, `first_record_key`, `last_record_key`,
+    `decision_category`
+  - Optional status, reason, source, and offer ID grouping key/count pairs
+  - Optional `grouped_history_type` and `grouped_history_type_count` pair
+- `retained_audit_compaction_apply_result_contains`
+  - Required: `registry_hub`
+  - Optional identity filters: `policy_id`, `history_type`
+  - Optional singular or plural key filters and internal counts for
+    `compacted`, `retained`, `ignored`, `missing`, and `unsupported` records
+
+All three assertions support `expected_count` and `min_count`. Those fields
+count matching action-result objects; fields such as `record_count` and
+`compacted_count` inspect counts inside one matching result.
+
+The explicit apply action mutates only the selected supported retained
+history. It does not mutate held offers, stream offers, lifecycle plans,
+lifecycle apply results, polling or admission histories, encrypted delivery
+histories, alias or authority histories, delivery state, TrafficHub state or
+routing, compact snapshots, or canonical identity state. This sprint adds no
+detailed snapshot sections and does not change compact `world.snapshot()`.
+
+This scenario surface does not add automatic cleanup workers, retry loops,
+durable queues, live timers, live clocks, live polling, sockets,
+HTTP/WebSocket behavior, DNS lookup, registrar integration, public CA
+behavior, external services, real cryptography, production E2EE, key
+generation, private key storage, delivery enforcement, or production
+security, privacy, anonymity, firewall, DDoS, compliance, or data-retention
+guarantees.
+
+Checked-in v1.6 retained audit scenarios:
+
+- `scenarios/067_retained_audit_compaction_classification.yaml`
+- `scenarios/068_retained_audit_replay_summary.yaml`
+- `scenarios/069_retained_audit_compaction_apply.yaml`
+
+The current checked-in scenario set is contiguous through `069`. The package
+and CLI version remain `darwin-sim 1.5.0` while v1.6 is unreleased.

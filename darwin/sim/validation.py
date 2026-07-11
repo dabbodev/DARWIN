@@ -11,6 +11,10 @@ from darwin.models.route import (
     STABILITY_PENALTIES,
     TRUST_PENALTIES,
 )
+from darwin.registry.retained_audit import (
+    RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS,
+    SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES,
+)
 
 
 class ValidationIssue(str):
@@ -239,6 +243,15 @@ STEP_REQUIRED_FIELDS = {
         "registry_hub",
         "policy_id",
     ),
+    "classify_retained_audit_records_for_compaction": (
+        "registry_hub",
+        "policy_id",
+    ),
+    "summarize_retained_audit_replay": ("registry_hub",),
+    "apply_retained_audit_compaction_decision": (
+        "registry_hub",
+        "decision_policy_id",
+    ),
     "evaluate_lane_admission_policy": (
         "registry_hub",
         "policy_id",
@@ -317,6 +330,9 @@ ASSERTION_REQUIRED_FIELDS = {
     "stream_offer_lifecycle_retention_decision_contains": ("registry_hub",),
     "stream_offer_lifecycle_pruning_plan_contains": ("registry_hub",),
     "stream_offer_lifecycle_pruning_apply_result_contains": ("registry_hub",),
+    "retained_audit_compaction_decision_contains": ("registry_hub",),
+    "retained_audit_replay_summary_contains": ("registry_hub",),
+    "retained_audit_compaction_apply_result_contains": ("registry_hub",),
     "stream_offer_status_transition_contains": ("registry_hub",),
 }
 
@@ -787,6 +803,58 @@ def _validate_assertion_type_fields(
         ):
             _validate_optional_non_negative_int(assertion, field_name, location, errors)
         return
+    if assertion_type == "retained_audit_compaction_decision_contains":
+        for field_name in (
+            "retained_record_keys",
+            "compaction_candidate_record_keys",
+            "ignored_record_keys",
+        ):
+            _validate_optional_string_list_or_string(assertion, field_name, location, errors)
+        for field_name in (
+            "retained_count",
+            "compaction_candidate_count",
+            "ignored_count",
+            "candidate_history_type_count",
+            "candidate_reason_count",
+            "candidate_status_count",
+            "candidate_source_count",
+        ):
+            _validate_optional_non_negative_int(assertion, field_name, location, errors)
+        return
+    if assertion_type == "retained_audit_replay_summary_contains":
+        _validate_optional_string_list_or_string(assertion, "record_keys", location, errors)
+        for field_name in (
+            "record_count",
+            "status_count",
+            "reason_count",
+            "source_count",
+            "offer_count",
+            "grouped_history_type_count",
+        ):
+            _validate_optional_non_negative_int(assertion, field_name, location, errors)
+        _validate_enum(
+            location,
+            assertion,
+            "decision_category",
+            RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS,
+            errors,
+        )
+        return
+    if assertion_type == "retained_audit_compaction_apply_result_contains":
+        for category in ("compacted", "retained", "ignored", "missing", "unsupported"):
+            _validate_optional_string_list_or_string(
+                assertion,
+                f"{category}_record_keys",
+                location,
+                errors,
+            )
+            _validate_optional_non_negative_int(
+                assertion,
+                f"{category}_count",
+                location,
+                errors,
+            )
+        return
     if assertion_type == "mailbox_encryption_policy_registered":
         _validate_optional_bool(assertion, "allow_plaintext_fallback", location, errors)
         return
@@ -913,6 +981,49 @@ def _validate_step_type_fields(
             "ignored_explanation_keys",
         ):
             _validate_optional_string_list_or_string(step, field_name, location, errors)
+    if action == "classify_retained_audit_records_for_compaction":
+        _validate_optional_non_negative_int(step, "max_records", location, errors)
+        for field_name in (
+            "history_types",
+            "retain_reasons",
+            "compact_reasons",
+            "retain_statuses",
+            "compact_statuses",
+            "retain_sources",
+            "compact_sources",
+        ):
+            _validate_optional_string_list_or_string(step, field_name, location, errors)
+        _validate_optional_enum_list_or_string(
+            step,
+            "record_history_types",
+            SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES,
+            location,
+            errors,
+        )
+    if action == "summarize_retained_audit_replay":
+        _validate_optional_enum_list_or_string(
+            step,
+            "record_history_types",
+            SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES,
+            location,
+            errors,
+        )
+        _validate_enum(
+            location,
+            step,
+            "decision_category",
+            RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS,
+            errors,
+        )
+        if step.get("decision_category") not in {None, "all"} and (
+            "decision_policy_id" not in step
+        ):
+            errors.append(
+                _issue(
+                    f"{location}.decision_policy_id",
+                    "decision_policy_id is required for decision_category filtering",
+                )
+            )
     if action == "evaluate_lane_admission_policy":
         _validate_optional_bool(step, "require_discoverable", location, errors)
         _validate_optional_non_negative_int(step, "max_visibility_tier", location, errors)
@@ -1028,6 +1139,37 @@ def _validate_optional_string_list_or_string(
                 _issue(
                     f"{location}.{field_name}[{index}]",
                     f"{field_name} entries must be strings",
+                )
+                )
+
+
+def _validate_optional_enum_list_or_string(
+    item: dict[str, Any],
+    field_name: str,
+    supported_values: tuple[str, ...],
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    before_count = len(errors)
+    _validate_optional_string_list_or_string(item, field_name, location, errors)
+    if len(errors) != before_count:
+        return
+    value = item.get(field_name)
+    if value is None:
+        return
+    values = [value] if isinstance(value, str) else value
+    for index, entry in enumerate(values):
+        if entry not in supported_values:
+            entry_location = (
+                f"{location}.{field_name}"
+                if isinstance(value, str)
+                else f"{location}.{field_name}[{index}]"
+            )
+            errors.append(
+                _issue(
+                    entry_location,
+                    f"Unsupported {field_name}: {entry}",
+                    suggestion="Use one of: " + ", ".join(supported_values),
                 )
             )
 
