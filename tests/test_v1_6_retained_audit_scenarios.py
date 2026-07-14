@@ -277,7 +277,7 @@ def test_v1_6_apply_requires_a_prior_compaction_decision_result():
         run_scenario(scenario)
 
 
-def test_v1_6_retained_audit_actions_do_not_add_snapshot_sections():
+def test_v1_6_retained_audit_actions_add_detailed_snapshot_sections_only():
     result = run_scenario(
         SCENARIOS_DIR / "069_retained_audit_compaction_apply.yaml"
     )
@@ -290,7 +290,7 @@ def test_v1_6_retained_audit_actions_do_not_add_snapshot_sections():
     }
 
     assert new_sections.isdisjoint(compact)
-    assert new_sections.isdisjoint(detailed)
+    assert new_sections.issubset(detailed)
 
 
 def test_v1_6_checked_in_retained_audit_scenarios_validate_and_run():

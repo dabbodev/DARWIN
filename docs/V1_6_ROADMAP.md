@@ -2,9 +2,10 @@
 
 Status: planning draft with Sprint 1 read-only compaction policy helpers,
 Sprint 2 read-only replay summary helpers, Sprint 3 explicit compaction apply
-helpers, and Sprint 4 scenario DSL coverage implemented. v1.6 is unreleased,
-has not started release prep, and does not change the current released
-version. The latest released version remains `darwin-sim 1.5.0` on `main`
+helpers, Sprint 4 scenario DSL coverage, and Sprint 5 detailed snapshot/debug
+visibility implemented. v1.6 is unreleased, has not started release prep, and
+does not change the current released version. The latest released version
+remains `darwin-sim 1.5.0` on `main`
 with the annotated `v1.5.0` tag and GitHub release:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
 publication was performed for v1.5.0, and no release assets were uploaded.
@@ -184,7 +185,18 @@ Sprint 4 implemented on the v1.6 planning branch: Scenario DSL coverage.
 - Preserve compact and detailed snapshot shapes and keep the package/CLI
   version at `darwin-sim 1.5.0`.
 
-Sprint 5 candidate: Broader grouped replay-summary helpers or read-only
+Sprint 5 implemented on the v1.6 planning branch: Detailed snapshot/debug
+visibility for retained-audit action results.
+
+- Add top-level detailed snapshot fields for retained audit compaction
+  decisions, replay summaries, and compaction apply results.
+- Serialize existing action results through their deterministic copied summary
+  helpers without changing classification, replay, or apply semantics.
+- Keep compact `world.snapshot()` structure unchanged.
+- Add focused coverage for detailed visibility, action-result ordering, and
+  snapshot-copy isolation.
+
+Future candidate: Broader grouped replay-summary helpers or read-only
 compaction-plan refinements.
 
 - Extend retained lifecycle, poll/admission, encrypted delivery, alias, or

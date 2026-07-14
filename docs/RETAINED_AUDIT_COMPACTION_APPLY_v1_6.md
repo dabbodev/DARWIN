@@ -3,6 +3,11 @@
 Status: v1.6 Sprint 3 explicit simulator-local helper. v1.6 is unreleased,
 and the package version remains `darwin-sim 1.5.0`.
 
+Sprint 5 adds detailed debug-snapshot visibility for scenario action results.
+`World.detailed_snapshot()` exposes copied, deterministic apply-result
+summaries at top-level `retained_audit_compaction_apply_results`; compact
+`world.snapshot()` remains unchanged.
+
 Retained audit compaction apply is an explicit caller-driven mutation helper
 for selected retained audit-history metadata. It accepts an explicit
 `RegistryHub` and an explicit `RetainedAuditCompactionDecision`, then removes
@@ -76,7 +81,6 @@ Compaction apply does not mutate:
 - TrafficHub state or routing;
 - unrelated retained histories;
 - compact `world.snapshot()` output;
-- detailed snapshots;
 - canonical identity state.
 
 The helper does not run automatically, does not require scenario context, and
@@ -93,6 +97,5 @@ WebSocket behavior, DNS lookup, registrar integration, public CA behavior,
 external services, real cryptography, key generation, private key storage,
 production E2EE, delivery enforcement, delivery behavior changes, TrafficHub
 routing changes, scenario DSL actions, scenario DSL assertions, compact
-snapshot changes, detailed snapshot changes, canonical identity rewrites,
-package publication, release assets, merge, tag, GitHub release, or version
-bump beyond `1.5.0`.
+snapshot changes, canonical identity rewrites, package publication, release
+assets, merge, tag, GitHub release, or version bump beyond `1.5.0`.

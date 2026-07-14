@@ -3,6 +3,11 @@
 Status: v1.6 Sprint 2 read-only helper. v1.6 is unreleased, and the
 package version remains `darwin-sim 1.5.0`.
 
+Sprint 5 adds detailed debug-snapshot visibility for scenario action results.
+`World.detailed_snapshot()` exposes copied, deterministic replay summaries at
+top-level `retained_audit_replay_summaries`; compact `world.snapshot()`
+remains unchanged.
+
 Retained audit replay summaries are symbolic simulator-local diagnostic
 metadata only. They summarize explicit retained audit records that a caller
 provides, preserving deterministic record-key order and grouped counts for
@@ -94,8 +99,8 @@ Sprint 2 adds no delivery behavior, TrafficHub routing behavior, DNS,
 networking, external service behavior, registrar behavior, public CA behavior,
 real cryptography, key generation, private key storage, encryption,
 decryption, production E2EE, delivery enforcement, scenario DSL actions,
-scenario DSL assertions, detailed snapshot changes, compact snapshot changes,
-or canonical identity rewrites.
+scenario DSL assertions, compact snapshot changes, or canonical identity
+rewrites.
 
 ## Non-Goals
 
@@ -130,7 +135,6 @@ Sprint 2 does not add:
 - TrafficHub routing changes;
 - canonical identity rewrites;
 - scenario DSL actions or assertions;
-- detailed snapshot changes;
 - compact snapshot changes;
 - package publication;
 - release assets;

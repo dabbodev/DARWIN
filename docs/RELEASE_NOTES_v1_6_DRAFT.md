@@ -32,9 +32,11 @@ Implemented v1.6 planning work now includes:
 - Explicit opt-in compaction/apply for a decision's single supported retained
   history.
 - Focused scenario DSL coverage for the stable helper and model slices.
+- Detailed debug-snapshot visibility for retained-audit compaction decisions,
+  replay summaries, and compaction apply results.
 
-Broader retained-history families, detailed snapshot visibility, and release-
-readiness work remain later candidates.
+Broader retained-history families and release-readiness work remain later
+candidates.
 
 ## Compatibility Target
 
@@ -144,6 +146,21 @@ workers, retry loops, durable queues, live timers, live clocks, networking,
 DNS, external services, real cryptography, delivery changes, TrafficHub
 routing changes, canonical identity rewrites, release behavior, or a version
 bump.
+
+Sprint 5 on the v1.6 planning branch exposes existing retained-audit scenario
+action results in detailed debug snapshots:
+
+- `retained_audit_compaction_decisions`
+- `retained_audit_replay_summaries`
+- `retained_audit_compaction_apply_results`
+
+These top-level fields use the existing deterministic, JSON-safe action-result
+summaries and are isolated copies. Sprint 5 does not change compact
+`world.snapshot()`, compaction classification precedence, replay-summary
+semantics, compaction-apply semantics, scenarios, the package version, or any
+delivery, TrafficHub routing, cleanup-worker, retry-loop, durable-queue,
+timer, networking, DNS, external-service, cryptography, or canonical-identity
+behavior.
 
 ## Scenario Coverage
 

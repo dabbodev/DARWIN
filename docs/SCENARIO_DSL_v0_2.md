@@ -1242,8 +1242,12 @@ The explicit apply action mutates only the selected supported retained
 history. It does not mutate held offers, stream offers, lifecycle plans,
 lifecycle apply results, polling or admission histories, encrypted delivery
 histories, alias or authority histories, delivery state, TrafficHub state or
-routing, compact snapshots, or canonical identity state. This sprint adds no
-detailed snapshot sections and does not change compact `world.snapshot()`.
+routing, compact snapshots, or canonical identity state. Sprint 5 exposes
+copied deterministic action-result summaries in detailed snapshots at
+top-level `retained_audit_compaction_decisions`,
+`retained_audit_replay_summaries`, and
+`retained_audit_compaction_apply_results`; compact `world.snapshot()` remains
+unchanged.
 
 This scenario surface does not add automatic cleanup workers, retry loops,
 durable queues, live timers, live clocks, live polling, sockets,

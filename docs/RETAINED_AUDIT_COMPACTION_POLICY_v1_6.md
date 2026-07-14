@@ -3,6 +3,11 @@
 Status: v1.6 Sprint 1 planning helper. v1.6 is unreleased, and the package
 version remains `darwin-sim 1.5.0`.
 
+Sprint 5 adds detailed debug-snapshot visibility for scenario action results.
+`World.detailed_snapshot()` exposes copied, deterministic decision summaries
+at top-level `retained_audit_compaction_decisions`; compact
+`world.snapshot()` remains unchanged.
+
 Retained audit compaction policies and decisions are symbolic simulator-local
 diagnostic metadata only. They describe how explicit retained audit records
 would be classified for review under a caller-provided policy.
@@ -79,5 +84,5 @@ infrastructure.
 Sprint 1 adds no delivery behavior, TrafficHub routing behavior, DNS,
 networking, external service behavior, real cryptography, key generation,
 private key storage, production E2EE, delivery enforcement, compact
-`world.snapshot()` changes, scenario DSL actions, scenario DSL assertions,
-detailed snapshot changes, or canonical identity rewrites.
+`world.snapshot()` changes, scenario DSL actions, scenario DSL assertions, or
+canonical identity rewrites.
