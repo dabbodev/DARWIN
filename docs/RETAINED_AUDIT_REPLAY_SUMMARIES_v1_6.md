@@ -3,6 +3,11 @@
 Status: v1.6 Sprint 2 read-only helper. v1.6 is unreleased, and the
 package version remains `darwin-sim 1.5.0`.
 
+Sprint 6 release-candidate hardening and documentation audit confirms this
+document is included in deterministic documentation readiness/link checks. It
+does not change replay-summary semantics or add behavior beyond explicit
+simulator helpers.
+
 Sprint 5 adds detailed debug-snapshot visibility for scenario action results.
 `World.detailed_snapshot()` exposes copied, deterministic replay summaries at
 top-level `retained_audit_replay_summaries`; compact `world.snapshot()`

@@ -714,23 +714,39 @@ python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
 ```
 
-# DARWIN v1.6 Retained Audit Compaction Planning Checklist
+# DARWIN v1.6 Release-Candidate Hardening and Documentation Audit Checklist
 
-v1.6 is unreleased planning only. The latest released version remains
-`darwin-sim 1.5.0` on `main` with the annotated `v1.5.0` tag and GitHub
-release. No package publication was performed for v1.5.0, and no release
-assets were uploaded.
+v1.6 is unreleased. Sprint 6 is v1.6 release-candidate hardening and
+documentation audit only, not final release preparation or release execution.
+The latest released version remains `darwin-sim 1.5.0` on `main` with the
+annotated `v1.5.0` tag and GitHub release. No package publication was
+performed for v1.5.0, and no release assets were uploaded.
 
 - [x] v1.6 planning roadmap seed is checked in at `docs/V1_6_ROADMAP.md`.
 - [x] v1.6 draft release-notes placeholder is checked in at
   `docs/RELEASE_NOTES_v1_6_DRAFT.md`.
-- [x] README links to the v1.6 planning docs while preserving v1.5.0 as the
-  latest released version.
+- [x] README links to the v1.6 release-candidate docs while preserving v1.5.0
+  as the latest released version.
 - [x] Planning scope is limited to retained audit compaction and replay-summary
   candidates.
 - [x] Candidate scope is simulator-local, symbolic, and planning-only.
-- [x] Release readiness, changelog release entries, version bumps, merge, tag,
-  GitHub release, release assets, and package publication remain out of scope.
+- [x] Sprint 6 is v1.6 release-candidate hardening and documentation audit
+  only; it does not add new feature behavior.
+- [x] Documentation readiness/link checks include `docs/V1_6_ROADMAP.md`,
+  `docs/RELEASE_NOTES_v1_6_DRAFT.md`,
+  `docs/RETAINED_AUDIT_COMPACTION_POLICY_v1_6.md`,
+  `docs/RETAINED_AUDIT_REPLAY_SUMMARIES_v1_6.md`, and
+  `docs/RETAINED_AUDIT_COMPACTION_APPLY_v1_6.md`.
+- [x] v1.6 draft release notes summarize Sprints 1 through 5; Sprint 6
+  records only release-candidate hardening and documentation audit work.
+- [x] Checked-in scenario metadata is contiguous from `001` through `069`.
+- [x] `docs/SCENARIO_INDEX.md` is current and exactly generated from
+  deterministic scenario metadata.
+- [x] `CHANGELOG.md` has no v1.6 release entry, and the package and CLI
+  version remain `darwin-sim 1.5.0`.
+- [x] Final release validation, changelog release entries, version bumps,
+  merge, tag, GitHub release, release assets, and package publication remain
+  out of scope.
 - [x] No v1.6 feature behavior, scenario behavior, or tests for new feature
   behavior are added by the planning seed.
 - [x] Planning docs avoid production networking, sockets, HTTP/WebSocket
@@ -741,7 +757,7 @@ assets were uploaded.
   TrafficHub routing changes, compact snapshot changes, canonical identity
   rewrites, and production anonymity/privacy/firewall/DDoS guarantees.
 
-## v1.6 Planning Validation Commands
+## v1.6 Release-Candidate Validation Commands
 
 ```bash
 python -m ruff check .

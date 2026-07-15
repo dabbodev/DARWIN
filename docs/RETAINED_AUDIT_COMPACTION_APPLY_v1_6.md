@@ -3,6 +3,11 @@
 Status: v1.6 Sprint 3 explicit simulator-local helper. v1.6 is unreleased,
 and the package version remains `darwin-sim 1.5.0`.
 
+Sprint 6 release-candidate hardening and documentation audit confirms this
+document is included in deterministic documentation readiness/link checks. It
+does not change compaction-apply semantics or add behavior beyond the explicit
+caller-driven simulator helper.
+
 Sprint 5 adds detailed debug-snapshot visibility for scenario action results.
 `World.detailed_snapshot()` exposes copied, deterministic apply-result
 summaries at top-level `retained_audit_compaction_apply_results`; compact

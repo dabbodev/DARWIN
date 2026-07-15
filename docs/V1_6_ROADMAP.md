@@ -1,20 +1,23 @@
 # DARWIN v1.6 Roadmap: Retained Audit Compaction and Replay Summaries
 
-Status: planning draft with Sprint 1 read-only compaction policy helpers,
-Sprint 2 read-only replay summary helpers, Sprint 3 explicit compaction apply
-helpers, Sprint 4 scenario DSL coverage, and Sprint 5 detailed snapshot/debug
-visibility implemented. v1.6 is unreleased, has not started release prep, and
-does not change the current released version. The latest released version
-remains `darwin-sim 1.5.0` on `main`
+Status: unreleased release-candidate hardening and documentation audit only.
+Sprint 1 read-only compaction policy helpers, Sprint 2 read-only replay
+summary helpers, Sprint 3 explicit compaction apply helpers, Sprint 4 scenario
+DSL coverage, and Sprint 5 detailed snapshot/debug visibility are implemented.
+Sprint 6 hardens release-readiness documentation and deterministic scenario
+coverage checks without adding feature behavior. v1.6 does not change the
+current released version. The latest released version remains
+`darwin-sim 1.5.0` on `main`
 with the annotated `v1.5.0` tag and GitHub release:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
 publication was performed for v1.5.0, and no release assets were uploaded.
 
 Recommended candidate theme: Retained audit compaction and replay summaries.
 
-This roadmap records implemented simulator-only planning slices and candidate
-later work. It does not authorize version bumps, package publication, release
-assets, merge, tag, or release work.
+This roadmap records implemented simulator-only planning slices, the Sprint 6
+release-candidate documentation audit, and candidate later work. It does not
+authorize a version bump, package publication, release assets, merge, tag, or
+release execution.
 
 v1.6 should remain simulator-first and symbolic. It should not become
 production networking, a real DDoS protection system, a firewall product, a
@@ -78,6 +81,7 @@ Out of scope:
 - Real cryptography, key generation, private key storage, production E2EE, or
   secure messaging.
 - Compact `world.snapshot()` changes.
+- Compaction behavior beyond explicit simulator helpers.
 - Version bumps beyond `1.5.0` during planning.
 - Package publication, release assets, merge, tag, or release work.
 
@@ -196,6 +200,25 @@ visibility for retained-audit action results.
 - Add focused coverage for detailed visibility, action-result ordering, and
   snapshot-copy isolation.
 
+Sprint 6: Release-Candidate Hardening and Documentation Audit (implemented on
+the v1.6 planning branch).
+
+- Include the roadmap, draft release notes, compaction-policy, replay-summary,
+  and compaction-apply docs in documentation link/readiness checks.
+- Confirm checked-in scenario coverage is contiguous from `001` through `069`
+  and that `docs/SCENARIO_INDEX.md` is exactly generated from deterministic
+  scenario metadata.
+- Update release-candidate documentation to summarize Sprints 1 through 5 and
+  preserve the simulator-local, symbolic boundaries of the implemented work.
+- Keep the package and CLI version at `darwin-sim 1.5.0`; do not add a
+  `CHANGELOG.md` v1.6 release entry, merge, tag, GitHub release, release
+  assets, or package publication.
+- Do not change compaction classification precedence, replay-summary
+  semantics, compaction-apply semantics, compact `world.snapshot()`, existing
+  delivery behavior, TrafficHub routing, or canonical identity behavior.
+- Do not add scenarios unless required to repair deterministic scenario
+  index/readiness consistency.
+
 Future candidate: Broader grouped replay-summary helpers or read-only
 compaction-plan refinements.
 
@@ -205,19 +228,6 @@ compaction-plan refinements.
 - Consider deterministic compaction-plan refinements only while keeping them
   separate from additional apply/delete behavior.
 - Keep summaries diagnostic only.
-
-Sprint 6 candidate: Detailed snapshot visibility.
-
-- Add detailed snapshot/debug visibility only after retained compaction or
-  replay-summary action results exist.
-- Do not change compact `world.snapshot()`.
-
-Sprint 7 candidate: Release-readiness documentation.
-
-- Update release-readiness docs after scenario coverage exists.
-- Confirm scenario metadata continuity and final validation expectations.
-- Preserve v1.5.0 as the latest released version until explicit release prep
-  changes that status.
 
 ## Planning Acceptance Targets
 
@@ -235,12 +245,14 @@ Sprint 7 candidate: Release-readiness documentation.
 - No package publication, release assets, merge, tag, release, real
   networking, DNS lookup, external services, real cryptography, production
   E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
-  queues, live timers, delivery changes, TrafficHub routing changes, compact
-  snapshot changes, or canonical identity rewrites are introduced.
+  queues, live timers, compaction behavior beyond explicit simulator helpers,
+  delivery changes, TrafficHub routing changes, compact snapshot changes, or
+  canonical identity rewrites are introduced.
 
 ## Release Status
 
-v1.6 is unreleased planning only. Release prep has not started. No v1.6
+v1.6 is unreleased. Sprint 6 is release-candidate hardening and documentation
+audit only; it is not final release preparation or release execution. No v1.6
 release scope is locked in by this document, and no package publication,
 release assets, merge, tag, GitHub release, or version bump is authorized by
 this roadmap.

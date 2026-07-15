@@ -3,6 +3,11 @@
 Status: v1.6 Sprint 1 planning helper. v1.6 is unreleased, and the package
 version remains `darwin-sim 1.5.0`.
 
+Sprint 6 release-candidate hardening and documentation audit confirms this
+document is included in deterministic documentation readiness/link checks. It
+does not change the helper's classification precedence or add compaction
+behavior beyond explicit simulator helpers.
+
 Sprint 5 adds detailed debug-snapshot visibility for scenario action results.
 `World.detailed_snapshot()` exposes copied, deterministic decision summaries
 at top-level `retained_audit_compaction_decisions`; compact

@@ -24,6 +24,13 @@ V1_5_RELEASE_CANDIDATE_DOCS = [
     PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_EXPLANATION_RETENTION_v1_5.md",
     PROJECT_ROOT / "docs" / "STREAM_OFFER_LIFECYCLE_EXPLANATION_PRUNING_v1_5.md",
 ]
+V1_6_RELEASE_CANDIDATE_DOCS = [
+    PROJECT_ROOT / "docs" / "V1_6_ROADMAP.md",
+    PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_6_DRAFT.md",
+    PROJECT_ROOT / "docs" / "RETAINED_AUDIT_COMPACTION_POLICY_v1_6.md",
+    PROJECT_ROOT / "docs" / "RETAINED_AUDIT_REPLAY_SUMMARIES_v1_6.md",
+    PROJECT_ROOT / "docs" / "RETAINED_AUDIT_COMPACTION_APPLY_v1_6.md",
+]
 V1_3_RELEASE_CANDIDATE_CAVEATS = [
     "simulator-local",
     "symbolic",
@@ -95,6 +102,33 @@ V1_5_RELEASE_CANDIDATE_CAVEATS = [
     "compact snapshot changes",
     "canonical identity rewrites",
 ]
+V1_6_RELEASE_CANDIDATE_CAVEATS = [
+    "simulator-local",
+    "symbolic",
+    "real networking",
+    "sockets",
+    "DNS lookup",
+    "external services",
+    "real cryptography",
+    "production E2EE",
+    "production anonymity",
+    "production privacy",
+    "production firewall",
+    "production DDoS",
+    "compliance",
+    "data-retention guarantees",
+    "automatic cleanup workers",
+    "retry loops",
+    "durable queues",
+    "live timers",
+    "live clocks",
+    "live polling",
+    "compaction behavior beyond explicit simulator helpers",
+    "TrafficHub routing changes",
+    "delivery behavior changes",
+    "compact snapshot changes",
+    "canonical identity rewrites",
+]
 
 
 def _repo_relative_backtick_paths(text: str) -> set[str]:
@@ -132,6 +166,7 @@ def test_documentation_links_exist():
         *V1_3_PLANNING_DOCS,
         *V1_4_RELEASE_PREP_DOCS,
         *V1_5_RELEASE_CANDIDATE_DOCS,
+        *V1_6_RELEASE_CANDIDATE_DOCS,
     ]
 
     referenced_paths = {
@@ -264,6 +299,35 @@ def test_v1_5_docs_are_release_status_ready():
     assert "v1.5.0 is released on `main` as `darwin-sim 1.5.0`" in checklist
 
     for caveat in V1_5_RELEASE_CANDIDATE_CAVEATS:
+        assert caveat in combined_docs_normalized
+
+
+def test_v1_6_docs_are_release_candidate_ready():
+    release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_6_DRAFT.md").read_text(
+        encoding="utf-8"
+    )
+    roadmap = (PROJECT_ROOT / "docs" / "V1_6_ROADMAP.md").read_text(
+        encoding="utf-8"
+    )
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    checklist = (PROJECT_ROOT / "RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+    combined_docs = "\n".join(
+        path.read_text(encoding="utf-8") for path in V1_6_RELEASE_CANDIDATE_DOCS
+    )
+    combined_docs_normalized = re.sub(r"\s+", " ", combined_docs)
+
+    assert "v1.6 is unreleased" in release_notes
+    assert "Sprints 1 through 5" in release_notes
+    assert "Sprint 6: Release-Candidate Hardening and Documentation Audit" in release_notes
+    assert "Sprint 6: Release-Candidate Hardening and Documentation Audit" in roadmap
+    assert "release-candidate hardening and documentation audit only" in roadmap
+    assert "darwin-sim 1.5.0" in combined_docs_normalized
+    assert "from `001` through `069`" in release_notes
+    assert "docs/RETAINED_AUDIT_COMPACTION_APPLY_v1_6.md" in readme
+    assert "v1.6 release-candidate hardening and documentation audit" in checklist
+    assert "from `001` through `069`" in checklist
+
+    for caveat in V1_6_RELEASE_CANDIDATE_CAVEATS:
         assert caveat in combined_docs_normalized
 
 

@@ -39,6 +39,15 @@ clocks, live polling, retention/pruning behavior beyond explicit simulator
 helpers, delivery behavior changes, TrafficHub routing changes, compact
 snapshot changes, or canonical identity rewrites.
 
+v1.6 remains unreleased on `v1.6/planning`. Sprint 6 is release-candidate
+hardening and documentation audit only for the retained audit compaction and
+replay-summary work implemented in Sprints 1 through 5. The checked-in
+scenario library is contiguous from `001` through `069`, and
+`docs/SCENARIO_INDEX.md` remains generated from deterministic scenario
+metadata. v1.6 stays simulator-local and symbolic: it adds no feature
+behavior, no compaction behavior beyond explicit simulator helpers, no version
+bump, and no final release activity.
+
 The v0.1 simulator answers questions like:
 
 - Can a device register under a scoped Registry Hub?
@@ -1075,7 +1084,8 @@ For v1.5 lifecycle explanation retention-policy planning docs, see:
 - `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_PRUNING_v1_5.md`
 - `docs/RELEASE_NOTES_v1_5_DRAFT.md`
 
-For v1.6 retained audit compaction and replay-summary planning docs, see:
+For v1.6 retained audit compaction and replay-summary release-candidate docs,
+see:
 
 - `docs/V1_6_ROADMAP.md`
 - `docs/RETAINED_AUDIT_COMPACTION_POLICY_v1_6.md`
