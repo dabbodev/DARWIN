@@ -8,6 +8,11 @@ from typing import Any
 from darwin.models.device import Device
 from darwin.models.hub import RegistryHub, TrafficHub
 from darwin.models.lane import LogicalLane
+from darwin.models.retained_audit import (
+    RetainedAuditCompactionApplyResult,
+    RetainedAuditCompactionDecision,
+    RetainedAuditReplaySummary,
+)
 from darwin.models.route import LinkMetrics
 from darwin.models.stream_offer import (
     StreamOfferLifecycleApplyResult,
@@ -424,6 +429,15 @@ class World:
             "stream_offer_lifecycle_pruning_apply_results": (
                 self._stream_offer_lifecycle_pruning_apply_result_snapshots()
             ),
+            "retained_audit_compaction_decisions": (
+                self._retained_audit_compaction_decision_snapshots()
+            ),
+            "retained_audit_replay_summaries": (
+                self._retained_audit_replay_summary_snapshots()
+            ),
+            "retained_audit_compaction_apply_results": (
+                self._retained_audit_compaction_apply_result_snapshots()
+            ),
         }
 
     def _alias_authority_claim_snapshots(self) -> list[dict[str, object]]:
@@ -506,4 +520,31 @@ class World:
             result.to_summary()
             for result in self.action_results
             if isinstance(result, StreamOfferLifecycleExplanationPruningApplyResult)
+        ]
+
+    def _retained_audit_compaction_decision_snapshots(
+        self,
+    ) -> list[dict[str, object]]:
+        return [
+            result.to_summary()
+            for result in self.action_results
+            if isinstance(result, RetainedAuditCompactionDecision)
+        ]
+
+    def _retained_audit_replay_summary_snapshots(
+        self,
+    ) -> list[dict[str, object]]:
+        return [
+            result.to_summary()
+            for result in self.action_results
+            if isinstance(result, RetainedAuditReplaySummary)
+        ]
+
+    def _retained_audit_compaction_apply_result_snapshots(
+        self,
+    ) -> list[dict[str, object]]:
+        return [
+            result.to_summary()
+            for result in self.action_results
+            if isinstance(result, RetainedAuditCompactionApplyResult)
         ]

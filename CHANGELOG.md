@@ -1,5 +1,59 @@
 # Changelog
 
+## [1.6.0] - 2026-07-17
+
+DARWIN v1.6.0 release prep has been completed on `v1.6/planning` as
+`darwin-sim 1.6.0`. No merge to `main`, tag, GitHub release, package
+publication, or release asset upload was performed in this sprint.
+
+Added:
+
+- v1.6 Sprint 1 read-only retained audit compaction policy and classification
+  helpers for explicit simulator-retained records.
+- v1.6 Sprint 2 read-only retained audit replay-summary helpers with
+  deterministic grouping and optional compaction-decision filtering.
+- v1.6 Sprint 3 explicit caller-driven retained audit compaction apply helper,
+  mutating only the selected supported retained history.
+- v1.6 Sprint 4 scenario DSL actions and assertions for compaction
+  classification, replay summaries, and explicit compaction apply.
+- v1.6 scenarios `067` through `069` for classification precedence, replay
+  summaries, and explicit retained-audit compaction apply.
+- v1.6 Sprint 5 detailed snapshot/debug visibility for compaction decisions,
+  replay summaries, and compaction apply results, while compact
+  `world.snapshot()` output remains unchanged.
+- v1.6 Sprint 6 release-candidate documentation/readiness hardening with
+  scenario continuity through `069`.
+- v1.6 release prep set the package and CLI version to
+  `darwin-sim 1.6.0`.
+
+Compatibility and limits:
+
+- Existing mailbox and encrypted delivery behavior remains unchanged.
+- Existing TrafficHub routing behavior remains unchanged.
+- Existing alias, identity, stream-offer polling/admission, lifecycle,
+  retained-history, scenario, and canonical identity behavior remains
+  unchanged outside the explicit v1.6 retained-audit helper surfaces.
+- The release-prep scenario set runs contiguously from `001` through `069`,
+  with scenarios `067` through `069` covering the v1.6 symbolic retained-audit
+  helper outcomes.
+- No real networking, sockets, HTTP/WebSocket behavior, DNS lookup, registrar
+  integration, public CA behavior, external services, real cryptography, key
+  generation, private key storage, production E2EE, delivery enforcement,
+  automatic cleanup workers, retry loops, durable queues, live timers, live
+  clocks, live polling, compaction behavior beyond explicit simulator helpers,
+  TrafficHub routing changes, delivery behavior changes, compact snapshot
+  changes, canonical identity rewrites, or production security, privacy,
+  anonymity, firewall, DDoS, compliance, or data-retention guarantees are
+  added by this release-prep work.
+- No merge to `main`, tag, GitHub release, package publication, uploaded
+  release assets, new feature behavior, or new scenarios are added by this
+  release-prep work.
+- The final v1.6.0 validation passed `python -m ruff check .`,
+  `python -m pytest` with 896 tests,
+  `python scripts/run_all_scenarios.py` for scenarios `001` through `069`,
+  and `python -m darwin.cli.main --version` reporting
+  `darwin-sim 1.6.0`.
+
 ## [1.5.0] - 2026-07-02
 
 DARWIN v1.5.0 has been merged to `main`, tagged as annotated `v1.5.0`, and

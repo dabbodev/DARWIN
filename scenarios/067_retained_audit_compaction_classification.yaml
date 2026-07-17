@@ -1,0 +1,107 @@
+scenario_id: 067_retained_audit_compaction_classification
+name: Retained audit compaction classification
+category: stream_offer
+description: retained lifecycle audit records are classified as retained, compaction candidates, or ignored with retain filters taking precedence
+tags:
+  - stream_offer
+  - retained_audit
+  - compaction
+  - classification
+  - v1.6
+demonstrates:
+  - retained lifecycle explanation and status-transition histories are read explicitly
+  - retained audit records are classified without compaction or history mutation
+  - explanation records can be retained or marked as compaction candidates
+  - retain filters take precedence over matching compact filters
+  - an out-of-policy supported history record is ignored deterministically
+expected_result: classification reports two retained explanations, one compaction candidate, and one ignored transition while both retained histories remain intact
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_classify_candidate
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 2
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_classify_precedence
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    status: accepted
+    created_order: 0
+    expires_order: 1
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_classify_default
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    rendezvous_scope: global.chat
+    created_order: 0
+    expires_order: 10
+  - action: plan_stream_offer_expiration
+    registry_hub: registry_chat_001
+    checked_at: 5
+  - action: explain_stream_offer_lifecycle_plan
+    registry_hub: registry_chat_001
+    checked_at: 5
+    record_explanations: true
+  - action: apply_stream_offer_lifecycle_plan
+    registry_hub: registry_chat_001
+    checked_at: 5
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_policy_067
+    history_types:
+      - stream_offer_lifecycle_explanation
+    record_history_types:
+      - stream_offer_lifecycle_explanation
+      - stream_offer_status_transition
+    retain_reasons:
+      - terminal_cleanup_candidate
+    compact_reasons:
+      - expired_by_plan
+      - terminal_cleanup_candidate
+assertions:
+  - type: retained_audit_compaction_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_policy_067
+    history_type: stream_offer_lifecycle_explanation
+    retained_count: 2
+    compaction_candidate_count: 1
+    ignored_count: 1
+    candidate_history_type: stream_offer_lifecycle_explanation
+    candidate_history_type_count: 1
+    candidate_reason: expired_by_plan
+    candidate_reason_count: 1
+    expected_count: 1
+  - type: retained_audit_compaction_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_policy_067
+    retained_record_key: lifecycle_explanation:1:registry_chat_001:offer_audit_classify_precedence:terminal:terminal_cleanup_candidate:cleanup_candidate:lifecycle_plan:5
+    compaction_candidate_record_key: lifecycle_explanation:0:registry_chat_001:offer_audit_classify_candidate:expired:expired_by_plan:expired:lifecycle_plan:5
+    ignored_record_key: status_transition:3:registry_chat_001:offer_audit_classify_candidate:held:expired:expired:none:none:none
+    expected_count: 1
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    expected_count: 3
+  - type: stream_offer_lifecycle_explanation_history_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_classify_candidate
+    category: expired
+    expected_count: 1
+  - type: stream_offer_status_transition_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_classify_candidate
+    previous_status: held
+    new_status: expired
+    expected_count: 1

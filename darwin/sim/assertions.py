@@ -7,6 +7,11 @@ from typing import Any
 
 from darwin.models.encrypted_delivery import EncryptedDeliveryResult
 from darwin.models.encryption import EncryptionPolicyDecision
+from darwin.models.retained_audit import (
+    RetainedAuditCompactionApplyResult,
+    RetainedAuditCompactionDecision,
+    RetainedAuditReplaySummary,
+)
 from darwin.models.stream_offer import (
     LaneAdmissionDecision,
     RendezvousPollResult,
@@ -2027,6 +2032,198 @@ def _stream_offer_lifecycle_pruning_apply_result_contains(
     )
 
 
+def _retained_audit_compaction_decision_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = {
+        "hub_id": hub_id,
+        "policy_id": _optional_filter_str(assertion, "policy_id"),
+        "history_type": _optional_filter_str(assertion, "history_type"),
+        "retained_record_key": _optional_filter_str(
+            assertion,
+            "retained_record_key",
+        ),
+        "retained_record_keys": _optional_str_sequence_filter(
+            assertion,
+            "retained_record_keys",
+        ),
+        "compaction_candidate_record_key": _optional_filter_str(
+            assertion,
+            "compaction_candidate_record_key",
+        ),
+        "compaction_candidate_record_keys": _optional_str_sequence_filter(
+            assertion,
+            "compaction_candidate_record_keys",
+        ),
+        "ignored_record_key": _optional_filter_str(
+            assertion,
+            "ignored_record_key",
+        ),
+        "ignored_record_keys": _optional_str_sequence_filter(
+            assertion,
+            "ignored_record_keys",
+        ),
+        "retained_count": _optional_int_field(assertion, "retained_count"),
+        "compaction_candidate_count": _optional_int_field(
+            assertion,
+            "compaction_candidate_count",
+        ),
+        "ignored_count": _optional_int_field(assertion, "ignored_count"),
+        "candidate_history_type": _optional_filter_str(
+            assertion,
+            "candidate_history_type",
+        ),
+        "candidate_history_type_count": _optional_int_field(
+            assertion,
+            "candidate_history_type_count",
+        ),
+        "candidate_reason": _optional_filter_str(assertion, "candidate_reason"),
+        "candidate_reason_count": _optional_int_field(
+            assertion,
+            "candidate_reason_count",
+        ),
+        "candidate_status": _optional_filter_str(assertion, "candidate_status"),
+        "candidate_status_count": _optional_int_field(
+            assertion,
+            "candidate_status_count",
+        ),
+        "candidate_source": _optional_filter_str(assertion, "candidate_source"),
+        "candidate_source_count": _optional_int_field(
+            assertion,
+            "candidate_source_count",
+        ),
+    }
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, RetainedAuditCompactionDecision)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_retained_audit_compaction_decision_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"retained audit compaction decision contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
+def _retained_audit_replay_summary_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = {
+        "hub_id": hub_id,
+        "history_type": _optional_filter_str(assertion, "history_type"),
+        "record_count": _optional_int_field(assertion, "record_count"),
+        "record_key": _optional_filter_str(assertion, "record_key"),
+        "record_keys": _optional_str_sequence_filter(assertion, "record_keys"),
+        "first_record_key": _optional_filter_str(assertion, "first_record_key"),
+        "last_record_key": _optional_filter_str(assertion, "last_record_key"),
+        "status": _optional_filter_str(assertion, "status"),
+        "status_count": _optional_int_field(assertion, "status_count"),
+        "reason": _optional_filter_str(assertion, "reason"),
+        "reason_count": _optional_int_field(assertion, "reason_count"),
+        "source": _optional_filter_str(assertion, "source"),
+        "source_count": _optional_int_field(assertion, "source_count"),
+        "offer_id": _optional_filter_str(assertion, "offer_id"),
+        "offer_count": _optional_int_field(assertion, "offer_count"),
+        "decision_category": _optional_filter_str(assertion, "decision_category"),
+        "grouped_history_type": _optional_filter_str(
+            assertion,
+            "grouped_history_type",
+        ),
+        "grouped_history_type_count": _optional_int_field(
+            assertion,
+            "grouped_history_type_count",
+        ),
+    }
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, RetainedAuditReplaySummary)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_retained_audit_replay_summary_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"retained audit replay summary contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
+def _retained_audit_compaction_apply_result_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters = {
+        "hub_id": hub_id,
+        "policy_id": _optional_filter_str(assertion, "policy_id"),
+        "history_type": _optional_filter_str(assertion, "history_type"),
+    }
+    for category in ("compacted", "retained", "ignored", "missing", "unsupported"):
+        filters[f"{category}_record_key"] = _optional_filter_str(
+            assertion,
+            f"{category}_record_key",
+        )
+        filters[f"{category}_record_keys"] = _optional_str_sequence_filter(
+            assertion,
+            f"{category}_record_keys",
+        )
+        filters[f"{category}_count"] = _optional_int_field(
+            assertion,
+            f"{category}_count",
+        )
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, RetainedAuditCompactionApplyResult)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_retained_audit_compaction_apply_result_filters(record, filters)
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"retained audit compaction apply result contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
 def _stream_offer_status_transition_contains(
     world: World,
     assertion_type: str,
@@ -2779,6 +2976,146 @@ def _matches_stream_offer_lifecycle_pruning_apply_result_filters(
     )
 
 
+def _matches_retained_audit_compaction_decision_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    for field_name in ("hub_id", "policy_id", "history_type"):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    return (
+        _list_field_matches(
+            record,
+            filters,
+            "retained_record_keys",
+            "retained_record_key",
+        )
+        and _list_field_matches(
+            record,
+            filters,
+            "compaction_candidate_record_keys",
+            "compaction_candidate_record_key",
+        )
+        and _list_field_matches(
+            record,
+            filters,
+            "ignored_record_keys",
+            "ignored_record_key",
+        )
+        and _count_matches(record, filters, "retained_record_keys", "retained_count")
+        and _count_matches(
+            record,
+            filters,
+            "compaction_candidate_record_keys",
+            "compaction_candidate_count",
+        )
+        and _count_matches(record, filters, "ignored_record_keys", "ignored_count")
+        and _count_field_matches(
+            record,
+            filters,
+            "candidate_by_history_type",
+            "candidate_history_type",
+            "candidate_history_type_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "candidate_by_reason",
+            "candidate_reason",
+            "candidate_reason_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "candidate_by_status",
+            "candidate_status",
+            "candidate_status_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "candidate_by_source",
+            "candidate_source",
+            "candidate_source_count",
+        )
+    )
+
+
+def _matches_retained_audit_replay_summary_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    for field_name in (
+        "hub_id",
+        "history_type",
+        "record_count",
+        "first_record_key",
+        "last_record_key",
+    ):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    if not _list_field_matches(record, filters, "record_keys", "record_key"):
+        return False
+    if not (
+        _count_field_matches(record, filters, "by_status", "status", "status_count")
+        and _count_field_matches(record, filters, "by_reason", "reason", "reason_count")
+        and _count_field_matches(record, filters, "by_source", "source", "source_count")
+        and _count_field_matches(
+            record,
+            filters,
+            "by_offer_id",
+            "offer_id",
+            "offer_count",
+        )
+    ):
+        return False
+
+    metadata = record.get("metadata")
+    if not isinstance(metadata, dict):
+        return False
+    decision_category = filters["decision_category"]
+    if (
+        decision_category is not None
+        and metadata.get("decision_category_filter") != decision_category
+    ):
+        return False
+    grouped_history_type = filters["grouped_history_type"]
+    grouped_history_type_count = filters["grouped_history_type_count"]
+    if grouped_history_type is None and grouped_history_type_count is None:
+        return True
+    by_history_type = metadata.get("by_history_type")
+    if not isinstance(by_history_type, dict) or grouped_history_type is None:
+        return False
+    actual_count = by_history_type.get(grouped_history_type)
+    if grouped_history_type_count is not None:
+        return actual_count == grouped_history_type_count
+    return actual_count is not None
+
+
+def _matches_retained_audit_compaction_apply_result_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    for field_name in ("hub_id", "policy_id", "history_type"):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    for category in ("compacted", "retained", "ignored", "missing", "unsupported"):
+        if not _list_field_matches(
+            record,
+            filters,
+            f"{category}_record_keys",
+            f"{category}_record_key",
+        ):
+            return False
+        value = filters[f"{category}_count"]
+        if value is not None and record.get(f"{category}_count") != value:
+            return False
+    return True
+
+
 def _count_matches(
     record: dict[str, object],
     filters: dict[str, object],
@@ -2953,6 +3290,15 @@ _EVALUATORS = {
     ),
     "stream_offer_lifecycle_pruning_apply_result_contains": (
         _stream_offer_lifecycle_pruning_apply_result_contains
+    ),
+    "retained_audit_compaction_decision_contains": (
+        _retained_audit_compaction_decision_contains
+    ),
+    "retained_audit_replay_summary_contains": (
+        _retained_audit_replay_summary_contains
+    ),
+    "retained_audit_compaction_apply_result_contains": (
+        _retained_audit_compaction_apply_result_contains
     ),
     "stream_offer_status_transition_contains": (
         _stream_offer_status_transition_contains
