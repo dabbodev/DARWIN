@@ -193,14 +193,14 @@ def test_version_consistency():
         encoding="utf-8"
     )
     current_release_notes = (
-        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_5_DRAFT.md"
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_6_DRAFT.md"
     ).read_text(encoding="utf-8")
 
     assert darwin.__version__ == project_version
     assert f"[{project_version}]" in changelog or f"## v{project_version}" in changelog
     assert f"v{project_version}" in current_release_notes
-    assert "darwin-sim 1.5.0" in current_release_notes
-    assert "Scenarios `064` through `066`" in current_release_notes
+    assert "darwin-sim 1.6.0" in current_release_notes
+    assert "Scenarios `067` through `069`" in current_release_notes
     assert "real networking" in current_release_notes
     assert "TrafficHub routing changes" in current_release_notes
     assert "v0.1.0" in release_notes
@@ -302,7 +302,7 @@ def test_v1_5_docs_are_release_status_ready():
         assert caveat in combined_docs_normalized
 
 
-def test_v1_6_docs_are_release_candidate_ready():
+def test_v1_6_docs_are_release_prep_ready():
     release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_6_DRAFT.md").read_text(
         encoding="utf-8"
     )
@@ -316,15 +316,16 @@ def test_v1_6_docs_are_release_candidate_ready():
     )
     combined_docs_normalized = re.sub(r"\s+", " ", combined_docs)
 
-    assert "v1.6 is unreleased" in release_notes
-    assert "Sprints 1 through 5" in release_notes
+    assert "v1.6.0 release-prep branch" in release_notes
+    assert "Sprint 1 through Sprint 6" in release_notes
     assert "Sprint 6: Release-Candidate Hardening and Documentation Audit" in release_notes
     assert "Sprint 6: Release-Candidate Hardening and Documentation Audit" in roadmap
     assert "release-candidate hardening and documentation audit only" in roadmap
-    assert "darwin-sim 1.5.0" in combined_docs_normalized
+    assert "darwin-sim 1.6.0" in combined_docs_normalized
     assert "from `001` through `069`" in release_notes
     assert "docs/RETAINED_AUDIT_COMPACTION_APPLY_v1_6.md" in readme
-    assert "v1.6 release-candidate hardening and documentation audit" in checklist
+    assert "Release prep set the package and CLI version to `darwin-sim 1.6.0`" in roadmap
+    assert "v1.6 release-prep hardening and documentation audit" in checklist
     assert "from `001` through `069`" in checklist
 
     for caveat in V1_6_RELEASE_CANDIDATE_CAVEATS:

@@ -1,7 +1,7 @@
 # Retained Audit Compaction Apply v1.6
 
-Status: v1.6 Sprint 3 explicit simulator-local helper. v1.6 is unreleased,
-and the package version remains `darwin-sim 1.5.0`.
+Status: v1.6 Sprint 3 explicit simulator-local helper included in the v1.6.0
+release-prep branch. The package version reports `darwin-sim 1.6.0`.
 
 Sprint 6 release-candidate hardening and documentation audit confirms this
 document is included in deterministic documentation readiness/link checks. It
@@ -103,4 +103,4 @@ external services, real cryptography, key generation, private key storage,
 production E2EE, delivery enforcement, delivery behavior changes, TrafficHub
 routing changes, scenario DSL actions, scenario DSL assertions, compact
 snapshot changes, canonical identity rewrites, package publication, release
-assets, merge, tag, GitHub release, or version bump beyond `1.5.0`.
+assets, merge, tag, GitHub release, or version bump beyond `1.6.0`.

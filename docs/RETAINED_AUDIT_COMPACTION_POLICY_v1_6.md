@@ -1,7 +1,7 @@
 # Retained Audit Compaction Policy v1.6
 
-Status: v1.6 Sprint 1 planning helper. v1.6 is unreleased, and the package
-version remains `darwin-sim 1.5.0`.
+Status: v1.6 Sprint 1 helper included in the v1.6.0 release-prep branch. The
+package version reports `darwin-sim 1.6.0`.
 
 Sprint 6 release-candidate hardening and documentation audit confirms this
 document is included in deterministic documentation readiness/link checks. It

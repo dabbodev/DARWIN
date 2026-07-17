@@ -1141,8 +1141,8 @@ The v1.5 checked-in scenario set was contiguous through `066`.
 
 ## v1.6 Retained Audit Compaction and Replay Summary Scenarios
 
-The unreleased v1.6 planning branch adds scenario DSL coverage for the
-existing retained audit compaction and replay-summary helpers. Supported
+The v1.6 release-prep branch includes scenario DSL coverage for the existing
+retained audit compaction and replay-summary helpers. Supported
 retained-history families remain intentionally narrow:
 
 - `stream_offer_lifecycle_explanation`
@@ -1264,4 +1264,4 @@ Checked-in v1.6 retained audit scenarios:
 - `scenarios/069_retained_audit_compaction_apply.yaml`
 
 The current checked-in scenario set is contiguous through `069`. The package
-and CLI version remain `darwin-sim 1.5.0` while v1.6 is unreleased.
+and CLI version report `darwin-sim 1.6.0` after release prep.
