@@ -1,5 +1,60 @@
 # Changelog
 
+## [1.7.0] - 2026-07-19
+
+The DARWIN v1.7.0 source-release snapshot extends retained-audit compaction
+and replay coverage to rendezvous poll results and lane-admission decisions.
+The package and CLI identify the snapshot as `darwin-sim 1.7.0`.
+
+Added:
+
+- Retained-audit classification adapters for `rendezvous_poll_result` and
+  `lane_admission_decision`, preserving the v1.6 supported-type order,
+  retain-before-compact precedence, `max_records`, and deterministic ignored
+  record behavior.
+- Optional sorted `by_request_id` replay counts. Poll and admission records
+  contribute request, status, reason, and source grouping; admission records
+  also contribute their optional offer ID.
+- Explicit single-history compaction apply for poll-result and admission-
+  decision history, including stale-key reporting, preserved remaining order,
+  and isolated polling/admission mutation metadata.
+- Scenario DSL history labels and request-count assertions for the expanded
+  retained-audit surfaces.
+- Scenarios `070` through `072` for mixed read-only classification,
+  request-aware replay/decision filtering, and isolated explicit poll and
+  admission apply.
+- Existing detailed retained-audit debug summaries for the new record families
+  with copied JSON-safe output; compact `world.snapshot()` remains unchanged.
+- CI coverage on Python 3.11, 3.12, 3.13, and 3.14, exact CLI-version
+  validation, and a separate Python 3.11 wheel build/install smoke job.
+
+Compatibility and limits:
+
+- Existing v1.6 lifecycle explanation and status-transition record keys and
+  behavior remain unchanged.
+- Mixed-history decisions remain read-only and produce a deterministic
+  unsupported/no-mutation apply result.
+- Held offers, mailbox and encrypted delivery, TrafficHub routing, canonical
+  identity, and compact snapshot behavior remain unchanged.
+- The source scenario set is contiguous from `001` through `072`, with
+  scenarios `070` through `072` covering the v1.7 extension.
+- v1.7 remains simulator-local and symbolic. It adds no automatic cleanup,
+  workers, retry loops, durable queues, live timers, live clocks, live polling,
+  networking, DNS, external services, real cryptography, production E2EE,
+  delivery enforcement, TrafficHub routing changes, canonical identity
+  rewrites, or production security, privacy, anonymity, firewall, DDoS,
+  compliance, or data-retention guarantees.
+- Release publication is GitHub source-only: the procedure creates an
+  annotated `v1.7.0` tag and GitHub release from this exact snapshot. It does
+  not publish a package or upload release assets. This changelog does not
+  assert that remote publication has already occurred.
+- Final validation passed `python -m ruff check .`, `python -m pytest` with
+  909 tests, `python scripts/run_all_scenarios.py` for scenarios `001` through
+  `072`, exact checked-in scenario-index verification, and
+  `python -m darwin.cli.main --version` reporting `darwin-sim 1.7.0`.
+- An isolated wheel build, installation, and out-of-tree version smoke check
+  passed for `darwin_sim-1.7.0-py3-none-any.whl`; the wheel is not uploaded.
+
 ## [1.6.0] - 2026-07-17
 
 DARWIN v1.6.0 has been merged to `main`, tagged as annotated `v1.6.0`, and

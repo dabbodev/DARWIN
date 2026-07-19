@@ -1,0 +1,154 @@
+scenario_id: 072_retained_audit_poll_admission_apply
+name: Poll and admission retained audit compaction apply
+category: stream_offer
+description: separate explicit compaction decisions remove selected poll and admission records without affecting other retained or runtime state
+tags:
+  - stream_offer
+  - retained_audit
+  - rendezvous
+  - lane_admission
+  - compaction
+  - explicit_apply
+  - v1.7
+demonstrates:
+  - poll and admission histories require separate single-history compaction decisions
+  - each apply removes only matching candidates from its selected history
+  - non-candidate audit records preserve append order
+  - held offers, delivery state, and traffic routing remain unchanged
+expected_result: one matched poll and one accepted admission are removed while the empty poll, held admission, held offers, delivery state, and routing state remain intact
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  traffic_hubs:
+    - hub_id: traffic_chat_001
+steps:
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_apply_candidate_072
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    visibility_tier: 1
+    rendezvous_scope: global.chat
+  - action: hold_stream_offer
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_apply_retained_072
+    requester_id: dev_TRINITY
+    target_handle: alias:neo
+    lane_signature: basic_messaging:v1
+    visibility_tier: 1
+    rendezvous_scope: global.chat
+  - action: poll_held_stream_offers
+    registry_hub: registry_chat_001
+    request_id: poll_candidate_072
+    offer_id: offer_audit_apply_candidate_072
+    polling_hub_id: hub_private_child
+    requester_id: hub_private_child
+    target_scope: global.chat
+    visibility_tier: 1
+    lane_signature: basic_messaging:v1
+  - action: poll_held_stream_offers
+    registry_hub: registry_chat_001
+    request_id: poll_retained_072
+    offer_id: offer_audit_apply_retained_072
+    polling_hub_id: hub_private_child
+    requester_id: hub_private_child
+    target_scope: global.other
+    visibility_tier: 1
+    lane_signature: basic_messaging:v1
+  - action: evaluate_lane_admission_policy
+    registry_hub: registry_chat_001
+    policy_id: lane_admission_candidate_policy_072
+    decision_id: lane_admission_candidate_072
+    hub_id: registry_chat_001
+    offer_id: offer_audit_apply_candidate_072
+    poll_request_id: poll_candidate_072
+    poll_result_request_id: poll_candidate_072
+    require_discoverable: true
+    default_status: pass_down
+  - action: evaluate_lane_admission_policy
+    registry_hub: registry_chat_001
+    policy_id: lane_admission_retained_policy_072
+    decision_id: lane_admission_retained_072
+    hub_id: registry_chat_001
+    offer_id: offer_audit_apply_retained_072
+    request_id: admission_retained_request_072
+    target_scope: global.chat
+    default_status: hold
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_poll_policy_072
+    history_types:
+      - rendezvous_poll_result
+    record_history_types:
+      - rendezvous_poll_result
+    compact_statuses:
+      - matched
+  - action: apply_retained_audit_compaction_decision
+    registry_hub: registry_chat_001
+    decision_policy_id: retained_audit_poll_policy_072
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_admission_policy_072
+    history_types:
+      - lane_admission_decision
+    record_history_types:
+      - lane_admission_decision
+    compact_statuses:
+      - pass_down
+  - action: apply_retained_audit_compaction_decision
+    registry_hub: registry_chat_001
+    decision_policy_id: retained_audit_admission_policy_072
+assertions:
+  - type: retained_audit_compaction_apply_result_contains
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_poll_policy_072
+    history_type: rendezvous_poll_result
+    compacted_count: 1
+    retained_count: 1
+    ignored_count: 0
+    missing_count: 0
+    unsupported_count: 0
+    expected_count: 1
+  - type: retained_audit_compaction_apply_result_contains
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_admission_policy_072
+    history_type: lane_admission_decision
+    compacted_count: 1
+    retained_count: 1
+    ignored_count: 0
+    missing_count: 0
+    unsupported_count: 0
+    expected_count: 1
+  - type: rendezvous_poll_result_contains
+    registry_hub: registry_chat_001
+    request_id: poll_candidate_072
+    expected_count: 0
+  - type: rendezvous_poll_result_contains
+    registry_hub: registry_chat_001
+    request_id: poll_retained_072
+    status: empty
+    expected_count: 1
+  - type: lane_admission_decision_contains
+    registry_hub: registry_chat_001
+    decision_id: lane_admission_candidate_072
+    expected_count: 0
+  - type: lane_admission_decision_contains
+    registry_hub: registry_chat_001
+    decision_id: lane_admission_retained_072
+    status: hold
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_apply_candidate_072
+    status: held
+    expected_count: 1
+  - type: held_stream_offer_contains
+    registry_hub: registry_chat_001
+    offer_id: offer_audit_apply_retained_072
+    status: held
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    expected_count: 0

@@ -8,8 +8,14 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-DARWIN v1.6.0 is released on `main` as `darwin-sim 1.6.0`. The annotated
-`v1.6.0` tag and GitHub release exist:
+DARWIN v1.7.0 is prepared as a source-release snapshot reporting
+`darwin-sim 1.7.0`. Its publication contract is an annotated `v1.7.0` tag and
+a GitHub release created from the exact same commit, with no package-index
+publication and no uploaded release assets. This repository text deliberately
+does not claim that those remote publication actions have already occurred.
+
+The previous DARWIN v1.6.0 release is on `main` as `darwin-sim 1.6.0`. The
+annotated `v1.6.0` tag and GitHub release exist:
 https://github.com/dabbodev/DARWIN/releases/tag/v1.6.0. No package
 publication was performed, and no release assets were uploaded.
 
@@ -46,6 +52,18 @@ caller-driven apply helper, scenario coverage through `069`, detailed debug
 snapshot visibility, and documentation/readiness checks. Compact
 `world.snapshot()` remains unchanged. No package publication or release asset
 upload was performed.
+
+The v1.7 source snapshot expands those retained-audit helpers to
+RegistryHub-local rendezvous poll-result and lane-admission decision histories.
+It adds deterministic request-aware replay counts, explicit single-history
+apply for either history, scenario coverage through `072`, and Python 3.11
+through 3.14 CI coverage. Mixed-history decisions remain read-only, compact
+`world.snapshot()` remains unchanged, and the helpers do not change held
+offers, delivery, TrafficHub routing, or canonical identity.
+
+Final v1.7 validation passed Ruff, 909 tests, all scenarios `001` through
+`072`, exact scenario-index verification, CLI version output, and an isolated
+wheel build/install/version smoke check.
 
 The v0.1 simulator answers questions like:
 
@@ -245,6 +263,12 @@ audit compaction classification, replay summaries, and explicit compaction
 apply. The released scenario set is contiguous from `001` through `069`,
 and the package and CLI version report `darwin-sim 1.6.0`.
 
+In the v1.7 source-release snapshot, scenarios `070` through `072` cover
+mixed poll/admission retained-audit classification, request-aware replay and
+decision filtering, and separate explicit poll/admission compaction apply.
+The checked-in scenario set is contiguous from `001` through `072`, and the
+package and CLI version report `darwin-sim 1.7.0`.
+
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
 networking, sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar
@@ -312,6 +336,15 @@ firewall, DDoS, compliance, or data-retention guarantees, delivery
 enforcement, automatic cleanup workers, retry loops, durable queues, live
 timers, live clocks, live polling, TrafficHub routing changes, delivery
 behavior changes, compact snapshot changes, or canonical identity rewrites.
+
+The v1.7 source-release docs cover poll-result and admission-decision retained-
+audit classification, optional sorted request-ID replay counts, explicit
+single-history apply, scenario DSL and detailed debug visibility, and scenarios
+`070` through `072`. Release gates include Ruff, pytest, all scenarios `001`
+through `072`, exact scenario-index generation, CLI output
+`darwin-sim 1.7.0`, and a Python 3.11 wheel-build smoke check. The source
+release does not publish a package or upload assets and makes no production
+networking, cryptography, security, privacy, compliance, or retention claims.
 
 The v1.5 release docs cover read-only lifecycle explanation retention
 classification, read-only pruning plans, explicit retained-history pruning
@@ -742,8 +775,10 @@ Run Ruff:
 python -m ruff check .
 ```
 
-The CI workflow runs the same local validation commands: Ruff, pytest,
-scenario listing/validation, and the all-scenario regression script.
+The CI workflow runs Ruff, pytest, exact CLI-version validation, scenario
+listing/validation, and the all-scenario regression script on Python 3.11
+through 3.14. A separate Python 3.11 job builds and installs the wheel as a
+smoke check without uploading it.
 
 List scenarios:
 
@@ -1099,6 +1134,12 @@ For v1.6 retained audit compaction and replay-summary release docs, see:
 - `docs/RETAINED_AUDIT_REPLAY_SUMMARIES_v1_6.md`
 - `docs/RETAINED_AUDIT_COMPACTION_APPLY_v1_6.md`
 - `docs/RELEASE_NOTES_v1_6_DRAFT.md`
+
+For v1.7 retained audit poll/admission expansion release docs, see:
+
+- `docs/V1_7_ROADMAP.md`
+- `docs/RETAINED_AUDIT_POLL_ADMISSION_v1_7.md`
+- `docs/RELEASE_NOTES_v1_7_DRAFT.md`
 
 ## What v0.1 Is Not
 

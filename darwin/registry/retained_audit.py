@@ -13,6 +13,8 @@ from darwin.models.retained_audit import (
     make_retained_audit_compaction_policy,
 )
 from darwin.models.stream_offer import (
+    LaneAdmissionDecision,
+    RendezvousPollResult,
     StreamOfferLifecycleExplanation,
     StreamOfferStatusTransition,
 )
@@ -20,6 +22,8 @@ from darwin.models.stream_offer import (
 SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES: tuple[str, ...] = (
     "stream_offer_lifecycle_explanation",
     "stream_offer_status_transition",
+    "rendezvous_poll_result",
+    "lane_admission_decision",
 )
 
 RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS: tuple[str, ...] = (
@@ -215,6 +219,7 @@ def summarize_retained_audit_replay(
     by_reason: dict[str, int] = {}
     by_source: dict[str, int] = {}
     by_offer_id: dict[str, int] = {}
+    by_request_id: dict[str, int] = {}
 
     for view in views:
         record_keys.append(view.record_key)
@@ -223,6 +228,8 @@ def summarize_retained_audit_replay(
         _increment_count(by_source, view.source or "none")
         if view.offer_id is not None:
             _increment_count(by_offer_id, view.offer_id)
+        if view.request_id is not None:
+            _increment_count(by_request_id, view.request_id)
 
     summary_metadata: dict[str, object] = {
         "simulator_local": True,
@@ -270,6 +277,7 @@ def summarize_retained_audit_replay(
         by_reason=_sorted_count_dict(by_reason),
         by_source=_sorted_count_dict(by_source),
         by_offer_id=_sorted_count_dict(by_offer_id),
+        by_request_id=_sorted_count_dict(by_request_id),
         first_record_key=record_keys[0] if record_keys else None,
         last_record_key=record_keys[-1] if record_keys else None,
         metadata=summary_metadata,
@@ -427,6 +435,7 @@ class _AuditRecordView:
         record_key: str,
         hub_id: str | None,
         offer_id: str | None,
+        request_id: str | None,
         reason: str | None,
         status: str | None,
         source: str | None,
@@ -435,6 +444,7 @@ class _AuditRecordView:
         self.record_key = record_key
         self.hub_id = hub_id
         self.offer_id = offer_id
+        self.request_id = request_id
         self.reason = reason
         self.status = status
         self.source = source
@@ -468,6 +478,7 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
             record_key=_lifecycle_explanation_key(index, record),
             hub_id=record.hub_id,
             offer_id=record.offer_id,
+            request_id=None,
             reason=record.reason,
             status=record.status,
             source=record.source,
@@ -478,8 +489,31 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
             record_key=_status_transition_key(index, record),
             hub_id=record.hub_id,
             offer_id=record.offer_id,
+            request_id=None,
             reason=record.reason.reason,
             status=record.new_status.status,
+            source=_metadata_source(record.metadata),
+        )
+    if isinstance(record, RendezvousPollResult):
+        return _AuditRecordView(
+            history_type="rendezvous_poll_result",
+            record_key=_rendezvous_poll_result_key(index, record),
+            hub_id=record.parent_hub_id,
+            offer_id=None,
+            request_id=record.request_id,
+            reason=record.reason,
+            status=record.status.status,
+            source=_metadata_source(record.metadata),
+        )
+    if isinstance(record, LaneAdmissionDecision):
+        return _AuditRecordView(
+            history_type="lane_admission_decision",
+            record_key=_lane_admission_decision_key(index, record),
+            hub_id=record.hub_id,
+            offer_id=record.offer_id,
+            request_id=record.request_id,
+            reason=record.reason.reason,
+            status=record.status.status,
             source=_metadata_source(record.metadata),
         )
     return _AuditRecordView(
@@ -487,6 +521,7 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
         record_key=f"unsupported:{index}:{record.__class__.__name__}",
         hub_id=None,
         offer_id=None,
+        request_id=None,
         reason=None,
         status=None,
         source=None,
@@ -571,6 +606,10 @@ def _selected_retained_history(
         return registry_hub.stream_offer_lifecycle_explanation_history
     if history_type == "stream_offer_status_transition":
         return registry_hub.stream_offer_status_transition_history
+    if history_type == "rendezvous_poll_result":
+        return registry_hub.rendezvous_poll_result_history
+    if history_type == "lane_admission_decision":
+        return registry_hub.lane_admission_decision_history
     raise ValueError(f"unsupported retained audit history_type: {history_type}")
 
 
@@ -630,6 +669,34 @@ def _status_transition_key(index: int, transition: StreamOfferStatusTransition) 
     )
 
 
+def _rendezvous_poll_result_key(
+    index: int,
+    result: RendezvousPollResult,
+) -> str:
+    matched_offer_ids = ",".join(result.matched_offer_ids) or "none"
+    return (
+        f"rendezvous_poll:{index}:{result.parent_hub_id}:"
+        f"{result.polling_hub_id}:{result.request_id}:{result.target_scope}:"
+        f"{result.visibility_tier.tier}:{result.status.status}:{result.reason}:"
+        f"{matched_offer_ids}"
+    )
+
+
+def _lane_admission_decision_key(
+    index: int,
+    decision: LaneAdmissionDecision,
+) -> str:
+    hub_id = decision.hub_id or "none"
+    policy_id = decision.policy_id or "none"
+    offer_id = decision.offer_id or "none"
+    request_id = decision.request_id or "none"
+    return (
+        f"lane_admission:{index}:{hub_id}:{decision.decision_id}:"
+        f"{policy_id}:{offer_id}:{request_id}:{decision.status.status}:"
+        f"{decision.reason.reason}"
+    )
+
+
 def _metadata_source(metadata: dict[str, Any] | None) -> str | None:
     if not isinstance(metadata, dict):
         return None
@@ -681,8 +748,12 @@ def _compaction_apply_metadata(
         "stream_offers_mutated": False,
         "lifecycle_plans_mutated": False,
         "lifecycle_apply_results_mutated": False,
-        "polling_history_mutated": False,
-        "admission_history_mutated": False,
+        "polling_history_mutated": (
+            selected_history_mutated and history_type == "rendezvous_poll_result"
+        ),
+        "admission_history_mutated": (
+            selected_history_mutated and history_type == "lane_admission_decision"
+        ),
         "encrypted_delivery_history_mutated": False,
         "alias_history_mutated": False,
         "authority_history_mutated": False,
