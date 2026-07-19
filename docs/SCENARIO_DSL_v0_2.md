@@ -1141,7 +1141,7 @@ The v1.5 checked-in scenario set was contiguous through `066`.
 
 ## v1.6 Retained Audit Compaction and Replay Summary Scenarios
 
-The v1.6 release-prep branch includes scenario DSL coverage for the existing
+The v1.6 release includes scenario DSL coverage for the existing
 retained audit compaction and replay-summary helpers. Supported
 retained-history families remain intentionally narrow:
 
@@ -1263,5 +1263,5 @@ Checked-in v1.6 retained audit scenarios:
 - `scenarios/068_retained_audit_replay_summary.yaml`
 - `scenarios/069_retained_audit_compaction_apply.yaml`
 
-The current checked-in scenario set is contiguous through `069`. The package
-and CLI version report `darwin-sim 1.6.0` after release prep.
+The current released scenario set is contiguous through `069`. The package
+and CLI version report `darwin-sim 1.6.0`.

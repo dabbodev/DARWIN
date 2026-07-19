@@ -2,9 +2,10 @@
 
 ## [1.6.0] - 2026-07-17
 
-DARWIN v1.6.0 release prep has been completed on `v1.6/planning` as
-`darwin-sim 1.6.0`. No merge to `main`, tag, GitHub release, package
-publication, or release asset upload was performed in this sprint.
+DARWIN v1.6.0 has been merged to `main`, tagged as annotated `v1.6.0`, and
+published as a GitHub release:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.6.0. No package
+publication was performed, and no release assets were uploaded.
 
 Added:
 
@@ -33,7 +34,7 @@ Compatibility and limits:
 - Existing alias, identity, stream-offer polling/admission, lifecycle,
   retained-history, scenario, and canonical identity behavior remains
   unchanged outside the explicit v1.6 retained-audit helper surfaces.
-- The release-prep scenario set runs contiguously from `001` through `069`,
+- The released scenario set runs contiguously from `001` through `069`,
   with scenarios `067` through `069` covering the v1.6 symbolic retained-audit
   helper outcomes.
 - No real networking, sockets, HTTP/WebSocket behavior, DNS lookup, registrar
@@ -44,10 +45,9 @@ Compatibility and limits:
   TrafficHub routing changes, delivery behavior changes, compact snapshot
   changes, canonical identity rewrites, or production security, privacy,
   anonymity, firewall, DDoS, compliance, or data-retention guarantees are
-  added by this release-prep work.
-- No merge to `main`, tag, GitHub release, package publication, uploaded
-  release assets, new feature behavior, or new scenarios are added by this
-  release-prep work.
+  added by this simulator work.
+- No package publication or uploaded release assets were added; post-release
+  housekeeping does not add feature behavior or scenarios.
 - The final v1.6.0 validation passed `python -m ruff check .`,
   `python -m pytest` with 896 tests,
   `python scripts/run_all_scenarios.py` for scenarios `001` through `069`,

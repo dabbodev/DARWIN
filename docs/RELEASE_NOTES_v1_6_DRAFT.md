@@ -1,23 +1,17 @@
 # DARWIN v1.6 Draft Release Notes
 
-Status: release-facing notes for the v1.6.0 release-prep branch. DARWIN v1.6.0
-has been prepared on `v1.6/planning` as `darwin-sim 1.6.0`. DARWIN v1.5.0
-remains the latest tagged GitHub release on `main` until a separate merge,
-tag, and release step is explicitly performed. The annotated `v1.5.0` tag
+Status: released on `main` as `darwin-sim 1.6.0`. The annotated `v1.6.0` tag
 and GitHub release exist:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
-publication was performed for v1.5.0 or by this v1.6.0 release-prep sprint,
-and no release assets were uploaded.
+https://github.com/dabbodev/DARWIN/releases/tag/v1.6.0. No package
+publication was performed, and no release assets were uploaded.
 
-Sprint 1 through Sprint 6 work has been added on the v1.6 planning branch,
-including focused scenario DSL coverage through `069`, detailed debug
-visibility, release-candidate hardening, and documentation/readiness checks.
-Release prep sets the package and CLI version to `darwin-sim 1.6.0`. No merge
-to `main`, tag, GitHub release, package publication, or release asset upload
-is performed by this sprint.
+Sprint 1 through Sprint 6 work has been released, including focused scenario
+DSL coverage through `069`, detailed debug visibility, release-candidate
+hardening, and documentation/readiness checks. Release prep set the package
+and CLI version to `darwin-sim 1.6.0`.
 
-Implemented planning work remains symbolic simulator metadata flow only. It
-must not become real networking, a network service, production DDoS
+This release remains symbolic simulator metadata flow only. It must not become
+real networking, a network service, production DDoS
 protection, a firewall, a privacy or anonymity system, DNS, an external
 service, real cryptography, production E2EE, a delivery enforcement layer, a
 TrafficHub routing change, or a background cleanup system.
@@ -45,7 +39,7 @@ release-prep hardening and documentation audit work.
 
 ## Compatibility Target
 
-v1.6 release prep preserves these compatibility expectations:
+v1.6 preserves these compatibility expectations:
 
 - Existing mailbox delivery behavior remains unchanged.
 - Existing encrypted delivery behavior remains unchanged.
@@ -55,9 +49,9 @@ v1.6 release prep preserves these compatibility expectations:
   snapshot, and scenario behavior remains unchanged outside explicitly scoped
   v1.6 retained-audit helper surfaces.
 - Compact `world.snapshot()` output remains unchanged.
-- The checked-in scenario set is contiguous from `001` through `069` after
+- The released scenario set is contiguous from `001` through `069` after
   the intentional Sprint 4 scenario additions.
-- The package and CLI version report `darwin-sim 1.6.0` after release prep.
+- The package and CLI version report `darwin-sim 1.6.0`.
 
 ## Sprint Notes
 
@@ -66,7 +60,7 @@ detailed-snapshot slices summarized below. Sprint 6 does not add feature
 behavior; its release-candidate hardening is documented separately after the
 implemented sprint notes.
 
-Sprint 1 on the v1.6 planning branch adds read-only retained audit compaction
+Sprint 1 adds read-only retained audit compaction
 policy and decision metadata:
 
 - `RetainedAuditCompactionPolicy`
@@ -85,7 +79,7 @@ timers, retry loops, durable queues, networking, DNS, external services, real
 cryptography, production security infrastructure, release behavior, or a
 version bump.
 
-Sprint 2 on the v1.6 planning branch adds read-only retained audit replay
+Sprint 2 adds read-only retained audit replay
 summary metadata:
 
 - `RetainedAuditReplaySummary`
@@ -106,7 +100,7 @@ timers, retry loops, durable queues, networking, DNS, external services, real
 cryptography, production security infrastructure, release behavior, or a
 version bump.
 
-Sprint 3 on the v1.6 planning branch adds an explicit retained audit
+Sprint 3 adds an explicit retained audit
 compaction apply helper:
 
 - `RetainedAuditCompactionApplyResult`
@@ -127,7 +121,7 @@ scenario DSL coverage, detailed snapshot changes, compact
 `world.snapshot()` changes, canonical identity rewrites, release behavior, or
 a version bump.
 
-Sprint 4 on the v1.6 planning branch adds scenario DSL coverage for the
+Sprint 4 adds scenario DSL coverage for the
 existing retained audit helper semantics:
 
 - `classify_retained_audit_records_for_compaction`
@@ -155,7 +149,7 @@ DNS, external services, real cryptography, delivery changes, TrafficHub
 routing changes, canonical identity rewrites, release behavior, or a version
 bump.
 
-Sprint 5 on the v1.6 planning branch exposes existing retained-audit scenario
+Sprint 5 exposes existing retained-audit scenario
 action results in detailed debug snapshots:
 
 - `retained_audit_compaction_decisions`
@@ -180,8 +174,9 @@ Sprint 6 is release-candidate hardening and documentation audit only. It:
 - verifies the checked-in scenario library is contiguous from `001` through
   `069` and that `docs/SCENARIO_INDEX.md` is exactly generated from
   deterministic scenario metadata; and
-- records the implemented Sprints 1 through 5 scope and its
-  simulator-local, symbolic limitations without claiming v1.6 has released.
+- records the implemented Sprints 1 through 5 scope, release status, and
+  simulator-local, symbolic limitations without claiming package publication,
+  release assets, or production behavior.
 
 Sprint 6 does not add scenarios unless needed to repair deterministic index
 consistency. It does not change classification precedence, replay-summary
@@ -194,31 +189,30 @@ DDoS, compliance, or data-retention guarantees.
 
 ## Scenario Coverage
 
-Scenarios `067` through `069` added during v1.6 planning:
+Scenarios `067` through `069` were released in v1.6:
 
 - `067_retained_audit_compaction_classification`
 - `068_retained_audit_replay_summary`
 - `069_retained_audit_compaction_apply`
 
-The checked-in scenario library is contiguous from `001` through `069`. The
-package and CLI report `darwin-sim 1.6.0` on the release-prep branch.
+The released scenario library is contiguous from `001` through `069`. The
+package and CLI report `darwin-sim 1.6.0`.
 
 ## Current Limitations
 
-- v1.6.0 release prep is complete on `v1.6/planning`.
+- v1.6.0 is released on `main` as `darwin-sim 1.6.0`.
 - v1.6 work remains limited to retained audit compaction classification,
   replay summary helpers, the explicit simulator-local compaction apply
   helper, focused Sprint 4 scenario DSL coverage, and Sprint 5 detailed
   snapshot visibility.
 - Sprint 6 changes release-readiness checks and documentation only; it adds no
   compaction behavior beyond explicit simulator helpers.
-- No merge to `main`, tag, GitHub release, package publication, or release
-  asset upload has been performed for v1.6.
+- No package publication or release asset upload was performed for v1.6.
 - The package and CLI version report `darwin-sim 1.6.0`.
 
 ## Non-Goals
 
-v1.6 release prep does not add:
+v1.6 release does not add:
 
 - real networking;
 - sockets;
@@ -251,19 +245,16 @@ v1.6 release prep does not add:
 - canonical identity rewrites;
 - package publication;
 - release assets;
-- merge to `main`;
-- tags or GitHub releases;
 - version bumps beyond `1.6.0`.
 
 ## Release Readiness
 
 Release-candidate documentation/readiness hardening has been completed for the
-v1.6.0 release-prep branch. Release prep set the package and CLI version to
-`darwin-sim 1.6.0` and added the changelog release-prep entry. No merge to
-`main`, tag, GitHub release, package publication, or release asset upload has
-been performed for v1.6.
+v1.6.0 release. Release prep set the package and CLI version to
+`darwin-sim 1.6.0` and added the changelog release entry. No package
+publication or release asset upload was performed for v1.6.
 
-Final release-prep validation passed `python -m ruff check .`,
+Final validation passed `python -m ruff check .`,
 `python -m pytest` with 896 tests, `python scripts/run_all_scenarios.py` for
 scenarios `001` through `069`, and `python -m darwin.cli.main --version`
 reporting `darwin-sim 1.6.0`.

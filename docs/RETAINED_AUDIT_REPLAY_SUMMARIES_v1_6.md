@@ -1,7 +1,7 @@
 # Retained Audit Replay Summaries v1.6
 
-Status: v1.6 Sprint 2 read-only helper included in the v1.6.0 release-prep
-branch. The package version reports `darwin-sim 1.6.0`.
+Status: released in v1.6.0 on `main`. The package version reports
+`darwin-sim 1.6.0`.
 
 Sprint 6 release-candidate hardening and documentation audit confirms this
 document is included in deterministic documentation readiness/link checks. It
@@ -143,4 +143,4 @@ Sprint 2 does not add:
 - compact snapshot changes;
 - package publication;
 - release assets;
-- merge, tag, GitHub release, or version bump beyond `1.6.0`.
+- version bump beyond `1.6.0`.

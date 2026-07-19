@@ -1,23 +1,22 @@
 # DARWIN v1.6 Roadmap: Retained Audit Compaction and Replay Summaries
 
-Status: release prep complete on `v1.6/planning` as `darwin-sim 1.6.0`.
+Status: released on `main` as `darwin-sim 1.6.0`. The annotated `v1.6.0` tag
+and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.6.0. No package
+publication was performed, and no release assets were uploaded.
+
 Sprint 1 read-only compaction policy helpers, Sprint 2 read-only replay
 summary helpers, Sprint 3 explicit compaction apply helpers, Sprint 4 scenario
 DSL coverage, and Sprint 5 detailed snapshot/debug visibility are implemented.
 Sprint 6 hardens release-readiness documentation and deterministic scenario
-coverage checks without adding feature behavior. DARWIN v1.5.0 remains the
-latest tagged GitHub release on `main` until a separate merge, tag, and release
-step is explicitly performed. The annotated `v1.5.0` tag and GitHub release
-exist:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
-publication was performed for v1.5.0, and no release assets were uploaded.
+coverage checks without adding feature behavior.
 
 Recommended candidate theme: Retained audit compaction and replay summaries.
 
-This roadmap records implemented simulator-only planning slices, the Sprint 6
-release-candidate documentation audit, and the explicit v1.6.0 release-prep
-version bump. It does not authorize package publication, release assets,
-merge to `main`, tagging, or release execution.
+This roadmap records implemented simulator-only slices, the Sprint 6
+release-candidate documentation audit, and the explicit v1.6.0 version bump.
+It does not authorize package publication, release assets, or changes to
+released v1.6 behavior.
 
 v1.6 should remain simulator-first and symbolic. It should not become
 production networking, a real DDoS protection system, a firewall product, a
@@ -35,7 +34,7 @@ simulator-retained histories.
 v1.5 added lifecycle explanation retention classification, read-only pruning
 plans, an explicit caller-driven pruning apply helper limited to retained
 lifecycle explanation history, scenario DSL coverage, and detailed debug
-snapshot visibility. v1.6 planning should start one step earlier: read-only
+snapshot visibility. v1.6 adds read-only
 policy and summary models over retained audit-style histories, without
 deleting, rewriting, routing, delivering, retrying, scheduling, or compacting
 anything by default.
@@ -83,7 +82,7 @@ Out of scope:
 - Compact `world.snapshot()` changes.
 - Compaction behavior beyond explicit simulator helpers.
 - Version bumps beyond `1.6.0`.
-- Package publication, release assets, merge, tag, or release work.
+- Package publication or release assets.
 
 ## Candidate Concepts
 
@@ -132,7 +131,7 @@ Explicit compaction/apply helper:
 
 ## Candidate Sprint Order
 
-Sprint 1 implemented on the v1.6 planning branch: Read-only audit compaction
+Sprint 1 implemented for v1.6: Read-only audit compaction
 policy models.
 
 - Define the smallest symbolic policy model for retained simulator audit
@@ -144,7 +143,7 @@ policy models.
   history and stream-offer lifecycle transition history. Other retained audit
   families remain future work.
 
-Sprint 2 implemented on the v1.6 planning branch: Deterministic read-only
+Sprint 2 implemented for v1.6: Deterministic read-only
 replay-summary helpers.
 
 - Define `RetainedAuditReplaySummary` for explicit retained audit records.
@@ -158,7 +157,7 @@ replay-summary helpers.
 - Initial support remains intentionally narrow: stream-offer lifecycle
   explanation history and stream-offer lifecycle transition history.
 
-Sprint 3 implemented on the v1.6 planning branch: Explicit retained audit
+Sprint 3 implemented for v1.6: Explicit retained audit
 compaction apply helper.
 
 - Define `RetainedAuditCompactionApplyResult` for caller-driven apply
@@ -174,7 +173,7 @@ compaction apply helper.
 - Keep scenario DSL coverage, detailed snapshot changes, and compact
   `world.snapshot()` changes out of this sprint.
 
-Sprint 4 implemented on the v1.6 planning branch: Scenario DSL coverage.
+Sprint 4 implemented for v1.6: Scenario DSL coverage.
 
 - Add explicit scenario actions for retained audit classification, replay
   summaries, and compaction apply using the existing helper semantics.
@@ -187,9 +186,9 @@ Sprint 4 implemented on the v1.6 planning branch: Scenario DSL coverage.
   history/reason grouping and category filtering, explicit selected-history
   apply, unsupported keys, missing keys, and no compaction without apply.
 - Preserve compact and detailed snapshot shapes during feature implementation;
-  release prep later sets the package/CLI version to `darwin-sim 1.6.0`.
+  release prep set the package/CLI version to `darwin-sim 1.6.0`.
 
-Sprint 5 implemented on the v1.6 planning branch: Detailed snapshot/debug
+Sprint 5 implemented for v1.6: Detailed snapshot/debug
 visibility for retained-audit action results.
 
 - Add top-level detailed snapshot fields for retained audit compaction
@@ -200,8 +199,8 @@ visibility for retained-audit action results.
 - Add focused coverage for detailed visibility, action-result ordering, and
   snapshot-copy isolation.
 
-Sprint 6: Release-Candidate Hardening and Documentation Audit (implemented on
-the v1.6 planning branch).
+Sprint 6: Release-Candidate Hardening and Documentation Audit (implemented for
+v1.6).
 
 Sprint 6 is release-candidate hardening and documentation audit only; it adds
 no new feature behavior.
@@ -215,7 +214,7 @@ no new feature behavior.
   preserve the simulator-local, symbolic boundaries of the implemented work.
 - Keep the package and CLI version at `darwin-sim 1.5.0` during Sprint 6
   release-candidate hardening; release prep later sets it to
-  `darwin-sim 1.6.0` and adds the changelog release-prep entry.
+  `darwin-sim 1.6.0` and adds the changelog release entry.
 - Do not change compaction classification precedence, replay-summary
   semantics, compaction-apply semantics, compact `world.snapshot()`, existing
   delivery behavior, TrafficHub routing, or canonical identity behavior.
@@ -232,11 +231,10 @@ compaction-plan refinements.
   separate from additional apply/delete behavior.
 - Keep summaries diagnostic only.
 
-## Release-Prep Acceptance Targets
+## Release Acceptance Targets
 
-- v1.6.0 release prep is clearly distinguished from merge, tag, GitHub
-  release, package publication, and release asset upload.
-- v1.5.0 remains the latest tagged GitHub release on `main`.
+- v1.6.0 is released on `main`; the annotated tag and GitHub release exist.
+- No package publication or release asset upload was performed.
 - Implemented helper behavior remains limited to explicit read-only planning,
   diagnostic summaries, and caller-driven selected-history apply, with
   focused tests and simulator-only scenarios.
@@ -245,7 +243,7 @@ compaction-plan refinements.
   histories, scenario, detailed snapshot, compact snapshot, and canonical
   identity behavior remains unchanged.
 - Compact `world.snapshot()` output remains unchanged.
-- No package publication, release assets, merge, tag, release, real
+- No package publication, release assets, real
   networking, DNS lookup, external services, real cryptography, production
   E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
   queues, live timers, compaction behavior beyond explicit simulator helpers,
@@ -254,22 +252,21 @@ compaction-plan refinements.
 
 ## Release Prep
 
-Status: complete on `v1.6/planning`.
+Status: complete and released on `main`.
 
 Release prep set the package and CLI version to `darwin-sim 1.6.0`, updated
-release notes, added the changelog release-prep entry, and updated readiness
-tests and docs. Future merge to `main`, tag creation, GitHub release creation,
-package publication, or release asset upload requires a separate explicit
-request.
+release notes, added the changelog release entry, and updated readiness tests
+and docs. Package publication or release asset upload requires a separate
+explicit request.
 
 ## Release Status
 
-v1.6.0 release prep is complete on `v1.6/planning`. Sprint 1 through Sprint 6
-work exists on the planning branch, including focused scenario coverage
-through `069` and release-candidate documentation hardening. No merge to
-`main`, tag, GitHub release, package publication, or release assets exist.
-
-v1.5.0 remains the latest tagged GitHub release on `main`.
+v1.6.0 is released on `main` as `darwin-sim 1.6.0`. Sprint 1 through Sprint 6
+work is released, including focused scenario coverage through `069` and
+release-candidate documentation hardening. The annotated `v1.6.0` tag and
+GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.6.0. No package publication
+was performed, and no release assets were uploaded.
 
 ## Intentionally Deferred Work
 
@@ -287,5 +284,4 @@ v1.5.0 remains the latest tagged GitHub release on `main`.
 - TrafficHub routing changes.
 - Compact snapshot changes.
 - Canonical identity rewrites.
-- Package publication, release assets, merge, tag, release, or version bump
-  beyond `1.6.0`.
+- Package publication, release assets, or version bump beyond `1.6.0`.

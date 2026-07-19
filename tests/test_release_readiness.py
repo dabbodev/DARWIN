@@ -302,7 +302,7 @@ def test_v1_5_docs_are_release_status_ready():
         assert caveat in combined_docs_normalized
 
 
-def test_v1_6_docs_are_release_prep_ready():
+def test_v1_6_docs_are_release_status_ready():
     release_notes = (PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_6_DRAFT.md").read_text(
         encoding="utf-8"
     )
@@ -316,7 +316,10 @@ def test_v1_6_docs_are_release_prep_ready():
     )
     combined_docs_normalized = re.sub(r"\s+", " ", combined_docs)
 
-    assert "v1.6.0 release-prep branch" in release_notes
+    assert "released on `main` as `darwin-sim 1.6.0`" in release_notes
+    assert "https://github.com/dabbodev/DARWIN/releases/tag/v1.6.0" in release_notes
+    assert "No package publication was performed" in combined_docs_normalized
+    assert "no release assets were uploaded" in combined_docs_normalized
     assert "Sprint 1 through Sprint 6" in release_notes
     assert "Sprint 6: Release-Candidate Hardening and Documentation Audit" in release_notes
     assert "Sprint 6: Release-Candidate Hardening and Documentation Audit" in roadmap
@@ -325,8 +328,10 @@ def test_v1_6_docs_are_release_prep_ready():
     assert "from `001` through `069`" in release_notes
     assert "docs/RETAINED_AUDIT_COMPACTION_APPLY_v1_6.md" in readme
     assert "Release prep set the package and CLI version to `darwin-sim 1.6.0`" in roadmap
-    assert "v1.6 release-prep hardening and documentation audit" in checklist
+    assert "released on `main` as `darwin-sim 1.6.0`" in roadmap
+    assert "v1.6 release-candidate hardening and documentation audit" in checklist
     assert "from `001` through `069`" in checklist
+    assert "v1.6.0 is released on `main` as `darwin-sim 1.6.0`" in checklist
 
     for caveat in V1_6_RELEASE_CANDIDATE_CAVEATS:
         assert caveat in combined_docs_normalized

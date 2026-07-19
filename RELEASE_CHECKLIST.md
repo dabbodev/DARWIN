@@ -714,42 +714,39 @@ python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
 ```
 
-# DARWIN v1.6 Retained Audit Compaction Release-Prep Checklist
+# DARWIN v1.6 Retained Audit Compaction Release Checklist
 
-v1.6.0 release prep is complete on `v1.6/planning` as `darwin-sim 1.6.0`.
-DARWIN v1.5.0 remains the latest tagged GitHub release on `main` until a
-separate merge, tag, and release step is explicitly performed. The annotated
-`v1.5.0` tag and GitHub release exist. No package publication was performed
-for v1.5.0, and no release assets were uploaded.
+v1.6.0 is released on `main` as `darwin-sim 1.6.0`. The annotated `v1.6.0`
+tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.6.0. No package publication
+was performed, and no release assets were uploaded.
 
 - [x] v1.6 planning roadmap seed is checked in at `docs/V1_6_ROADMAP.md`.
 - [x] v1.6 draft release-notes placeholder is checked in at
   `docs/RELEASE_NOTES_v1_6_DRAFT.md`.
-- [x] README links to the v1.6 release-prep docs while preserving v1.5.0 as
-  the latest tagged GitHub release until merge/tag/release is explicitly
-  performed.
+- [x] README links to the v1.6 release docs.
 - [x] Planning scope is limited to retained audit compaction and replay-summary
   candidates.
 - [x] Candidate scope is simulator-local and symbolic.
-- [x] Sprint 6 is v1.6 release-prep hardening and documentation audit only;
-  it does not add new feature behavior.
+- [x] Sprint 6 is v1.6 release-candidate hardening and documentation audit
+  only; it does not add new feature behavior.
 - [x] Documentation readiness/link checks include `docs/V1_6_ROADMAP.md`,
   `docs/RELEASE_NOTES_v1_6_DRAFT.md`,
   `docs/RETAINED_AUDIT_COMPACTION_POLICY_v1_6.md`,
   `docs/RETAINED_AUDIT_REPLAY_SUMMARIES_v1_6.md`, and
   `docs/RETAINED_AUDIT_COMPACTION_APPLY_v1_6.md`.
-- [x] v1.6 draft release notes summarize Sprint 1 through Sprint 6 without
-  claiming merge to `main`, tag, GitHub release, package publication, release
-  assets, or production behavior.
-- [x] Checked-in scenario metadata is contiguous from `001` through `069`.
+- [x] v1.6 draft release notes summarize Sprint 1 through Sprint 6 and release
+  status without claiming package publication, release assets, or production
+  behavior.
+- [x] Released scenario metadata is contiguous from `001` through `069`.
 - [x] `docs/SCENARIO_INDEX.md` is current and exactly generated from
   deterministic scenario metadata.
-- [x] `CHANGELOG.md` contains a dated `1.6.0` release-prep section.
+- [x] `CHANGELOG.md` contains a dated `1.6.0` release section.
 - [x] Package version is confirmed as `1.6.0`.
 - [x] CLI version reports `darwin-sim 1.6.0`.
 - [x] No v1.6 feature behavior, scenario behavior, or tests for new feature
   behavior are added by the planning seed.
-- [x] Planning docs avoid production networking, sockets, HTTP/WebSocket
+- [x] Release docs avoid production networking, sockets, HTTP/WebSocket
   behavior, DNS lookup, registrar integration, public CA behavior, external
   services, real cryptography, key generation, private key storage, production
   E2EE, delivery enforcement, automatic cleanup workers, retry loops, durable
@@ -763,12 +760,10 @@ for v1.5.0, and no release assets were uploaded.
   networking, DNS, external services, real cryptography, delivery changes,
   TrafficHub routing changes, compact snapshot changes, or canonical identity
   rewrites.
-- [x] No merge to `main`, tag, GitHub release, package publication, release
-  asset upload, new feature behavior, or new scenarios were added.
-- [ ] Future merge, tag, GitHub release, package publication, or release asset
-  upload is explicitly requested before it is performed.
+- [x] Merge to `main`, annotated tag, and GitHub release are complete.
+- [x] No release assets or package publication were performed.
 
-## v1.6 Release-Prep Validation Commands
+## v1.6 Release Validation Commands
 
 ```bash
 python -m ruff check .

@@ -8,11 +8,9 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-DARWIN v1.6.0 release prep is complete on `v1.6/planning` as
-`darwin-sim 1.6.0`. DARWIN v1.5.0 remains the latest tagged GitHub release on
-`main` until a separate merge, tag, and release step is explicitly performed.
-The annotated `v1.5.0` tag and GitHub release exist:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.5.0. No package
+DARWIN v1.6.0 is released on `main` as `darwin-sim 1.6.0`. The annotated
+`v1.6.0` tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.6.0. No package
 publication was performed, and no release assets were uploaded.
 
 v1.4 adds lifecycle policy explanation and stream-offer audit summaries while
@@ -41,13 +39,13 @@ clocks, live polling, retention/pruning behavior beyond explicit simulator
 helpers, delivery behavior changes, TrafficHub routing changes, compact
 snapshot changes, or canonical identity rewrites.
 
-The v1.6 release-prep branch covers retained audit compaction classification,
-replay summaries, and explicit compaction apply. It includes simulator-local
+The v1.6 release covers retained audit compaction classification, replay
+summaries, and explicit compaction apply. It includes simulator-local
 read-only policy/classification and replay-summary helpers, an explicit
 caller-driven apply helper, scenario coverage through `069`, detailed debug
 snapshot visibility, and documentation/readiness checks. Compact
-`world.snapshot()` remains unchanged. No merge to `main`, tag, GitHub release,
-package publication, or release asset upload was performed.
+`world.snapshot()` remains unchanged. No package publication or release asset
+upload was performed.
 
 The v0.1 simulator answers questions like:
 
@@ -242,9 +240,9 @@ retention classification, read-only pruning plans, and explicit pruning apply.
 The released scenario set is contiguous from `001` through `066`, and the
 package and CLI version report `darwin-sim 1.5.0`.
 
-On the v1.6 release-prep branch, scenarios `067` through `069` cover retained
+In the v1.6 release, scenarios `067` through `069` cover retained
 audit compaction classification, replay summaries, and explicit compaction
-apply. The checked-in scenario set is contiguous from `001` through `069`,
+apply. The released scenario set is contiguous from `001` through `069`,
 and the package and CLI version report `darwin-sim 1.6.0`.
 
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
@@ -298,15 +296,15 @@ polling, lifecycle mutation behavior beyond existing explicit helpers,
 TrafficHub routing changes, delivery behavior changes, compact snapshot
 changes, or canonical identity rewrites.
 
-The v1.6 release-prep docs cover read-only retained audit compaction policy and
+The v1.6 release docs cover read-only retained audit compaction policy and
 classification helpers, read-only replay summaries, explicit retained-audit
 compaction apply, scenario DSL coverage, detailed snapshot/debug visibility,
 and scenarios `067` through `069`. Final validation passed `python -m ruff
 check .`, `python -m pytest` with 896 tests,
 `python scripts/run_all_scenarios.py` for scenarios `001` through `069`, and
-`python -m darwin.cli.main --version` reporting `darwin-sim 1.6.0`. No merge
-to `main`, tag, GitHub release, package publication, or release asset upload
-was performed. v1.6 remains simulator-local and symbolic. It does not add new
+`python -m darwin.cli.main --version` reporting `darwin-sim 1.6.0`. No package
+publication was performed, and no release assets were uploaded. v1.6 remains
+simulator-local and symbolic. It does not add new
 feature behavior, compaction behavior beyond explicit simulator helpers,
 networking, sockets, HTTP/WebSocket behavior, DNS lookup, external services,
 real cryptography, production E2EE, production security, privacy, anonymity,
@@ -1094,8 +1092,7 @@ For v1.5 lifecycle explanation retention-policy planning docs, see:
 - `docs/STREAM_OFFER_LIFECYCLE_EXPLANATION_PRUNING_v1_5.md`
 - `docs/RELEASE_NOTES_v1_5_DRAFT.md`
 
-For v1.6 retained audit compaction and replay-summary release-prep docs,
-see:
+For v1.6 retained audit compaction and replay-summary release docs, see:
 
 - `docs/V1_6_ROADMAP.md`
 - `docs/RETAINED_AUDIT_COMPACTION_POLICY_v1_6.md`
