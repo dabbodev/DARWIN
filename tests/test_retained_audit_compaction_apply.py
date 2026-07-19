@@ -184,7 +184,7 @@ def test_compaction_apply_unsupported_history_type_is_noop():
     decision = RetainedAuditCompactionDecision(
         hub_id=hub.hub_id,
         policy_id="audit_compaction_policy_001",
-        history_type="rendezvous_poll_result",
+        history_type="mixed",
         retained_record_keys=("retained:key",),
         compaction_candidate_record_keys=("candidate:key",),
         ignored_record_keys=("ignored:key", "candidate:key"),
@@ -280,6 +280,8 @@ def test_compaction_apply_empty_decision_is_deterministic_and_safe():
             "supported_history_types": [
                 "stream_offer_lifecycle_explanation",
                 "stream_offer_status_transition",
+                "rendezvous_poll_result",
+                "lane_admission_decision",
             ],
             "labels": ["audit"],
         },

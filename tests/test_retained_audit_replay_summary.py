@@ -113,6 +113,7 @@ def test_replay_summary_empty_inputs_are_deterministic():
         "by_reason": {},
         "by_source": {},
         "by_offer_id": {},
+        "by_request_id": {},
         "first_record_key": None,
         "last_record_key": None,
         "metadata": {
@@ -139,6 +140,8 @@ def test_replay_summary_empty_inputs_are_deterministic():
             "supported_history_types": [
                 "stream_offer_lifecycle_explanation",
                 "stream_offer_status_transition",
+                "rendezvous_poll_result",
+                "lane_admission_decision",
             ],
             "history_type_filter": None,
             "decision_category_filter": "all",
@@ -257,6 +260,25 @@ def test_replay_summary_can_filter_with_compaction_decision_keys():
     assert candidate_summary.metadata["decision_category_filter"] == (
         "compaction_candidate"
     )
+
+
+def test_replay_summary_does_not_group_v1_6_transition_request_ids():
+    transition = make_stream_offer_status_transition(
+        offer_id="offer_transition",
+        previous_status="held",
+        new_status="denied",
+        reason="manual_deny",
+        hub_id="registry_chat_001",
+        request_id="request_v1_6_transition",
+    )
+
+    summary = summarize_retained_audit_replay(
+        (transition,),
+        hub_id="registry_chat_001",
+    )
+
+    assert summary.record_keys == (_transition_key(0, transition),)
+    assert summary.by_request_id == {}
 
 
 def _explanation(

@@ -2142,6 +2142,8 @@ def _retained_audit_replay_summary_contains(
         "source_count": _optional_int_field(assertion, "source_count"),
         "offer_id": _optional_filter_str(assertion, "offer_id"),
         "offer_count": _optional_int_field(assertion, "offer_count"),
+        "request_id": _optional_filter_str(assertion, "request_id"),
+        "request_count": _optional_int_field(assertion, "request_count"),
         "decision_category": _optional_filter_str(assertion, "decision_category"),
         "grouped_history_type": _optional_filter_str(
             assertion,
@@ -3068,6 +3070,13 @@ def _matches_retained_audit_replay_summary_filters(
             "by_offer_id",
             "offer_id",
             "offer_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "by_request_id",
+            "request_id",
+            "request_count",
         )
     ):
         return False

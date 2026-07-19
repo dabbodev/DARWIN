@@ -189,14 +189,14 @@ def test_v1_1_checked_in_encrypted_delivery_scenarios_validate_and_run():
     assert not failures
 
 
-def test_v1_1_scenario_sweep_remains_contiguous_001_through_069():
+def test_v1_1_scenario_sweep_remains_contiguous_001_through_072():
     scenario_numbers = sorted(
         int(path.name[:3])
         for path in list_scenario_files(SCENARIOS_DIR)
         if path.name[:3].isdigit()
     )
 
-    assert scenario_numbers == list(range(1, 70))
+    assert scenario_numbers == list(range(1, 73))
 
 
 def test_v1_1_existing_plaintext_delivery_scenario_still_passes():

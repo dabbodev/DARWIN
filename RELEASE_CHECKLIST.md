@@ -771,3 +771,58 @@ python -m pytest
 python scripts/run_all_scenarios.py
 python -m darwin.cli.main --version
 ```
+
+# DARWIN v1.7 Poll and Admission Retained-Audit Release Checklist
+
+This checklist describes the immutable v1.7.0 source snapshot. Remote
+publication state is intentionally not inferred from repository contents. The
+publication procedure creates an annotated `v1.7.0` tag and GitHub source
+release from the exact validated commit; it performs no package publication
+and uploads no release assets.
+
+- [x] v1.7 roadmap is checked in at `docs/V1_7_ROADMAP.md`.
+- [x] v1.7 release notes are checked in at
+  `docs/RELEASE_NOTES_v1_7_DRAFT.md`.
+- [x] The cohesive poll/admission expansion specification is checked in at
+  `docs/RETAINED_AUDIT_POLL_ADMISSION_v1_7.md`.
+- [x] README links to all v1.7 release documents.
+- [x] `CHANGELOG.md` contains a dated `1.7.0` source-release section.
+- [x] Package and CLI metadata report `darwin-sim 1.7.0`.
+- [x] `requires-python` remains `>=3.11`; classifiers cover Python 3.11,
+  3.12, 3.13, and 3.14.
+- [x] CI validates Python 3.11 through 3.14 and verifies exact CLI output.
+- [x] CI has a separate Python 3.11 wheel build/install smoke job and no
+  artifact or package upload step.
+- [x] Existing supported retained-audit history types keep their v1.6 order,
+  followed by poll-result and admission-decision histories.
+- [x] Replay summaries expose optional sorted request-ID counts without
+  expanding poll matched-offer IDs into offer grouping.
+- [x] Explicit apply selects one supported history; mixed decisions remain
+  read-only and unsupported for mutation.
+- [x] Scenarios `070` through `072` cover classification, replay, and isolated
+  apply; checked-in scenario metadata is contiguous from `001` through `072`.
+- [x] Detailed retained-audit summaries remain copied and JSON-safe, and
+  compact `world.snapshot()` remains unchanged.
+- [x] Release documentation avoids claims of automatic cleanup, production
+  retention/compliance, networking, cryptography, security, privacy,
+  anonymity, firewall, DDoS, delivery, or routing behavior.
+- [x] Ruff passes and pytest passes with 909 tests.
+- [x] All scenarios `001` through `072` pass and the checked-in scenario index
+  exactly matches deterministic generated metadata.
+- [x] The CLI reports `darwin-sim 1.7.0`.
+- [x] An isolated `darwin_sim-1.7.0-py3-none-any.whl` build, install, and
+  out-of-tree version smoke check passes without uploading the wheel.
+
+## v1.7 Source-Snapshot Validation Commands
+
+These commands produced the checked results above. The checklist does not
+infer remote tag/release existence from repository contents.
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main --version
+python -m build --wheel
+```

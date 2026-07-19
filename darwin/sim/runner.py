@@ -2891,6 +2891,10 @@ def _retained_audit_records(
             records.extend(hub.stream_offer_lifecycle_explanation_history)
         elif history_type == "stream_offer_status_transition":
             records.extend(hub.stream_offer_status_transition_history)
+        elif history_type == "rendezvous_poll_result":
+            records.extend(hub.rendezvous_poll_result_history)
+        elif history_type == "lane_admission_decision":
+            records.extend(hub.lane_admission_decision_history)
     return records
 
 

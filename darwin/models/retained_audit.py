@@ -1,4 +1,4 @@
-"""Read-only retained audit compaction policy models for v1.6 planning."""
+"""Retained audit compaction policy, replay, and apply result models."""
 
 from __future__ import annotations
 
@@ -198,6 +198,7 @@ class RetainedAuditReplaySummary:
     first_record_key: str | None = None
     last_record_key: str | None = None
     metadata: dict[str, Any] | None = None
+    by_request_id: dict[str, int] | None = None
 
     def __post_init__(self) -> None:
         _validate_required_string(self.hub_id, "hub_id")
@@ -228,6 +229,11 @@ class RetainedAuditReplaySummary:
             "by_offer_id",
             _count_dict(self.by_offer_id or {}, "by_offer_id"),
         )
+        object.__setattr__(
+            self,
+            "by_request_id",
+            _count_dict(self.by_request_id or {}, "by_request_id"),
+        )
         _validate_optional_string(self.first_record_key, "first_record_key")
         _validate_optional_string(self.last_record_key, "last_record_key")
         object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
@@ -243,6 +249,7 @@ class RetainedAuditReplaySummary:
             "by_reason": dict(self.by_reason or {}),
             "by_source": dict(self.by_source or {}),
             "by_offer_id": dict(self.by_offer_id or {}),
+            "by_request_id": dict(self.by_request_id or {}),
             "first_record_key": self.first_record_key,
             "last_record_key": self.last_record_key,
             "metadata": _json_safe_copy(self.metadata or {}),

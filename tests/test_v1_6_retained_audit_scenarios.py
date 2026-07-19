@@ -317,14 +317,14 @@ def test_v1_6_checked_in_retained_audit_scenarios_validate_and_run():
     assert not failures
 
 
-def test_v1_6_scenario_sweep_remains_contiguous_001_through_069():
+def test_v1_6_scenario_sweep_remains_contiguous_001_through_072():
     scenario_numbers = sorted(
         int(path.name[:3])
         for path in list_scenario_files(SCENARIOS_DIR)
         if path.name[:3].isdigit()
     )
 
-    assert scenario_numbers == list(range(1, 70))
+    assert scenario_numbers == list(range(1, 73))
 
 
 def _minimal_invalid_v1_6_scenario() -> dict[str, object]:
@@ -342,7 +342,7 @@ def _minimal_invalid_v1_6_scenario() -> dict[str, object]:
                 "action": "classify_retained_audit_records_for_compaction",
                 "registry_hub": "registry_chat_001",
                 "policy_id": "invalid_policy",
-                "record_history_types": ["rendezvous_poll_result"],
+                "record_history_types": ["unsupported_retained_audit_history"],
                 "retain_reasons": ["active_by_plan", 42],
                 "max_records": -1,
             },

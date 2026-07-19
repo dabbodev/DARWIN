@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "darwin-sim"
-version = "1.6.0"
+version = "1.7.0"
 description = "Simulator-first prototype for DARWIN: Direct-Access Registration Window Interface Network."
 readme = "README.md"
 license = "MIT"
@@ -27,6 +27,8 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: System :: Networking",
   "Topic :: Software Development :: Testing"
 ]
