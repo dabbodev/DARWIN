@@ -830,6 +830,8 @@ def _validate_assertion_type_fields(
             "source_count",
             "offer_count",
             "request_count",
+            "message_count",
+            "mailbox_count",
             "grouped_history_type_count",
         ):
             _validate_optional_non_negative_int(assertion, field_name, location, errors)

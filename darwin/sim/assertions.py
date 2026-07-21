@@ -2144,6 +2144,10 @@ def _retained_audit_replay_summary_contains(
         "offer_count": _optional_int_field(assertion, "offer_count"),
         "request_id": _optional_filter_str(assertion, "request_id"),
         "request_count": _optional_int_field(assertion, "request_count"),
+        "message_id": _optional_filter_str(assertion, "message_id"),
+        "message_count": _optional_int_field(assertion, "message_count"),
+        "mailbox_id": _optional_filter_str(assertion, "mailbox_id"),
+        "mailbox_count": _optional_int_field(assertion, "mailbox_count"),
         "decision_category": _optional_filter_str(assertion, "decision_category"),
         "grouped_history_type": _optional_filter_str(
             assertion,
@@ -3077,6 +3081,20 @@ def _matches_retained_audit_replay_summary_filters(
             "by_request_id",
             "request_id",
             "request_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "by_message_id",
+            "message_id",
+            "message_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "by_mailbox_id",
+            "mailbox_id",
+            "mailbox_count",
         )
     ):
         return False

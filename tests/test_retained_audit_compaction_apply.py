@@ -282,6 +282,7 @@ def test_compaction_apply_empty_decision_is_deterministic_and_safe():
                 "stream_offer_status_transition",
                 "rendezvous_poll_result",
                 "lane_admission_decision",
+                "encrypted_delivery_result",
             ],
             "labels": ["audit"],
         },

@@ -230,6 +230,7 @@ def test_compaction_empty_inputs_produce_deterministic_empty_decision():
                 "stream_offer_status_transition",
                 "rendezvous_poll_result",
                 "lane_admission_decision",
+                "encrypted_delivery_result",
             ],
             "unsupported_records_ignored": False,
         },

@@ -826,3 +826,54 @@ python -m darwin.cli.main scenario-index
 python -m darwin.cli.main --version
 python -m build --wheel
 ```
+
+# DARWIN v1.8 Encrypted-Delivery Retained-Audit Release Checklist
+
+This checklist describes the immutable v1.8.0 source snapshot. Remote
+publication state is intentionally not inferred from repository contents. The
+publication procedure creates an annotated `v1.8.0` tag and GitHub source
+release from the exact validated commit; it performs no package publication
+and uploads no release assets.
+
+- [x] v1.8 roadmap is checked in at `docs/V1_8_ROADMAP.md`.
+- [x] v1.8 release notes are checked in at
+  `docs/RELEASE_NOTES_v1_8_DRAFT.md`.
+- [x] The encrypted-delivery retained-audit specification is checked in at
+  `docs/RETAINED_AUDIT_ENCRYPTED_DELIVERY_v1_8.md`.
+- [x] README links to all v1.8 release documents.
+- [x] `CHANGELOG.md` contains the dated `1.8.0` source-release section.
+- [x] Package and CLI metadata report `darwin-sim 1.8.0`.
+- [x] Existing retained-audit history types keep their v1.7 order and key
+  behavior, followed by `encrypted_delivery_result`.
+- [x] Encrypted result ownership uses only string `metadata["registry_hub"]`.
+- [x] Replay summaries expose sorted, copied message-ID and mailbox-ID counts.
+- [x] Explicit apply mutates only selected encrypted-delivery result history;
+  policy decisions, direct delivery results, and inboxes remain unchanged.
+- [x] Scenarios `073` through `075` cover classification, replay, and isolated
+  apply; checked-in scenario metadata is contiguous from `001` through `075`.
+- [x] Detailed retained-audit summaries remain copied and JSON-safe, and
+  compact `world.snapshot()` remains unchanged.
+- [x] Python 3.11 through 3.14 CI and exact CLI-version verification remain in
+  place.
+- [x] The Python 3.11 wheel build/install smoke job performs no upload.
+- [x] Release documentation avoids production networking, cryptography,
+  security, privacy, compliance, delivery, routing, and retention claims.
+- [x] Ruff passes and pytest passes with 922 tests.
+- [x] All scenarios `001` through `075` pass and the checked-in scenario index
+  exactly matches deterministic generated metadata.
+- [x] The CLI reports `darwin-sim 1.8.0`.
+- [x] An isolated `darwin_sim-1.8.0-py3-none-any.whl` build, install, and
+  out-of-tree version smoke check passes without uploading the wheel.
+- [x] Ruff, pytest, all scenarios, exact scenario-index verification, CLI
+  version output, and isolated wheel installation pass.
+
+## v1.8 Source-Snapshot Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main --version
+python -m build --wheel
+```

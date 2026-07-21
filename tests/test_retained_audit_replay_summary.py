@@ -114,6 +114,8 @@ def test_replay_summary_empty_inputs_are_deterministic():
         "by_source": {},
         "by_offer_id": {},
         "by_request_id": {},
+        "by_message_id": {},
+        "by_mailbox_id": {},
         "first_record_key": None,
         "last_record_key": None,
         "metadata": {
@@ -142,6 +144,7 @@ def test_replay_summary_empty_inputs_are_deterministic():
                 "stream_offer_status_transition",
                 "rendezvous_poll_result",
                 "lane_admission_decision",
+                "encrypted_delivery_result",
             ],
             "history_type_filter": None,
             "decision_category_filter": "all",

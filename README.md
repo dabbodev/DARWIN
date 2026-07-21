@@ -8,15 +8,15 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-DARWIN v1.7.0 is prepared as a source-release snapshot reporting
-`darwin-sim 1.7.0`. Its publication contract is an annotated `v1.7.0` tag and
+DARWIN v1.8.0 is prepared as a source-release snapshot reporting
+`darwin-sim 1.8.0`. Its publication contract is an annotated `v1.8.0` tag and
 a GitHub release created from the exact same commit, with no package-index
 publication and no uploaded release assets. This repository text deliberately
 does not claim that those remote publication actions have already occurred.
 
-The previous DARWIN v1.6.0 release is on `main` as `darwin-sim 1.6.0`. The
-annotated `v1.6.0` tag and GitHub release exist:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.6.0. No package
+The previous DARWIN v1.7.0 release is on `main` as `darwin-sim 1.7.0`. The
+annotated `v1.7.0` tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.7.0. No package
 publication was performed, and no release assets were uploaded.
 
 v1.4 adds lifecycle policy explanation and stream-offer audit summaries while
@@ -63,6 +63,17 @@ offers, delivery, TrafficHub routing, or canonical identity.
 
 Final v1.7 validation passed Ruff, 909 tests, all scenarios `001` through
 `072`, exact scenario-index verification, CLI version output, and an isolated
+wheel build/install/version smoke check.
+
+The v1.8 source snapshot extends retained-audit classification, replay, and
+explicit single-history apply to encrypted-delivery result history. It adds
+sorted message-ID and mailbox-ID replay counts, scenarios `073` through `075`,
+and source-aware scenario coverage while leaving encryption-policy decisions,
+direct delivery results, mailbox inboxes, compact snapshots, and routing
+unchanged.
+
+Final v1.8 validation passed Ruff, 922 tests, all scenarios `001` through
+`075`, exact scenario-index verification, CLI version output, and an isolated
 wheel build/install/version smoke check.
 
 The v0.1 simulator answers questions like:
@@ -269,6 +280,12 @@ decision filtering, and separate explicit poll/admission compaction apply.
 The checked-in scenario set is contiguous from `001` through `072`, and the
 package and CLI version report `darwin-sim 1.7.0`.
 
+In the v1.8 source-release snapshot, scenarios `073` through `075` cover
+encrypted-delivery retained-audit classification, message/mailbox-aware replay,
+and isolated explicit compaction apply. The checked-in scenario set is
+contiguous from `001` through `075`, and the package and CLI version report
+`darwin-sim 1.8.0`.
+
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
 networking, sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar
@@ -345,6 +362,14 @@ through `072`, exact scenario-index generation, CLI output
 `darwin-sim 1.7.0`, and a Python 3.11 wheel-build smoke check. The source
 release does not publish a package or upload assets and makes no production
 networking, cryptography, security, privacy, compliance, or retention claims.
+
+The v1.8 source-release docs cover encrypted-delivery result retained-audit
+classification, optional sorted message-ID and mailbox-ID replay counts,
+explicit single-history apply, scenario DSL and detailed debug visibility, and
+scenarios `073` through `075`. Release gates include Ruff, pytest, all
+scenarios `001` through `075`, exact scenario-index generation, CLI output
+`darwin-sim 1.8.0`, and an isolated wheel build/install smoke check. The source
+release does not publish a package or upload assets.
 
 The v1.5 release docs cover read-only lifecycle explanation retention
 classification, read-only pruning plans, explicit retained-history pruning
@@ -1140,6 +1165,12 @@ For v1.7 retained audit poll/admission expansion release docs, see:
 - `docs/V1_7_ROADMAP.md`
 - `docs/RETAINED_AUDIT_POLL_ADMISSION_v1_7.md`
 - `docs/RELEASE_NOTES_v1_7_DRAFT.md`
+
+For v1.8 retained audit encrypted-delivery expansion release docs, see:
+
+- `docs/V1_8_ROADMAP.md`
+- `docs/RETAINED_AUDIT_ENCRYPTED_DELIVERY_v1_8.md`
+- `docs/RELEASE_NOTES_v1_8_DRAFT.md`
 
 ## What v0.1 Is Not
 

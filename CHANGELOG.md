@@ -1,5 +1,48 @@
 # Changelog
 
+## [1.8.0] - 2026-07-21
+
+The DARWIN v1.8.0 source-release snapshot extends retained-audit compaction,
+replay, and explicit apply to RegistryHub-local encrypted-delivery result
+history. The package and CLI identify the snapshot as `darwin-sim 1.8.0`.
+
+Added:
+
+- `encrypted_delivery_result` appended to the supported retained-audit history
+  types with ownership derived from string `metadata["registry_hub"]`.
+- Deterministic encrypted-delivery result keys using request, message, mailbox,
+  lane, top-level status, and top-level reason fields.
+- Sorted, copied replay counts by message ID and mailbox ID while preserving
+  existing request, status, reason, source, offer, and decision filters.
+- Explicit single-history compaction apply for encrypted-delivery result
+  history with stale-key and repeated-apply reporting.
+- Scenario DSL support for the new history label, message/mailbox count
+  assertions, and explicit encrypted-result audit sources.
+- Scenarios `073` through `075` for classification, replay, and isolated apply.
+- Detailed retained-audit debug visibility with copy isolation and no compact
+  snapshot change.
+
+Compatibility and limits:
+
+- The existing four retained-audit history types retain their order, record
+  keys, and behavior.
+- Missing, non-string, and foreign encrypted-result owners are ignored.
+- Compaction apply does not mutate encryption-policy decisions, direct delivery
+  results, mailbox inboxes, held offers, TrafficHub state, or routing.
+- The source scenario set is contiguous from `001` through `075`.
+- v1.8 remains simulator-local and symbolic. It adds no automatic cleanup,
+  workers, retries, durable queues, live timers, networking, DNS, external
+  services, real cryptography, production E2EE, delivery enforcement, routing
+  changes, compact snapshot changes, canonical identity rewrites, or
+  production security, privacy, compliance, or retention guarantees.
+- Release publication is GitHub source-only: the procedure creates an annotated
+  `v1.8.0` tag and GitHub release from the exact validated snapshot. It does not
+  publish a package or upload release assets.
+- Final validation passed `python -m ruff check .`, `python -m pytest` with 922
+  tests, all scenarios `001` through `075`, exact checked-in scenario-index
+  verification, CLI output `darwin-sim 1.8.0`, and an isolated wheel
+  build/install/version smoke check. The wheel is not uploaded.
+
 ## [1.7.0] - 2026-07-19
 
 The DARWIN v1.7.0 source-release snapshot extends retained-audit compaction

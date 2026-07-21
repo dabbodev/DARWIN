@@ -1,0 +1,182 @@
+scenario_id: 074_retained_audit_encrypted_delivery_replay
+name: Encrypted delivery retained audit replay
+category: encryption
+description: encrypted delivery replay summaries group requests messages mailboxes statuses reasons and explicit sources through decision filters
+tags:
+  - encryption
+  - retained_audit
+  - replay
+  - v1.8
+demonstrates:
+  - replay summaries group encrypted results by request message and mailbox
+  - existing status reason and source groupings remain deterministic
+  - decision-category filters isolate retained and compaction-candidate results
+expected_result: the complete summary contains both results and filtered summaries isolate the delivered and deferred records
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  devices:
+    - device_id: dev_NEO
+      label: neo
+steps:
+  - action: register_device
+    registry_hub: registry_chat_001
+    device: dev_NEO
+    label: neo
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    canonical_device_id: dev_NEO
+    local_name: neo
+    scope: global.chat
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+  - action: register_adapter_endpoint
+    registry_hub: registry_chat_001
+    endpoint_id: endpoint_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: available
+    lane_signatures:
+      - basic_messaging:v1
+    scope: global.chat
+  - action: register_encryption_identity
+    registry_hub: registry_chat_001
+    encryption_identity_id: enc_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+  - action: register_key_bundle_reference
+    registry_hub: registry_chat_001
+    key_bundle_id: kb_mailbox_neo_001
+    encryption_identity_id: enc_mailbox_neo
+    public_ref: symbolic://public/mailbox_neo/001
+  - action: register_mailbox_encryption_binding
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    required_for_lanes:
+      - basic_messaging:v1
+  - action: register_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+  - action: evaluate_encrypted_delivery_request
+    registry_hub: registry_chat_001
+    request_id: request_zeta_074
+    message_id: message_zeta_074
+    sender_id: dev_TRINITY
+    recipient_address: darwin://global.chat.neo/inbox
+    mailbox_id: mailbox_neo
+    policy_id: policy_mailbox_neo
+    envelope_id: envelope_zeta_074
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    profile: symbolic_e2ee_v1
+    state: symbolically_encrypted
+    status: ready
+    attempt_delivery: true
+    source: zeta_source
+    payload: replay retained payload
+  - action: evaluate_encrypted_delivery_request
+    registry_hub: registry_chat_001
+    request_id: request_alpha_074
+    message_id: message_alpha_074
+    sender_id: dev_TRINITY
+    recipient_address: darwin://global.chat.neo/inbox
+    mailbox_id: mailbox_neo
+    policy_id: policy_mailbox_neo
+    envelope_id: envelope_alpha_074
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    profile: symbolic_e2ee_v1
+    state: symbolically_encrypted
+    status: ready
+    attempt_delivery: false
+    source: alpha_source
+    payload: replay candidate payload
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_encrypted_policy_074
+    history_types:
+      - encrypted_delivery_result
+    record_history_types:
+      - encrypted_delivery_result
+    compact_statuses:
+      - not_delivered
+  - action: summarize_retained_audit_replay
+    registry_hub: registry_chat_001
+    record_history_types:
+      - encrypted_delivery_result
+    decision_policy_id: retained_audit_encrypted_policy_074
+    decision_category: all
+  - action: summarize_retained_audit_replay
+    registry_hub: registry_chat_001
+    record_history_types:
+      - encrypted_delivery_result
+    decision_policy_id: retained_audit_encrypted_policy_074
+    decision_category: retained
+  - action: summarize_retained_audit_replay
+    registry_hub: registry_chat_001
+    record_history_types:
+      - encrypted_delivery_result
+    decision_policy_id: retained_audit_encrypted_policy_074
+    decision_category: compaction_candidate
+assertions:
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_chat_001
+    history_type: encrypted_delivery_result
+    record_count: 2
+    request_id: request_zeta_074
+    request_count: 1
+    message_id: message_alpha_074
+    message_count: 1
+    mailbox_id: mailbox_neo
+    mailbox_count: 2
+    source: alpha_source
+    source_count: 1
+    grouped_history_type: encrypted_delivery_result
+    grouped_history_type_count: 2
+    decision_category: all
+    expected_count: 1
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_chat_001
+    history_type: encrypted_delivery_result
+    record_count: 1
+    status: delivered
+    status_count: 1
+    reason: none
+    reason_count: 1
+    message_id: message_zeta_074
+    message_count: 1
+    mailbox_id: mailbox_neo
+    mailbox_count: 1
+    source: zeta_source
+    source_count: 1
+    decision_category: retained
+    expected_count: 1
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_chat_001
+    history_type: encrypted_delivery_result
+    record_count: 1
+    status: not_delivered
+    status_count: 1
+    reason: delivery_not_attempted
+    reason_count: 1
+    request_id: request_alpha_074
+    request_count: 1
+    message_id: message_alpha_074
+    message_count: 1
+    mailbox_id: mailbox_neo
+    mailbox_count: 1
+    source: alpha_source
+    source_count: 1
+    decision_category: compaction_candidate
+    expected_count: 1
