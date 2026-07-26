@@ -199,6 +199,8 @@ class RetainedAuditReplaySummary:
     last_record_key: str | None = None
     metadata: dict[str, Any] | None = None
     by_request_id: dict[str, int] | None = None
+    by_message_id: dict[str, int] | None = None
+    by_mailbox_id: dict[str, int] | None = None
 
     def __post_init__(self) -> None:
         _validate_required_string(self.hub_id, "hub_id")
@@ -234,6 +236,16 @@ class RetainedAuditReplaySummary:
             "by_request_id",
             _count_dict(self.by_request_id or {}, "by_request_id"),
         )
+        object.__setattr__(
+            self,
+            "by_message_id",
+            _count_dict(self.by_message_id or {}, "by_message_id"),
+        )
+        object.__setattr__(
+            self,
+            "by_mailbox_id",
+            _count_dict(self.by_mailbox_id or {}, "by_mailbox_id"),
+        )
         _validate_optional_string(self.first_record_key, "first_record_key")
         _validate_optional_string(self.last_record_key, "last_record_key")
         object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
@@ -250,6 +262,8 @@ class RetainedAuditReplaySummary:
             "by_source": dict(self.by_source or {}),
             "by_offer_id": dict(self.by_offer_id or {}),
             "by_request_id": dict(self.by_request_id or {}),
+            "by_message_id": dict(self.by_message_id or {}),
+            "by_mailbox_id": dict(self.by_mailbox_id or {}),
             "first_record_key": self.first_record_key,
             "last_record_key": self.last_record_key,
             "metadata": _json_safe_copy(self.metadata or {}),

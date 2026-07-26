@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from darwin.models.encrypted_delivery import EncryptedDeliveryResult
 from darwin.models.hub import RegistryHub
 from darwin.models.retained_audit import (
     RetainedAuditCompactionApplyResult,
@@ -24,6 +25,7 @@ SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES: tuple[str, ...] = (
     "stream_offer_status_transition",
     "rendezvous_poll_result",
     "lane_admission_decision",
+    "encrypted_delivery_result",
 )
 
 RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS: tuple[str, ...] = (
@@ -220,6 +222,8 @@ def summarize_retained_audit_replay(
     by_source: dict[str, int] = {}
     by_offer_id: dict[str, int] = {}
     by_request_id: dict[str, int] = {}
+    by_message_id: dict[str, int] = {}
+    by_mailbox_id: dict[str, int] = {}
 
     for view in views:
         record_keys.append(view.record_key)
@@ -230,6 +234,10 @@ def summarize_retained_audit_replay(
             _increment_count(by_offer_id, view.offer_id)
         if view.request_id is not None:
             _increment_count(by_request_id, view.request_id)
+        if view.message_id is not None:
+            _increment_count(by_message_id, view.message_id)
+        if view.mailbox_id is not None:
+            _increment_count(by_mailbox_id, view.mailbox_id)
 
     summary_metadata: dict[str, object] = {
         "simulator_local": True,
@@ -278,6 +286,8 @@ def summarize_retained_audit_replay(
         by_source=_sorted_count_dict(by_source),
         by_offer_id=_sorted_count_dict(by_offer_id),
         by_request_id=_sorted_count_dict(by_request_id),
+        by_message_id=_sorted_count_dict(by_message_id),
+        by_mailbox_id=_sorted_count_dict(by_mailbox_id),
         first_record_key=record_keys[0] if record_keys else None,
         last_record_key=record_keys[-1] if record_keys else None,
         metadata=summary_metadata,
@@ -436,6 +446,8 @@ class _AuditRecordView:
         hub_id: str | None,
         offer_id: str | None,
         request_id: str | None,
+        message_id: str | None,
+        mailbox_id: str | None,
         reason: str | None,
         status: str | None,
         source: str | None,
@@ -445,6 +457,8 @@ class _AuditRecordView:
         self.hub_id = hub_id
         self.offer_id = offer_id
         self.request_id = request_id
+        self.message_id = message_id
+        self.mailbox_id = mailbox_id
         self.reason = reason
         self.status = status
         self.source = source
@@ -479,6 +493,8 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
             hub_id=record.hub_id,
             offer_id=record.offer_id,
             request_id=None,
+            message_id=None,
+            mailbox_id=None,
             reason=record.reason,
             status=record.status,
             source=record.source,
@@ -490,6 +506,8 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
             hub_id=record.hub_id,
             offer_id=record.offer_id,
             request_id=None,
+            message_id=None,
+            mailbox_id=None,
             reason=record.reason.reason,
             status=record.new_status.status,
             source=_metadata_source(record.metadata),
@@ -501,6 +519,8 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
             hub_id=record.parent_hub_id,
             offer_id=None,
             request_id=record.request_id,
+            message_id=None,
+            mailbox_id=None,
             reason=record.reason,
             status=record.status.status,
             source=_metadata_source(record.metadata),
@@ -512,7 +532,22 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
             hub_id=record.hub_id,
             offer_id=record.offer_id,
             request_id=record.request_id,
+            message_id=None,
+            mailbox_id=None,
             reason=record.reason.reason,
+            status=record.status.status,
+            source=_metadata_source(record.metadata),
+        )
+    if isinstance(record, EncryptedDeliveryResult):
+        return _AuditRecordView(
+            history_type="encrypted_delivery_result",
+            record_key=_encrypted_delivery_result_key(index, record),
+            hub_id=_metadata_registry_hub(record.metadata),
+            offer_id=None,
+            request_id=record.request_id,
+            message_id=record.message_id,
+            mailbox_id=record.mailbox_id,
+            reason=record.reason,
             status=record.status.status,
             source=_metadata_source(record.metadata),
         )
@@ -522,6 +557,8 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
         hub_id=None,
         offer_id=None,
         request_id=None,
+        message_id=None,
+        mailbox_id=None,
         reason=None,
         status=None,
         source=None,
@@ -610,6 +647,8 @@ def _selected_retained_history(
         return registry_hub.rendezvous_poll_result_history
     if history_type == "lane_admission_decision":
         return registry_hub.lane_admission_decision_history
+    if history_type == "encrypted_delivery_result":
+        return registry_hub.encrypted_delivery_result_history
     raise ValueError(f"unsupported retained audit history_type: {history_type}")
 
 
@@ -697,6 +736,28 @@ def _lane_admission_decision_key(
     )
 
 
+def _encrypted_delivery_result_key(
+    index: int,
+    result: EncryptedDeliveryResult,
+) -> str:
+    hub_id = _metadata_registry_hub(result.metadata) or "none"
+    message_id = result.message_id or "none"
+    mailbox_id = result.mailbox_id or "none"
+    lane_signature = result.lane_signature or "none"
+    reason = result.reason or "none"
+    return (
+        f"encrypted_delivery_result:{index}:{hub_id}:{result.request_id}:"
+        f"{message_id}:{mailbox_id}:{lane_signature}:{result.status.status}:{reason}"
+    )
+
+
+def _metadata_registry_hub(metadata: dict[str, Any] | None) -> str | None:
+    if not isinstance(metadata, dict):
+        return None
+    hub_id = metadata.get("registry_hub")
+    return hub_id if isinstance(hub_id, str) else None
+
+
 def _metadata_source(metadata: dict[str, Any] | None) -> str | None:
     if not isinstance(metadata, dict):
         return None
@@ -754,7 +815,9 @@ def _compaction_apply_metadata(
         "admission_history_mutated": (
             selected_history_mutated and history_type == "lane_admission_decision"
         ),
-        "encrypted_delivery_history_mutated": False,
+        "encrypted_delivery_history_mutated": (
+            selected_history_mutated and history_type == "encrypted_delivery_result"
+        ),
         "alias_history_mutated": False,
         "authority_history_mutated": False,
         "delivery_state_mutated": False,

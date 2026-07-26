@@ -1745,14 +1745,21 @@ def _step_evaluate_encrypted_delivery_request(
             _bool_field(fields, "policy_required", request.policy_required),
         )
 
+    retain_result = _bool_field(fields, "retain_result", True)
     result = evaluate_encrypted_delivery_request_op(
         hub,
         request,
         attempt_delivery=_bool_field(fields, "attempt_delivery", False),
         retain_policy_decision=_bool_field(fields, "retain_policy_decision", True),
-        retain_result=_bool_field(fields, "retain_result", True),
+        retain_result=retain_result,
     )
-    result = _encrypted_delivery_result_with_registry_context(result, hub.hub_id)
+    result = _encrypted_delivery_result_with_registry_context(
+        result,
+        hub.hub_id,
+        source=_optional_str(fields.get("source")),
+    )
+    if retain_result:
+        hub.encrypted_delivery_result_history[-1] = result
     world.action_results.append(result)
     summary = summarize_encrypted_delivery_result(result)
     world.log(
@@ -2895,6 +2902,8 @@ def _retained_audit_records(
             records.extend(hub.rendezvous_poll_result_history)
         elif history_type == "lane_admission_decision":
             records.extend(hub.lane_admission_decision_history)
+        elif history_type == "encrypted_delivery_result":
+            records.extend(hub.encrypted_delivery_result_history)
     return records
 
 
@@ -3015,9 +3024,16 @@ def _encrypted_delivery_request_with_policy_required(request: Any, value: bool) 
     )
 
 
-def _encrypted_delivery_result_with_registry_context(result: Any, hub_id: str) -> Any:
+def _encrypted_delivery_result_with_registry_context(
+    result: Any,
+    hub_id: str,
+    *,
+    source: str | None = None,
+) -> Any:
     metadata = dict(result.metadata or {})
     metadata["registry_hub"] = hub_id
+    if source is not None:
+        metadata["source"] = source
     return result.__class__(
         request_id=result.request_id,
         message_id=result.message_id,

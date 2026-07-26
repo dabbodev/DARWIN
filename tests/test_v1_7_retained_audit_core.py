@@ -73,6 +73,7 @@ def test_poll_and_admission_classification_maps_owners_and_fields():
         "stream_offer_status_transition",
         "rendezvous_poll_result",
         "lane_admission_decision",
+        "encrypted_delivery_result",
     )
     assert decision.history_type == "mixed"
     assert decision.retained_record_keys == (_poll_key(0, records[0]),)
