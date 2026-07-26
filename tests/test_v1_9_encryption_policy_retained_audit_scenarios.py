@@ -14,40 +14,40 @@ from darwin.sim.scenarios import list_scenario_files, validate_scenario_dict
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SCENARIOS_DIR = PROJECT_ROOT / "scenarios"
-V1_8_SCENARIO_NAMES = (
-    "073_retained_audit_encrypted_delivery_classification.yaml",
-    "074_retained_audit_encrypted_delivery_replay.yaml",
-    "075_retained_audit_encrypted_delivery_apply.yaml",
+V1_9_SCENARIO_NAMES = (
+    "076_retained_audit_encryption_policy_classification.yaml",
+    "077_retained_audit_encryption_policy_replay.yaml",
+    "078_retained_audit_encryption_policy_apply.yaml",
 )
 
 
-def test_v1_8_history_label_and_message_mailbox_counts_validate():
-    for scenario_name in V1_8_SCENARIO_NAMES:
+def test_v1_9_history_label_and_policy_lane_counts_validate():
+    for scenario_name in V1_9_SCENARIO_NAMES:
         validation = validate_scenario_dict(
             _load_yaml(SCENARIOS_DIR / scenario_name),
             path=scenario_name,
         )
         assert validation.valid, validation.errors
 
-    invalid = _load_yaml(SCENARIOS_DIR / V1_8_SCENARIO_NAMES[1])
-    invalid["scenario_id"] = "074_invalid_group_counts"
-    invalid["assertions"][0]["message_count"] = -1
-    invalid["assertions"][0]["mailbox_count"] = -1
+    invalid = _load_yaml(SCENARIOS_DIR / V1_9_SCENARIO_NAMES[1])
+    invalid["scenario_id"] = "077_invalid_policy_lane_group_counts"
+    invalid["assertions"][0]["policy_count"] = -1
+    invalid["assertions"][0]["lane_signature_count"] = -1
 
     validation = validate_scenario_dict(invalid)
 
     assert not validation.valid
     assert {
-        "assertions[0].message_count",
-        "assertions[0].mailbox_count",
+        "assertions[0].policy_count",
+        "assertions[0].lane_signature_count",
     }.issubset({error.location for error in validation.errors})
 
 
-def test_v1_8_encrypted_classification_is_read_only_and_source_aware():
-    scenario_path = SCENARIOS_DIR / V1_8_SCENARIO_NAMES[0]
+def test_v1_9_policy_classification_is_read_only():
+    scenario_path = SCENARIOS_DIR / V1_9_SCENARIO_NAMES[0]
     scenario = _load_yaml(scenario_path)
     before_data = dict(scenario)
-    before_data["scenario_id"] = "073_before_encrypted_classification"
+    before_data["scenario_id"] = "076_before_policy_classification"
     before_data["steps"] = scenario["steps"][:-1]
     before_data["assertions"] = []
 
@@ -59,43 +59,43 @@ def test_v1_8_encrypted_classification_is_read_only_and_source_aware():
 
     assert result.passed
     assert len(decisions) == 1
-    assert decisions[0].history_type == "encrypted_delivery_result"
-    assert decisions[0].candidate_by_source == {"delivery_deferred": 1}
+    assert decisions[0].history_type == "encryption_policy_decision"
+    assert decisions[0].candidate_by_status == {"missing_envelope": 1}
     assert decisions[0].metadata["scenario_record_history_types"] == [
-        "encrypted_delivery_result"
+        "encryption_policy_decision"
     ]
-    assert _summaries(hub.encrypted_delivery_result_history) == _summaries(
-        before_hub.encrypted_delivery_result_history
+    assert _summaries(hub.encryption_policy_decision_history) == _summaries(
+        before_hub.encryption_policy_decision_history
     )
     assert not _results(result, RetainedAuditCompactionApplyResult)
 
 
-def test_v1_8_replay_groups_message_mailbox_and_decision_categories():
-    result = run_scenario(SCENARIOS_DIR / V1_8_SCENARIO_NAMES[1])
+def test_v1_9_replay_groups_policy_lane_and_decision_categories():
+    result = run_scenario(SCENARIOS_DIR / V1_9_SCENARIO_NAMES[1])
     summaries = _results(result, RetainedAuditReplaySummary)
 
     assert result.passed
     assert len(summaries) == 3
     all_records, retained, candidate = summaries
-    assert all_records.history_type == "encrypted_delivery_result"
-    assert all_records.by_request_id == {
-        "request_alpha_074": 1,
-        "request_zeta_074": 1,
+    assert all_records.history_type == "encryption_policy_decision"
+    assert all_records.by_policy_id == {"policy_alpha": 1, "policy_zeta": 1}
+    assert all_records.by_lane_signature == {
+        "basic_messaging:v1": 1,
+        "file_transfer:v1": 1,
     }
     assert all_records.by_message_id == {
-        "message_alpha_074": 1,
-        "message_zeta_074": 1,
+        "message_alpha_077": 1,
+        "message_zeta_077": 1,
     }
-    assert all_records.by_mailbox_id == {"mailbox_neo": 2}
-    assert all_records.by_source == {"alpha_source": 1, "zeta_source": 1}
-    assert retained.by_message_id == {"message_zeta_074": 1}
+    assert all_records.by_mailbox_id == {"mailbox_alpha": 1, "mailbox_zeta": 1}
+    assert retained.by_policy_id == {"policy_alpha": 1}
     assert retained.metadata["decision_category_filter"] == "retained"
-    assert candidate.by_message_id == {"message_alpha_074": 1}
+    assert candidate.by_policy_id == {"policy_zeta": 1}
     assert candidate.metadata["decision_category_filter"] == "compaction_candidate"
 
 
-def test_v1_8_apply_isolates_audit_history_from_delivery_and_policy_state():
-    scenario_path = SCENARIOS_DIR / V1_8_SCENARIO_NAMES[2]
+def test_v1_9_apply_isolates_policy_history_from_encrypted_and_delivery_state():
+    scenario_path = SCENARIOS_DIR / V1_9_SCENARIO_NAMES[2]
     scenario = _load_yaml(scenario_path)
     first_apply_index = next(
         index
@@ -103,7 +103,7 @@ def test_v1_8_apply_isolates_audit_history_from_delivery_and_policy_state():
         if step.get("action") == "apply_retained_audit_compaction_decision"
     )
     before_data = dict(scenario)
-    before_data["scenario_id"] = "075_before_encrypted_apply"
+    before_data["scenario_id"] = "078_before_policy_apply"
     before_data["steps"] = scenario["steps"][:first_apply_index]
     before_data["assertions"] = []
 
@@ -117,20 +117,21 @@ def test_v1_8_apply_isolates_audit_history_from_delivery_and_policy_state():
     assert len(apply_results) == 2
     applied, repeated = apply_results
     assert applied.compacted_count == 1
-    assert applied.metadata["encrypted_delivery_history_mutated"] is True
+    assert applied.metadata["encryption_policy_history_mutated"] is True
+    assert applied.metadata["encrypted_delivery_history_mutated"] is False
     assert applied.metadata["delivery_state_mutated"] is False
     assert repeated.compacted_count == 0
     assert repeated.missing_count == 1
-    assert repeated.metadata["encrypted_delivery_history_mutated"] is False
-    assert [record.request_id for record in before_hub.encrypted_delivery_result_history] == [
-        "request_keep_075",
-        "request_compact_075",
+    assert repeated.metadata["encryption_policy_history_mutated"] is False
+    assert [
+        decision.message_id
+        for decision in before_hub.encryption_policy_decision_history
+    ] == ["message_keep_078", "message_compact_078"]
+    assert [decision.message_id for decision in hub.encryption_policy_decision_history] == [
+        "message_keep_078"
     ]
-    assert [record.request_id for record in hub.encrypted_delivery_result_history] == [
-        "request_keep_075"
-    ]
-    assert _summaries(hub.encryption_policy_decision_history) == _summaries(
-        before_hub.encryption_policy_decision_history
+    assert _summaries(hub.encrypted_delivery_result_history) == _summaries(
+        before_hub.encrypted_delivery_result_history
     )
     assert _summaries(hub.message_delivery_results) == _summaries(
         before_hub.message_delivery_results
@@ -141,42 +142,44 @@ def test_v1_8_apply_isolates_audit_history_from_delivery_and_policy_state():
     ]
 
 
-def test_v1_8_replay_detailed_snapshot_is_copied_and_compact_shape_is_unchanged():
-    result = run_scenario(SCENARIOS_DIR / V1_8_SCENARIO_NAMES[1])
+def test_v1_9_replay_detailed_snapshot_is_copied_and_compact_shape_is_unchanged():
+    result = run_scenario(SCENARIOS_DIR / V1_9_SCENARIO_NAMES[1])
     compact = result.world.snapshot()
     detailed = result.world.detailed_snapshot()
 
     assert "retained_audit_replay_summaries" not in compact
-    assert detailed["retained_audit_replay_summaries"][0]["by_message_id"] == {
-        "message_alpha_074": 1,
-        "message_zeta_074": 1,
+    assert detailed["retained_audit_replay_summaries"][0]["by_policy_id"] == {
+        "policy_alpha": 1,
+        "policy_zeta": 1,
     }
-    assert detailed["retained_audit_replay_summaries"][0]["by_mailbox_id"] == {
-        "mailbox_neo": 2
+    assert detailed["retained_audit_replay_summaries"][0]["by_lane_signature"] == {
+        "basic_messaging:v1": 1,
+        "file_transfer:v1": 1,
     }
 
-    detailed["retained_audit_replay_summaries"][0]["by_message_id"][
-        "message_alpha_074"
+    detailed["retained_audit_replay_summaries"][0]["by_policy_id"][
+        "policy_alpha"
     ] = 99
-    detailed["retained_audit_replay_summaries"][0]["by_mailbox_id"][
-        "mailbox_neo"
+    detailed["retained_audit_replay_summaries"][0]["by_lane_signature"][
+        "basic_messaging:v1"
     ] = 99
     fresh = result.world.detailed_snapshot()
 
-    assert fresh["retained_audit_replay_summaries"][0]["by_message_id"] == {
-        "message_alpha_074": 1,
-        "message_zeta_074": 1,
+    assert fresh["retained_audit_replay_summaries"][0]["by_policy_id"] == {
+        "policy_alpha": 1,
+        "policy_zeta": 1,
     }
-    assert fresh["retained_audit_replay_summaries"][0]["by_mailbox_id"] == {
-        "mailbox_neo": 2
+    assert fresh["retained_audit_replay_summaries"][0]["by_lane_signature"] == {
+        "basic_messaging:v1": 1,
+        "file_transfer:v1": 1,
     }
 
 
-def test_v1_8_checked_in_scenarios_validate_run_and_extend_contiguous_sweep():
+def test_v1_9_checked_in_scenarios_validate_run_and_extend_contiguous_sweep():
     scenario_files = [
         path
         for path in list_scenario_files(SCENARIOS_DIR)
-        if path.name[:3] in {"073", "074", "075"}
+        if path.name[:3] in {"076", "077", "078"}
     ]
 
     failures = []
@@ -197,7 +200,7 @@ def test_v1_8_checked_in_scenarios_validate_run_and_extend_contiguous_sweep():
         for path in list_scenario_files(SCENARIOS_DIR)
         if path.name[:3].isdigit()
     )
-    assert [path.name[:3] for path in scenario_files] == ["073", "074", "075"]
+    assert [path.name[:3] for path in scenario_files] == ["076", "077", "078"]
     assert scenario_numbers == list(range(1, 79))
     assert not failures
 

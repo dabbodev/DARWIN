@@ -35,7 +35,7 @@ jobs:
         run: python -m pytest
 
       - name: Verify CLI version
-        run: test "$(python -m darwin.cli.main --version)" = "darwin-sim 1.8.0"
+        run: test "$(python -m darwin.cli.main --version)" = "darwin-sim 1.9.0"
 
       - name: List and validate scenarios
         run: python -m darwin.cli.main list-scenarios
@@ -45,6 +45,11 @@ jobs:
 
       - name: Run all scenarios
         run: python scripts/run_all_scenarios.py
+
+      - name: Verify checked-in scenario index
+        run: |
+          python -m darwin.cli.main scenario-index > /tmp/generated_scenario_index.md
+          diff -u docs/SCENARIO_INDEX.md /tmp/generated_scenario_index.md
 
   wheel-smoke:
     name: Wheel build smoke (Python 3.11)
@@ -71,4 +76,4 @@ jobs:
         run: |
           python -m pip install --force-reinstall wheelhouse/*.whl
           cd /tmp
-          test "$(python -m darwin.cli.main --version)" = "darwin-sim 1.8.0"
+          test "$(python -m darwin.cli.main --version)" = "darwin-sim 1.9.0"

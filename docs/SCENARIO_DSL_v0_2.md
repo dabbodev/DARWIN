@@ -1265,3 +1265,64 @@ Checked-in v1.6 retained audit scenarios:
 
 The current released scenario set is contiguous through `069`. The package
 and CLI version report `darwin-sim 1.6.0`.
+
+## v1.9 Encryption-Policy Retained-Audit Extension
+
+v1.9 extends the existing retained-audit actions without adding a new action
+or changing encryption-policy evaluation:
+
+- The supported history order is
+  `stream_offer_lifecycle_explanation`,
+  `stream_offer_status_transition`, `rendezvous_poll_result`,
+  `lane_admission_decision`, `encrypted_delivery_result`, then
+  `encryption_policy_decision`.
+- `classify_retained_audit_records_for_compaction`,
+  `summarize_retained_audit_replay`, and
+  `apply_retained_audit_compaction_decision` accept
+  `encryption_policy_decision` as a history label.
+- Records are collected from
+  `RegistryHub.encryption_policy_decision_history`.
+- The existing `evaluate_mailbox_encryption_policy` action supplies policy
+  decisions; it gains no new input or behavior.
+- Ownership comes only from string `metadata["registry_hub"]`. Missing,
+  non-string, and foreign owners are ignored deterministically.
+- Policy records use top-level policy, mailbox, message, lane, status, and
+  reason fields plus optional string `metadata["source"]`; they do not infer
+  request IDs, offer IDs, metadata notes, or nested outcomes.
+
+`retained_audit_replay_summary_contains` additionally accepts:
+
+- `policy_id` with `policy_count`; and
+- `lane_signature` with `lane_signature_count`.
+
+Counts use only top-level values. Encryption-policy and lane-admission
+decisions contribute policy and lane, while encrypted-delivery results
+contribute their top-level lane but no nested gate policy. Detailed snapshots
+expose copied `by_policy_id` and `by_lane_signature` mappings through the
+existing retained-audit result sections. Compact `world.snapshot()` remains
+unchanged.
+
+Explicit apply removes only matching candidates from
+`RegistryHub.encryption_policy_decision_history`, preserves remaining order,
+reports stale keys as missing, and is deterministic when repeated. It does not
+mutate encrypted-delivery results or their nested policy snapshots, direct
+delivery results, inboxes, encryption registry configuration, held offers,
+TrafficHub state or routing, canonical identities, or compact snapshots.
+Mixed and unsupported decisions remain deterministic no-ops.
+
+Checked-in v1.9 retained-audit scenarios:
+
+- `scenarios/076_retained_audit_encryption_policy_classification.yaml`
+- `scenarios/077_retained_audit_encryption_policy_replay.yaml`
+- `scenarios/078_retained_audit_encryption_policy_apply.yaml`
+
+The checked-in scenario set is contiguous from `001` through `078`. The
+package and CLI report `darwin-sim 1.9.0`.
+
+This simulator-local and deterministic scenario surface adds no direct
+message-delivery result compaction, nested gate or delivery replay dimensions,
+new compaction filters, mixed-history apply, automatic cleanup, workers,
+retries, durable queues, live clocks, timers, polling, delivery enforcement,
+routing changes, networking, DNS, external services, real cryptography,
+production E2EE, or production security, privacy, compliance, or retention
+guarantees.

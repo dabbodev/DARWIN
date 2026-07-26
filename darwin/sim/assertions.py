@@ -2148,6 +2148,13 @@ def _retained_audit_replay_summary_contains(
         "message_count": _optional_int_field(assertion, "message_count"),
         "mailbox_id": _optional_filter_str(assertion, "mailbox_id"),
         "mailbox_count": _optional_int_field(assertion, "mailbox_count"),
+        "policy_id": _optional_filter_str(assertion, "policy_id"),
+        "policy_count": _optional_int_field(assertion, "policy_count"),
+        "lane_signature": _optional_filter_str(assertion, "lane_signature"),
+        "lane_signature_count": _optional_int_field(
+            assertion,
+            "lane_signature_count",
+        ),
         "decision_category": _optional_filter_str(assertion, "decision_category"),
         "grouped_history_type": _optional_filter_str(
             assertion,
@@ -3095,6 +3102,20 @@ def _matches_retained_audit_replay_summary_filters(
             "by_mailbox_id",
             "mailbox_id",
             "mailbox_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "by_policy_id",
+            "policy_id",
+            "policy_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "by_lane_signature",
+            "lane_signature",
+            "lane_signature_count",
         )
     ):
         return False
