@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.8.0] - 2026-07-21
+## [1.8.0] - 2026-07-26
 
 The DARWIN v1.8.0 source-release snapshot extends retained-audit compaction,
 replay, and explicit apply to RegistryHub-local encrypted-delivery result

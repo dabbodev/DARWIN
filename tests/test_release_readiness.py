@@ -463,7 +463,7 @@ def test_v1_8_docs_describe_the_source_release_snapshot():
     assert "Python 3.11 through 3.14" in roadmap
     assert "docs/RETAINED_AUDIT_ENCRYPTED_DELIVERY_v1_8.md" in readme
     assert "immutable v1.8.0 source snapshot" in checklist
-    assert "## [1.8.0] - 2026-07-21" in changelog
+    assert "## [1.8.0] - 2026-07-26" in changelog
 
     for caveat in V1_8_RELEASE_SNAPSHOT_CAVEATS:
         assert caveat in combined_docs_normalized
