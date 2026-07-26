@@ -510,6 +510,7 @@ def test_v1_9_docs_describe_the_source_release_snapshot():
     ).read_text(encoding="utf-8")
     readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
     checklist = (PROJECT_ROOT / "RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+    changelog = (PROJECT_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     combined_docs = "\n".join(
         path.read_text(encoding="utf-8") for path in V1_9_RELEASE_SNAPSHOT_DOCS
     )
@@ -521,6 +522,8 @@ def test_v1_9_docs_describe_the_source_release_snapshot():
     assert "releases/tag/v1.9.0" not in combined_docs
     assert "No package-index publication is performed" in release_notes
     assert "No release assets are uploaded" in release_notes
+    assert "Release date: `2026-07-26` (America/Los_Angeles)" in release_notes
+    assert "python -m pytest` with 935 tests" in release_notes
     assert "Scenarios `076` through `078`" in release_notes
     assert "from `001` through `078`" in release_notes
     assert "by_policy_id" in specification
@@ -529,7 +532,9 @@ def test_v1_9_docs_describe_the_source_release_snapshot():
     assert "encryption_policy_history_mutated" in specification
     assert "Python 3.11 through 3.14" in roadmap
     assert "docs/RETAINED_AUDIT_ENCRYPTION_POLICY_v1_9.md" in readme
-    assert "v1.9.0 source snapshot" in checklist
+    assert "immutable v1.9.0 source snapshot" in checklist
+    assert "pytest passes with 935 tests" in checklist
+    assert "## [1.9.0] - 2026-07-26" in changelog
 
     for caveat in V1_9_RELEASE_SNAPSHOT_CAVEATS:
         assert caveat in combined_docs_normalized

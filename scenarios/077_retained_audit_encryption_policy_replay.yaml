@@ -190,4 +190,3 @@ assertions:
     mailbox_count: 1
     decision_category: compaction_candidate
     expected_count: 1
-

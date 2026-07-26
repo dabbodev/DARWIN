@@ -1,9 +1,10 @@
 # DARWIN v1.9.0 Release Notes
 
-Status: v1.9.0 source-release snapshot in final validation. The historical
-`_DRAFT` filename is retained for documentation-link compatibility; this
-content describes the intended final source snapshot rather than an unfinished
-feature proposal.
+Status: v1.9.0 source-release snapshot. The historical `_DRAFT` filename is
+retained for documentation-link compatibility; this content describes the
+final source snapshot rather than an unfinished feature proposal.
+
+Release date: `2026-07-26` (America/Los_Angeles).
 
 The package and CLI report `darwin-sim 1.9.0`. Release publication is limited
 to an annotated `v1.9.0` source tag and a GitHub release created from the exact
@@ -71,8 +72,11 @@ The generated scenario-index stdout must exactly match
 isolated installation of `darwin_sim-1.9.0-py3-none-any.whl` must report the
 same version from outside the repository. The wheel is not uploaded.
 
-The actual America/Los_Angeles release date and final pytest count will be
-recorded only after the complete release gates pass.
+Final validation passed `python -m ruff check .`, `python -m pytest` with 935 tests,
+all scenarios `001` through `078`, exact checked-in scenario-index
+verification, CLI output `darwin-sim 1.9.0`, and an isolated out-of-tree
+install/version smoke check for `darwin_sim-1.9.0-py3-none-any.whl`. The wheel
+is not uploaded.
 
 ## Limits and Non-Goals
 

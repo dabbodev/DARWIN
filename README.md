@@ -81,8 +81,12 @@ explicit single-history apply to encryption-policy decision history. It adds
 sorted policy-ID and lane-signature replay counts and scenarios `076` through
 `078`, while preserving all v1.8 record keys and leaving encrypted and direct
 delivery state, nested policy snapshots, routing, canonical identity, and
-compact snapshots unchanged. Final validation facts are recorded only after
-the complete release gates pass.
+compact snapshots unchanged.
+
+Final v1.9 validation on 2026-07-26 (America/Los_Angeles) passed Ruff, 935
+tests, all scenarios `001` through `078`, exact scenario-index verification,
+CLI output `darwin-sim 1.9.0`, and an isolated out-of-tree wheel
+build/install/version smoke check.
 
 The v0.1 simulator answers questions like:
 

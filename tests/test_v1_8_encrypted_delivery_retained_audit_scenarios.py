@@ -198,7 +198,7 @@ def test_v1_8_checked_in_scenarios_validate_run_and_extend_contiguous_sweep():
         if path.name[:3].isdigit()
     )
     assert [path.name[:3] for path in scenario_files] == ["073", "074", "075"]
-    assert scenario_numbers == list(range(1, 76))
+    assert scenario_numbers == list(range(1, 79))
     assert not failures
 
 

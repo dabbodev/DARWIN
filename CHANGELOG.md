@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.9.0] - Release date pending final validation
+## [1.9.0] - 2026-07-26
 
 The DARWIN v1.9.0 source-release snapshot extends retained-audit
 classification, replay, and explicit apply to RegistryHub-local encryption-
@@ -39,8 +39,10 @@ Compatibility and limits:
 - Release publication is GitHub source-only: the procedure creates an
   annotated `v1.9.0` tag and GitHub release from the exact validated snapshot.
   It publishes no package and uploads no assets.
-- The actual release date and final validation count will be recorded only
-  after all release gates pass.
+- Final validation passed `python -m ruff check .`, `python -m pytest` with 935
+  tests, all scenarios `001` through `078`, exact checked-in scenario-index
+  verification, CLI output `darwin-sim 1.9.0`, and an isolated wheel
+  build/install/version smoke check. The wheel is not uploaded.
 
 ## [1.8.0] - 2026-07-26
 

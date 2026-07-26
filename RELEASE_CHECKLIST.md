@@ -880,7 +880,8 @@ python -m build --wheel
 
 # DARWIN v1.9 Encryption-Policy Retained-Audit Release Checklist
 
-This checklist describes the v1.9.0 source snapshot in final validation.
+This checklist describes the immutable v1.9.0 source snapshot dated
+2026-07-26 (America/Los_Angeles).
 Remote publication state is intentionally not inferred from repository
 contents. The publication procedure creates an annotated `v1.9.0` tag and
 GitHub source release from the exact validated commit; it performs no package-
@@ -912,9 +913,9 @@ index publication and uploads no release assets.
 - [x] The Python 3.11 wheel build/install smoke job performs no upload.
 - [x] Release documentation avoids production networking, cryptography,
   security, privacy, compliance, delivery, routing, and retention claims.
-- [ ] Record the actual America/Los_Angeles release date after final validation.
-- [ ] Record the final passing pytest count without prediction.
-- [ ] Ruff, pytest, scenarios `001` through `078`, exact scenario-index
+- [x] The actual America/Los_Angeles release date is recorded as 2026-07-26.
+- [x] Ruff passes and pytest passes with 935 tests.
+- [x] Ruff, pytest, scenarios `001` through `078`, exact scenario-index
   comparison, CLI output, wheel build, isolated installation, and out-of-tree
   version smoke all pass.
 
