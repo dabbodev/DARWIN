@@ -877,3 +877,54 @@ python -m darwin.cli.main scenario-index
 python -m darwin.cli.main --version
 python -m build --wheel
 ```
+
+# DARWIN v1.9 Encryption-Policy Retained-Audit Release Checklist
+
+This checklist describes the v1.9.0 source snapshot in final validation.
+Remote publication state is intentionally not inferred from repository
+contents. The publication procedure creates an annotated `v1.9.0` tag and
+GitHub source release from the exact validated commit; it performs no package-
+index publication and uploads no release assets.
+
+- [x] v1.9 roadmap is checked in at `docs/V1_9_ROADMAP.md`.
+- [x] v1.9 release notes retain the compatible path
+  `docs/RELEASE_NOTES_v1_9_DRAFT.md`.
+- [x] The encryption-policy retained-audit specification is checked in at
+  `docs/RETAINED_AUDIT_ENCRYPTION_POLICY_v1_9.md`.
+- [x] README links to all v1.9 release documents.
+- [x] Package, CLI, smoke tests, and CI expect `darwin-sim 1.9.0`.
+- [x] Existing retained-audit history types keep their v1.8 order and key
+  behavior, followed by `encryption_policy_decision`.
+- [x] Policy-decision ownership uses only string
+  `metadata["registry_hub"]`.
+- [x] Replay summaries expose sorted, copied policy-ID and lane-signature
+  counts.
+- [x] Explicit apply mutates only selected encryption-policy decision history;
+  encrypted/direct delivery and nested policy snapshots remain unchanged.
+- [x] Scenarios `076` through `078` cover classification, replay, and isolated
+  apply; checked-in metadata is contiguous from `001` through `078`.
+- [x] Detailed retained-audit summaries remain copied and JSON-safe, and
+  compact `world.snapshot()` remains unchanged.
+- [x] Python 3.11 through 3.14 CI and exact CLI-version verification remain in
+  place.
+- [x] CI fails when generated scenario-index stdout differs from
+  `docs/SCENARIO_INDEX.md`.
+- [x] The Python 3.11 wheel build/install smoke job performs no upload.
+- [x] Release documentation avoids production networking, cryptography,
+  security, privacy, compliance, delivery, routing, and retention claims.
+- [ ] Record the actual America/Los_Angeles release date after final validation.
+- [ ] Record the final passing pytest count without prediction.
+- [ ] Ruff, pytest, scenarios `001` through `078`, exact scenario-index
+  comparison, CLI output, wheel build, isolated installation, and out-of-tree
+  version smoke all pass.
+
+## v1.9 Source-Snapshot Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main --version
+python -m build --wheel
+```

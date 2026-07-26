@@ -41,6 +41,11 @@ V1_8_RELEASE_SNAPSHOT_DOCS = [
     PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_8_DRAFT.md",
     PROJECT_ROOT / "docs" / "RETAINED_AUDIT_ENCRYPTED_DELIVERY_v1_8.md",
 ]
+V1_9_RELEASE_SNAPSHOT_DOCS = [
+    PROJECT_ROOT / "docs" / "V1_9_ROADMAP.md",
+    PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_9_DRAFT.md",
+    PROJECT_ROOT / "docs" / "RETAINED_AUDIT_ENCRYPTION_POLICY_v1_9.md",
+]
 V1_3_RELEASE_CANDIDATE_CAVEATS = [
     "simulator-local",
     "symbolic",
@@ -181,6 +186,29 @@ V1_8_RELEASE_SNAPSHOT_CAVEATS = [
     "compliance",
     "data-retention guarantees",
 ]
+V1_9_RELEASE_SNAPSHOT_CAVEATS = [
+    "simulator-local",
+    "deterministic",
+    "source-only",
+    "real networking",
+    "DNS",
+    "external services",
+    "real cryptography",
+    "production E2EE",
+    "automatic cleanup",
+    "workers",
+    "retries",
+    "durable queues",
+    "live timers",
+    "live clocks",
+    "live polling",
+    "delivery enforcement",
+    "TrafficHub routing changes",
+    "compact snapshot changes",
+    "canonical identity rewrites",
+    "compliance",
+    "data-retention guarantees",
+]
 
 
 def _repo_relative_backtick_paths(text: str) -> set[str]:
@@ -221,6 +249,7 @@ def test_documentation_links_exist():
         *V1_6_RELEASE_CANDIDATE_DOCS,
         *V1_7_RELEASE_SNAPSHOT_DOCS,
         *V1_8_RELEASE_SNAPSHOT_DOCS,
+        *V1_9_RELEASE_SNAPSHOT_DOCS,
     ]
 
     referenced_paths = {
@@ -247,14 +276,14 @@ def test_version_consistency():
         encoding="utf-8"
     )
     current_release_notes = (
-        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_8_DRAFT.md"
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_9_DRAFT.md"
     ).read_text(encoding="utf-8")
 
     assert darwin.__version__ == project_version
     assert f"[{project_version}]" in changelog or f"## v{project_version}" in changelog
     assert f"v{project_version}" in current_release_notes
-    assert "darwin-sim 1.8.0" in current_release_notes
-    assert "Scenarios `073` through `075`" in current_release_notes
+    assert "darwin-sim 1.9.0" in current_release_notes
+    assert "Scenarios `076` through `078`" in current_release_notes
     assert "real networking" in current_release_notes
     assert "TrafficHub routing changes" in current_release_notes
     assert "v0.1.0" in release_notes
@@ -469,7 +498,44 @@ def test_v1_8_docs_describe_the_source_release_snapshot():
         assert caveat in combined_docs_normalized
 
 
-def test_v1_8_python_and_ci_release_contract():
+def test_v1_9_docs_describe_the_source_release_snapshot():
+    release_notes = (
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_9_DRAFT.md"
+    ).read_text(encoding="utf-8")
+    roadmap = (PROJECT_ROOT / "docs" / "V1_9_ROADMAP.md").read_text(
+        encoding="utf-8"
+    )
+    specification = (
+        PROJECT_ROOT / "docs" / "RETAINED_AUDIT_ENCRYPTION_POLICY_v1_9.md"
+    ).read_text(encoding="utf-8")
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    checklist = (PROJECT_ROOT / "RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+    combined_docs = "\n".join(
+        path.read_text(encoding="utf-8") for path in V1_9_RELEASE_SNAPSHOT_DOCS
+    )
+    combined_docs_normalized = re.sub(r"\s+", " ", combined_docs)
+
+    assert "v1.9.0 source-release snapshot" in release_notes
+    assert "darwin-sim 1.9.0" in combined_docs_normalized
+    assert "does not claim" in release_notes
+    assert "releases/tag/v1.9.0" not in combined_docs
+    assert "No package-index publication is performed" in release_notes
+    assert "No release assets are uploaded" in release_notes
+    assert "Scenarios `076` through `078`" in release_notes
+    assert "from `001` through `078`" in release_notes
+    assert "by_policy_id" in specification
+    assert "by_lane_signature" in specification
+    assert 'metadata["registry_hub"]' in specification
+    assert "encryption_policy_history_mutated" in specification
+    assert "Python 3.11 through 3.14" in roadmap
+    assert "docs/RETAINED_AUDIT_ENCRYPTION_POLICY_v1_9.md" in readme
+    assert "v1.9.0 source snapshot" in checklist
+
+    for caveat in V1_9_RELEASE_SNAPSHOT_CAVEATS:
+        assert caveat in combined_docs_normalized
+
+
+def test_v1_9_python_and_ci_release_contract():
     pyproject = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     project = pyproject["project"]
     ci = (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(
@@ -482,7 +548,9 @@ def test_v1_8_python_and_ci_release_contract():
         assert f"Programming Language :: Python :: {version}" in project["classifiers"]
         assert f'"{version}"' in ci
 
-    assert 'darwin-sim 1.8.0' in ci
+    assert 'darwin-sim 1.9.0' in ci
+    assert "python -m darwin.cli.main scenario-index" in ci
+    assert "diff -u docs/SCENARIO_INDEX.md /tmp/generated_scenario_index.md" in ci
     assert "  wheel-smoke:\n" in ci
     assert 'python-version: "3.11"' in wheel_job
     assert "python -m build --wheel --outdir wheelhouse" in wheel_job
@@ -490,14 +558,14 @@ def test_v1_8_python_and_ci_release_contract():
     assert "upload" not in wheel_job.lower()
 
 
-def test_checked_in_scenarios_are_contiguous_through_075():
+def test_checked_in_scenarios_are_contiguous_through_078():
     scenario_numbers = sorted(
         path.name[:3]
         for path in (PROJECT_ROOT / "scenarios").glob("*.yaml")
         if path.name[:3].isdigit()
     )
 
-    assert scenario_numbers == [f"{number:03}" for number in range(1, 76)]
+    assert scenario_numbers == [f"{number:03}" for number in range(1, 79)]
 
 
 def test_license_consistency():

@@ -1,5 +1,47 @@
 # Changelog
 
+## [1.9.0] - Release date pending final validation
+
+The DARWIN v1.9.0 source-release snapshot extends retained-audit
+classification, replay, and explicit apply to RegistryHub-local encryption-
+policy decision history. The package and CLI identify the snapshot as
+`darwin-sim 1.9.0`.
+
+Added:
+
+- `encryption_policy_decision` appended as the sixth supported retained-audit
+  history type with ownership derived only from string
+  `metadata["registry_hub"]`.
+- Exact deterministic keys using top-level policy, mailbox, message, lane,
+  status, and reason fields.
+- Sorted, copied replay counts by policy ID and lane signature, with validation
+  and assertion support.
+- Explicit single-history apply for policy-decision history with isolated
+  mutation flags, stale-key reporting, and deterministic repeated apply.
+- Scenario DSL support and scenarios `076` through `078` for classification,
+  replay/decision filtering, and isolated apply.
+- Exact generated-versus-checked-in scenario-index enforcement in CI.
+
+Compatibility and limits:
+
+- The five v1.8 history types retain their order, keys, serialization, and
+  behavior; the new replay fields are appended.
+- Policy-history apply does not mutate encrypted or direct delivery results,
+  nested policy snapshots, inboxes, encryption configuration, held offers,
+  TrafficHub state, routing, canonical identity, or compact snapshots.
+- The source scenario set is contiguous from `001` through `078`.
+- v1.9 remains simulator-local, deterministic, source-only, and symbolic. It
+  adds no new filters, mixed-history apply, automatic cleanup, workers,
+  retries, durable queues, live clocks or timers, networking, DNS, external
+  services, real cryptography, production E2EE, delivery enforcement, routing
+  changes, or production security, privacy, compliance, or retention
+  guarantees.
+- Release publication is GitHub source-only: the procedure creates an
+  annotated `v1.9.0` tag and GitHub release from the exact validated snapshot.
+  It publishes no package and uploads no assets.
+- The actual release date and final validation count will be recorded only
+  after all release gates pass.
+
 ## [1.8.0] - 2026-07-26
 
 The DARWIN v1.8.0 source-release snapshot extends retained-audit compaction,

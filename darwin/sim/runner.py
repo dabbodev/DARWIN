@@ -2904,6 +2904,8 @@ def _retained_audit_records(
             records.extend(hub.lane_admission_decision_history)
         elif history_type == "encrypted_delivery_result":
             records.extend(hub.encrypted_delivery_result_history)
+        elif history_type == "encryption_policy_decision":
+            records.extend(hub.encryption_policy_decision_history)
     return records
 
 

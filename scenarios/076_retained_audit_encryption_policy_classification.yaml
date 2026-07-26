@@ -1,0 +1,117 @@
+scenario_id: 076_retained_audit_encryption_policy_classification
+name: Encryption policy retained audit classification
+category: encryption
+description: retained encryption policy decisions classify accepted and failed records without mutation
+tags:
+  - encryption
+  - retained_audit
+  - compaction
+  - v1.9
+demonstrates:
+  - RegistryHub metadata owns retained encryption policy decisions
+  - top-level policy status and reason drive generic compaction filters
+  - exact policy decision keys use policy mailbox message and lane fields
+  - classification remains read-only
+expected_result: the accepted policy decision is retained and the missing-envelope decision is a compaction candidate while both remain in history
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  devices:
+    - device_id: dev_NEO
+      label: neo
+steps:
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    canonical_device_id: dev_NEO
+    local_name: neo
+    scope: global.chat
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+  - action: register_encryption_identity
+    registry_hub: registry_chat_001
+    encryption_identity_id: enc_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+  - action: register_key_bundle_reference
+    registry_hub: registry_chat_001
+    key_bundle_id: kb_mailbox_neo_001
+    encryption_identity_id: enc_mailbox_neo
+    public_ref: symbolic://public/mailbox_neo/001
+  - action: register_mailbox_encryption_binding
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    required_for_lanes:
+      - basic_messaging:v1
+  - action: register_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    mailbox_id: mailbox_neo
+  - action: evaluate_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    message_id: message_keep_076
+    envelope_id: envelope_keep_076
+    encryption_identity_id: enc_mailbox_neo
+    key_bundle_id: kb_mailbox_neo_001
+    profile: symbolic_e2ee_v1
+    state: symbolically_encrypted
+    status: ready
+  - action: evaluate_mailbox_encryption_policy
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+    message_id: message_compact_076
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_encryption_policy_076
+    history_types:
+      - encryption_policy_decision
+    record_history_types:
+      - encryption_policy_decision
+    retain_statuses:
+      - accepted
+    compact_statuses:
+      - missing_envelope
+assertions:
+  - type: retained_audit_compaction_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_encryption_policy_076
+    history_type: encryption_policy_decision
+    retained_count: 1
+    compaction_candidate_count: 1
+    ignored_count: 0
+    candidate_history_type: encryption_policy_decision
+    candidate_history_type_count: 1
+    candidate_status: missing_envelope
+    candidate_status_count: 1
+    candidate_reason: missing_envelope
+    candidate_reason_count: 1
+    compaction_candidate_record_key: encryption_policy_decision:1:registry_chat_001:policy_mailbox_neo:mailbox_neo:message_compact_076:basic_messaging:v1:missing_envelope:missing_envelope
+    expected_count: 1
+  - type: encryption_policy_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    message_id: message_keep_076
+    status: accepted
+    expected_count: 1
+  - type: encryption_policy_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: policy_mailbox_neo
+    message_id: message_compact_076
+    status: missing_envelope
+    reason: missing_envelope
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    expected_count: 0
+

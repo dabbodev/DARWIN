@@ -75,6 +75,7 @@ def test_encrypted_delivery_classification_maps_owner_fields_and_exact_keys():
         "rendezvous_poll_result",
         "lane_admission_decision",
         "encrypted_delivery_result",
+        "encryption_policy_decision",
     )
     assert decision.history_type == "encrypted_delivery_result"
     assert decision.retained_record_keys == (_key(0, records[0]),)
