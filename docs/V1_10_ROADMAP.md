@@ -1,7 +1,7 @@
 # DARWIN v1.10 Roadmap
 
-Status: v1.10.0 source-release snapshot in final validation. The package and
-CLI report `darwin-sim 1.10.0`.
+Status: v1.10.0 source-release snapshot dated 2026-07-27
+(America/Los_Angeles). The package and CLI report `darwin-sim 1.10.0`.
 
 This roadmap records the intended behavior of the v1.10.0 source snapshot
 without using repository text as evidence of remote publication state. The
@@ -79,7 +79,8 @@ decisions or inbox behavior.
 - Require Ruff, pytest, all scenarios, exact scenario-index comparison, exact
   CLI output, and isolated out-of-tree wheel verification.
 - Record the actual America/Los_Angeles release date and final pytest count
-  only after the complete release gates pass.
+  only after the complete release gates pass. The recorded results are
+  2026-07-27 and 950 tests.
 
 ## Release Gates
 
@@ -99,8 +100,10 @@ The generated scenario index must exactly match `docs/SCENARIO_INDEX.md`. The
 wheel must install in isolation and report `darwin-sim 1.10.0` from outside
 the repository. The wheel is not uploaded.
 
-The actual America/Los_Angeles release date and final passing pytest count
-remain pending until every release gate succeeds.
+Final validation passed Ruff, 950 tests, all scenarios `001` through `081`,
+exact checked-in scenario-index verification, CLI output
+`darwin-sim 1.10.0`, and an isolated out-of-tree install/version smoke check
+for `darwin_sim-1.10.0-py3-none-any.whl`.
 
 ## Non-Goals
 

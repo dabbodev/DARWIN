@@ -96,8 +96,10 @@ the selected direct-delivery audit results; inbox contents, completed delivery
 state, unrelated histories, TrafficHub state, routing, canonical identity, and
 compact snapshots remain unchanged.
 
-The actual America/Los_Angeles release date and final passing pytest count
-remain pending until every v1.10 release gate succeeds.
+Final v1.10 validation on 2026-07-27 (America/Los_Angeles) passed Ruff, 950
+tests, all scenarios `001` through `081`, exact scenario-index verification,
+CLI output `darwin-sim 1.10.0`, and an isolated out-of-tree wheel
+build/install/version smoke check.
 
 The v0.1 simulator answers questions like:
 

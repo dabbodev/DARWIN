@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.10.0] - Release date pending final validation
+## [1.10.0] - 2026-07-27
 
 The DARWIN v1.10.0 source-release snapshot extends retained-audit
 classification, replay, and explicit apply to RegistryHub-local direct
@@ -39,8 +39,10 @@ Compatibility and limits:
   or retention guarantees.
 - Publication remains GitHub source-only with no package-index publication and
   no uploaded release assets.
-- The actual America/Los_Angeles release date and final passing pytest count
-  remain pending until every release gate succeeds.
+- Final validation passed `python -m ruff check .`, `python -m pytest` with 950
+  tests, all scenarios `001` through `081`, exact checked-in scenario-index
+  verification, CLI output `darwin-sim 1.10.0`, and an isolated wheel
+  build/install/version smoke check. The wheel is not uploaded.
 
 ## [1.9.0] - 2026-07-26
 

@@ -593,7 +593,7 @@ def test_v1_9_python_and_ci_release_contract():
     assert "upload" not in wheel_job.lower()
 
 
-def test_v1_10_docs_describe_the_pending_source_release_snapshot():
+def test_v1_10_docs_describe_the_source_release_snapshot():
     release_notes = (
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_10_DRAFT.md"
     ).read_text(encoding="utf-8")
@@ -617,8 +617,8 @@ def test_v1_10_docs_describe_the_pending_source_release_snapshot():
     assert "releases/tag/v1.10.0" not in combined_docs
     assert "No package-index publication is performed" in release_notes
     assert "No release assets are uploaded" in release_notes
-    assert "actual America/Los_Angeles release date" in release_notes
-    assert "final pytest count" in release_notes
+    assert "Release date: `2026-07-27` (America/Los_Angeles)" in release_notes
+    assert "python -m pytest` with 950 tests" in combined_docs_normalized
     assert "Scenarios `079` through `081`" in release_notes
     assert "from `001` through `081`" in combined_docs_normalized
     assert "message_delivery_result" in specification
@@ -629,8 +629,9 @@ def test_v1_10_docs_describe_the_pending_source_release_snapshot():
     assert "`delivery_state_mutated` remains false" in specification
     assert "Python 3.11 through 3.14" in roadmap
     assert "docs/RETAINED_AUDIT_MESSAGE_DELIVERY_v1_10.md" in readme
-    assert "v1.10.0 source snapshot in final validation" in checklist
-    assert "Release date pending final validation" in changelog
+    assert "immutable v1.10.0 source snapshot" in checklist
+    assert "pytest passes with 950 tests" in checklist
+    assert "## [1.10.0] - 2026-07-27" in changelog
 
     for caveat in V1_10_RELEASE_SNAPSHOT_CAVEATS:
         assert caveat in combined_docs_normalized
