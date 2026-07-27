@@ -1,0 +1,123 @@
+scenario_id: 079_retained_audit_message_delivery_classification
+name: Message delivery retained audit classification
+category: mailbox
+description: direct message delivery results classify retained and compactable records without mutation
+tags:
+  - mailbox
+  - retained_audit
+  - compaction
+  - v1.10
+demonstrates:
+  - RegistryHub metadata owns retained direct message delivery results
+  - retain filters precede compact filters before the deterministic record cap
+  - exact direct delivery keys use message address mailbox lane status and reason
+  - classification remains read-only
+expected_result: the first delivered result is retained while the failed and over-cap delivered results are compaction candidates and all remain in history
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  devices:
+    - device_id: dev_NEO
+      label: neo
+steps:
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    canonical_device_id: dev_NEO
+    local_name: neo
+    scope: global.chat
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_neo
+    lane_signature: basic_messaging:v1
+  - action: register_adapter_endpoint
+    registry_hub: registry_chat_001
+    endpoint_id: endpoint_mailbox_neo
+    subject_id: mailbox_neo
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: available
+    lane_signatures:
+      - basic_messaging:v1
+    scope: global.chat
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: message_keep_079
+    sender_id: dev_TRINITY
+    recipient_address: darwin://global.chat.neo/inbox
+    payload: first retained delivery
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: message_failed_079
+    sender_id: dev_TRINITY
+    recipient_address: darwin://global.chat.missing/inbox
+    payload: failed delivery
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: message_over_cap_079
+    sender_id: dev_TRINITY
+    recipient_address: darwin://global.chat.neo/inbox
+    payload: second delivered result
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_message_delivery_079
+    history_types:
+      - message_delivery_result
+    record_history_types:
+      - message_delivery_result
+    retain_statuses:
+      - delivered
+    compact_statuses:
+      - delivered
+      - bounced
+    max_records: 1
+assertions:
+  - type: retained_audit_compaction_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_message_delivery_079
+    history_type: message_delivery_result
+    retained_count: 1
+    compaction_candidate_count: 2
+    ignored_count: 0
+    candidate_history_type: message_delivery_result
+    candidate_history_type_count: 2
+    candidate_status: bounced
+    candidate_status_count: 1
+    candidate_reason: mailbox_not_found
+    candidate_reason_count: 1
+    retained_record_key: message_delivery_result:0:registry_chat_001:message_keep_079:darwin://global.chat.neo/inbox:mailbox_neo:basic_messaging:v1:delivered:none
+    compaction_candidate_record_keys:
+      - message_delivery_result:1:registry_chat_001:message_failed_079:darwin://global.chat.missing/inbox:none:basic_messaging:v1:bounced:mailbox_not_found
+      - message_delivery_result:2:registry_chat_001:message_over_cap_079:darwin://global.chat.neo/inbox:mailbox_neo:basic_messaging:v1:delivered:none
+    expected_count: 1
+  - type: retained_audit_compaction_decision_contains
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_message_delivery_079
+    history_type: message_delivery_result
+    candidate_status: delivered
+    candidate_status_count: 1
+    candidate_reason: none
+    candidate_reason_count: 1
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    message_id: message_keep_079
+    mailbox_id: mailbox_neo
+    status: delivered
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    message_id: message_failed_079
+    status: bounced
+    reason: mailbox_not_found
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_chat_001
+    message_id: message_over_cap_079
+    mailbox_id: mailbox_neo
+    status: delivered
+    expected_count: 1

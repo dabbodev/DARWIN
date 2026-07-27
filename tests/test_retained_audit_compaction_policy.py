@@ -232,6 +232,7 @@ def test_compaction_empty_inputs_produce_deterministic_empty_decision():
                 "lane_admission_decision",
                 "encrypted_delivery_result",
                 "encryption_policy_decision",
+                "message_delivery_result",
             ],
             "unsupported_records_ignored": False,
         },

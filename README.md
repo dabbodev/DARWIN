@@ -8,15 +8,15 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-DARWIN v1.9.0 is prepared as a source-release snapshot reporting
-`darwin-sim 1.9.0`. Its publication contract is an annotated `v1.9.0` tag and
+DARWIN v1.10.0 is prepared as a source-release snapshot reporting
+`darwin-sim 1.10.0`. Its publication contract is an annotated `v1.10.0` tag and
 a GitHub release created from the exact same commit, with no package-index
 publication and no uploaded release assets. This repository text deliberately
 does not claim that those remote publication actions have already occurred.
 
-The previous DARWIN v1.8.0 release is on `main` as `darwin-sim 1.8.0`. The
-annotated `v1.8.0` tag and GitHub release exist:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.8.0. No package
+The previous DARWIN v1.9.0 release is on `main` as `darwin-sim 1.9.0`. The
+annotated `v1.9.0` tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.9.0. No package
 publication was performed, and no release assets were uploaded.
 
 v1.4 adds lifecycle policy explanation and stream-offer audit summaries while
@@ -86,6 +86,19 @@ compact snapshots unchanged.
 Final v1.9 validation on 2026-07-26 (America/Los_Angeles) passed Ruff, 935
 tests, all scenarios `001` through `078`, exact scenario-index verification,
 CLI output `darwin-sim 1.9.0`, and an isolated out-of-tree wheel
+build/install/version smoke check.
+
+The v1.10 source snapshot extends the same retained-audit pipeline to direct
+message-delivery result history. It adds deterministic RegistryHub ownership,
+reuses existing message, mailbox, lane, status, reason, and source replay
+groupings, and adds scenarios `079` through `081`. Explicit apply removes only
+the selected direct-delivery audit results; inbox contents, completed delivery
+state, unrelated histories, TrafficHub state, routing, canonical identity, and
+compact snapshots remain unchanged.
+
+Final v1.10 validation on 2026-07-27 (America/Los_Angeles) passed Ruff, 950
+tests, all scenarios `001` through `081`, exact scenario-index verification,
+CLI output `darwin-sim 1.10.0`, and an isolated out-of-tree wheel
 build/install/version smoke check.
 
 The v0.1 simulator answers questions like:
@@ -304,6 +317,12 @@ isolated explicit compaction apply. The checked-in scenario set is contiguous
 from `001` through `078`, and the package and CLI version report
 `darwin-sim 1.9.0`.
 
+In the v1.10 source-release snapshot, scenarios `079` through `081` cover
+direct message-delivery retained-audit classification, existing-dimension
+replay, and isolated explicit compaction apply. The checked-in scenario set is
+contiguous from `001` through `081`, and the package and CLI version report
+`darwin-sim 1.10.0`.
+
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
 networking, sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar
@@ -396,6 +415,15 @@ single-history apply, scenario DSL and detailed debug visibility, and scenarios
 through `078`, exact generated-versus-checked-in scenario-index comparison,
 CLI output `darwin-sim 1.9.0`, and an isolated wheel build/install smoke check.
 The source release does not publish a package or upload assets.
+
+The v1.10 source-release docs cover direct message-delivery retained-audit
+classification, existing message/mailbox/lane/status/reason/source replay
+counts, isolated single-history apply, scenario DSL and detailed debug
+visibility, and scenarios `079` through `081`. Release gates include Ruff,
+pytest, all scenarios `001` through `081`, exact
+generated-versus-checked-in scenario-index comparison, CLI output
+`darwin-sim 1.10.0`, and an isolated wheel build/install smoke check. The
+source release does not publish a package or upload assets.
 
 The v1.5 release docs cover read-only lifecycle explanation retention
 classification, read-only pruning plans, explicit retained-history pruning
@@ -1203,6 +1231,12 @@ For v1.9 retained audit encryption-policy expansion release docs, see:
 - `docs/V1_9_ROADMAP.md`
 - `docs/RETAINED_AUDIT_ENCRYPTION_POLICY_v1_9.md`
 - `docs/RELEASE_NOTES_v1_9_DRAFT.md`
+
+For v1.10 direct message-delivery retained-audit expansion release docs, see:
+
+- `docs/V1_10_ROADMAP.md`
+- `docs/RETAINED_AUDIT_MESSAGE_DELIVERY_v1_10.md`
+- `docs/RELEASE_NOTES_v1_10_DRAFT.md`
 
 ## What v0.1 Is Not
 

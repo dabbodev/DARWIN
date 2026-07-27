@@ -1,0 +1,167 @@
+scenario_id: 080_retained_audit_message_delivery_replay
+name: Message delivery retained audit replay
+category: mailbox
+description: direct message delivery replay summaries group existing message mailbox lane status and reason dimensions
+tags:
+  - mailbox
+  - retained_audit
+  - replay
+  - v1.10
+demonstrates:
+  - replay summaries reuse message mailbox lane status and reason groupings
+  - unresolved recipients do not invent mailbox identifiers
+  - decision-category filters isolate delivered and failed direct results
+expected_result: the complete summary contains three direct results while retained and candidate summaries isolate delivered and bounced outcomes
+setup:
+  registry_hubs:
+    - hub_id: registry_chat_001
+      scope_path: global.chat
+  devices:
+    - device_id: dev_NEO
+      label: neo
+    - device_id: dev_TRINITY
+      label: trinity
+steps:
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: basic_messaging:v1
+  - action: register_lane_definition
+    registry_hub: registry_chat_001
+    lane_signature: file_transfer:v1
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_alpha
+    canonical_device_id: dev_NEO
+    local_name: neo
+    scope: global.chat
+  - action: register_mailbox
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_zeta
+    canonical_device_id: dev_TRINITY
+    local_name: trinity
+    scope: global.chat
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_alpha
+    lane_signature: basic_messaging:v1
+  - action: bind_mailbox_capability
+    registry_hub: registry_chat_001
+    mailbox_id: mailbox_zeta
+    lane_signature: file_transfer:v1
+  - action: register_adapter_endpoint
+    registry_hub: registry_chat_001
+    endpoint_id: endpoint_mailbox_alpha
+    subject_id: mailbox_alpha
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: available
+    lane_signatures:
+      - basic_messaging:v1
+    scope: global.chat
+  - action: register_adapter_endpoint
+    registry_hub: registry_chat_001
+    endpoint_id: endpoint_mailbox_zeta
+    subject_id: mailbox_zeta
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: available
+    lane_signatures:
+      - file_transfer:v1
+    scope: global.chat
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: message_alpha_080
+    sender_id: dev_SENDER
+    recipient_address: darwin://global.chat.neo/inbox
+    lane_signature: basic_messaging:v1
+    payload: alpha delivery
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: message_zeta_080
+    sender_id: dev_SENDER
+    recipient_address: darwin://global.chat.trinity/inbox
+    lane_signature: file_transfer:v1
+    payload: zeta delivery
+  - action: deliver_message
+    registry_hub: registry_chat_001
+    message_id: message_missing_080
+    sender_id: dev_SENDER
+    recipient_address: darwin://global.chat.missing/inbox
+    lane_signature: basic_messaging:v1
+    payload: missing delivery
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_chat_001
+    policy_id: retained_audit_message_delivery_080
+    history_types:
+      - message_delivery_result
+    record_history_types:
+      - message_delivery_result
+    compact_statuses:
+      - bounced
+  - action: summarize_retained_audit_replay
+    registry_hub: registry_chat_001
+    record_history_types:
+      - message_delivery_result
+    decision_policy_id: retained_audit_message_delivery_080
+    decision_category: all
+  - action: summarize_retained_audit_replay
+    registry_hub: registry_chat_001
+    record_history_types:
+      - message_delivery_result
+    decision_policy_id: retained_audit_message_delivery_080
+    decision_category: retained
+  - action: summarize_retained_audit_replay
+    registry_hub: registry_chat_001
+    record_history_types:
+      - message_delivery_result
+    decision_policy_id: retained_audit_message_delivery_080
+    decision_category: compaction_candidate
+assertions:
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_chat_001
+    history_type: message_delivery_result
+    record_count: 3
+    message_id: message_zeta_080
+    message_count: 1
+    mailbox_id: mailbox_alpha
+    mailbox_count: 1
+    lane_signature: basic_messaging:v1
+    lane_signature_count: 2
+    status: delivered
+    status_count: 2
+    reason: none
+    reason_count: 2
+    grouped_history_type: message_delivery_result
+    grouped_history_type_count: 3
+    decision_category: all
+    expected_count: 1
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_chat_001
+    history_type: message_delivery_result
+    record_count: 2
+    message_id: message_alpha_080
+    message_count: 1
+    mailbox_id: mailbox_zeta
+    mailbox_count: 1
+    lane_signature: file_transfer:v1
+    lane_signature_count: 1
+    status: delivered
+    status_count: 2
+    reason: none
+    reason_count: 2
+    decision_category: retained
+    expected_count: 1
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_chat_001
+    history_type: message_delivery_result
+    record_count: 1
+    message_id: message_missing_080
+    message_count: 1
+    lane_signature: basic_messaging:v1
+    lane_signature_count: 1
+    status: bounced
+    status_count: 1
+    reason: mailbox_not_found
+    reason_count: 1
+    decision_category: compaction_candidate
+    expected_count: 1

@@ -35,7 +35,7 @@ jobs:
         run: python -m pytest
 
       - name: Verify CLI version
-        run: test "$(python -m darwin.cli.main --version)" = "darwin-sim 1.9.0"
+        run: test "$(python -m darwin.cli.main --version)" = "darwin-sim 1.10.0"
 
       - name: List and validate scenarios
         run: python -m darwin.cli.main list-scenarios
@@ -76,4 +76,4 @@ jobs:
         run: |
           python -m pip install --force-reinstall wheelhouse/*.whl
           cd /tmp
-          test "$(python -m darwin.cli.main --version)" = "darwin-sim 1.9.0"
+          test "$(python -m darwin.cli.main --version)" = "darwin-sim 1.10.0"

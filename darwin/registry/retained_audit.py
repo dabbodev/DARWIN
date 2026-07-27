@@ -7,6 +7,7 @@ from typing import Any
 from darwin.models.encrypted_delivery import EncryptedDeliveryResult
 from darwin.models.encryption import EncryptionPolicyDecision
 from darwin.models.hub import RegistryHub
+from darwin.models.message import MessageDeliveryResult
 from darwin.models.retained_audit import (
     RetainedAuditCompactionApplyResult,
     RetainedAuditCompactionDecision,
@@ -28,6 +29,7 @@ SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES: tuple[str, ...] = (
     "lane_admission_decision",
     "encrypted_delivery_result",
     "encryption_policy_decision",
+    "message_delivery_result",
 )
 
 RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS: tuple[str, ...] = (
@@ -590,6 +592,21 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
             status=record.status.status,
             source=_metadata_source(record.metadata),
         )
+    if isinstance(record, MessageDeliveryResult):
+        return _AuditRecordView(
+            history_type="message_delivery_result",
+            record_key=_message_delivery_result_key(index, record),
+            hub_id=_metadata_registry_hub(record.metadata),
+            offer_id=None,
+            request_id=None,
+            message_id=record.message_id,
+            mailbox_id=record.resolved_mailbox_id,
+            policy_id=None,
+            lane_signature=record.lane_signature,
+            reason=None if record.reason is None else record.reason.reason,
+            status=record.status.status,
+            source=_metadata_source(record.metadata),
+        )
     return _AuditRecordView(
         history_type=f"unsupported:{record.__class__.__name__}",
         record_key=f"unsupported:{index}:{record.__class__.__name__}",
@@ -692,6 +709,8 @@ def _selected_retained_history(
         return registry_hub.encrypted_delivery_result_history
     if history_type == "encryption_policy_decision":
         return registry_hub.encryption_policy_decision_history
+    if history_type == "message_delivery_result":
+        return registry_hub.message_delivery_results
     raise ValueError(f"unsupported retained audit history_type: {history_type}")
 
 
@@ -808,6 +827,20 @@ def _encryption_policy_decision_key(
     )
 
 
+def _message_delivery_result_key(
+    index: int,
+    result: MessageDeliveryResult,
+) -> str:
+    hub_id = _metadata_registry_hub(result.metadata) or "none"
+    mailbox_id = result.resolved_mailbox_id or "none"
+    reason = "none" if result.reason is None else result.reason.reason
+    return (
+        f"message_delivery_result:{index}:{hub_id}:{result.message_id}:"
+        f"{result.recipient_address}:{mailbox_id}:{result.lane_signature}:"
+        f"{result.status.status}:{reason}"
+    )
+
+
 def _metadata_registry_hub(metadata: dict[str, Any] | None) -> str | None:
     if not isinstance(metadata, dict):
         return None
@@ -877,6 +910,9 @@ def _compaction_apply_metadata(
         ),
         "encryption_policy_history_mutated": (
             selected_history_mutated and history_type == "encryption_policy_decision"
+        ),
+        "message_delivery_history_mutated": (
+            selected_history_mutated and history_type == "message_delivery_result"
         ),
         "alias_history_mutated": False,
         "authority_history_mutated": False,
