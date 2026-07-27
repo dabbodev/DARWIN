@@ -929,3 +929,56 @@ python -m darwin.cli.main scenario-index
 python -m darwin.cli.main --version
 python -m build --wheel
 ```
+
+# DARWIN v1.10 Direct Message-Delivery Retained-Audit Release Checklist
+
+This checklist describes the v1.10.0 source snapshot in final validation.
+Remote publication state is intentionally not inferred from repository
+contents. The publication procedure creates an annotated `v1.10.0` tag and
+GitHub source release from the exact validated commit; it performs no package-
+index publication and uploads no release assets.
+
+- [x] v1.10 roadmap is checked in at `docs/V1_10_ROADMAP.md`.
+- [x] v1.10 release notes retain the compatible path
+  `docs/RELEASE_NOTES_v1_10_DRAFT.md`.
+- [x] The direct message-delivery retained-audit specification is checked in
+  at `docs/RETAINED_AUDIT_MESSAGE_DELIVERY_v1_10.md`.
+- [x] README links to all v1.10 release documents.
+- [x] Package, CLI, smoke tests, and CI expect `darwin-sim 1.10.0`.
+- [x] Existing retained-audit history types keep their v1.9 order and key
+  behavior, followed by `message_delivery_result`.
+- [x] Helper-created result ownership uses string
+  `metadata["registry_hub"]` and overrides conflicting internal metadata.
+- [x] Replay summaries reuse sorted, copied message, mailbox, lane, status,
+  reason, and optional source counts without inferring other dimensions.
+- [x] Explicit apply mutates only selected direct message-delivery result
+  history; inboxes, completed delivery state, and unrelated histories remain
+  unchanged.
+- [x] Scenarios `079` through `081` cover classification, replay, and isolated
+  apply; checked-in metadata is contiguous from `001` through `081`.
+- [x] Detailed retained-audit summaries remain copied and JSON-safe, and
+  compact `world.snapshot()` remains unchanged.
+- [x] Python 3.11 through 3.14 CI and exact CLI-version verification remain in
+  place.
+- [x] CI fails when generated scenario-index stdout differs from
+  `docs/SCENARIO_INDEX.md`.
+- [x] The Python 3.11 wheel build/install smoke job performs no upload.
+- [x] Release documentation avoids production networking, cryptography,
+  security, privacy, compliance, delivery, routing, and retention claims.
+- [ ] Record the actual America/Los_Angeles release date after all release
+  gates pass.
+- [ ] Record the final passing pytest count after all release gates pass.
+- [ ] Ruff, pytest, scenarios `001` through `081`, exact scenario-index
+  comparison, CLI output, wheel build, isolated installation, and out-of-tree
+  version smoke all pass.
+
+## v1.10 Source-Snapshot Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main --version
+python -m build --wheel
+```

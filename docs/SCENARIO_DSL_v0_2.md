@@ -1326,3 +1326,60 @@ retries, durable queues, live clocks, timers, polling, delivery enforcement,
 routing changes, networking, DNS, external services, real cryptography,
 production E2EE, or production security, privacy, compliance, or retention
 guarantees.
+
+## v1.10 Direct Message-Delivery Retained-Audit Extension
+
+v1.10 extends the existing retained-audit actions without adding a new action
+or changing message-delivery evaluation:
+
+- The supported history order appends `message_delivery_result` after the six
+  v1.9 history labels.
+- `classify_retained_audit_records_for_compaction`,
+  `summarize_retained_audit_replay`, and
+  `apply_retained_audit_compaction_decision` accept
+  `message_delivery_result`.
+- Records are collected from `RegistryHub.message_delivery_results`.
+- The existing `deliver_message` action supplies direct results; it gains no
+  new input or delivery behavior.
+- Results created by the delivery helper carry string
+  `metadata["registry_hub"]` ownership. Missing, non-string, and foreign
+  owners are ignored deterministically.
+- Direct results use top-level message, recipient address, resolved mailbox,
+  lane, status, and reason fields plus optional string `metadata["source"]`.
+  They do not infer request, offer, policy, endpoint, fallback, audit-path, or
+  nested delivery dimensions.
+
+`retained_audit_replay_summary_contains` reuses the existing:
+
+- `message_id` with `message_count`;
+- `mailbox_id` with `mailbox_count`;
+- `lane_signature` with `lane_signature_count`;
+- status, reason, and source count pairs; and
+- grouped history-type and decision-category filters.
+
+Detailed snapshots expose copied owner metadata and the existing
+retained-audit result sections. Compact `world.snapshot()` remains unchanged.
+
+Explicit apply removes only matching candidates from
+`RegistryHub.message_delivery_results`, preserves remaining order, reports
+stale keys as missing, and is deterministic when repeated. It does not remove
+inbox envelopes, reverse delivery, or mutate events, action results, encrypted
+or policy histories, registry configuration, held offers, TrafficHub state or
+routing, canonical identities, or compact snapshots. Mixed and unsupported
+decisions remain deterministic no-ops.
+
+Checked-in v1.10 retained-audit scenarios:
+
+- `scenarios/079_retained_audit_message_delivery_classification.yaml`
+- `scenarios/080_retained_audit_message_delivery_replay.yaml`
+- `scenarios/081_retained_audit_message_delivery_apply.yaml`
+
+The checked-in scenario set is contiguous from `001` through `081`. The
+package and CLI report `darwin-sim 1.10.0`.
+
+This simulator-local, deterministic, source-only scenario surface adds no new
+compaction filters, nested gate or delivery replay dimensions, mixed or
+multi-history apply, inbox deletion, automatic cleanup, workers, retries,
+durable queues, live clocks, timers, polling, delivery enforcement, routing
+changes, networking, DNS, external services, real cryptography, production
+E2EE, or production security, privacy, compliance, or retention guarantees.

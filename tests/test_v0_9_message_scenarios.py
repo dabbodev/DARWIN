@@ -283,6 +283,7 @@ def test_v0_9_detailed_snapshot_exposes_message_state_as_json_safe_copies():
         "traffic_hub_routing": False,
         "durable_queue": False,
         "durable_storage": False,
+        "registry_hub": "registry_chat_001",
     }
 
     hub_snapshot["message_inboxes"]["mailbox_neo"][0]["payload"] = "mutated"
@@ -316,14 +317,14 @@ def test_v0_9_checked_in_message_scenarios_validate_and_run():
     assert not failures
 
 
-def test_scenario_sweep_remains_contiguous_001_through_078():
+def test_scenario_sweep_remains_contiguous_001_through_081():
     scenario_numbers = sorted(
         int(path.name[:3])
         for path in list_scenario_files(SCENARIOS_DIR)
         if path.name[:3].isdigit()
     )
 
-    assert scenario_numbers == list(range(1, 79))
+    assert scenario_numbers == list(range(1, 82))
 
 
 def _load_yaml(path: Path):

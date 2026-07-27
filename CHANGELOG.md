@@ -1,5 +1,47 @@
 # Changelog
 
+## [1.10.0] - Release date pending final validation
+
+The DARWIN v1.10.0 source-release snapshot extends retained-audit
+classification, replay, and explicit apply to RegistryHub-local direct
+message-delivery result history. The package and CLI identify the snapshot as
+`darwin-sim 1.10.0`.
+
+Added:
+
+- `message_delivery_result` appended as the seventh supported retained-audit
+  history type without changing the order or behavior of the six v1.9 types.
+- Deterministic ownership through additive string
+  `metadata["registry_hub"]` on helper-created direct-delivery results.
+- Exact positional keys using top-level message, recipient, resolved mailbox,
+  lane, status, and reason fields.
+- Existing sorted, copied replay counts reused for message ID, mailbox ID,
+  lane signature, status, reason, and optional source.
+- Explicit single-history apply for direct-delivery result history with
+  isolated mutation flags, stale-key reporting, and deterministic repeated
+  apply.
+- Scenario DSL coverage and scenarios `079` through `081` for classification,
+  replay/decision filtering, and isolated apply.
+
+Compatibility and limits:
+
+- `MessageDeliveryResult.to_summary()` retains its top-level field order, while
+  helper-created metadata gains `registry_hub`.
+- Direct-result apply does not mutate inboxes, delivered envelopes, events,
+  action results, encrypted or policy histories, registry configuration,
+  TrafficHub state or routing, canonical identity, or compact snapshots.
+- The source scenario set is contiguous from `001` through `081`.
+- v1.10 remains simulator-local, deterministic, source-only, and symbolic. It
+  adds no new filters, nested delivery replay, mixed-history apply, automatic
+  cleanup, workers, retries, durable queues, live clocks or timers, networking,
+  DNS, external services, real cryptography, production E2EE, delivery
+  enforcement, routing changes, or production security, privacy, compliance,
+  or retention guarantees.
+- Publication remains GitHub source-only with no package-index publication and
+  no uploaded release assets.
+- The actual America/Los_Angeles release date and final passing pytest count
+  remain pending until every release gate succeeds.
+
 ## [1.9.0] - 2026-07-26
 
 The DARWIN v1.9.0 source-release snapshot extends retained-audit

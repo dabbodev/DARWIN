@@ -317,14 +317,14 @@ def test_v1_6_checked_in_retained_audit_scenarios_validate_and_run():
     assert not failures
 
 
-def test_v1_6_scenario_sweep_remains_contiguous_001_through_078():
+def test_v1_6_scenario_sweep_remains_contiguous_001_through_081():
     scenario_numbers = sorted(
         int(path.name[:3])
         for path in list_scenario_files(SCENARIOS_DIR)
         if path.name[:3].isdigit()
     )
 
-    assert scenario_numbers == list(range(1, 79))
+    assert scenario_numbers == list(range(1, 82))
 
 
 def _minimal_invalid_v1_6_scenario() -> dict[str, object]:

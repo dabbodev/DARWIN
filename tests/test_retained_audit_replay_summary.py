@@ -148,6 +148,7 @@ def test_replay_summary_empty_inputs_are_deterministic():
                 "lane_admission_decision",
                 "encrypted_delivery_result",
                 "encryption_policy_decision",
+                "message_delivery_result",
             ],
             "history_type_filter": None,
             "decision_category_filter": "all",

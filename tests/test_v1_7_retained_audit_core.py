@@ -75,6 +75,7 @@ def test_poll_and_admission_classification_maps_owners_and_fields():
         "lane_admission_decision",
         "encrypted_delivery_result",
         "encryption_policy_decision",
+        "message_delivery_result",
     )
     assert decision.history_type == "mixed"
     assert decision.retained_record_keys == (_poll_key(0, records[0]),)

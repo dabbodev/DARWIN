@@ -332,6 +332,7 @@ def _retain_result(
     }
     if metadata:
         result_metadata.update(metadata)
+    result_metadata["registry_hub"] = registry_hub.hub_id
     result = MessageDeliveryResult(
         message_id=message_envelope.message_id,
         recipient_address=message_envelope.recipient_address,
