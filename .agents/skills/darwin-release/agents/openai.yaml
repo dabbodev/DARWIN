@@ -1,0 +1,7 @@
+interface:
+  display_name: "DARWIN Release"
+  short_description: "Plan, validate, publish, and audit DARWIN releases"
+  default_prompt: "Use $darwin-release to plan the next DARWIN source release and stop for approval before making changes."
+
+policy:
+  allow_implicit_invocation: false
