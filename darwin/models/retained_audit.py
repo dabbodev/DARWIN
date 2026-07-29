@@ -203,6 +203,10 @@ class RetainedAuditReplaySummary:
     by_mailbox_id: dict[str, int] | None = None
     by_policy_id: dict[str, int] | None = None
     by_lane_signature: dict[str, int] | None = None
+    by_requested_alias: dict[str, int] | None = None
+    by_granted_alias: dict[str, int] | None = None
+    by_target_device: dict[str, int] | None = None
+    by_path_hub: dict[str, int] | None = None
 
     def __post_init__(self) -> None:
         _validate_required_string(self.hub_id, "hub_id")
@@ -258,6 +262,26 @@ class RetainedAuditReplaySummary:
             "by_lane_signature",
             _count_dict(self.by_lane_signature or {}, "by_lane_signature"),
         )
+        object.__setattr__(
+            self,
+            "by_requested_alias",
+            _count_dict(self.by_requested_alias or {}, "by_requested_alias"),
+        )
+        object.__setattr__(
+            self,
+            "by_granted_alias",
+            _count_dict(self.by_granted_alias or {}, "by_granted_alias"),
+        )
+        object.__setattr__(
+            self,
+            "by_target_device",
+            _count_dict(self.by_target_device or {}, "by_target_device"),
+        )
+        object.__setattr__(
+            self,
+            "by_path_hub",
+            _count_dict(self.by_path_hub or {}, "by_path_hub"),
+        )
         _validate_optional_string(self.first_record_key, "first_record_key")
         _validate_optional_string(self.last_record_key, "last_record_key")
         object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
@@ -281,6 +305,10 @@ class RetainedAuditReplaySummary:
             "first_record_key": self.first_record_key,
             "last_record_key": self.last_record_key,
             "metadata": _json_safe_copy(self.metadata or {}),
+            "by_requested_alias": dict(self.by_requested_alias or {}),
+            "by_granted_alias": dict(self.by_granted_alias or {}),
+            "by_target_device": dict(self.by_target_device or {}),
+            "by_path_hub": dict(self.by_path_hub or {}),
         }
 
     def to_dict(self) -> dict[str, object]:

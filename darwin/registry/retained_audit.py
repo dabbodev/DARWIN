@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from darwin.models.alias_authority import AliasAuthorityOutcomeRecord
 from darwin.models.encrypted_delivery import EncryptedDeliveryResult
 from darwin.models.encryption import EncryptionPolicyDecision
 from darwin.models.hub import RegistryHub
@@ -30,6 +31,7 @@ SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES: tuple[str, ...] = (
     "encrypted_delivery_result",
     "encryption_policy_decision",
     "message_delivery_result",
+    "authority_outcome",
 )
 
 RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS: tuple[str, ...] = (
@@ -230,6 +232,10 @@ def summarize_retained_audit_replay(
     by_mailbox_id: dict[str, int] = {}
     by_policy_id: dict[str, int] = {}
     by_lane_signature: dict[str, int] = {}
+    by_requested_alias: dict[str, int] = {}
+    by_granted_alias: dict[str, int] = {}
+    by_target_device: dict[str, int] = {}
+    by_path_hub: dict[str, int] = {}
 
     for view in views:
         record_keys.append(view.record_key)
@@ -248,6 +254,14 @@ def summarize_retained_audit_replay(
             _increment_count(by_policy_id, view.policy_id)
         if view.lane_signature is not None:
             _increment_count(by_lane_signature, view.lane_signature)
+        if view.requested_alias is not None:
+            _increment_count(by_requested_alias, view.requested_alias)
+        if view.granted_alias is not None:
+            _increment_count(by_granted_alias, view.granted_alias)
+        if view.target_device is not None:
+            _increment_count(by_target_device, view.target_device)
+        for path_hub in view.path_hubs:
+            _increment_count(by_path_hub, path_hub)
 
     summary_metadata: dict[str, object] = {
         "simulator_local": True,
@@ -300,6 +314,10 @@ def summarize_retained_audit_replay(
         by_mailbox_id=_sorted_count_dict(by_mailbox_id),
         by_policy_id=_sorted_count_dict(by_policy_id),
         by_lane_signature=_sorted_count_dict(by_lane_signature),
+        by_requested_alias=_sorted_count_dict(by_requested_alias),
+        by_granted_alias=_sorted_count_dict(by_granted_alias),
+        by_target_device=_sorted_count_dict(by_target_device),
+        by_path_hub=_sorted_count_dict(by_path_hub),
         first_record_key=record_keys[0] if record_keys else None,
         last_record_key=record_keys[-1] if record_keys else None,
         metadata=summary_metadata,
@@ -465,6 +483,10 @@ class _AuditRecordView:
         reason: str | None,
         status: str | None,
         source: str | None,
+        requested_alias: str | None = None,
+        granted_alias: str | None = None,
+        target_device: str | None = None,
+        path_hubs: tuple[str, ...] = (),
     ) -> None:
         self.history_type = history_type
         self.record_key = record_key
@@ -478,6 +500,10 @@ class _AuditRecordView:
         self.reason = reason
         self.status = status
         self.source = source
+        self.requested_alias = requested_alias
+        self.granted_alias = granted_alias
+        self.target_device = target_device
+        self.path_hubs = path_hubs
 
 
 def _record_tuple(records: list[object] | tuple[object, ...]) -> tuple[object, ...]:
@@ -607,6 +633,28 @@ def _audit_record_view(index: int, record: object) -> _AuditRecordView:
             status=record.status.status,
             source=_metadata_source(record.metadata),
         )
+    if isinstance(record, AliasAuthorityOutcomeRecord):
+        requesting_hub = (
+            record.requesting_hub if isinstance(record.requesting_hub, str) else None
+        )
+        return _AuditRecordView(
+            history_type="authority_outcome",
+            record_key=_authority_outcome_key(index, record),
+            hub_id=requesting_hub,
+            offer_id=None,
+            request_id=None,
+            message_id=None,
+            mailbox_id=None,
+            policy_id=None,
+            lane_signature=None,
+            reason=record.reason,
+            status=record.final_status,
+            source=None,
+            requested_alias=record.requested_alias,
+            granted_alias=record.granted_alias,
+            target_device=record.target_device,
+            path_hubs=record.path_hubs,
+        )
     return _AuditRecordView(
         history_type=f"unsupported:{record.__class__.__name__}",
         record_key=f"unsupported:{index}:{record.__class__.__name__}",
@@ -711,6 +759,8 @@ def _selected_retained_history(
         return registry_hub.encryption_policy_decision_history
     if history_type == "message_delivery_result":
         return registry_hub.message_delivery_results
+    if history_type == "authority_outcome":
+        return registry_hub.authority_outcome_history
     raise ValueError(f"unsupported retained audit history_type: {history_type}")
 
 
@@ -841,6 +891,25 @@ def _message_delivery_result_key(
     )
 
 
+def _authority_outcome_key(
+    index: int,
+    record: AliasAuthorityOutcomeRecord,
+) -> str:
+    requesting_hub = (
+        record.requesting_hub if isinstance(record.requesting_hub, str) else "none"
+    )
+    granted_alias = record.granted_alias or "none"
+    target_device = record.target_device or "none"
+    status = record.status or "none"
+    reason = record.reason or "none"
+    path_hubs = ",".join(record.path_hubs) or "none"
+    return (
+        f"authority_outcome:{index}:{requesting_hub}:{record.record_id}:"
+        f"{record.requested_alias}:{granted_alias}:{target_device}:"
+        f"{record.final_status}:{status}:{reason}:{path_hubs}"
+    )
+
+
 def _metadata_registry_hub(metadata: dict[str, Any] | None) -> str | None:
     if not isinstance(metadata, dict):
         return None
@@ -915,7 +984,9 @@ def _compaction_apply_metadata(
             selected_history_mutated and history_type == "message_delivery_result"
         ),
         "alias_history_mutated": False,
-        "authority_history_mutated": False,
+        "authority_history_mutated": (
+            selected_history_mutated and history_type == "authority_outcome"
+        ),
         "delivery_state_mutated": False,
         "delivery_behavior_changed": False,
         "traffic_hub_state_changed": False,

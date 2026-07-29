@@ -982,3 +982,57 @@ python -m darwin.cli.main scenario-index
 python -m darwin.cli.main --version
 python -m build --wheel
 ```
+
+# DARWIN v1.11 Authority-Outcome Retained-Audit Release Checklist
+
+This checklist describes the v1.11.0 source-release snapshot validated on
+2026-07-29 (America/Los_Angeles) with 964 passing tests. Remote publication
+state is intentionally not inferred from repository contents. The publication
+procedure creates an
+annotated `v1.11.0` tag and GitHub source release from the exact validated
+commit; it performs no package-index publication and uploads no release
+assets.
+
+- [x] v1.11 roadmap is checked in at `docs/V1_11_ROADMAP.md`.
+- [x] v1.11 release notes retain the compatible path
+  `docs/RELEASE_NOTES_v1_11_DRAFT.md`.
+- [x] The authority-outcome retained-audit specification is checked in at
+  `docs/RETAINED_AUDIT_AUTHORITY_OUTCOME_v1_11.md`.
+- [x] README links to all v1.11 release documents.
+- [x] Package, CLI, smoke tests, and CI expect `darwin-sim 1.11.0`.
+- [x] Existing retained-audit history types keep their v1.10 order and key
+  behavior, followed by `authority_outcome`.
+- [x] Authority ownership uses only string `requesting_hub`, and generic
+  status filtering uses `final_status`.
+- [x] Replay summaries expose sorted copied requested/granted alias,
+  target-device, and path-hub counts.
+- [x] Explicit apply mutates only selected authority outcome history; aliases,
+  conflicts, security events, other histories, canonical identity, and
+  TrafficHub state remain unchanged.
+- [x] Scenarios `082` through `084` cover classification, replay, and isolated
+  apply; checked-in metadata is contiguous from `001` through `084`.
+- [x] Detailed retained-audit summaries remain copied and JSON-safe, and
+  compact `world.snapshot()` remains unchanged.
+- [x] Python 3.11 through 3.14 CI and exact CLI-version verification remain in
+  place.
+- [x] CI fails when generated scenario-index stdout differs from
+  `docs/SCENARIO_INDEX.md`.
+- [x] The Python 3.11 wheel build/install smoke job performs no upload.
+- [x] Release documentation avoids production networking, cryptography,
+  security, privacy, compliance, authority, and retention claims.
+- [x] Record the actual America/Los_Angeles validation date: 2026-07-29.
+- [x] Record the actual final pytest count: 964 passing tests.
+- [x] Ruff, pytest, scenarios `001` through `084`, exact scenario-index
+  comparison, CLI output, wheel build, isolated installation, and out-of-tree
+  version smoke all pass.
+
+## v1.11 Source-Snapshot Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main --version
+python -m build --wheel
+```

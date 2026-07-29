@@ -149,6 +149,7 @@ def test_replay_summary_empty_inputs_are_deterministic():
                 "encrypted_delivery_result",
                 "encryption_policy_decision",
                 "message_delivery_result",
+                "authority_outcome",
             ],
             "history_type_filter": None,
             "decision_category_filter": "all",
@@ -158,6 +159,10 @@ def test_replay_summary_empty_inputs_are_deterministic():
             "wrong_hub_records_ignored": False,
             "filtered_records_ignored": False,
         },
+        "by_requested_alias": {},
+        "by_granted_alias": {},
+        "by_target_device": {},
+        "by_path_hub": {},
     }
     assert summarize_retained_audit_replay_by_history_type(
         (),

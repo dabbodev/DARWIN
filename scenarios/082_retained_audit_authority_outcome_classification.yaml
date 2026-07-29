@@ -1,0 +1,121 @@
+scenario_id: 082_retained_audit_authority_outcome_classification
+name: Authority outcome retained audit classification
+category: registry
+description: authority outcomes classify by final status without mutating retained authority or alias state
+tags:
+  - alias
+  - authority_outcome
+  - retained_audit
+  - compaction
+  - v1.11
+demonstrates:
+  - requesting RegistryHub ownership selects retained authority outcomes
+  - generic retained audit status maps to authority final status
+  - exact keys include record alias device returned status reason and path fields
+  - classification remains read-only
+expected_result: the fallback outcome is retained and the name-taken outcome is a compaction candidate while both histories remain unchanged
+setup:
+  registry_hubs:
+    - hub_id: registry_home_082
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_082
+    - hub_id: registry_family_082
+      scope_path: global.family.david
+      parent_hub_id: registry_global_082
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+    - hub_id: registry_global_082
+      scope_path: global
+  devices:
+    - device_id: dev_ALPHA_082
+      label: alpha
+    - device_id: dev_BETA_082
+      label: beta
+steps:
+  - action: register_device
+    registry_hub: registry_home_082
+    device: dev_ALPHA_082
+    label: alpha
+  - action: register_device
+    registry_hub: registry_family_082
+    device: dev_ALPHA_082
+    label: alpha
+  - action: register_device
+    registry_hub: registry_global_082
+    device: dev_ALPHA_082
+    label: alpha
+  - action: register_device
+    registry_hub: registry_home_082
+    device: dev_BETA_082
+    label: beta
+  - action: register_device
+    registry_hub: registry_family_082
+    device: dev_BETA_082
+    label: beta
+  - action: register_device
+    registry_hub: registry_global_082
+    device: dev_BETA_082
+    label: beta
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_082
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_ALPHA_082
+    requested_by_device: dev_ALPHA_082
+    fallback_allowed: true
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_082
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_BETA_082
+    requested_by_device: dev_BETA_082
+    fallback_allowed: true
+    visibility: scope_local
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_082
+    policy_id: retained_audit_authority_082
+    history_types:
+      - authority_outcome
+    record_history_types:
+      - authority_outcome
+    retain_statuses:
+      - fallback_granted
+    compact_statuses:
+      - name_taken
+assertions:
+  - type: retained_audit_compaction_decision_contains
+    registry_hub: registry_home_082
+    policy_id: retained_audit_authority_082
+    history_type: authority_outcome
+    retained_count: 1
+    compaction_candidate_count: 1
+    ignored_count: 0
+    candidate_history_type: authority_outcome
+    candidate_history_type_count: 1
+    candidate_status: name_taken
+    candidate_status_count: 1
+    candidate_reason: fallback_alias_conflict
+    candidate_reason_count: 1
+    retained_record_key: authority_outcome:0:registry_home_082:authority_outcome:registry_home_082:0001:global.alpha:global.family.david.alpha:dev_ALPHA_082:fallback_granted:fallback_granted:pass_up_denied_by_policy:registry_home_082,registry_family_082
+    compaction_candidate_record_key: authority_outcome:1:registry_home_082:authority_outcome:registry_home_082:0002:global.alpha:none:dev_BETA_082:name_taken:conflict:fallback_alias_conflict:registry_home_082,registry_family_082
+    expected_count: 1
+  - type: authority_outcome_history_contains
+    registry_hub: registry_home_082
+    requested_alias: global.alpha
+    granted_alias: global.family.david.alpha
+    device_id: dev_ALPHA_082
+    final_status: fallback_granted
+    expected_count: 1
+  - type: authority_outcome_history_contains
+    registry_hub: registry_home_082
+    requested_alias: global.alpha
+    device_id: dev_BETA_082
+    final_status: name_taken
+    expected_count: 1
+  - type: alias_resolves_to
+    registry_hub: registry_family_082
+    alias: global.family.david.alpha
+    device: dev_ALPHA_082
+    identity_chain: global.family.david.alpha
