@@ -1,0 +1,162 @@
+scenario_id: 083_retained_audit_authority_outcome_replay
+name: Authority outcome retained audit replay
+category: registry
+description: authority outcome replay groups aliases target devices path hubs final statuses and reasons
+tags:
+  - alias
+  - authority_outcome
+  - retained_audit
+  - replay
+  - v1.11
+demonstrates:
+  - replay summaries group requested and granted aliases
+  - replay summaries group target devices and every retained path hub
+  - decision filters isolate retained fallback and candidate conflict outcomes
+expected_result: complete retained and candidate summaries expose deterministic authority groupings without nested decision inference
+setup:
+  registry_hubs:
+    - hub_id: registry_home_083
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_083
+    - hub_id: registry_family_083
+      scope_path: global.family.david
+      parent_hub_id: registry_global_083
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+    - hub_id: registry_global_083
+      scope_path: global
+  devices:
+    - device_id: dev_ALPHA_083
+      label: alpha
+    - device_id: dev_BETA_083
+      label: beta
+steps:
+  - action: register_device
+    registry_hub: registry_home_083
+    device: dev_ALPHA_083
+    label: alpha
+  - action: register_device
+    registry_hub: registry_family_083
+    device: dev_ALPHA_083
+    label: alpha
+  - action: register_device
+    registry_hub: registry_global_083
+    device: dev_ALPHA_083
+    label: alpha
+  - action: register_device
+    registry_hub: registry_home_083
+    device: dev_BETA_083
+    label: beta
+  - action: register_device
+    registry_hub: registry_family_083
+    device: dev_BETA_083
+    label: beta
+  - action: register_device
+    registry_hub: registry_global_083
+    device: dev_BETA_083
+    label: beta
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_083
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_ALPHA_083
+    requested_by_device: dev_ALPHA_083
+    fallback_allowed: true
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_083
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_BETA_083
+    requested_by_device: dev_BETA_083
+    fallback_allowed: true
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_083
+    requested_alias: global.beta
+    local_name: beta
+    target_device: dev_BETA_083
+    requested_by_device: dev_BETA_083
+    fallback_allowed: true
+    visibility: scope_local
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_083
+    policy_id: retained_audit_authority_083
+    history_types:
+      - authority_outcome
+    record_history_types:
+      - authority_outcome
+    compact_statuses:
+      - name_taken
+  - action: summarize_retained_audit_replay
+    registry_hub: registry_home_083
+    record_history_types:
+      - authority_outcome
+    decision_policy_id: retained_audit_authority_083
+    decision_category: all
+  - action: summarize_retained_audit_replay
+    registry_hub: registry_home_083
+    record_history_types:
+      - authority_outcome
+    decision_policy_id: retained_audit_authority_083
+    decision_category: retained
+  - action: summarize_retained_audit_replay
+    registry_hub: registry_home_083
+    record_history_types:
+      - authority_outcome
+    decision_policy_id: retained_audit_authority_083
+    decision_category: compaction_candidate
+assertions:
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_home_083
+    history_type: authority_outcome
+    record_count: 3
+    requested_alias: global.alpha
+    requested_alias_count: 2
+    granted_alias: global.family.david.beta
+    granted_alias_count: 1
+    target_device: dev_BETA_083
+    target_device_count: 2
+    path_hub: registry_family_083
+    path_hub_count: 3
+    status: fallback_granted
+    status_count: 2
+    reason: pass_up_denied_by_policy
+    reason_count: 2
+    grouped_history_type: authority_outcome
+    grouped_history_type_count: 3
+    decision_category: all
+    expected_count: 1
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_home_083
+    history_type: authority_outcome
+    record_count: 2
+    requested_alias: global.beta
+    requested_alias_count: 1
+    granted_alias: global.family.david.alpha
+    granted_alias_count: 1
+    target_device: dev_ALPHA_083
+    target_device_count: 1
+    path_hub: registry_home_083
+    path_hub_count: 2
+    status: fallback_granted
+    status_count: 2
+    decision_category: retained
+    expected_count: 1
+  - type: retained_audit_replay_summary_contains
+    registry_hub: registry_home_083
+    history_type: authority_outcome
+    record_count: 1
+    requested_alias: global.alpha
+    requested_alias_count: 1
+    target_device: dev_BETA_083
+    target_device_count: 1
+    path_hub: registry_family_083
+    path_hub_count: 1
+    status: name_taken
+    status_count: 1
+    reason: fallback_alias_conflict
+    reason_count: 1
+    decision_category: compaction_candidate
+    expected_count: 1

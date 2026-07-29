@@ -2908,6 +2908,8 @@ def _retained_audit_records(
             records.extend(hub.encryption_policy_decision_history)
         elif history_type == "message_delivery_result":
             records.extend(hub.message_delivery_results)
+        elif history_type == "authority_outcome":
+            records.extend(hub.authority_outcome_history)
     return records
 
 

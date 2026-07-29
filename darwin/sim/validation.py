@@ -834,6 +834,10 @@ def _validate_assertion_type_fields(
             "mailbox_count",
             "policy_count",
             "lane_signature_count",
+            "requested_alias_count",
+            "granted_alias_count",
+            "target_device_count",
+            "path_hub_count",
             "grouped_history_type_count",
         ):
             _validate_optional_non_negative_int(assertion, field_name, location, errors)

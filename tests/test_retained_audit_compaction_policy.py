@@ -233,6 +233,7 @@ def test_compaction_empty_inputs_produce_deterministic_empty_decision():
                 "encrypted_delivery_result",
                 "encryption_policy_decision",
                 "message_delivery_result",
+                "authority_outcome",
             ],
             "unsupported_records_ignored": False,
         },

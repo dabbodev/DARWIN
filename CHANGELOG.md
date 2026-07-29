@@ -1,5 +1,51 @@
 # Changelog
 
+## [1.11.0] - Pending validation
+
+The DARWIN v1.11.0 source-release preparation extends retained-audit
+classification, replay, and explicit apply to RegistryHub-local authority
+outcome history. The package and CLI identify the preparation as
+`darwin-sim 1.11.0`.
+
+Added:
+
+- `authority_outcome` appended as the eighth supported retained-audit history
+  type without changing the order or behavior of the seven v1.10 types.
+- Deterministic ownership through string
+  `AliasAuthorityOutcomeRecord.requesting_hub`.
+- Exact positional keys using record, alias, target-device, final-status,
+  returned-status, reason, and path-hub fields.
+- Sorted copied replay counts by requested alias, granted alias, target
+  device, and path hub.
+- Existing generic status filters and replay map authority `final_status`.
+- Explicit single-history apply for authority outcome history using the
+  existing `authority_history_mutated` flag, stale-key reporting, and
+  deterministic repeated apply.
+- Scenario DSL coverage and scenarios `082` through `084` for classification,
+  replay/decision filtering, and isolated apply.
+
+Compatibility and limits:
+
+- `AliasAuthorityOutcomeRecord`, authority claim/query helpers, retained-audit
+  helper signatures, action types, assertion types, and CLI command shapes
+  remain unchanged.
+- `RetainedAuditReplaySummary` adds four optional fields at the end of its
+  constructor and four appended serialized mappings.
+- Authority apply does not mutate aliases, conflicts, security events, other
+  retained histories, action results, canonical identity, TrafficHub state or
+  routing, or compact snapshots.
+- The source scenario set is contiguous from `001` through `084`.
+- v1.11 remains simulator-local, deterministic, source-only, and symbolic. It
+  adds no new compaction filters, authority-ceiling or nested-decision replay,
+  mixed or multi-history apply, broad event store, automatic cleanup, workers,
+  retries, durable queues, live clocks, networking, DNS, external services,
+  real cryptography, production E2EE, or production security, privacy,
+  compliance, or retention guarantees.
+- Publication remains GitHub source-only with no package-index publication and
+  no uploaded release assets.
+- Final validation results and the actual America/Los_Angeles release date are
+  pending the first complete release-gate pass.
+
 ## [1.10.0] - 2026-07-27
 
 The DARWIN v1.10.0 source-release snapshot extends retained-audit

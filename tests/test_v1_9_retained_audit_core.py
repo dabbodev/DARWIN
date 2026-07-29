@@ -79,6 +79,7 @@ def test_policy_decision_classification_maps_owner_fields_and_exact_keys():
         "encrypted_delivery_result",
         "encryption_policy_decision",
         "message_delivery_result",
+        "authority_outcome",
     )
     assert decision.history_type == "encryption_policy_decision"
     assert decision.retained_record_keys == (_key(0, records[0]),)

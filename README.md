@@ -8,8 +8,8 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-DARWIN v1.10.0 is prepared as a source-release snapshot reporting
-`darwin-sim 1.10.0`. Its publication contract is an annotated `v1.10.0` tag and
+DARWIN v1.11.0 is prepared as a source-release snapshot reporting
+`darwin-sim 1.11.0`. Its publication contract is an annotated `v1.11.0` tag and
 a GitHub release created from the exact same commit, with no package-index
 publication and no uploaded release assets. This repository text deliberately
 does not claim that those remote publication actions have already occurred.
@@ -100,6 +100,18 @@ Final v1.10 validation on 2026-07-27 (America/Los_Angeles) passed Ruff, 950
 tests, all scenarios `001` through `081`, exact scenario-index verification,
 CLI output `darwin-sim 1.10.0`, and an isolated out-of-tree wheel
 build/install/version smoke check.
+
+The v1.11 source preparation extends the retained-audit pipeline to
+RegistryHub authority outcome history. It maps generic status filtering to
+authority `final_status`, adds sorted requested/granted alias, target-device,
+and path-hub replay counts, and adds scenarios `082` through `084`. Explicit
+apply removes only selected authority outcome records; aliases, conflicts,
+security events, other retained histories, action results, canonical identity,
+TrafficHub state, routing, and compact snapshots remain unchanged.
+
+Final v1.11 validation results, the actual pytest count, and the actual
+America/Los_Angeles release date remain pending the first complete passing
+release-gate set.
 
 The v0.1 simulator answers questions like:
 
@@ -323,6 +335,12 @@ replay, and isolated explicit compaction apply. The checked-in scenario set is
 contiguous from `001` through `081`, and the package and CLI version report
 `darwin-sim 1.10.0`.
 
+In the v1.11 source preparation, scenarios `082` through `084` cover authority
+outcome retained-audit classification, alias/device/path replay, and isolated
+explicit compaction apply. The checked-in scenario set is contiguous from
+`001` through `084`, and the package and CLI version report
+`darwin-sim 1.11.0`.
+
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
 networking, sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar
@@ -423,6 +441,15 @@ visibility, and scenarios `079` through `081`. Release gates include Ruff,
 pytest, all scenarios `001` through `081`, exact
 generated-versus-checked-in scenario-index comparison, CLI output
 `darwin-sim 1.10.0`, and an isolated wheel build/install smoke check. The
+source release does not publish a package or upload assets.
+
+The v1.11 source-release docs cover authority outcome retained-audit
+classification, requested/granted alias, target-device, and path-hub replay
+counts, isolated single-history apply, scenario DSL and detailed debug
+visibility, and scenarios `082` through `084`. Release gates include Ruff,
+pytest, all scenarios `001` through `084`, exact
+generated-versus-checked-in scenario-index comparison, CLI output
+`darwin-sim 1.11.0`, and an isolated wheel build/install smoke check. The
 source release does not publish a package or upload assets.
 
 The v1.5 release docs cover read-only lifecycle explanation retention
@@ -1237,6 +1264,12 @@ For v1.10 direct message-delivery retained-audit expansion release docs, see:
 - `docs/V1_10_ROADMAP.md`
 - `docs/RETAINED_AUDIT_MESSAGE_DELIVERY_v1_10.md`
 - `docs/RELEASE_NOTES_v1_10_DRAFT.md`
+
+For v1.11 authority-outcome retained-audit expansion release docs, see:
+
+- `docs/V1_11_ROADMAP.md`
+- `docs/RETAINED_AUDIT_AUTHORITY_OUTCOME_v1_11.md`
+- `docs/RELEASE_NOTES_v1_11_DRAFT.md`
 
 ## What v0.1 Is Not
 

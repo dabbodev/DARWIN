@@ -2155,6 +2155,23 @@ def _retained_audit_replay_summary_contains(
             assertion,
             "lane_signature_count",
         ),
+        "requested_alias": _optional_filter_str(assertion, "requested_alias"),
+        "requested_alias_count": _optional_int_field(
+            assertion,
+            "requested_alias_count",
+        ),
+        "granted_alias": _optional_filter_str(assertion, "granted_alias"),
+        "granted_alias_count": _optional_int_field(
+            assertion,
+            "granted_alias_count",
+        ),
+        "target_device": _optional_filter_str(assertion, "target_device"),
+        "target_device_count": _optional_int_field(
+            assertion,
+            "target_device_count",
+        ),
+        "path_hub": _optional_filter_str(assertion, "path_hub"),
+        "path_hub_count": _optional_int_field(assertion, "path_hub_count"),
         "decision_category": _optional_filter_str(assertion, "decision_category"),
         "grouped_history_type": _optional_filter_str(
             assertion,
@@ -3116,6 +3133,34 @@ def _matches_retained_audit_replay_summary_filters(
             "by_lane_signature",
             "lane_signature",
             "lane_signature_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "by_requested_alias",
+            "requested_alias",
+            "requested_alias_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "by_granted_alias",
+            "granted_alias",
+            "granted_alias_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "by_target_device",
+            "target_device",
+            "target_device_count",
+        )
+        and _count_field_matches(
+            record,
+            filters,
+            "by_path_hub",
+            "path_hub",
+            "path_hub_count",
         )
     ):
         return False

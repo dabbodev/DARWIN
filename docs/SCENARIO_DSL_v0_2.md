@@ -1383,3 +1383,58 @@ multi-history apply, inbox deletion, automatic cleanup, workers, retries,
 durable queues, live clocks, timers, polling, delivery enforcement, routing
 changes, networking, DNS, external services, real cryptography, production
 E2EE, or production security, privacy, compliance, or retention guarantees.
+
+## v1.11 Authority-Outcome Retained-Audit Extension
+
+v1.11 extends the existing retained-audit actions without adding a new action
+or changing authority-chain claims:
+
+- The supported history order appends `authority_outcome` after the seven
+  v1.10 history labels.
+- `classify_retained_audit_records_for_compaction`,
+  `summarize_retained_audit_replay`, and
+  `apply_retained_audit_compaction_decision` accept `authority_outcome`.
+- Records are collected from `RegistryHub.authority_outcome_history`.
+- Existing `claim_alias_through_authority_chain` actions supply outcomes and
+  gain no new input or behavior.
+- String `requesting_hub` owns an outcome. Missing, non-string, and foreign
+  owners are ignored deterministically.
+- The generic retained-audit status dimension uses `final_status`; returned
+  claim status stays in the exact key but is not grouped.
+
+`retained_audit_replay_summary_contains` additionally accepts:
+
+- `requested_alias` with `requested_alias_count`;
+- `granted_alias` with `granted_alias_count`;
+- `target_device` with `target_device_count`; and
+- `path_hub` with `path_hub_count`.
+
+Every string path-hub element contributes one count. Authority ceiling,
+record ID, returned status, nested decisions, and boolean flags are not
+grouped. Offer, request, message, mailbox, policy, and lane mappings remain
+empty for authority outcomes.
+
+Explicit apply removes only matching candidates from
+`RegistryHub.authority_outcome_history`, preserves remaining order, reports
+stale keys as missing, and is deterministic when repeated. It sets the
+existing `authority_history_mutated` flag only when a record is removed and
+does not mutate aliases, conflicts, security events, authority configuration,
+other retained histories, action results, canonical identity, TrafficHub
+state or routing, or compact snapshots. Mixed and unsupported decisions
+remain deterministic no-ops.
+
+Checked-in v1.11 retained-audit scenarios:
+
+- `scenarios/082_retained_audit_authority_outcome_classification.yaml`
+- `scenarios/083_retained_audit_authority_outcome_replay.yaml`
+- `scenarios/084_retained_audit_authority_outcome_apply.yaml`
+
+The checked-in scenario set is contiguous from `001` through `084`. The
+package and CLI report `darwin-sim 1.11.0`.
+
+This simulator-local, deterministic, source-only scenario surface adds no new
+compaction filters, authority-ceiling or nested-decision replay, mixed or
+multi-history apply, alias deletion, broad event store, automatic cleanup,
+workers, retries, durable queues, live clocks, networking, DNS, external
+services, real cryptography, production E2EE, or production security, privacy,
+compliance, or retention guarantees.

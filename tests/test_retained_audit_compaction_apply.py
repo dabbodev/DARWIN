@@ -287,6 +287,7 @@ def test_compaction_apply_empty_decision_is_deterministic_and_safe():
                 "encrypted_delivery_result",
                 "encryption_policy_decision",
                 "message_delivery_result",
+                "authority_outcome",
             ],
             "labels": ["audit"],
         },
