@@ -1,7 +1,7 @@
 # Retained Audit Authority-Outcome Expansion v1.11
 
-Status: included in v1.11.0 source-release preparation as
-`darwin-sim 1.11.0` behavior. Final release-gate results are pending.
+Status: included in the v1.11.0 source-release snapshot validated on
+2026-07-29 (America/Los_Angeles) as `darwin-sim 1.11.0` behavior.
 
 This specification extends DARWIN's deterministic retained-audit pipeline to
 RegistryHub-local authority outcome history. It adds no automatic compaction,

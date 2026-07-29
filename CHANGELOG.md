@@ -1,10 +1,10 @@
 # Changelog
 
-## [1.11.0] - Pending validation
+## [1.11.0] - 2026-07-29
 
-The DARWIN v1.11.0 source-release preparation extends retained-audit
+The DARWIN v1.11.0 source-release snapshot extends retained-audit
 classification, replay, and explicit apply to RegistryHub-local authority
-outcome history. The package and CLI identify the preparation as
+outcome history. The package and CLI identify the snapshot as
 `darwin-sim 1.11.0`.
 
 Added:
@@ -43,8 +43,10 @@ Compatibility and limits:
   compliance, or retention guarantees.
 - Publication remains GitHub source-only with no package-index publication and
   no uploaded release assets.
-- Final validation results and the actual America/Los_Angeles release date are
-  pending the first complete release-gate pass.
+- Final validation on 2026-07-29 (America/Los_Angeles) passed
+  `python -m ruff check .`, `python -m pytest` with 964 tests, all scenarios
+  `001` through `084`, exact scenario-index verification, exact source CLI
+  output, wheel build, isolated install, and out-of-tree wheel CLI verification.
 
 ## [1.10.0] - 2026-07-27
 

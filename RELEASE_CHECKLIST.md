@@ -985,10 +985,10 @@ python -m build --wheel
 
 # DARWIN v1.11 Authority-Outcome Retained-Audit Release Checklist
 
-This checklist describes v1.11.0 source-release preparation. The actual
-America/Los_Angeles date and final pytest count remain pending until the first
-complete release-gate pass. Remote publication state is intentionally not
-inferred from repository contents. The publication procedure creates an
+This checklist describes the v1.11.0 source-release snapshot validated on
+2026-07-29 (America/Los_Angeles) with 964 passing tests. Remote publication
+state is intentionally not inferred from repository contents. The publication
+procedure creates an
 annotated `v1.11.0` tag and GitHub source release from the exact validated
 commit; it performs no package-index publication and uploads no release
 assets.
@@ -1020,9 +1020,9 @@ assets.
 - [x] The Python 3.11 wheel build/install smoke job performs no upload.
 - [x] Release documentation avoids production networking, cryptography,
   security, privacy, compliance, authority, and retention claims.
-- [ ] Record the actual America/Los_Angeles release date after all gates pass.
-- [ ] Record the actual final pytest count after all gates pass.
-- [ ] Ruff, pytest, scenarios `001` through `084`, exact scenario-index
+- [x] Record the actual America/Los_Angeles validation date: 2026-07-29.
+- [x] Record the actual final pytest count: 964 passing tests.
+- [x] Ruff, pytest, scenarios `001` through `084`, exact scenario-index
   comparison, CLI output, wheel build, isolated installation, and out-of-tree
   version smoke all pass.
 

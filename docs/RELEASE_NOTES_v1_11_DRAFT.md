@@ -1,17 +1,17 @@
 # DARWIN v1.11.0 Release Notes
 
-Status: v1.11.0 source-release preparation. The historical `_DRAFT` filename
+Status: v1.11.0 source-release snapshot. The historical `_DRAFT` filename
 is retained permanently for documentation-link compatibility.
 
-Release date: pending the first complete passing release-gate set.
+Release date: 2026-07-29 (America/Los_Angeles).
 
 The package and CLI report `darwin-sim 1.11.0`. Release publication is limited
 to an annotated `v1.11.0` source tag and a GitHub release created from the
 exact same validated commit. No package-index publication is performed.
 No release assets are uploaded.
 
-This document does not claim that validation or remote publication has already
-occurred.
+This document records local validation without using repository text as
+evidence that remote publication has occurred.
 
 ## Added in v1.11
 
@@ -36,7 +36,7 @@ Scenarios `082` through `084` cover the v1.11 extension:
 - `083_retained_audit_authority_outcome_replay`
 - `084_retained_audit_authority_outcome_apply`
 
-The v1.11 source preparation contains a checked-in scenario set from `001`
+The v1.11 source snapshot contains a checked-in scenario set from `001`
 through `084`.
 
 ## Compatibility
@@ -75,8 +75,9 @@ The generated scenario-index stdout must exactly match
 isolated installation of `darwin_sim-1.11.0-py3-none-any.whl` must report the
 same version from outside the repository. The wheel is not uploaded.
 
-Final validation results and the actual America/Los_Angeles release date are
-pending the first complete release-gate pass.
+Final validation passed Ruff, 964 tests, all scenarios `001` through `084`,
+exact scenario-index comparison, exact source CLI output, wheel build,
+isolated wheel installation, and out-of-tree wheel CLI verification.
 
 ## Limits and Non-Goals
 

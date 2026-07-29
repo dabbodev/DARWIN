@@ -686,7 +686,7 @@ def test_v1_10_python_and_ci_release_contract():
     assert "upload" not in wheel_job.lower()
 
 
-def test_v1_11_docs_describe_pending_source_release_preparation():
+def test_v1_11_docs_describe_validated_source_release_snapshot():
     release_notes = (
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_11_DRAFT.md"
     ).read_text(encoding="utf-8")
@@ -704,14 +704,14 @@ def test_v1_11_docs_describe_pending_source_release_preparation():
     )
     combined_docs_normalized = re.sub(r"\s+", " ", combined_docs)
 
-    assert "v1.11.0 source-release preparation" in release_notes
+    assert "v1.11.0 source-release snapshot" in release_notes
     assert "darwin-sim 1.11.0" in combined_docs_normalized
-    assert "does not claim" in release_notes
+    assert "without using repository text" in release_notes
     assert "releases/tag/v1.11.0" not in combined_docs
     assert "No package-index publication is performed" in release_notes
     assert "No release assets are uploaded" in release_notes
-    assert "Release date: pending" in release_notes
-    assert "Final validation results" in combined_docs_normalized
+    assert "Release date: 2026-07-29 (America/Los_Angeles)" in release_notes
+    assert "964 tests" in combined_docs_normalized
     assert "Scenarios `082` through `084`" in release_notes
     assert "from `001` through `084`" in combined_docs_normalized
     assert "authority_outcome" in specification
@@ -724,8 +724,9 @@ def test_v1_11_docs_describe_pending_source_release_preparation():
     assert "`authority_history_mutated`" in specification
     assert "Python 3.11 through 3.14" in roadmap
     assert "docs/RETAINED_AUDIT_AUTHORITY_OUTCOME_v1_11.md" in readme
-    assert "v1.11.0 source-release preparation" in checklist
-    assert "## [1.11.0] - Pending validation" in changelog
+    assert "v1.11.0 source-release snapshot" in checklist
+    assert "964 passing tests" in checklist
+    assert "## [1.11.0] - 2026-07-29" in changelog
 
     for caveat in V1_11_RELEASE_SNAPSHOT_CAVEATS:
         assert caveat in combined_docs_normalized

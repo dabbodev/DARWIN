@@ -101,7 +101,7 @@ tests, all scenarios `001` through `081`, exact scenario-index verification,
 CLI output `darwin-sim 1.10.0`, and an isolated out-of-tree wheel
 build/install/version smoke check.
 
-The v1.11 source preparation extends the retained-audit pipeline to
+The v1.11 source snapshot extends the retained-audit pipeline to
 RegistryHub authority outcome history. It maps generic status filtering to
 authority `final_status`, adds sorted requested/granted alias, target-device,
 and path-hub replay counts, and adds scenarios `082` through `084`. Explicit
@@ -109,9 +109,10 @@ apply removes only selected authority outcome records; aliases, conflicts,
 security events, other retained histories, action results, canonical identity,
 TrafficHub state, routing, and compact snapshots remain unchanged.
 
-Final v1.11 validation results, the actual pytest count, and the actual
-America/Los_Angeles release date remain pending the first complete passing
-release-gate set.
+Final v1.11 validation on 2026-07-29 (America/Los_Angeles) passed Ruff, 964
+tests, all scenarios `001` through `084`, exact scenario-index verification,
+CLI output `darwin-sim 1.11.0`, and an isolated out-of-tree wheel
+build/install/version smoke check.
 
 The v0.1 simulator answers questions like:
 
