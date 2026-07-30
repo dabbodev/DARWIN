@@ -1,8 +1,8 @@
 # Retained Audit Batch Apply v1.12
 
-Status: included in the v1.12.0 source-release snapshot prepared as
-`darwin-sim 1.12.0` behavior. Final validation facts remain pending the first
-complete passing release gate set.
+Status: included in the v1.12.0 source-release snapshot validated on
+2026-07-30 (America/Los_Angeles) with 991 passing tests as
+`darwin-sim 1.12.0` behavior.
 
 This specification composes DARWIN's existing explicit single-history
 retained-audit apply decisions. It adds no automatic compaction, background

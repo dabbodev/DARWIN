@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.12.0] - Pending validation
+## [1.12.0] - 2026-07-30
 
 The DARWIN v1.12.0 source-release snapshot composes existing retained-audit
 single-history decisions into deterministic multi-history batch apply. The
@@ -40,8 +40,11 @@ Compatibility and limits:
   compliance, or retention guarantees.
 - Publication remains GitHub source-only with no package-index publication and
   no uploaded release assets.
-- The final America/Los_Angeles validation date and pytest count remain
-  pending the first complete passing release gate set.
+- Final validation on 2026-07-30 (America/Los_Angeles) passed
+  `python -m ruff check .`, `python -m pytest` with 991 tests, all scenarios
+  `001` through `087`, exact scenario-index verification, exact source CLI
+  output, wheel build, isolated install, and out-of-tree wheel CLI
+  verification.
 
 ## [1.11.0] - 2026-07-29
 

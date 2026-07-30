@@ -8,7 +8,7 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-DARWIN v1.12.0 is prepared as a source-release snapshot reporting
+DARWIN v1.12.0 is validated as a source-release snapshot reporting
 `darwin-sim 1.12.0`. Its publication contract is an annotated `v1.12.0` tag and
 a GitHub release created from the exact same commit, with no package-index
 publication and no uploaded release assets. This repository text deliberately
@@ -120,9 +120,12 @@ same RegistryHub. It preflights the complete batch, canonicalizes processing
 by the unchanged eight-history order, reports stale children without blocking
 current matches, records only one aggregate action result, and appends copied
 batch results to detailed snapshots. Scenarios `085` through `087` cover
-canonical success, stale/repeated apply, and isolation. The final pytest count
-and America/Los_Angeles validation date remain pending the first complete
-passing release gate set.
+canonical success, stale/repeated apply, and isolation.
+
+Final v1.12 validation on 2026-07-30 (America/Los_Angeles) passed Ruff, 991
+tests, all scenarios `001` through `087`, exact scenario-index verification,
+CLI output `darwin-sim 1.12.0`, and an isolated out-of-tree wheel
+build/install/version smoke check.
 
 The v0.1 simulator answers questions like:
 

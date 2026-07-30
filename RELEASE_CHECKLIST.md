@@ -1039,9 +1039,10 @@ python -m build --wheel
 
 # DARWIN v1.12 Retained-Audit Batch Apply Release Checklist
 
-This checklist describes the v1.12.0 source-release snapshot prepared for
-validation. Remote publication state is intentionally not inferred from
-repository contents. The publication procedure creates an annotated
+This checklist describes the v1.12.0 source-release snapshot prepared and
+validated on 2026-07-30 (America/Los_Angeles) with 991 passing tests. Remote
+publication state is intentionally not inferred from repository contents. The
+publication procedure creates an annotated
 `v1.12.0` tag and GitHub source release from the exact validated commit; it
 performs no package-index publication and uploads no release assets.
 
@@ -1077,10 +1078,9 @@ performs no package-index publication and uploads no release assets.
 - [x] The Python 3.11 wheel build/install smoke job performs no upload.
 - [x] Release documentation avoids production networking, cryptography,
   security, privacy, compliance, and retention claims.
-- [ ] Record the actual America/Los_Angeles validation date after the first
-  complete passing gate set.
-- [ ] Record the actual final pytest count without changing tests.
-- [ ] Ruff, pytest, scenarios `001` through `087`, exact scenario-index
+- [x] Record the actual America/Los_Angeles validation date: 2026-07-30.
+- [x] Record the actual final pytest count: 991 passing tests.
+- [x] Ruff, pytest, scenarios `001` through `087`, exact scenario-index
   comparison, CLI output, wheel build, isolated installation, and out-of-tree
   version smoke all pass.
 

@@ -1,9 +1,8 @@
 # DARWIN v1.12 Roadmap
 
-Status: v1.12.0 source-release snapshot prepared for validation. The package
-and CLI report `darwin-sim 1.12.0`. The final pytest count and
-America/Los_Angeles validation date remain pending until the complete release
-gate set first passes.
+Status: v1.12.0 source-release snapshot validated on 2026-07-30
+(America/Los_Angeles) with 991 passing tests. The package and CLI report
+`darwin-sim 1.12.0`.
 
 This roadmap records the intended v1.12.0 source snapshot without using
 repository text as evidence of remote publication state. The publication
@@ -109,8 +108,9 @@ The generated scenario index must exactly match `docs/SCENARIO_INDEX.md`. The
 wheel must install in isolation and report `darwin-sim 1.12.0` from outside
 the repository. The wheel is not uploaded.
 
-Final validation facts are pending the first complete passing release gate
-set.
+Final validation passed Ruff, 991 tests, all scenarios `001` through `087`,
+exact scenario-index comparison, exact source CLI output, wheel build,
+isolated wheel installation, and out-of-tree wheel CLI verification.
 
 ## Non-Goals
 

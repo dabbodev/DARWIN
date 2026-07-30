@@ -1,13 +1,11 @@
 # DARWIN v1.12.0 Release Notes
 
-Status: v1.12.0 source-release snapshot prepared for validation. The
-historical `_DRAFT` filename is retained permanently for documentation-link
-compatibility.
+Status: v1.12.0 source-release snapshot. The historical `_DRAFT` filename is
+retained permanently for documentation-link compatibility.
 
-Release date: pending the first complete passing release gate set
-(America/Los_Angeles).
+Release date: 2026-07-30 (America/Los_Angeles).
 
-Final pytest count: pending the first complete passing release gate set.
+Final pytest count: 991 passing tests.
 
 The package and CLI report `darwin-sim 1.12.0`. Release publication is limited
 to an annotated `v1.12.0` source tag and a GitHub release created from the
@@ -80,8 +78,9 @@ The generated scenario-index stdout must exactly match
 isolated installation of `darwin_sim-1.12.0-py3-none-any.whl` must report the
 same version from outside the repository. The wheel is not uploaded.
 
-Final validation facts are pending the first complete passing release gate
-set.
+Final validation passed Ruff, 991 tests, all scenarios `001` through `087`,
+exact scenario-index comparison, exact source CLI output, wheel build,
+isolated wheel installation, and out-of-tree wheel CLI verification.
 
 ## Limits and Non-Goals
 
