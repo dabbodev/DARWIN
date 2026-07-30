@@ -1,0 +1,206 @@
+scenario_id: 085_retained_audit_batch_apply_success
+name: Retained audit batch apply success
+category: registry
+description: reverse-ordered message delivery and authority outcome decisions apply in canonical retained-audit history order
+tags:
+  - retained_audit
+  - batch_apply
+  - deterministic
+  - explicit_apply
+  - v1.12
+demonstrates:
+  - caller decision order does not change canonical batch result order
+  - one explicit batch compacts candidates from two distinct supported histories
+  - only the aggregate batch result enters the scenario action-result stream
+expected_result: message delivery and authority outcome candidates are compacted and summarized in canonical history order
+setup:
+  registry_hubs:
+    - hub_id: registry_home_085
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_085
+    - hub_id: registry_family_085
+      scope_path: global.family.david
+      parent_hub_id: registry_global_085
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+    - hub_id: registry_global_085
+      scope_path: global
+  traffic_hubs:
+    - hub_id: traffic_home_085
+  devices:
+    - device_id: dev_ALPHA_085
+      label: alpha
+    - device_id: dev_BETA_085
+      label: beta
+    - device_id: dev_NEO_085
+      label: neo
+steps:
+  - action: register_device
+    registry_hub: registry_home_085
+    device: dev_ALPHA_085
+    label: alpha
+  - action: register_device
+    registry_hub: registry_family_085
+    device: dev_ALPHA_085
+    label: alpha
+  - action: register_device
+    registry_hub: registry_global_085
+    device: dev_ALPHA_085
+    label: alpha
+  - action: register_device
+    registry_hub: registry_home_085
+    device: dev_BETA_085
+    label: beta
+  - action: register_device
+    registry_hub: registry_family_085
+    device: dev_BETA_085
+    label: beta
+  - action: register_device
+    registry_hub: registry_global_085
+    device: dev_BETA_085
+    label: beta
+  - action: register_device
+    registry_hub: registry_home_085
+    device: dev_NEO_085
+    label: neo
+  - action: register_lane_definition
+    registry_hub: registry_home_085
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_home_085
+    mailbox_id: mailbox_neo_085
+    canonical_device_id: dev_NEO_085
+    local_name: neo
+    scope: global.family.david.home
+  - action: bind_mailbox_capability
+    registry_hub: registry_home_085
+    mailbox_id: mailbox_neo_085
+    lane_signature: basic_messaging:v1
+  - action: register_adapter_endpoint
+    registry_hub: registry_home_085
+    endpoint_id: endpoint_mailbox_neo_085
+    subject_id: mailbox_neo_085
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: available
+    lane_signatures:
+      - basic_messaging:v1
+    scope: global.family.david.home
+  - action: deliver_message
+    registry_hub: registry_home_085
+    message_id: message_keep_085
+    sender_id: dev_ALPHA_085
+    recipient_address: darwin://global.family.david.home.neo/inbox
+    payload: preserved delivery
+  - action: deliver_message
+    registry_hub: registry_home_085
+    message_id: message_compact_085
+    sender_id: dev_ALPHA_085
+    recipient_address: darwin://global.family.david.home.missing/inbox
+    payload: compacted delivery result
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_085
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_ALPHA_085
+    requested_by_device: dev_ALPHA_085
+    fallback_allowed: true
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_085
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_BETA_085
+    requested_by_device: dev_BETA_085
+    fallback_allowed: true
+    visibility: scope_local
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_085
+    policy_id: retained_audit_authority_085
+    history_types:
+      - authority_outcome
+    record_history_types:
+      - authority_outcome
+    compact_statuses:
+      - name_taken
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_085
+    policy_id: retained_audit_message_delivery_085
+    history_types:
+      - message_delivery_result
+    record_history_types:
+      - message_delivery_result
+    compact_statuses:
+      - bounced
+  - action: apply_retained_audit_compaction_batch
+    registry_hub: registry_home_085
+    batch_id: retained_audit_batch_085
+    decision_policy_ids:
+      authority_outcome: retained_audit_authority_085
+      message_delivery_result: retained_audit_message_delivery_085
+    metadata:
+      caller_order: reverse_canonical
+assertions:
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_085
+    batch_id: retained_audit_batch_085
+    history_types:
+      - message_delivery_result
+      - authority_outcome
+    compacted_count: 2
+    retained_count: 2
+    ignored_count: 0
+    missing_count: 0
+    unsupported_count: 0
+    expected_count: 1
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_085
+    batch_id: retained_audit_batch_085
+    history_type: message_delivery_result
+    policy_id: retained_audit_message_delivery_085
+    history_compacted_count: 1
+    history_retained_count: 1
+    expected_count: 1
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_085
+    batch_id: retained_audit_batch_085
+    history_type: authority_outcome
+    policy_id: retained_audit_authority_085
+    history_compacted_count: 1
+    history_retained_count: 1
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_home_085
+    message_id: message_compact_085
+    expected_count: 0
+  - type: message_delivery_result_contains
+    registry_hub: registry_home_085
+    message_id: message_keep_085
+    mailbox_id: mailbox_neo_085
+    status: delivered
+    expected_count: 1
+  - type: authority_outcome_history_contains
+    registry_hub: registry_home_085
+    requested_alias: global.alpha
+    device_id: dev_BETA_085
+    final_status: name_taken
+    expected_count: 0
+  - type: authority_outcome_history_contains
+    registry_hub: registry_home_085
+    requested_alias: global.alpha
+    granted_alias: global.family.david.alpha
+    device_id: dev_ALPHA_085
+    final_status: fallback_granted
+    expected_count: 1
+  - type: mailbox_inbox_contains
+    registry_hub: registry_home_085
+    mailbox_id: mailbox_neo_085
+    message_id: message_keep_085
+    payload: preserved delivery
+    expected_count: 1
+  - type: alias_resolves_to
+    registry_hub: registry_family_085
+    alias: global.family.david.alpha
+    device: dev_ALPHA_085
+    identity_chain: global.family.david.alpha

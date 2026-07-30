@@ -1,5 +1,48 @@
 # Changelog
 
+## [1.12.0] - Pending validation
+
+The DARWIN v1.12.0 source-release snapshot composes existing retained-audit
+single-history decisions into deterministic multi-history batch apply. The
+package and CLI identify the snapshot as `darwin-sim 1.12.0`.
+
+Added:
+
+- `RetainedAuditCompactionBatchApplyResult` with canonical child summaries,
+  aggregate compacted/retained/ignored/missing/unsupported counts, and copied
+  metadata.
+- Public batch apply and summary helpers through the existing model and
+  registry surfaces.
+- Complete structural preflight before mutation, including matching hubs,
+  supported distinct histories, expected record types, nonblank identity, and
+  JSON-safe metadata.
+- Canonical child application using the unchanged supported history order.
+- Aggregate-only scenario action-result recording and the appended detailed
+  snapshot key `retained_audit_compaction_batch_apply_results`.
+- Scenario action/assertion support and scenarios `085` through `087` for
+  canonical success, stale/repeated application, and state isolation.
+
+Compatibility and limits:
+
+- All eight v1.11 history labels, exact keys, policies, replay summaries,
+  single-history APIs, action results, and compact snapshots remain unchanged.
+- Stale candidates are reported without blocking current candidates in
+  another selected history; repeated batches become deterministic no-ops.
+- Batch apply does not mutate unselected histories, aliases, conflicts,
+  security events, delivery/encryption state, canonical identity, or
+  TrafficHub state.
+- The source scenario set is contiguous from `001` through `087`.
+- v1.12 remains simulator-local, deterministic, source-only, and symbolic. It
+  adds no new history, filters, or replay dimensions; mixed-decision apply;
+  strict stale abort; rollback/transactions; automatic cleanup; workers;
+  retries; durable queues; live clocks; networking; DNS; external services;
+  real cryptography; production E2EE; or production security, privacy,
+  compliance, or retention guarantees.
+- Publication remains GitHub source-only with no package-index publication and
+  no uploaded release assets.
+- The final America/Los_Angeles validation date and pytest count remain
+  pending the first complete passing release gate set.
+
 ## [1.11.0] - 2026-07-29
 
 The DARWIN v1.11.0 source-release snapshot extends retained-audit

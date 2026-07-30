@@ -11,6 +11,17 @@ RETAINED_AUDIT_COMPACTION_DECISION_CATEGORIES: tuple[str, ...] = (
     "ignored",
 )
 
+SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES: tuple[str, ...] = (
+    "stream_offer_lifecycle_explanation",
+    "stream_offer_status_transition",
+    "rendezvous_poll_result",
+    "lane_admission_decision",
+    "encrypted_delivery_result",
+    "encryption_policy_decision",
+    "message_delivery_result",
+    "authority_outcome",
+)
+
 
 @dataclass(frozen=True, slots=True)
 class RetainedAuditCompactionPolicy:
@@ -382,6 +393,99 @@ class RetainedAuditCompactionApplyResult:
             "ignored_record_keys": list(self.ignored_record_keys),
             "missing_record_keys": list(self.missing_record_keys),
             "unsupported_record_keys": list(self.unsupported_record_keys),
+            "compacted_count": self.compacted_count,
+            "retained_count": self.retained_count,
+            "ignored_count": self.ignored_count,
+            "missing_count": self.missing_count,
+            "unsupported_count": self.unsupported_count,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class RetainedAuditCompactionBatchApplyResult:
+    """Aggregate result for a canonical multi-history compaction batch."""
+
+    hub_id: str
+    batch_id: str
+    apply_results: (
+        tuple[RetainedAuditCompactionApplyResult, ...]
+        | list[RetainedAuditCompactionApplyResult]
+    ) = ()
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_required_string(self.batch_id, "batch_id")
+        if not isinstance(self.apply_results, tuple | list):
+            raise TypeError("apply_results must be a list or tuple")
+        if len(self.apply_results) < 2:
+            raise ValueError("apply_results must contain at least two results")
+
+        results: list[RetainedAuditCompactionApplyResult] = []
+        seen_history_types: set[str] = set()
+        for result in self.apply_results:
+            if not isinstance(result, RetainedAuditCompactionApplyResult):
+                raise TypeError(
+                    "apply_results must contain RetainedAuditCompactionApplyResult values"
+                )
+            if result.hub_id != self.hub_id:
+                raise ValueError("apply result hub_id must match batch hub_id")
+            if result.history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES:
+                raise ValueError(
+                    "apply result history_type must be a supported retained audit history"
+                )
+            if result.history_type in seen_history_types:
+                raise ValueError("apply result history_types must be distinct")
+            seen_history_types.add(result.history_type)
+            results.append(result)
+
+        history_order = {
+            history_type: index
+            for index, history_type in enumerate(SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES)
+        }
+        results.sort(key=lambda result: history_order[result.history_type])
+        object.__setattr__(self, "apply_results", tuple(results))
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    @property
+    def history_types(self) -> tuple[str, ...]:
+        """Return the canonical history order represented by this batch."""
+        return tuple(result.history_type for result in self.apply_results)
+
+    @property
+    def compacted_count(self) -> int:
+        return sum(result.compacted_count for result in self.apply_results)
+
+    @property
+    def retained_count(self) -> int:
+        return sum(result.retained_count for result in self.apply_results)
+
+    @property
+    def ignored_count(self) -> int:
+        return sum(result.ignored_count for result in self.apply_results)
+
+    @property
+    def missing_count(self) -> int:
+        return sum(result.missing_count for result in self.apply_results)
+
+    @property
+    def unsupported_count(self) -> int:
+        return sum(result.unsupported_count for result in self.apply_results)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic aggregate and per-history batch metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "batch_id": self.batch_id,
+            "history_types": list(self.history_types),
+            "apply_results": [
+                result.to_summary() for result in self.apply_results
+            ],
             "compacted_count": self.compacted_count,
             "retained_count": self.retained_count,
             "ignored_count": self.ignored_count,

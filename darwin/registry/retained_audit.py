@@ -10,7 +10,9 @@ from darwin.models.encryption import EncryptionPolicyDecision
 from darwin.models.hub import RegistryHub
 from darwin.models.message import MessageDeliveryResult
 from darwin.models.retained_audit import (
+    SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES,
     RetainedAuditCompactionApplyResult,
+    RetainedAuditCompactionBatchApplyResult,
     RetainedAuditCompactionDecision,
     RetainedAuditCompactionPolicy,
     RetainedAuditReplaySummary,
@@ -21,17 +23,6 @@ from darwin.models.stream_offer import (
     RendezvousPollResult,
     StreamOfferLifecycleExplanation,
     StreamOfferStatusTransition,
-)
-
-SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES: tuple[str, ...] = (
-    "stream_offer_lifecycle_explanation",
-    "stream_offer_status_transition",
-    "rendezvous_poll_result",
-    "lane_admission_decision",
-    "encrypted_delivery_result",
-    "encryption_policy_decision",
-    "message_delivery_result",
-    "authority_outcome",
 )
 
 RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS: tuple[str, ...] = (
@@ -467,6 +458,137 @@ def summarize_retained_audit_compaction_apply_result(
     return result.to_summary()
 
 
+def apply_retained_audit_compaction_batch(
+    registry_hub: RegistryHub,
+    decisions: (
+        list[RetainedAuditCompactionDecision]
+        | tuple[RetainedAuditCompactionDecision, ...]
+    ),
+    *,
+    batch_id: str,
+    metadata: dict[str, object] | None = None,
+) -> RetainedAuditCompactionBatchApplyResult:
+    """Preflight and apply distinct single-history decisions in canonical order."""
+    _validate_registry_hub(registry_hub)
+    _validate_batch_id(batch_id)
+    if not isinstance(decisions, tuple | list):
+        raise TypeError("decisions must be a list or tuple")
+    if len(decisions) < 2:
+        raise ValueError("decisions must contain at least two decisions")
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+    safe_metadata = _batch_json_safe_copy(metadata or {})
+    if not isinstance(safe_metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+
+    decisions_by_history_type: dict[str, RetainedAuditCompactionDecision] = {}
+    for decision in decisions:
+        _validate_compaction_decision(decision)
+        if decision.hub_id != registry_hub.hub_id:
+            raise ValueError("decision hub_id must match registry_hub.hub_id")
+        if decision.history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES:
+            raise ValueError(
+                "batch decisions must use supported single retained audit histories"
+            )
+        if decision.history_type in decisions_by_history_type:
+            raise ValueError("batch decision history_types must be distinct")
+        decisions_by_history_type[decision.history_type] = decision
+
+    ordered_decisions = [
+        decisions_by_history_type[history_type]
+        for history_type in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES
+        if history_type in decisions_by_history_type
+    ]
+
+    # Validate every selected current history before the first mutation.
+    for decision in ordered_decisions:
+        selected_history = _selected_retained_history(
+            registry_hub,
+            decision.history_type,
+        )
+        for index, record in enumerate(selected_history):
+            view = _audit_record_view(index, record)
+            if view.history_type != decision.history_type:
+                raise TypeError(
+                    "selected retained audit history must contain only its "
+                    "supported retained audit record type"
+                )
+
+    apply_results: list[RetainedAuditCompactionApplyResult] = []
+    batch_size = len(ordered_decisions)
+    for batch_index, decision in enumerate(ordered_decisions):
+        apply_results.append(
+            apply_retained_audit_compaction_decision(
+                registry_hub,
+                decision,
+                metadata={
+                    "batch_apply": True,
+                    "batch_id": batch_id,
+                    "batch_history_index": batch_index,
+                    "batch_size": batch_size,
+                    "canonical_batch_order": True,
+                },
+            )
+        )
+
+    compacted_count = sum(result.compacted_count for result in apply_results)
+    missing_count = sum(result.missing_count for result in apply_results)
+    batch_metadata = dict(safe_metadata)
+    batch_metadata.update(
+        {
+            "simulator_local": True,
+            "explicit_apply": True,
+            "batch_apply": True,
+            "batch_id": batch_id,
+            "batch_size": batch_size,
+            "history_types": [
+                result.history_type for result in apply_results
+            ],
+            "canonical_batch_order": True,
+            "structural_preflight_passed": True,
+            "stale_keys_reported": bool(missing_count),
+            "strict_stale_abort": False,
+            "read_only": False,
+            "registry_hub_mutated": bool(compacted_count),
+            "retained_history_mutated": bool(compacted_count),
+            "records_compacted": bool(compacted_count),
+            "records_deleted": bool(compacted_count),
+            "records_rewritten": False,
+            "automatic_cleanup": False,
+            "cleanup_scheduled": False,
+            "background_worker": False,
+            "retry_loop": False,
+            "durable_queue": False,
+            "live_timer": False,
+            "live_clock": False,
+            "delivery_behavior_changed": False,
+            "traffic_hub_state_changed": False,
+            "traffic_hub_routing_changed": False,
+            "compact_snapshot_changed": False,
+            "canonical_identity_rewritten": False,
+            "networking": False,
+            "dns_lookup": False,
+            "external_services": False,
+            "cryptography": False,
+        }
+    )
+    return RetainedAuditCompactionBatchApplyResult(
+        hub_id=registry_hub.hub_id,
+        batch_id=batch_id,
+        apply_results=apply_results,
+        metadata=batch_metadata,
+    )
+
+
+def summarize_retained_audit_compaction_batch_apply_result(
+    result: RetainedAuditCompactionBatchApplyResult,
+) -> dict[str, object]:
+    """Return a copied JSON-safe retained audit batch apply summary."""
+    if not isinstance(result, RetainedAuditCompactionBatchApplyResult):
+        raise TypeError("result must be a RetainedAuditCompactionBatchApplyResult")
+    return result.to_summary()
+
+
 class _AuditRecordView:
     def __init__(
         self,
@@ -525,6 +647,25 @@ def _validate_compaction_decision(decision: RetainedAuditCompactionDecision) -> 
 def _validate_registry_hub(registry_hub: RegistryHub) -> None:
     if not isinstance(registry_hub, RegistryHub):
         raise TypeError("registry_hub must be a RegistryHub")
+
+
+def _validate_batch_id(batch_id: str) -> None:
+    if not isinstance(batch_id, str):
+        raise TypeError("batch_id must be a string")
+    if not batch_id:
+        raise ValueError("batch_id is required")
+    if batch_id.strip() != batch_id or any(character.isspace() for character in batch_id):
+        raise ValueError("batch_id must not contain whitespace")
+
+
+def _batch_json_safe_copy(value: Any) -> object:
+    if value is None or isinstance(value, str | int | float | bool):
+        return value
+    if isinstance(value, tuple | list):
+        return [_batch_json_safe_copy(item) for item in value]
+    if isinstance(value, dict):
+        return {str(key): _batch_json_safe_copy(item) for key, item in value.items()}
+    raise TypeError("metadata must be JSON-safe simulator data")
 
 
 def _audit_record_view(index: int, record: object) -> _AuditRecordView:
@@ -1016,9 +1157,11 @@ def _compaction_apply_metadata(
 __all__ = [
     "RETAINED_AUDIT_REPLAY_DECISION_CATEGORY_FILTERS",
     "SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES",
+    "apply_retained_audit_compaction_batch",
     "apply_retained_audit_compaction_decision",
     "classify_retained_audit_records_for_compaction",
     "make_retained_audit_compaction_policy",
+    "summarize_retained_audit_compaction_batch_apply_result",
     "summarize_retained_audit_compaction_apply_result",
     "summarize_retained_audit_compaction_decision",
     "summarize_retained_audit_replay",

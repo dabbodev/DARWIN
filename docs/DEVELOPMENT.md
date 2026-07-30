@@ -6,7 +6,7 @@ checks, and all-scenario regression runs.
 
 ## Requirements
 
-- Python 3.11 or 3.12
+- Python 3.11 through 3.14
 - `pip`
 - No external services are required for simulator development
 

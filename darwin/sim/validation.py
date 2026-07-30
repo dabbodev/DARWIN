@@ -252,6 +252,11 @@ STEP_REQUIRED_FIELDS = {
         "registry_hub",
         "decision_policy_id",
     ),
+    "apply_retained_audit_compaction_batch": (
+        "registry_hub",
+        "batch_id",
+        "decision_policy_ids",
+    ),
     "evaluate_lane_admission_policy": (
         "registry_hub",
         "policy_id",
@@ -333,6 +338,7 @@ ASSERTION_REQUIRED_FIELDS = {
     "retained_audit_compaction_decision_contains": ("registry_hub",),
     "retained_audit_replay_summary_contains": ("registry_hub",),
     "retained_audit_compaction_apply_result_contains": ("registry_hub",),
+    "retained_audit_compaction_batch_apply_result_contains": ("registry_hub",),
     "stream_offer_status_transition_contains": ("registry_hub",),
 }
 
@@ -864,6 +870,65 @@ def _validate_assertion_type_fields(
                 errors,
             )
         return
+    if assertion_type == "retained_audit_compaction_batch_apply_result_contains":
+        _validate_optional_enum_list_or_string(
+            assertion,
+            "history_types",
+            SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES,
+            location,
+            errors,
+        )
+        _validate_enum(
+            location,
+            assertion,
+            "history_type",
+            SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES,
+            errors,
+        )
+        for category in ("compacted", "retained", "ignored", "missing", "unsupported"):
+            _validate_optional_non_negative_int(
+                assertion,
+                f"{category}_count",
+                location,
+                errors,
+            )
+            _validate_optional_string_list_or_string(
+                assertion,
+                f"history_{category}_record_keys",
+                location,
+                errors,
+            )
+            _validate_optional_non_negative_int(
+                assertion,
+                f"history_{category}_count",
+                location,
+                errors,
+            )
+        has_history_filter = any(
+            field_name in assertion
+            for field_name in (
+                "policy_id",
+                *(
+                    f"history_{category}_{suffix}"
+                    for category in (
+                        "compacted",
+                        "retained",
+                        "ignored",
+                        "missing",
+                        "unsupported",
+                    )
+                    for suffix in ("record_key", "record_keys", "count")
+                ),
+            )
+        )
+        if has_history_filter and "history_type" not in assertion:
+            errors.append(
+                _issue(
+                    f"{location}.history_type",
+                    "history_type is required for per-history batch filters",
+                )
+            )
+        return
     if assertion_type == "mailbox_encryption_policy_registered":
         _validate_optional_bool(assertion, "allow_plaintext_fallback", location, errors)
         return
@@ -1033,6 +1098,8 @@ def _validate_step_type_fields(
                     "decision_policy_id is required for decision_category filtering",
                 )
             )
+    if action == "apply_retained_audit_compaction_batch":
+        _validate_retained_audit_batch_step(step, location, errors)
     if action == "evaluate_lane_admission_policy":
         _validate_optional_bool(step, "require_discoverable", location, errors)
         _validate_optional_non_negative_int(step, "max_visibility_tier", location, errors)
@@ -1069,6 +1136,64 @@ def _validate_lifecycle_explanation_retention_step(
         "ignored_explanation_keys",
     ):
         _validate_optional_string_list_or_string(step, field_name, location, errors)
+
+
+def _validate_retained_audit_batch_step(
+    step: dict[str, Any],
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    batch_id = step.get("batch_id")
+    if (
+        not isinstance(batch_id, str)
+        or not batch_id
+        or batch_id.strip() != batch_id
+        or any(character.isspace() for character in batch_id)
+    ):
+        errors.append(
+            _issue(
+                f"{location}.batch_id",
+                "batch_id must be a non-empty string without whitespace",
+            )
+        )
+
+    decision_policy_ids = step.get("decision_policy_ids")
+    if not isinstance(decision_policy_ids, dict):
+        errors.append(
+            _issue(
+                f"{location}.decision_policy_ids",
+                "decision_policy_ids must be a mapping from history type to policy ID",
+            )
+        )
+        return
+    if len(decision_policy_ids) < 2:
+        errors.append(
+            _issue(
+                f"{location}.decision_policy_ids",
+                "decision_policy_ids must contain at least two distinct histories",
+            )
+        )
+    for history_type, policy_id in decision_policy_ids.items():
+        entry_location = f"{location}.decision_policy_ids.{history_type}"
+        if history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES:
+            errors.append(
+                _issue(
+                    entry_location,
+                    f"Unsupported retained audit history type: {history_type}",
+                )
+            )
+        if (
+            not isinstance(policy_id, str)
+            or not policy_id
+            or policy_id.strip() != policy_id
+            or any(character.isspace() for character in policy_id)
+        ):
+            errors.append(
+                _issue(
+                    entry_location,
+                    "batch policy IDs must be non-empty strings without whitespace",
+                )
+            )
 
 
 def _validate_lifecycle_retention_key_filters(
