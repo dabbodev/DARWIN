@@ -1,0 +1,174 @@
+scenario_id: 086_retained_audit_batch_apply_stale_repeat
+name: Retained audit batch apply stale repeat
+category: registry
+description: a stale child key is reported while another history compacts and a repeated batch becomes a deterministic no-op
+tags:
+  - retained_audit
+  - batch_apply
+  - stale
+  - deterministic
+  - v1.12
+demonstrates:
+  - a previously compacted child candidate is reported missing without aborting the batch
+  - another selected history still applies after the batch preflight passes
+  - repeating the same batch reports both candidate keys missing without mutation
+expected_result: the first batch compacts the authority candidate and reports the message candidate missing while the repeat reports both missing
+setup:
+  registry_hubs:
+    - hub_id: registry_home_086
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_086
+    - hub_id: registry_family_086
+      scope_path: global.family.david
+      parent_hub_id: registry_global_086
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+    - hub_id: registry_global_086
+      scope_path: global
+  devices:
+    - device_id: dev_ALPHA_086
+      label: alpha
+    - device_id: dev_BETA_086
+      label: beta
+steps:
+  - action: register_device
+    registry_hub: registry_home_086
+    device: dev_ALPHA_086
+    label: alpha
+  - action: register_device
+    registry_hub: registry_family_086
+    device: dev_ALPHA_086
+    label: alpha
+  - action: register_device
+    registry_hub: registry_global_086
+    device: dev_ALPHA_086
+    label: alpha
+  - action: register_device
+    registry_hub: registry_home_086
+    device: dev_BETA_086
+    label: beta
+  - action: register_device
+    registry_hub: registry_family_086
+    device: dev_BETA_086
+    label: beta
+  - action: register_device
+    registry_hub: registry_global_086
+    device: dev_BETA_086
+    label: beta
+  - action: register_lane_definition
+    registry_hub: registry_home_086
+    lane_signature: basic_messaging:v1
+  - action: deliver_message
+    registry_hub: registry_home_086
+    message_id: message_compact_086
+    sender_id: dev_ALPHA_086
+    recipient_address: darwin://global.family.david.home.missing/inbox
+    payload: compact before batch
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_086
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_ALPHA_086
+    requested_by_device: dev_ALPHA_086
+    fallback_allowed: true
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_086
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_BETA_086
+    requested_by_device: dev_BETA_086
+    fallback_allowed: true
+    visibility: scope_local
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_086
+    policy_id: retained_audit_message_delivery_086
+    history_types:
+      - message_delivery_result
+    record_history_types:
+      - message_delivery_result
+    compact_statuses:
+      - bounced
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_086
+    policy_id: retained_audit_authority_086
+    history_types:
+      - authority_outcome
+    record_history_types:
+      - authority_outcome
+    compact_statuses:
+      - name_taken
+  - action: apply_retained_audit_compaction_decision
+    registry_hub: registry_home_086
+    decision_policy_id: retained_audit_message_delivery_086
+  - action: apply_retained_audit_compaction_batch
+    registry_hub: registry_home_086
+    batch_id: retained_audit_batch_086
+    decision_policy_ids:
+      message_delivery_result: retained_audit_message_delivery_086
+      authority_outcome: retained_audit_authority_086
+  - action: apply_retained_audit_compaction_batch
+    registry_hub: registry_home_086
+    batch_id: retained_audit_batch_086
+    decision_policy_ids:
+      authority_outcome: retained_audit_authority_086
+      message_delivery_result: retained_audit_message_delivery_086
+assertions:
+  - type: retained_audit_compaction_apply_result_contains
+    registry_hub: registry_home_086
+    policy_id: retained_audit_message_delivery_086
+    history_type: message_delivery_result
+    compacted_count: 1
+    missing_count: 0
+    expected_count: 1
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_086
+    batch_id: retained_audit_batch_086
+    history_types:
+      - message_delivery_result
+      - authority_outcome
+    compacted_count: 1
+    retained_count: 1
+    missing_count: 1
+    unsupported_count: 0
+    expected_count: 1
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_086
+    batch_id: retained_audit_batch_086
+    history_type: message_delivery_result
+    policy_id: retained_audit_message_delivery_086
+    history_compacted_count: 0
+    history_missing_count: 1
+    expected_count: 2
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_086
+    batch_id: retained_audit_batch_086
+    history_type: authority_outcome
+    policy_id: retained_audit_authority_086
+    history_compacted_count: 1
+    history_missing_count: 0
+    expected_count: 1
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_086
+    batch_id: retained_audit_batch_086
+    compacted_count: 0
+    retained_count: 1
+    missing_count: 2
+    unsupported_count: 0
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_home_086
+    message_id: message_compact_086
+    expected_count: 0
+  - type: authority_outcome_history_contains
+    registry_hub: registry_home_086
+    requested_alias: global.alpha
+    device_id: dev_BETA_086
+    final_status: name_taken
+    expected_count: 0
+  - type: alias_resolves_to
+    registry_hub: registry_family_086
+    alias: global.family.david.alpha
+    device: dev_ALPHA_086
+    identity_chain: global.family.david.alpha

@@ -1,0 +1,250 @@
+scenario_id: 087_retained_audit_batch_apply_isolation
+name: Retained audit batch apply isolation
+category: registry
+description: a multi-history apply changes only selected retained histories while preserving identity delivery security and traffic state
+tags:
+  - retained_audit
+  - batch_apply
+  - isolation
+  - source_only
+  - v1.12
+demonstrates:
+  - message delivery and authority outcome candidates compact together
+  - encryption histories mailbox delivery aliases conflicts and security records remain unchanged
+  - canonical identity and TrafficHub lane state remain unchanged
+expected_result: selected retained histories compact while all unrelated registry and traffic state remains available
+setup:
+  registry_hubs:
+    - hub_id: registry_home_087
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_087
+    - hub_id: registry_family_087
+      scope_path: global.family.david
+      parent_hub_id: registry_global_087
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+    - hub_id: registry_global_087
+      scope_path: global
+  traffic_hubs:
+    - hub_id: traffic_home_087
+    - hub_id: traffic_remote_087
+  links:
+    - from: traffic_home_087
+      to: traffic_remote_087
+  devices:
+    - device_id: dev_ALPHA_087
+      label: alpha
+      traffic_hub: traffic_home_087
+    - device_id: dev_BETA_087
+      label: beta
+      traffic_hub: traffic_remote_087
+    - device_id: dev_NEO_087
+      label: neo
+steps:
+  - action: register_device
+    registry_hub: registry_home_087
+    device: dev_ALPHA_087
+    label: alpha
+  - action: register_device
+    registry_hub: registry_family_087
+    device: dev_ALPHA_087
+    label: alpha
+  - action: register_device
+    registry_hub: registry_global_087
+    device: dev_ALPHA_087
+    label: alpha
+  - action: register_device
+    registry_hub: registry_home_087
+    device: dev_BETA_087
+    label: beta
+  - action: register_device
+    registry_hub: registry_family_087
+    device: dev_BETA_087
+    label: beta
+  - action: register_device
+    registry_hub: registry_global_087
+    device: dev_BETA_087
+    label: beta
+  - action: register_device
+    registry_hub: registry_home_087
+    device: dev_NEO_087
+    label: neo
+  - action: open_lane
+    source: dev_ALPHA_087
+    target: dev_BETA_087
+    traffic_hub: traffic_home_087
+    lane_id: lane_preserved_087
+  - action: send_lane_data
+    traffic_hub: traffic_home_087
+    lane: lane_preserved_087
+    payload:
+      message: preserved traffic
+  - action: register_lane_definition
+    registry_hub: registry_home_087
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_home_087
+    mailbox_id: mailbox_neo_087
+    canonical_device_id: dev_NEO_087
+    local_name: neo
+    scope: global.family.david.home
+  - action: bind_mailbox_capability
+    registry_hub: registry_home_087
+    mailbox_id: mailbox_neo_087
+    lane_signature: basic_messaging:v1
+  - action: register_adapter_endpoint
+    registry_hub: registry_home_087
+    endpoint_id: endpoint_mailbox_neo_087
+    subject_id: mailbox_neo_087
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: available
+    lane_signatures:
+      - basic_messaging:v1
+    scope: global.family.david.home
+  - action: register_encryption_identity
+    registry_hub: registry_home_087
+    encryption_identity_id: enc_mailbox_neo_087
+    subject_id: mailbox_neo_087
+    subject_kind: mailbox
+  - action: register_key_bundle_reference
+    registry_hub: registry_home_087
+    key_bundle_id: kb_mailbox_neo_087
+    encryption_identity_id: enc_mailbox_neo_087
+    public_ref: symbolic://public/mailbox_neo_087/001
+  - action: register_mailbox_encryption_binding
+    registry_hub: registry_home_087
+    mailbox_id: mailbox_neo_087
+    encryption_identity_id: enc_mailbox_neo_087
+    key_bundle_id: kb_mailbox_neo_087
+    required_for_lanes:
+      - basic_messaging:v1
+  - action: register_mailbox_encryption_policy
+    registry_hub: registry_home_087
+    policy_id: policy_mailbox_neo_087
+    mailbox_id: mailbox_neo_087
+  - action: evaluate_encrypted_delivery_request
+    registry_hub: registry_home_087
+    request_id: request_encrypted_087
+    message_id: message_keep_087
+    sender_id: dev_ALPHA_087
+    recipient_address: darwin://global.family.david.home.neo/inbox
+    mailbox_id: mailbox_neo_087
+    policy_id: policy_mailbox_neo_087
+    envelope_id: envelope_encrypted_087
+    encryption_identity_id: enc_mailbox_neo_087
+    key_bundle_id: kb_mailbox_neo_087
+    profile: symbolic_e2ee_v1
+    state: symbolically_encrypted
+    status: ready
+    attempt_delivery: true
+    payload: preserved encrypted delivery
+  - action: deliver_message
+    registry_hub: registry_home_087
+    message_id: message_compact_087
+    sender_id: dev_ALPHA_087
+    recipient_address: darwin://global.family.david.home.missing/inbox
+    payload: compacted result only
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_087
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_ALPHA_087
+    requested_by_device: dev_ALPHA_087
+    fallback_allowed: true
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_087
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_BETA_087
+    requested_by_device: dev_BETA_087
+    fallback_allowed: true
+    visibility: scope_local
+  - action: verify_rolling_proof
+    registry_hub: registry_home_087
+    device: dev_BETA_087
+    proof_valid: false
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_087
+    policy_id: retained_audit_message_delivery_087
+    history_types:
+      - message_delivery_result
+    record_history_types:
+      - message_delivery_result
+    compact_statuses:
+      - bounced
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_087
+    policy_id: retained_audit_authority_087
+    history_types:
+      - authority_outcome
+    record_history_types:
+      - authority_outcome
+    compact_statuses:
+      - name_taken
+  - action: apply_retained_audit_compaction_batch
+    registry_hub: registry_home_087
+    batch_id: retained_audit_batch_087
+    decision_policy_ids:
+      authority_outcome: retained_audit_authority_087
+      message_delivery_result: retained_audit_message_delivery_087
+assertions:
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_087
+    batch_id: retained_audit_batch_087
+    history_types:
+      - message_delivery_result
+      - authority_outcome
+    compacted_count: 2
+    retained_count: 2
+    ignored_count: 0
+    missing_count: 0
+    unsupported_count: 0
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_home_087
+    message_id: message_keep_087
+    mailbox_id: mailbox_neo_087
+    status: delivered
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_home_087
+    message_id: message_compact_087
+    expected_count: 0
+  - type: mailbox_inbox_contains
+    registry_hub: registry_home_087
+    mailbox_id: mailbox_neo_087
+    message_id: message_keep_087
+    payload: preserved encrypted delivery
+    expected_count: 1
+  - type: encrypted_delivery_result_contains
+    registry_hub: registry_home_087
+    request_id: request_encrypted_087
+    message_id: message_keep_087
+    status: delivered
+    expected_count: 1
+  - type: encryption_policy_decision_contains
+    registry_hub: registry_home_087
+    policy_id: policy_mailbox_neo_087
+    message_id: message_keep_087
+    status: accepted
+    expected_count: 1
+  - type: alias_resolves_to
+    registry_hub: registry_family_087
+    alias: global.family.david.alpha
+    device: dev_ALPHA_087
+    identity_chain: global.family.david.alpha
+  - type: quarantine_exists
+    registry_hub: registry_home_087
+    device: dev_BETA_087
+  - type: lane_state
+    traffic_hub: traffic_home_087
+    lane: lane_preserved_087
+    expected: active
+  - type: lane_sequence
+    traffic_hub: traffic_home_087
+    lane: lane_preserved_087
+    last_sent: 1
+    last_acknowledged: 1

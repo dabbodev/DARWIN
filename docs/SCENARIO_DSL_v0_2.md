@@ -1438,3 +1438,91 @@ multi-history apply, alias deletion, broad event store, automatic cleanup,
 workers, retries, durable queues, live clocks, networking, DNS, external
 services, real cryptography, production E2EE, or production security, privacy,
 compliance, or retention guarantees.
+
+## v1.12 Retained-Audit Batch Apply
+
+v1.12 adds one explicit multi-history action without changing the existing
+single-history actions:
+
+```yaml
+- action: apply_retained_audit_compaction_batch
+  registry_hub: registry_home_085
+  batch_id: retained_audit_batch_085
+  decision_policy_ids:
+    authority_outcome: retained_audit_authority_085
+    message_delivery_result: retained_audit_message_delivery_085
+  metadata:
+    caller_order: reverse_canonical
+```
+
+Required fields are `registry_hub`, nonblank `batch_id`, and a mapping
+`decision_policy_ids` containing at least two distinct supported retained-
+audit history labels. Every mapped policy ID must be nonblank. The runner
+resolves an exact prior decision matching RegistryHub, history type, and
+policy ID, then calls the public batch helper in
+`SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES` order. Caller mapping order does not
+change processing or nested results.
+
+The public helper preflights the complete batch before mutation. It rejects
+wrong decision types, hub mismatches, duplicate histories, `mixed`,
+unsupported labels, malformed current selected histories, blank batch
+identity, and non-JSON-safe metadata. YAML mappings make duplicate keys
+unrepresentable after parsing; the public helper independently rejects
+duplicate decision histories.
+
+Missing candidate keys retain existing single-apply behavior: they are
+reported while current candidates from another selected history still apply.
+Repeating a batch is a deterministic no-op with missing-key results.
+
+The new assertion is:
+
+```yaml
+- type: retained_audit_compaction_batch_apply_result_contains
+  registry_hub: registry_home_085
+  batch_id: retained_audit_batch_085
+  history_types:
+    - message_delivery_result
+    - authority_outcome
+  compacted_count: 2
+  retained_count: 2
+  missing_count: 0
+  expected_count: 1
+```
+
+`history_types` is an exact canonical-order filter. Aggregate category filters
+are `compacted_count`, `retained_count`, `ignored_count`, `missing_count`, and
+`unsupported_count`.
+
+Per-history filters require `history_type` and may include `policy_id` plus:
+
+- `history_compacted_record_key`, `history_compacted_record_keys`, or
+  `history_compacted_count`;
+- `history_retained_record_key`, `history_retained_record_keys`, or
+  `history_retained_count`;
+- `history_ignored_record_key`, `history_ignored_record_keys`, or
+  `history_ignored_count`;
+- `history_missing_record_key`, `history_missing_record_keys`, or
+  `history_missing_count`; and
+- `history_unsupported_record_key`, `history_unsupported_record_keys`, or
+  `history_unsupported_count`.
+
+Only the aggregate batch result enters `World.action_results`. Nested children
+do not enter the existing single-apply result stream. Detailed snapshots
+append copied `retained_audit_compaction_batch_apply_results`; compact
+`world.snapshot()` remains unchanged.
+
+Checked-in v1.12 retained-audit scenarios:
+
+- `scenarios/085_retained_audit_batch_apply_success.yaml`
+- `scenarios/086_retained_audit_batch_apply_stale_repeat.yaml`
+- `scenarios/087_retained_audit_batch_apply_isolation.yaml`
+
+The checked-in scenario set is contiguous from `001` through `087`. The
+package and CLI report `darwin-sim 1.12.0`.
+
+This simulator-local, deterministic, source-only scenario surface adds no new
+history type, compaction filter, or replay dimension; direct mixed-decision
+apply; strict stale abort; rollback or transaction machinery; automatic
+cleanup; workers; retries; queues; live clocks; networking; DNS; external
+services; real cryptography; production E2EE; or production security, privacy,
+compliance, or retention guarantees.

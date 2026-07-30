@@ -10,6 +10,7 @@ from darwin.models.hub import RegistryHub, TrafficHub
 from darwin.models.lane import LogicalLane
 from darwin.models.retained_audit import (
     RetainedAuditCompactionApplyResult,
+    RetainedAuditCompactionBatchApplyResult,
     RetainedAuditCompactionDecision,
     RetainedAuditReplaySummary,
 )
@@ -438,6 +439,9 @@ class World:
             "retained_audit_compaction_apply_results": (
                 self._retained_audit_compaction_apply_result_snapshots()
             ),
+            "retained_audit_compaction_batch_apply_results": (
+                self._retained_audit_compaction_batch_apply_result_snapshots()
+            ),
         }
 
     def _alias_authority_claim_snapshots(self) -> list[dict[str, object]]:
@@ -547,4 +551,13 @@ class World:
             result.to_summary()
             for result in self.action_results
             if isinstance(result, RetainedAuditCompactionApplyResult)
+        ]
+
+    def _retained_audit_compaction_batch_apply_result_snapshots(
+        self,
+    ) -> list[dict[str, object]]:
+        return [
+            result.to_summary()
+            for result in self.action_results
+            if isinstance(result, RetainedAuditCompactionBatchApplyResult)
         ]

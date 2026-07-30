@@ -8,15 +8,15 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-DARWIN v1.11.0 is prepared as a source-release snapshot reporting
-`darwin-sim 1.11.0`. Its publication contract is an annotated `v1.11.0` tag and
+DARWIN v1.12.0 is validated as a source-release snapshot reporting
+`darwin-sim 1.12.0`. Its publication contract is an annotated `v1.12.0` tag and
 a GitHub release created from the exact same commit, with no package-index
 publication and no uploaded release assets. This repository text deliberately
 does not claim that those remote publication actions have already occurred.
 
-The previous DARWIN v1.9.0 release is on `main` as `darwin-sim 1.9.0`. The
-annotated `v1.9.0` tag and GitHub release exist:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.9.0. No package
+The previous DARWIN v1.11.0 release is on `main` as `darwin-sim 1.11.0`. The
+annotated `v1.11.0` tag and GitHub release exist:
+https://github.com/dabbodev/DARWIN/releases/tag/v1.11.0. No package
 publication was performed, and no release assets were uploaded.
 
 v1.4 adds lifecycle policy explanation and stream-offer audit summaries while
@@ -112,6 +112,19 @@ TrafficHub state, routing, and compact snapshots remain unchanged.
 Final v1.11 validation on 2026-07-29 (America/Los_Angeles) passed Ruff, 964
 tests, all scenarios `001` through `084`, exact scenario-index verification,
 CLI output `darwin-sim 1.11.0`, and an isolated out-of-tree wheel
+build/install/version smoke check.
+
+The v1.12 source snapshot adds deterministic retained-audit batch apply by
+composing at least two distinct supported single-history decisions for the
+same RegistryHub. It preflights the complete batch, canonicalizes processing
+by the unchanged eight-history order, reports stale children without blocking
+current matches, records only one aggregate action result, and appends copied
+batch results to detailed snapshots. Scenarios `085` through `087` cover
+canonical success, stale/repeated apply, and isolation.
+
+Final v1.12 validation on 2026-07-30 (America/Los_Angeles) passed Ruff, 991
+tests, all scenarios `001` through `087`, exact scenario-index verification,
+CLI output `darwin-sim 1.12.0`, and an isolated out-of-tree wheel
 build/install/version smoke check.
 
 The v0.1 simulator answers questions like:
@@ -342,6 +355,11 @@ explicit compaction apply. The checked-in scenario set is contiguous from
 `001` through `084`, and the package and CLI version report
 `darwin-sim 1.11.0`.
 
+In the v1.12 source preparation, scenarios `085` through `087` cover retained-
+audit batch apply, stale/repeated batches, and isolation. The checked-in
+scenario set spans `001` through `087`, and the package and CLI version report
+`darwin-sim 1.12.0`.
+
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
 networking, sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar
@@ -452,6 +470,14 @@ pytest, all scenarios `001` through `084`, exact
 generated-versus-checked-in scenario-index comparison, CLI output
 `darwin-sim 1.11.0`, and an isolated wheel build/install smoke check. The
 source release does not publish a package or upload assets.
+
+The v1.12 source-release docs cover deterministic retained-audit batch apply,
+whole-batch preflight, canonical nested results, aggregate-only action-result
+recording, copied detailed snapshots, scenario DSL visibility, and scenarios
+`085` through `087`. Release gates include Ruff, pytest, all scenarios `001`
+through `087`, exact generated-versus-checked-in scenario-index comparison,
+CLI output `darwin-sim 1.12.0`, and an isolated wheel build/install smoke
+check. The source release does not publish a package or upload assets.
 
 The v1.5 release docs cover read-only lifecycle explanation retention
 classification, read-only pruning plans, explicit retained-history pruning
@@ -1271,6 +1297,12 @@ For v1.11 authority-outcome retained-audit expansion release docs, see:
 - `docs/V1_11_ROADMAP.md`
 - `docs/RETAINED_AUDIT_AUTHORITY_OUTCOME_v1_11.md`
 - `docs/RELEASE_NOTES_v1_11_DRAFT.md`
+
+For v1.12 retained-audit batch-apply release docs, see:
+
+- `docs/V1_12_ROADMAP.md`
+- `docs/RETAINED_AUDIT_BATCH_APPLY_v1_12.md`
+- `docs/RELEASE_NOTES_v1_12_DRAFT.md`
 
 ## What v0.1 Is Not
 
