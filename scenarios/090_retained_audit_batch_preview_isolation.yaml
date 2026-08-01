@@ -1,0 +1,260 @@
+scenario_id: 090_retained_audit_batch_preview_isolation
+name: Retained audit batch preview isolation
+category: registry
+description: batch preview preserves selected and unselected registry histories identity security delivery encryption and traffic state
+tags:
+  - retained_audit
+  - batch_preview
+  - isolation
+  - source_only
+  - v1.13
+demonstrates:
+  - selected message-delivery and authority-outcome histories remain unchanged
+  - unselected encryption histories mailbox delivery aliases conflicts and security records remain unchanged
+  - canonical identity TrafficHub state and compact snapshots remain unchanged
+expected_result: one aggregate preview reports selected candidates while every simulator state surface remains available
+setup:
+  registry_hubs:
+    - hub_id: registry_home_090
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_090
+    - hub_id: registry_family_090
+      scope_path: global.family.david
+      parent_hub_id: registry_global_090
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+    - hub_id: registry_global_090
+      scope_path: global
+  traffic_hubs:
+    - hub_id: traffic_home_090
+    - hub_id: traffic_remote_090
+  links:
+    - from: traffic_home_090
+      to: traffic_remote_090
+  devices:
+    - device_id: dev_ALPHA_090
+      label: alpha
+      traffic_hub: traffic_home_090
+    - device_id: dev_BETA_090
+      label: beta
+      traffic_hub: traffic_remote_090
+    - device_id: dev_NEO_090
+      label: neo
+steps:
+  - action: register_device
+    registry_hub: registry_home_090
+    device: dev_ALPHA_090
+    label: alpha
+  - action: register_device
+    registry_hub: registry_family_090
+    device: dev_ALPHA_090
+    label: alpha
+  - action: register_device
+    registry_hub: registry_global_090
+    device: dev_ALPHA_090
+    label: alpha
+  - action: register_device
+    registry_hub: registry_home_090
+    device: dev_BETA_090
+    label: beta
+  - action: register_device
+    registry_hub: registry_family_090
+    device: dev_BETA_090
+    label: beta
+  - action: register_device
+    registry_hub: registry_global_090
+    device: dev_BETA_090
+    label: beta
+  - action: register_device
+    registry_hub: registry_home_090
+    device: dev_NEO_090
+    label: neo
+  - action: open_lane
+    source: dev_ALPHA_090
+    target: dev_BETA_090
+    traffic_hub: traffic_home_090
+    lane_id: lane_preserved_090
+  - action: send_lane_data
+    traffic_hub: traffic_home_090
+    lane: lane_preserved_090
+    payload:
+      message: preserved traffic
+  - action: register_lane_definition
+    registry_hub: registry_home_090
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_home_090
+    mailbox_id: mailbox_neo_090
+    canonical_device_id: dev_NEO_090
+    local_name: neo
+    scope: global.family.david.home
+  - action: bind_mailbox_capability
+    registry_hub: registry_home_090
+    mailbox_id: mailbox_neo_090
+    lane_signature: basic_messaging:v1
+  - action: register_adapter_endpoint
+    registry_hub: registry_home_090
+    endpoint_id: endpoint_mailbox_neo_090
+    subject_id: mailbox_neo_090
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: available
+    lane_signatures:
+      - basic_messaging:v1
+    scope: global.family.david.home
+  - action: register_encryption_identity
+    registry_hub: registry_home_090
+    encryption_identity_id: enc_mailbox_neo_090
+    subject_id: mailbox_neo_090
+    subject_kind: mailbox
+  - action: register_key_bundle_reference
+    registry_hub: registry_home_090
+    key_bundle_id: kb_mailbox_neo_090
+    encryption_identity_id: enc_mailbox_neo_090
+    public_ref: symbolic://public/mailbox_neo_090/001
+  - action: register_mailbox_encryption_binding
+    registry_hub: registry_home_090
+    mailbox_id: mailbox_neo_090
+    encryption_identity_id: enc_mailbox_neo_090
+    key_bundle_id: kb_mailbox_neo_090
+    required_for_lanes:
+      - basic_messaging:v1
+  - action: register_mailbox_encryption_policy
+    registry_hub: registry_home_090
+    policy_id: policy_mailbox_neo_090
+    mailbox_id: mailbox_neo_090
+  - action: evaluate_encrypted_delivery_request
+    registry_hub: registry_home_090
+    request_id: request_encrypted_090
+    message_id: message_keep_090
+    sender_id: dev_ALPHA_090
+    recipient_address: darwin://global.family.david.home.neo/inbox
+    mailbox_id: mailbox_neo_090
+    policy_id: policy_mailbox_neo_090
+    envelope_id: envelope_encrypted_090
+    encryption_identity_id: enc_mailbox_neo_090
+    key_bundle_id: kb_mailbox_neo_090
+    profile: symbolic_e2ee_v1
+    state: symbolically_encrypted
+    status: ready
+    attempt_delivery: true
+    payload: preserved encrypted delivery
+  - action: deliver_message
+    registry_hub: registry_home_090
+    message_id: message_compact_090
+    sender_id: dev_ALPHA_090
+    recipient_address: darwin://global.family.david.home.missing/inbox
+    payload: previewed result only
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_090
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_ALPHA_090
+    requested_by_device: dev_ALPHA_090
+    fallback_allowed: true
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_090
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_BETA_090
+    requested_by_device: dev_BETA_090
+    fallback_allowed: true
+    visibility: scope_local
+  - action: verify_rolling_proof
+    registry_hub: registry_home_090
+    device: dev_BETA_090
+    proof_valid: false
+  - action: simulate_duplicate_device_claim
+    registry_hub: registry_home_090
+    device: dev_BETA_090
+    claiming_attachment: registry_office_090
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_090
+    policy_id: retained_audit_message_delivery_090
+    history_types:
+      - message_delivery_result
+    record_history_types:
+      - message_delivery_result
+    compact_statuses:
+      - bounced
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_090
+    policy_id: retained_audit_authority_090
+    history_types:
+      - authority_outcome
+    record_history_types:
+      - authority_outcome
+    compact_statuses:
+      - name_taken
+  - action: preview_retained_audit_compaction_batch
+    registry_hub: registry_home_090
+    batch_id: retained_audit_batch_090
+    decision_policy_ids:
+      authority_outcome: retained_audit_authority_090
+      message_delivery_result: retained_audit_message_delivery_090
+assertions:
+  - type: retained_audit_compaction_batch_preview_result_contains
+    registry_hub: registry_home_090
+    batch_id: retained_audit_batch_090
+    history_types:
+      - message_delivery_result
+      - authority_outcome
+    would_compact_count: 2
+    retained_count: 2
+    ignored_count: 0
+    missing_count: 0
+    unsupported_count: 0
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_home_090
+    message_id: message_compact_090
+    status: bounced
+    expected_count: 1
+  - type: mailbox_inbox_contains
+    registry_hub: registry_home_090
+    mailbox_id: mailbox_neo_090
+    message_id: message_keep_090
+    payload: preserved encrypted delivery
+    expected_count: 1
+  - type: encrypted_delivery_result_contains
+    registry_hub: registry_home_090
+    request_id: request_encrypted_090
+    message_id: message_keep_090
+    status: delivered
+    expected_count: 1
+  - type: encryption_policy_decision_contains
+    registry_hub: registry_home_090
+    policy_id: policy_mailbox_neo_090
+    message_id: message_keep_090
+    status: accepted
+    expected_count: 1
+  - type: authority_outcome_history_contains
+    registry_hub: registry_home_090
+    requested_alias: global.alpha
+    device_id: dev_BETA_090
+    final_status: name_taken
+    expected_count: 1
+  - type: alias_resolves_to
+    registry_hub: registry_family_090
+    alias: global.family.david.alpha
+    device: dev_ALPHA_090
+    identity_chain: global.family.david.alpha
+  - type: conflict_exists
+    registry_hub: registry_home_090
+    conflict_type: duplicate_device_id
+  - type: quarantine_exists
+    registry_hub: registry_home_090
+    device: dev_BETA_090
+  - type: lane_state
+    traffic_hub: traffic_home_090
+    lane: lane_preserved_090
+    expected: active
+  - type: lane_sequence
+    traffic_hub: traffic_home_090
+    lane: lane_preserved_090
+    last_sent: 1
+    last_acknowledged: 1
+  - type: event_seen
+    event_type: retained_audit_compaction_batch_previewed

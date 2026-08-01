@@ -10,6 +10,7 @@ from darwin.models.encryption import EncryptionPolicyDecision
 from darwin.models.retained_audit import (
     RetainedAuditCompactionApplyResult,
     RetainedAuditCompactionBatchApplyResult,
+    RetainedAuditCompactionBatchPreviewResult,
     RetainedAuditCompactionDecision,
     RetainedAuditReplaySummary,
 )
@@ -2312,6 +2313,69 @@ def _retained_audit_compaction_batch_apply_result_contains(
     )
 
 
+def _retained_audit_compaction_batch_preview_result_contains(
+    world: World,
+    assertion_type: str,
+    assertion: dict[str, Any],
+) -> AssertionResult:
+    hub_id = str(assertion.get("registry_hub"))
+    filters: dict[str, object] = {
+        "hub_id": hub_id,
+        "batch_id": _optional_filter_str(assertion, "batch_id"),
+        "history_types": _optional_str_sequence_filter(assertion, "history_types"),
+        "history_type": _optional_filter_str(assertion, "history_type"),
+        "policy_id": _optional_filter_str(assertion, "policy_id"),
+    }
+    for category in (
+        "would_compact",
+        "retained",
+        "ignored",
+        "missing",
+        "unsupported",
+    ):
+        filters[f"{category}_count"] = _optional_int_field(
+            assertion,
+            f"{category}_count",
+        )
+        filters[f"history_{category}_record_key"] = _optional_filter_str(
+            assertion,
+            f"history_{category}_record_key",
+        )
+        filters[f"history_{category}_record_keys"] = _optional_str_sequence_filter(
+            assertion,
+            f"history_{category}_record_keys",
+        )
+        filters[f"history_{category}_count"] = _optional_int_field(
+            assertion,
+            f"history_{category}_count",
+        )
+    records = [
+        result.to_summary()
+        for result in world.action_results
+        if isinstance(result, RetainedAuditCompactionBatchPreviewResult)
+    ]
+    records = [
+        record
+        for record in records
+        if _matches_retained_audit_compaction_batch_preview_result_filters(
+            record,
+            filters,
+        )
+    ]
+    return _count_result(
+        assertion_type,
+        assertion,
+        records,
+        f"retained audit compaction batch preview result contains {filters}",
+        expected_context={"filters": filters},
+        actual_context={
+            "registry_hub": hub_id,
+            "registry_hub_found": hub_id in world.registry_hubs,
+            "source": "action_results",
+        },
+    )
+
+
 def _stream_offer_status_transition_contains(
     world: World,
     assertion_type: str,
@@ -3319,6 +3383,93 @@ def _matches_retained_audit_compaction_batch_apply_result_filters(
     )
 
 
+def _matches_retained_audit_compaction_batch_preview_result_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    for field_name in ("hub_id", "batch_id"):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    history_types = filters["history_types"]
+    if history_types is not None and record.get("history_types") != list(history_types):
+        return False
+    categories = (
+        "would_compact",
+        "retained",
+        "ignored",
+        "missing",
+        "unsupported",
+    )
+    for category in categories:
+        value = filters[f"{category}_count"]
+        if value is not None and record.get(f"{category}_count") != value:
+            return False
+
+    history_type = filters["history_type"]
+    policy_id = filters["policy_id"]
+    has_nested_filters = history_type is not None or policy_id is not None or any(
+        filters[f"history_{category}_{suffix}"] is not None
+        for category in categories
+        for suffix in ("record_key", "record_keys", "count")
+    )
+    if not has_nested_filters:
+        return True
+
+    preview_results = record.get("preview_results")
+    if not isinstance(preview_results, list):
+        return False
+    nested_filters: dict[str, object] = {
+        "hub_id": filters["hub_id"],
+        "policy_id": policy_id,
+        "history_type": history_type,
+    }
+    for category in categories:
+        nested_filters[f"{category}_record_key"] = filters[
+            f"history_{category}_record_key"
+        ]
+        nested_filters[f"{category}_record_keys"] = filters[
+            f"history_{category}_record_keys"
+        ]
+        nested_filters[f"{category}_count"] = filters[f"history_{category}_count"]
+    return any(
+        isinstance(preview_result, dict)
+        and _matches_retained_audit_compaction_preview_result_filters(
+            preview_result,
+            nested_filters,
+        )
+        for preview_result in preview_results
+    )
+
+
+def _matches_retained_audit_compaction_preview_result_filters(
+    record: dict[str, object],
+    filters: dict[str, object],
+) -> bool:
+    for field_name in ("hub_id", "policy_id", "history_type"):
+        value = filters[field_name]
+        if value is not None and record.get(field_name) != value:
+            return False
+    for category in (
+        "would_compact",
+        "retained",
+        "ignored",
+        "missing",
+        "unsupported",
+    ):
+        if not _list_field_matches(
+            record,
+            filters,
+            f"{category}_record_keys",
+            f"{category}_record_key",
+        ):
+            return False
+        value = filters[f"{category}_count"]
+        if value is not None and record.get(f"{category}_count") != value:
+            return False
+    return True
+
+
 def _count_matches(
     record: dict[str, object],
     filters: dict[str, object],
@@ -3505,6 +3656,9 @@ _EVALUATORS = {
     ),
     "retained_audit_compaction_batch_apply_result_contains": (
         _retained_audit_compaction_batch_apply_result_contains
+    ),
+    "retained_audit_compaction_batch_preview_result_contains": (
+        _retained_audit_compaction_batch_preview_result_contains
     ),
     "stream_offer_status_transition_contains": (
         _stream_offer_status_transition_contains

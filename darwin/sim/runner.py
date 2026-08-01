@@ -140,6 +140,9 @@ from darwin.registry.retained_audit import (
     classify_retained_audit_records_for_compaction as classify_audit_compaction_op,
 )
 from darwin.registry.retained_audit import (
+    preview_retained_audit_compaction_batch as preview_audit_compaction_batch_op,
+)
+from darwin.registry.retained_audit import (
     summarize_retained_audit_replay as summarize_retained_audit_replay_op,
 )
 from darwin.registry.security import (
@@ -430,6 +433,9 @@ def _run_step(world: World, action: str, fields: dict[str, Any]) -> None:
         ),
         "apply_retained_audit_compaction_batch": (
             _step_apply_retained_audit_compaction_batch
+        ),
+        "preview_retained_audit_compaction_batch": (
+            _step_preview_retained_audit_compaction_batch
         ),
         "evaluate_lane_admission_policy": _step_evaluate_lane_admission_policy,
         "advance_time": _step_advance_time,
@@ -2528,6 +2534,54 @@ def _step_apply_retained_audit_compaction_batch(
         target=hub.hub_id,
         hub_id=hub.hub_id,
         status="applied",
+        data=result.to_summary(),
+    )
+
+
+def _step_preview_retained_audit_compaction_batch(
+    world: World,
+    fields: dict[str, Any],
+) -> None:
+    hub = world.registry_hubs[str(fields["registry_hub"])]
+    decision_policy_ids = fields["decision_policy_ids"]
+    if not isinstance(decision_policy_ids, dict):
+        raise TypeError("decision_policy_ids must be a mapping")
+
+    decisions: list[RetainedAuditCompactionDecision] = []
+    for history_type in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES:
+        policy_id = decision_policy_ids.get(history_type)
+        if policy_id is None:
+            continue
+        decision = _referenced_retained_audit_compaction_decision(
+            world,
+            {
+                "decision_policy_id": str(policy_id),
+                "decision_history_type": history_type,
+            },
+            hub.hub_id,
+            required=True,
+        )
+        if decision is None:
+            raise AssertionError("required batch preview decision reference was not resolved")
+        decisions.append(decision)
+
+    result = preview_audit_compaction_batch_op(
+        hub,
+        decisions,
+        batch_id=str(fields["batch_id"]),
+        metadata=_optional_dict(fields.get("metadata")),
+    )
+    world.action_results.append(result)
+    world.log(
+        (
+            "previewed retained audit compaction batch "
+            f"{result.batch_id} at {hub.hub_id}: "
+            f"{result.would_compact_count} would compact"
+        ),
+        event_type="retained_audit_compaction_batch_previewed",
+        target=hub.hub_id,
+        hub_id=hub.hub_id,
+        status="previewed",
         data=result.to_summary(),
     )
 

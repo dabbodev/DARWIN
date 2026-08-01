@@ -13,8 +13,10 @@ from darwin.models.retained_audit import (
     SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES,
     RetainedAuditCompactionApplyResult,
     RetainedAuditCompactionBatchApplyResult,
+    RetainedAuditCompactionBatchPreviewResult,
     RetainedAuditCompactionDecision,
     RetainedAuditCompactionPolicy,
+    RetainedAuditCompactionPreviewResult,
     RetainedAuditReplaySummary,
     make_retained_audit_compaction_policy,
 )
@@ -370,82 +372,13 @@ def apply_retained_audit_compaction_decision(
         raise ValueError("decision hub_id must match registry_hub.hub_id")
     if metadata is not None and not isinstance(metadata, dict):
         raise TypeError("metadata must be a JSON-safe dict")
-
-    if decision.history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES:
-        unsupported_record_keys = _ordered_unique(
-            (
-                *decision.compaction_candidate_record_keys,
-                *decision.retained_record_keys,
-                *decision.ignored_record_keys,
-            )
-        )
-        result_metadata = _compaction_apply_metadata(
-            compacted_record_keys=[],
-            history_type=decision.history_type,
-            selected_history_mutated=False,
-            unsupported_history_type=True,
-            metadata=metadata,
-        )
-        return RetainedAuditCompactionApplyResult(
-            hub_id=registry_hub.hub_id,
-            policy_id=decision.policy_id,
-            history_type=decision.history_type,
-            unsupported_record_keys=unsupported_record_keys,
-            unsupported_count=len(unsupported_record_keys),
-            metadata=result_metadata,
-        )
-
-    candidate_key_set = set(decision.compaction_candidate_record_keys)
-    retained_key_set = set(decision.retained_record_keys)
-    ignored_key_set = set(decision.ignored_record_keys)
-    compacted_record_keys: list[str] = []
-    retained_record_keys: list[str] = []
-    ignored_record_keys: list[str] = []
-    remaining_records: list[object] = []
-
-    selected_history = _selected_retained_history(registry_hub, decision.history_type)
-    for index, record in enumerate(selected_history):
-        view = _audit_record_view(index, record)
-        if view.record_key in candidate_key_set:
-            compacted_record_keys.append(view.record_key)
-            continue
-
-        remaining_records.append(record)
-        if view.record_key in retained_key_set:
-            retained_record_keys.append(view.record_key)
-        if view.record_key in ignored_key_set:
-            ignored_record_keys.append(view.record_key)
-
-    compacted_key_set = set(compacted_record_keys)
-    missing_record_keys = [
-        record_key
-        for record_key in decision.compaction_candidate_record_keys
-        if record_key not in compacted_key_set
-    ]
-    if compacted_record_keys:
-        selected_history[:] = remaining_records
-
-    result_metadata = _compaction_apply_metadata(
-        compacted_record_keys=compacted_record_keys,
-        history_type=decision.history_type,
-        selected_history_mutated=bool(compacted_record_keys),
-        unsupported_history_type=False,
-        metadata=metadata,
+    evaluation = _evaluate_retained_audit_compaction_decision(
+        registry_hub,
+        decision,
     )
-
-    return RetainedAuditCompactionApplyResult(
-        hub_id=registry_hub.hub_id,
-        policy_id=decision.policy_id,
-        history_type=decision.history_type,
-        compacted_record_keys=compacted_record_keys,
-        retained_record_keys=retained_record_keys,
-        ignored_record_keys=ignored_record_keys,
-        missing_record_keys=missing_record_keys,
-        compacted_count=len(compacted_record_keys),
-        retained_count=len(retained_record_keys),
-        ignored_count=len(ignored_record_keys),
-        missing_count=len(missing_record_keys),
-        metadata=result_metadata,
+    return _apply_retained_audit_compaction_evaluation(
+        evaluation,
+        metadata=metadata,
     )
 
 
@@ -455,6 +388,113 @@ def summarize_retained_audit_compaction_apply_result(
     """Return a copied JSON-safe retained audit compaction apply result summary."""
     if not isinstance(result, RetainedAuditCompactionApplyResult):
         raise TypeError("result must be a RetainedAuditCompactionApplyResult")
+    return result.to_summary()
+
+
+def preview_retained_audit_compaction_batch(
+    registry_hub: RegistryHub,
+    decisions: (
+        list[RetainedAuditCompactionDecision]
+        | tuple[RetainedAuditCompactionDecision, ...]
+    ),
+    *,
+    batch_id: str,
+    metadata: dict[str, object] | None = None,
+) -> RetainedAuditCompactionBatchPreviewResult:
+    """Preview a canonical multi-history compaction batch without mutation."""
+    evaluations, safe_metadata = _preflight_retained_audit_compaction_batch(
+        registry_hub,
+        decisions,
+        batch_id=batch_id,
+        metadata=metadata,
+    )
+
+    preview_results: list[RetainedAuditCompactionPreviewResult] = []
+    batch_size = len(evaluations)
+    for batch_index, evaluation in enumerate(evaluations):
+        preview_results.append(
+            _retained_audit_compaction_preview_result(
+                evaluation,
+                batch_id=batch_id,
+                batch_history_index=batch_index,
+                batch_size=batch_size,
+            )
+        )
+
+    would_compact_count = sum(
+        result.would_compact_count for result in preview_results
+    )
+    missing_count = sum(result.missing_count for result in preview_results)
+    batch_metadata = dict(safe_metadata)
+    batch_metadata.update(
+        {
+            "simulator_local": True,
+            "explicit_preview": True,
+            "batch_preview": True,
+            "batch_id": batch_id,
+            "batch_id_correlation_only": True,
+            "batch_size": batch_size,
+            "history_types": [
+                result.history_type for result in preview_results
+            ],
+            "canonical_batch_order": True,
+            "structural_preflight_passed": True,
+            "stale_keys_reported": bool(missing_count),
+            "would_mutate_registry_hub": bool(would_compact_count),
+            "would_mutate_retained_history": bool(would_compact_count),
+            "would_compact_records": bool(would_compact_count),
+            "would_delete_records": bool(would_compact_count),
+            "would_rewrite_records": False,
+            "read_only": True,
+            "registry_hub_mutated": False,
+            "retained_history_mutated": False,
+            "records_compacted": False,
+            "records_deleted": False,
+            "records_rewritten": False,
+            "apply_parity_requires_unchanged_state": True,
+            "apply_parity_runtime_confirmed": False,
+            "point_in_time_preview": True,
+            "automatic_cleanup": False,
+            "cleanup_scheduled": False,
+            "background_worker": False,
+            "retry_loop": False,
+            "durable_queue": False,
+            "live_timer": False,
+            "live_clock": False,
+            "delivery_behavior_changed": False,
+            "traffic_hub_state_changed": False,
+            "traffic_hub_routing_changed": False,
+            "compact_snapshot_changed": False,
+            "canonical_identity_rewritten": False,
+            "networking": False,
+            "dns_lookup": False,
+            "external_services": False,
+            "cryptography": False,
+        }
+    )
+    return RetainedAuditCompactionBatchPreviewResult(
+        hub_id=registry_hub.hub_id,
+        batch_id=batch_id,
+        preview_results=preview_results,
+        metadata=batch_metadata,
+    )
+
+
+def summarize_retained_audit_compaction_preview_result(
+    result: RetainedAuditCompactionPreviewResult,
+) -> dict[str, object]:
+    """Return a copied JSON-safe retained audit compaction preview summary."""
+    if not isinstance(result, RetainedAuditCompactionPreviewResult):
+        raise TypeError("result must be a RetainedAuditCompactionPreviewResult")
+    return result.to_summary()
+
+
+def summarize_retained_audit_compaction_batch_preview_result(
+    result: RetainedAuditCompactionBatchPreviewResult,
+) -> dict[str, object]:
+    """Return a copied JSON-safe retained audit batch preview summary."""
+    if not isinstance(result, RetainedAuditCompactionBatchPreviewResult):
+        raise TypeError("result must be a RetainedAuditCompactionBatchPreviewResult")
     return result.to_summary()
 
 
@@ -469,58 +509,19 @@ def apply_retained_audit_compaction_batch(
     metadata: dict[str, object] | None = None,
 ) -> RetainedAuditCompactionBatchApplyResult:
     """Preflight and apply distinct single-history decisions in canonical order."""
-    _validate_registry_hub(registry_hub)
-    _validate_batch_id(batch_id)
-    if not isinstance(decisions, tuple | list):
-        raise TypeError("decisions must be a list or tuple")
-    if len(decisions) < 2:
-        raise ValueError("decisions must contain at least two decisions")
-    if metadata is not None and not isinstance(metadata, dict):
-        raise TypeError("metadata must be a JSON-safe dict")
-    safe_metadata = _batch_json_safe_copy(metadata or {})
-    if not isinstance(safe_metadata, dict):
-        raise TypeError("metadata must be a JSON-safe dict")
-
-    decisions_by_history_type: dict[str, RetainedAuditCompactionDecision] = {}
-    for decision in decisions:
-        _validate_compaction_decision(decision)
-        if decision.hub_id != registry_hub.hub_id:
-            raise ValueError("decision hub_id must match registry_hub.hub_id")
-        if decision.history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES:
-            raise ValueError(
-                "batch decisions must use supported single retained audit histories"
-            )
-        if decision.history_type in decisions_by_history_type:
-            raise ValueError("batch decision history_types must be distinct")
-        decisions_by_history_type[decision.history_type] = decision
-
-    ordered_decisions = [
-        decisions_by_history_type[history_type]
-        for history_type in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES
-        if history_type in decisions_by_history_type
-    ]
-
-    # Validate every selected current history before the first mutation.
-    for decision in ordered_decisions:
-        selected_history = _selected_retained_history(
-            registry_hub,
-            decision.history_type,
-        )
-        for index, record in enumerate(selected_history):
-            view = _audit_record_view(index, record)
-            if view.history_type != decision.history_type:
-                raise TypeError(
-                    "selected retained audit history must contain only its "
-                    "supported retained audit record type"
-                )
+    evaluations, safe_metadata = _preflight_retained_audit_compaction_batch(
+        registry_hub,
+        decisions,
+        batch_id=batch_id,
+        metadata=metadata,
+    )
 
     apply_results: list[RetainedAuditCompactionApplyResult] = []
-    batch_size = len(ordered_decisions)
-    for batch_index, decision in enumerate(ordered_decisions):
+    batch_size = len(evaluations)
+    for batch_index, evaluation in enumerate(evaluations):
         apply_results.append(
-            apply_retained_audit_compaction_decision(
-                registry_hub,
-                decision,
+            _apply_retained_audit_compaction_evaluation(
+                evaluation,
                 metadata={
                     "batch_apply": True,
                     "batch_id": batch_id,
@@ -587,6 +588,278 @@ def summarize_retained_audit_compaction_batch_apply_result(
     if not isinstance(result, RetainedAuditCompactionBatchApplyResult):
         raise TypeError("result must be a RetainedAuditCompactionBatchApplyResult")
     return result.to_summary()
+
+
+class _CompactionEvaluation:
+    """Canonical point-in-time evaluation shared by preview and apply."""
+
+    __slots__ = (
+        "decision",
+        "selected_history",
+        "remaining_records",
+        "would_compact_record_keys",
+        "retained_record_keys",
+        "ignored_record_keys",
+        "missing_record_keys",
+        "unsupported_record_keys",
+    )
+
+    def __init__(
+        self,
+        *,
+        decision: RetainedAuditCompactionDecision,
+        selected_history: list[object] | None,
+        remaining_records: list[object],
+        would_compact_record_keys: list[str],
+        retained_record_keys: list[str],
+        ignored_record_keys: list[str],
+        missing_record_keys: list[str],
+        unsupported_record_keys: list[str],
+    ) -> None:
+        self.decision = decision
+        self.selected_history = selected_history
+        self.remaining_records = remaining_records
+        self.would_compact_record_keys = would_compact_record_keys
+        self.retained_record_keys = retained_record_keys
+        self.ignored_record_keys = ignored_record_keys
+        self.missing_record_keys = missing_record_keys
+        self.unsupported_record_keys = unsupported_record_keys
+
+
+def _preflight_retained_audit_compaction_batch(
+    registry_hub: RegistryHub,
+    decisions: (
+        list[RetainedAuditCompactionDecision]
+        | tuple[RetainedAuditCompactionDecision, ...]
+    ),
+    *,
+    batch_id: str,
+    metadata: dict[str, object] | None,
+) -> tuple[list[_CompactionEvaluation], dict[str, object]]:
+    _validate_registry_hub(registry_hub)
+    _validate_batch_id(batch_id)
+    if not isinstance(decisions, tuple | list):
+        raise TypeError("decisions must be a list or tuple")
+    if len(decisions) < 2:
+        raise ValueError("decisions must contain at least two decisions")
+    if metadata is not None and not isinstance(metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+    safe_metadata = _batch_json_safe_copy(metadata or {})
+    if not isinstance(safe_metadata, dict):
+        raise TypeError("metadata must be a JSON-safe dict")
+
+    decisions_by_history_type: dict[str, RetainedAuditCompactionDecision] = {}
+    for decision in decisions:
+        _validate_compaction_decision(decision)
+        if decision.hub_id != registry_hub.hub_id:
+            raise ValueError("decision hub_id must match registry_hub.hub_id")
+        if decision.history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES:
+            raise ValueError(
+                "batch decisions must use supported single retained audit histories"
+            )
+        if decision.history_type in decisions_by_history_type:
+            raise ValueError("batch decision history_types must be distinct")
+        decisions_by_history_type[decision.history_type] = decision
+
+    ordered_decisions = [
+        decisions_by_history_type[history_type]
+        for history_type in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES
+        if history_type in decisions_by_history_type
+    ]
+    evaluations = [
+        _evaluate_retained_audit_compaction_decision(
+            registry_hub,
+            decision,
+            require_supported_history_shape=True,
+        )
+        for decision in ordered_decisions
+    ]
+    return evaluations, safe_metadata
+
+
+def _evaluate_retained_audit_compaction_decision(
+    registry_hub: RegistryHub,
+    decision: RetainedAuditCompactionDecision,
+    *,
+    require_supported_history_shape: bool = False,
+) -> _CompactionEvaluation:
+    if decision.history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES:
+        unsupported_record_keys = _ordered_unique(
+            (
+                *decision.compaction_candidate_record_keys,
+                *decision.retained_record_keys,
+                *decision.ignored_record_keys,
+            )
+        )
+        return _CompactionEvaluation(
+            decision=decision,
+            selected_history=None,
+            remaining_records=[],
+            would_compact_record_keys=[],
+            retained_record_keys=[],
+            ignored_record_keys=[],
+            missing_record_keys=[],
+            unsupported_record_keys=unsupported_record_keys,
+        )
+
+    candidate_key_set = set(decision.compaction_candidate_record_keys)
+    retained_key_set = set(decision.retained_record_keys)
+    ignored_key_set = set(decision.ignored_record_keys)
+    would_compact_record_keys: list[str] = []
+    retained_record_keys: list[str] = []
+    ignored_record_keys: list[str] = []
+    remaining_records: list[object] = []
+
+    selected_history = _selected_retained_history(registry_hub, decision.history_type)
+    for index, record in enumerate(selected_history):
+        view = _audit_record_view(index, record)
+        if (
+            require_supported_history_shape
+            and view.history_type != decision.history_type
+        ):
+            raise TypeError(
+                "selected retained audit history must contain only its "
+                "supported retained audit record type"
+            )
+        if view.record_key in candidate_key_set:
+            would_compact_record_keys.append(view.record_key)
+            continue
+
+        remaining_records.append(record)
+        if view.record_key in retained_key_set:
+            retained_record_keys.append(view.record_key)
+        if view.record_key in ignored_key_set:
+            ignored_record_keys.append(view.record_key)
+
+    would_compact_key_set = set(would_compact_record_keys)
+    missing_record_keys = [
+        record_key
+        for record_key in decision.compaction_candidate_record_keys
+        if record_key not in would_compact_key_set
+    ]
+    return _CompactionEvaluation(
+        decision=decision,
+        selected_history=selected_history,
+        remaining_records=remaining_records,
+        would_compact_record_keys=would_compact_record_keys,
+        retained_record_keys=retained_record_keys,
+        ignored_record_keys=ignored_record_keys,
+        missing_record_keys=missing_record_keys,
+        unsupported_record_keys=[],
+    )
+
+
+def _apply_retained_audit_compaction_evaluation(
+    evaluation: _CompactionEvaluation,
+    *,
+    metadata: dict[str, object] | None,
+) -> RetainedAuditCompactionApplyResult:
+    decision = evaluation.decision
+    selected_history_mutated = bool(evaluation.would_compact_record_keys)
+    if selected_history_mutated:
+        if evaluation.selected_history is None:
+            raise RuntimeError("supported compaction evaluation requires selected history")
+        evaluation.selected_history[:] = evaluation.remaining_records
+
+    result_metadata = _compaction_apply_metadata(
+        compacted_record_keys=evaluation.would_compact_record_keys,
+        history_type=decision.history_type,
+        selected_history_mutated=selected_history_mutated,
+        unsupported_history_type=(
+            decision.history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES
+        ),
+        metadata=metadata,
+    )
+    return RetainedAuditCompactionApplyResult(
+        hub_id=decision.hub_id,
+        policy_id=decision.policy_id,
+        history_type=decision.history_type,
+        compacted_record_keys=evaluation.would_compact_record_keys,
+        retained_record_keys=evaluation.retained_record_keys,
+        ignored_record_keys=evaluation.ignored_record_keys,
+        missing_record_keys=evaluation.missing_record_keys,
+        unsupported_record_keys=evaluation.unsupported_record_keys,
+        compacted_count=len(evaluation.would_compact_record_keys),
+        retained_count=len(evaluation.retained_record_keys),
+        ignored_count=len(evaluation.ignored_record_keys),
+        missing_count=len(evaluation.missing_record_keys),
+        unsupported_count=len(evaluation.unsupported_record_keys),
+        metadata=result_metadata,
+    )
+
+
+def _retained_audit_compaction_preview_result(
+    evaluation: _CompactionEvaluation,
+    *,
+    batch_id: str,
+    batch_history_index: int,
+    batch_size: int,
+) -> RetainedAuditCompactionPreviewResult:
+    decision = evaluation.decision
+    would_compact = bool(evaluation.would_compact_record_keys)
+    result_metadata: dict[str, object] = {
+        "simulator_local": True,
+        "explicit_preview": True,
+        "read_only": True,
+        "compaction_preview_result_only": True,
+        "batch_preview": True,
+        "batch_id": batch_id,
+        "batch_id_correlation_only": True,
+        "batch_history_index": batch_history_index,
+        "batch_size": batch_size,
+        "canonical_batch_order": True,
+        "structural_preflight_passed": True,
+        "selected_history_type": decision.history_type,
+        "stale_keys_reported": bool(evaluation.missing_record_keys),
+        "would_mutate_selected_history": would_compact,
+        "would_compact_records": would_compact,
+        "would_delete_records": would_compact,
+        "would_rewrite_records": False,
+        "registry_hub_mutated": False,
+        "retained_history_mutated": False,
+        "selected_history_mutated": False,
+        "records_compacted": False,
+        "records_deleted": False,
+        "records_rewritten": False,
+        "unsupported_history_type": False,
+        "apply_parity_requires_unchanged_state": True,
+        "apply_parity_runtime_confirmed": False,
+        "point_in_time_preview": True,
+        "delivery_behavior_changed": False,
+        "traffic_hub_state_changed": False,
+        "traffic_hub_routing_changed": False,
+        "snapshot_changed": False,
+        "compact_snapshot_changed": False,
+        "canonical_identity_rewritten": False,
+        "automatic_cleanup": False,
+        "cleanup_scheduled": False,
+        "background_worker": False,
+        "retry_loop": False,
+        "durable_queue": False,
+        "live_timer": False,
+        "live_clock": False,
+        "networking": False,
+        "dns_lookup": False,
+        "external_services": False,
+        "cryptography": False,
+        "supported_history_types": list(SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES),
+    }
+    return RetainedAuditCompactionPreviewResult(
+        hub_id=decision.hub_id,
+        policy_id=decision.policy_id,
+        history_type=decision.history_type,
+        would_compact_record_keys=evaluation.would_compact_record_keys,
+        retained_record_keys=evaluation.retained_record_keys,
+        ignored_record_keys=evaluation.ignored_record_keys,
+        missing_record_keys=evaluation.missing_record_keys,
+        unsupported_record_keys=evaluation.unsupported_record_keys,
+        would_compact_count=len(evaluation.would_compact_record_keys),
+        retained_count=len(evaluation.retained_record_keys),
+        ignored_count=len(evaluation.ignored_record_keys),
+        missing_count=len(evaluation.missing_record_keys),
+        unsupported_count=len(evaluation.unsupported_record_keys),
+        metadata=result_metadata,
+    )
 
 
 class _AuditRecordView:
@@ -1161,9 +1434,12 @@ __all__ = [
     "apply_retained_audit_compaction_decision",
     "classify_retained_audit_records_for_compaction",
     "make_retained_audit_compaction_policy",
+    "preview_retained_audit_compaction_batch",
     "summarize_retained_audit_compaction_batch_apply_result",
+    "summarize_retained_audit_compaction_batch_preview_result",
     "summarize_retained_audit_compaction_apply_result",
     "summarize_retained_audit_compaction_decision",
+    "summarize_retained_audit_compaction_preview_result",
     "summarize_retained_audit_replay",
     "summarize_retained_audit_replay_by_history_type",
     "summarize_retained_audit_replay_by_reason",

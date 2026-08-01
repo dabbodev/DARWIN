@@ -1094,3 +1094,77 @@ python -m darwin.cli.main scenario-index
 python -m darwin.cli.main --version
 python -m build --wheel
 ```
+
+# DARWIN v1.13 Retained-Audit Batch Preview Release Checklist
+
+This checklist describes the v1.13.0 source-release snapshot prepared with the
+America/Los_Angeles validation date and final pytest count pending the first
+complete passing release-gate set. Remote publication state is intentionally
+not inferred from repository contents. The publication procedure creates an
+annotated `v1.13.0` tag and GitHub source release from the exact validated
+commit; it performs no package-index publication and uploads no release
+assets.
+
+- [x] v1.13 roadmap is checked in at `docs/V1_13_ROADMAP.md`.
+- [x] v1.13 release notes retain the compatible permanent path
+  `docs/RELEASE_NOTES_v1_13_DRAFT.md`.
+- [x] The retained-audit batch-preview specification is checked in at
+  `docs/RETAINED_AUDIT_BATCH_PREVIEW_v1_13.md`.
+- [x] README and development guidance link to all v1.13 release documents.
+- [x] Package, CLI, smoke tests, and both CI assertions expect exact output
+  `darwin-sim 1.13.0`.
+- [x] All eight retained-audit history types preserve their v1.12 order, exact
+  keys, policies, replay behavior, and single/batch apply APIs and outputs.
+- [x] Preview requires at least two distinct supported single-history
+  decisions for one RegistryHub and shares complete structural preflight with
+  apply before any write.
+- [x] Public preview results and summarizers expose copied canonical child and
+  aggregate would-compact, retained, ignored, missing, and unsupported values.
+- [x] Batch apply maps the private shared evaluator to existing results and
+  mutations without calling the public preview helper.
+- [x] Present preview keys use current history order, missing keys use decision
+  order, and valid preview unsupported values are empty.
+- [x] `batch_id` is reusable correlation metadata only, not a reservation,
+  uniqueness constraint, deduplication key, or idempotency ledger.
+- [x] Generated metadata overrides caller conflicts and records canonical
+  order, structural preflight, stale/would-mutate, read-only, unchanged-state
+  parity, and simulator-safety facts without claiming runtime-confirmed parity.
+- [x] Direct helper success and rejection preserve serialized RegistryHub,
+  retained histories, and TrafficHub state.
+- [x] Only aggregate preview results enter `World.action_results`; scenarios
+  log `retained_audit_compaction_batch_previewed`, detailed snapshots append
+  copied preview results after batch apply, and compact snapshots remain
+  unchanged.
+- [x] Scenarios `088` through `090` cover canonical preview/immediate apply
+  parity, stale repeatability, and isolation; checked-in metadata is contiguous
+  from `001` through `090`.
+- [x] Python 3.11 through 3.14 CI and separate Python 3.11 wheel smoke remain in
+  place.
+- [x] CI fails when generated scenario-index stdout differs from
+  `docs/SCENARIO_INDEX.md`.
+- [x] The wheel is an isolated validation artifact; the workflow performs no
+  upload or package-index publication.
+- [x] Release documentation excludes automatic apply, preview ledgers,
+  reservations/deduplication, strict stale aborts, transactions, new history
+  types/filters/replay dimensions, mixed apply, background work, real
+  networking/cryptography, and production guarantees.
+- [ ] Run Ruff, pytest, scenarios `001` through `090`, exact scenario-index
+  comparison, exact source CLI output, wheel build, isolated installation, and
+  out-of-tree wheel CLI verification as one complete gate set.
+- [ ] Record the actual America/Los_Angeles validation date only after that
+  complete gate set passes. Pending validation.
+- [ ] Record the actual final pytest count only after that complete gate set
+  passes. Pending validation.
+- [ ] Rerun the complete gate set after factualization without adding or
+  removing tests.
+
+## v1.13 Source-Snapshot Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main --version
+python -m build --wheel
+```

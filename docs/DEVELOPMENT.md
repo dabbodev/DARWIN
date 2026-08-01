@@ -10,6 +10,21 @@ checks, and all-scenario regression runs.
 - `pip`
 - No external services are required for simulator development
 
+## Current Source-Release Preparation
+
+The v1.13.0 source-release preparation reports `darwin-sim 1.13.0` and keeps
+its validation date and final pytest count pending until the first complete
+release-gate set passes. Its bounded retained-audit batch-preview contract is
+documented in:
+
+- `docs/V1_13_ROADMAP.md`
+- `docs/RETAINED_AUDIT_BATCH_PREVIEW_v1_13.md`
+- `docs/RELEASE_NOTES_v1_13_DRAFT.md`
+
+The `_DRAFT` release-note path remains permanent for link compatibility.
+Building or installing a wheel is validation only and does not authorize a
+package upload, package-index publication, or release asset.
+
 ## Local Setup
 
 Create and activate a virtual environment:
