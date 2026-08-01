@@ -1,8 +1,8 @@
 # DARWIN v1.13 Roadmap
 
-Status: v1.13.0 source-release snapshot preparation. The validation date and
-final pytest count are pending the first complete passing release-gate set.
-The package and CLI report `darwin-sim 1.13.0`.
+Status: v1.13.0 source-release snapshot validated on 2026-08-01
+(America/Los_Angeles) with 1021 passing tests. The package and CLI report
+`darwin-sim 1.13.0`.
 
 This roadmap records the intended v1.13.0 source snapshot without using
 repository text as evidence of remote publication state. The publication
@@ -115,8 +115,9 @@ exact `darwin_sim-1.13.0-py3-none-any.whl` must install in isolation and report
 `darwin-sim 1.13.0` from outside the repository. The wheel is a validation
 artifact only and is not uploaded.
 
-Preparation status: the validation date and final pytest count remain pending.
-No complete passing release-gate set is claimed by this document yet.
+Final validation passed Ruff, 1021 tests, all scenarios `001` through `090`,
+exact scenario-index comparison, exact source CLI output, wheel build,
+isolated wheel installation, and out-of-tree wheel CLI verification.
 
 ## Non-Goals
 

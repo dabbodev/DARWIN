@@ -875,7 +875,7 @@ def test_v1_12_docs_describe_source_release_snapshot():
         assert caveat in combined_docs_normalized
 
 
-def test_v1_13_docs_describe_source_release_preparation():
+def test_v1_13_docs_describe_validated_source_release_snapshot():
     release_notes = (
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_13_DRAFT.md"
     ).read_text(encoding="utf-8")
@@ -896,15 +896,15 @@ def test_v1_13_docs_describe_source_release_preparation():
     )
     combined_docs_normalized = re.sub(r"\s+", " ", combined_docs)
 
-    assert "v1.13.0 source-release snapshot preparation" in release_notes
+    assert "v1.13.0 source-release snapshot" in release_notes
     assert "darwin-sim 1.13.0" in combined_docs_normalized
     assert "without using repository text" in release_notes
     assert "releases/tag/v1.13.0" not in combined_docs
     assert "No package-index publication is performed" in release_notes
     assert "No release assets are uploaded" in release_notes
-    assert "Release date: pending validation (America/Los_Angeles)." in release_notes
-    assert "Final pytest count: pending complete release validation." in release_notes
-    assert "Final validation passed" not in combined_docs
+    assert "Release date: 2026-08-01 (America/Los_Angeles)." in release_notes
+    assert "Final pytest count: 1021 passing tests." in release_notes
+    assert "Final validation passed Ruff, 1021 tests" in combined_docs
     assert "Scenarios `088` through `090`" in release_notes
     assert "from `001` through `090`" in combined_docs_normalized
 
@@ -974,10 +974,10 @@ def test_v1_13_docs_describe_source_release_preparation():
     assert "Python 3.11 through 3.14" in roadmap
     assert "docs/RETAINED_AUDIT_BATCH_PREVIEW_v1_13.md" in readme
     assert "docs/RETAINED_AUDIT_BATCH_PREVIEW_v1_13.md" in development
-    assert "v1.13.0 source-release snapshot prepared" in re.sub(
+    assert "v1.13.0 source-release snapshot prepared and validated" in re.sub(
         r"\s+", " ", checklist
     )
-    assert re.search(r"## \[1\.13\.0\] - Pending validation", changelog)
+    assert re.search(r"## \[1\.13\.0\] - 2026-08-01", changelog)
 
     for caveat in V1_13_RELEASE_SNAPSHOT_CAVEATS:
         assert caveat in combined_docs_normalized

@@ -1097,13 +1097,12 @@ python -m build --wheel
 
 # DARWIN v1.13 Retained-Audit Batch Preview Release Checklist
 
-This checklist describes the v1.13.0 source-release snapshot prepared with the
-America/Los_Angeles validation date and final pytest count pending the first
-complete passing release-gate set. Remote publication state is intentionally
-not inferred from repository contents. The publication procedure creates an
-annotated `v1.13.0` tag and GitHub source release from the exact validated
-commit; it performs no package-index publication and uploads no release
-assets.
+This checklist describes the v1.13.0 source-release snapshot prepared and
+validated on 2026-08-01 (America/Los_Angeles) with 1021 passing tests. Remote
+publication state is intentionally not inferred from repository contents. The
+publication procedure creates an annotated `v1.13.0` tag and GitHub source
+release from the exact validated commit; it performs no package-index
+publication and uploads no release assets.
 
 - [x] v1.13 roadmap is checked in at `docs/V1_13_ROADMAP.md`.
 - [x] v1.13 release notes retain the compatible permanent path
@@ -1148,14 +1147,12 @@ assets.
   reservations/deduplication, strict stale aborts, transactions, new history
   types/filters/replay dimensions, mixed apply, background work, real
   networking/cryptography, and production guarantees.
-- [ ] Run Ruff, pytest, scenarios `001` through `090`, exact scenario-index
+- [x] Run Ruff, pytest, scenarios `001` through `090`, exact scenario-index
   comparison, exact source CLI output, wheel build, isolated installation, and
   out-of-tree wheel CLI verification as one complete gate set.
-- [ ] Record the actual America/Los_Angeles validation date only after that
-  complete gate set passes. Pending validation.
-- [ ] Record the actual final pytest count only after that complete gate set
-  passes. Pending validation.
-- [ ] Rerun the complete gate set after factualization without adding or
+- [x] Record the actual America/Los_Angeles validation date: 2026-08-01.
+- [x] Record the actual final pytest count: 1021 passing tests.
+- [x] Rerun the complete gate set after factualization without adding or
   removing tests.
 
 ## v1.13 Source-Snapshot Validation Commands

@@ -10,11 +10,11 @@ checks, and all-scenario regression runs.
 - `pip`
 - No external services are required for simulator development
 
-## Current Source-Release Preparation
+## Current Source-Release Snapshot
 
-The v1.13.0 source-release preparation reports `darwin-sim 1.13.0` and keeps
-its validation date and final pytest count pending until the first complete
-release-gate set passes. Its bounded retained-audit batch-preview contract is
+The v1.13.0 source-release snapshot was validated on 2026-08-01
+(America/Los_Angeles) with 1021 passing tests and reports
+`darwin-sim 1.13.0`. Its bounded retained-audit batch-preview contract is
 documented in:
 
 - `docs/V1_13_ROADMAP.md`

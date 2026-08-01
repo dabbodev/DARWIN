@@ -1,18 +1,18 @@
 # DARWIN v1.13.0 Release Notes
 
-Status: v1.13.0 source-release snapshot preparation. The historical `_DRAFT`
-filename is retained permanently for documentation-link compatibility.
+Status: v1.13.0 source-release snapshot. The historical `_DRAFT` filename is
+retained permanently for documentation-link compatibility.
 
-Release date: pending validation (America/Los_Angeles).
+Release date: 2026-08-01 (America/Los_Angeles).
 
-Final pytest count: pending complete release validation.
+Final pytest count: 1021 passing tests.
 
 The package and CLI report `darwin-sim 1.13.0`. Release publication is limited
 to an annotated `v1.13.0` source tag and a GitHub release created from the
 exact same validated commit. No package-index publication is performed.
 No release assets are uploaded.
 
-This document records preparation requirements without using repository text
+This document records source-release requirements without using repository text
 as evidence that remote publication has occurred.
 
 ## Added in v1.13
@@ -83,8 +83,9 @@ The generated scenario-index stdout must exactly match
 isolated installation of `darwin_sim-1.13.0-py3-none-any.whl` must report the
 same version from outside the repository. The wheel is not uploaded.
 
-Preparation status: the validation date and final pytest count remain pending.
-No complete passing release-gate set is claimed by this document yet.
+Final validation passed Ruff, 1021 tests, all scenarios `001` through `090`,
+exact scenario-index comparison, exact source CLI output, wheel build,
+isolated wheel installation, and out-of-tree wheel CLI verification.
 
 ## Limits and Non-Goals
 

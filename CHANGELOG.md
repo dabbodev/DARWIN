@@ -1,11 +1,10 @@
 # Changelog
 
-## [1.13.0] - Pending validation
+## [1.13.0] - 2026-08-01
 
-The DARWIN v1.13.0 source-release snapshot preparation adds deterministic,
-read-only multi-history retained-audit compaction preview. The package and CLI
-identify the preparation snapshot as `darwin-sim 1.13.0`. The validation date
-and final pytest count remain pending the first complete passing release gates.
+The DARWIN v1.13.0 source-release snapshot adds deterministic, read-only
+multi-history retained-audit compaction preview. The package and CLI identify
+the snapshot as `darwin-sim 1.13.0`.
 
 Added:
 
@@ -52,8 +51,11 @@ Compatibility and limits:
   security, privacy, compliance, or retention guarantees.
 - Publication remains GitHub source-only with no package-index publication and
   no uploaded release assets.
-- Complete validation, the America/Los_Angeles date, and the final pytest count
-  remain pending.
+- Final validation on 2026-08-01 (America/Los_Angeles) passed
+  `python -m ruff check .`, `python -m pytest` with 1021 tests, all scenarios
+  `001` through `090`, exact scenario-index verification, exact source CLI
+  output, wheel build, isolated install, and out-of-tree wheel CLI
+  verification.
 
 ## [1.12.0] - 2026-07-30
 

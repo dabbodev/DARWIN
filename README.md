@@ -8,13 +8,12 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-DARWIN v1.13.0 is in source-release snapshot preparation and reports
-`darwin-sim 1.13.0`. Its validation date and final pytest count remain pending
-the first complete passing release-gate set. Its publication contract is an
-annotated `v1.13.0` tag and a GitHub release created from the exact same
-validated commit, with no package-index publication and no uploaded release
-assets. This repository text deliberately does not claim those remote
-publication actions have occurred.
+DARWIN v1.13.0 is a source-release snapshot validated on 2026-08-01
+(America/Los_Angeles) with 1021 passing tests and reports `darwin-sim 1.13.0`.
+Its publication contract is an annotated `v1.13.0` tag and a GitHub release
+created from the exact same validated commit, with no package-index publication
+and no uploaded release assets. This repository text deliberately does not
+claim those remote publication actions have occurred.
 
 The previous DARWIN v1.12.0 release is on `main` as `darwin-sim 1.12.0`. The
 annotated `v1.12.0` tag and GitHub release exist:
@@ -129,14 +128,16 @@ tests, all scenarios `001` through `087`, exact scenario-index verification,
 CLI output `darwin-sim 1.12.0`, and an isolated out-of-tree wheel
 build/install/version smoke check.
 
-The v1.13 source preparation adds a deterministic, read-only retained-audit
+The v1.13 source snapshot adds a deterministic, read-only retained-audit
 batch compaction preview for at least two distinct supported decisions. It
 shares canonical preflight/evaluation with batch apply, preserves current key
 ordering and nonfatal stale reporting, records only one aggregate scenario
 result, and appends copied preview results to detailed snapshots. Scenarios
 `088` through `090` cover immediate apply parity on unchanged state, stale
-repeatability, and isolation. The validation date and final pytest count are
-pending the complete release gates.
+repeatability, and isolation. Final validation on 2026-08-01
+(America/Los_Angeles) passed Ruff, 1021 tests, all scenarios `001` through
+`090`, exact scenario-index verification, exact source CLI output, wheel build,
+isolated install, and out-of-tree wheel CLI verification.
 
 The v0.1 simulator answers questions like:
 
@@ -371,7 +372,7 @@ audit batch apply, stale/repeated batches, and isolation. The checked-in
 scenario set spans `001` through `087`, and the package and CLI version report
 `darwin-sim 1.12.0`.
 
-In the v1.13 source preparation, scenarios `088` through `090` cover retained-
+In the v1.13 source snapshot, scenarios `088` through `090` cover retained-
 audit batch preview success and immediate apply parity, stale repeatability,
 and state isolation. The checked-in scenario set spans `001` through `090`,
 and the package and CLI version report `darwin-sim 1.13.0`.
@@ -501,8 +502,9 @@ only action-result recording, copied detailed snapshots, scenario DSL
 visibility, and scenarios `088` through `090`. Release gates include Ruff,
 pytest, all scenarios `001` through `090`, exact generated-versus-checked-in
 scenario-index comparison, CLI output `darwin-sim 1.13.0`, and an isolated
-wheel build/install smoke check. The validation date and final pytest count
-remain pending. The source release does not publish a package or upload assets.
+wheel build/install smoke check. Final validation on 2026-08-01
+(America/Los_Angeles) passed 1021 tests. The source release does not publish a
+package or upload assets.
 
 The v1.5 release docs cover read-only lifecycle explanation retention
 classification, read-only pruning plans, explicit retained-history pruning

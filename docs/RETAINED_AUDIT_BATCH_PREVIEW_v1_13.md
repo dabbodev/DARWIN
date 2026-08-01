@@ -1,8 +1,8 @@
 # Retained Audit Batch Preview v1.13
 
-Status: included in the v1.13.0 source-release snapshot preparation. The
-validation date and final pytest count are pending the first complete passing
-release-gate set. The package and CLI report `darwin-sim 1.13.0`.
+Status: included in the v1.13.0 source-release snapshot validated on
+2026-08-01 (America/Los_Angeles) with 1021 passing tests. The package and CLI
+report `darwin-sim 1.13.0`.
 
 This specification adds a deterministic, point-in-time preview for DARWIN's
 existing retained-audit batch compaction decisions. Preview is simulator-local,
