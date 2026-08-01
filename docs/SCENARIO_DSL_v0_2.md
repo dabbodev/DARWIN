@@ -1526,3 +1526,98 @@ apply; strict stale abort; rollback or transaction machinery; automatic
 cleanup; workers; retries; queues; live clocks; networking; DNS; external
 services; real cryptography; production E2EE; or production security, privacy,
 compliance, or retention guarantees.
+
+## v1.13 Retained-Audit Batch Preview
+
+v1.13 adds one read-only multi-history preview action without adding a
+standalone single-history preview action or changing existing apply actions:
+
+```yaml
+- action: preview_retained_audit_compaction_batch
+  registry_hub: registry_home_088
+  batch_id: retained_audit_batch_088
+  decision_policy_ids:
+    authority_outcome: retained_audit_authority_088
+    message_delivery_result: retained_audit_message_delivery_088
+  metadata:
+    caller_order: reverse_canonical
+```
+
+Required fields are `registry_hub`, nonblank `batch_id`, and a mapping
+`decision_policy_ids` containing at least two distinct supported retained-
+audit history labels. Every mapped policy ID must be nonblank. The runner
+resolves an exact prior decision matching RegistryHub, history type, and
+policy ID, canonicalizes the selected decisions using
+`SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES`, and calls the public batch-preview
+helper. Caller mapping order does not change evaluation or nested result order.
+
+`batch_id` is reusable correlation metadata only. It does not reserve state,
+enforce uniqueness, deduplicate calls, or create an idempotency ledger. The
+same ID can be used for an immediate apply parity check.
+
+Preview shares canonical structural preflight and evaluation with batch apply.
+It rejects malformed decisions, hub mismatches, duplicates, `mixed`,
+unsupported labels, structurally invalid selected histories, blank identity,
+and non-JSON-safe metadata without mutating RegistryHub. It reports currently
+present candidate keys as would-compact in history order, currently present
+retained/ignored matches in history order, and absent candidate keys as
+missing in decision order. Unsupported is empty for every valid preview.
+
+The new assertion is:
+
+```yaml
+- type: retained_audit_compaction_batch_preview_result_contains
+  registry_hub: registry_home_088
+  batch_id: retained_audit_batch_088
+  history_types:
+    - message_delivery_result
+    - authority_outcome
+  would_compact_count: 2
+  retained_count: 2
+  missing_count: 0
+  expected_count: 1
+```
+
+`history_types` is an exact canonical-order filter. Aggregate category filters
+are `would_compact_count`, `retained_count`, `ignored_count`, `missing_count`,
+and `unsupported_count`.
+
+Per-history filters require `history_type` and may include `policy_id` plus:
+
+- `history_would_compact_record_key`,
+  `history_would_compact_record_keys`, or `history_would_compact_count`;
+- `history_retained_record_key`, `history_retained_record_keys`, or
+  `history_retained_count`;
+- `history_ignored_record_key`, `history_ignored_record_keys`, or
+  `history_ignored_count`;
+- `history_missing_record_key`, `history_missing_record_keys`, or
+  `history_missing_count`; and
+- `history_unsupported_record_key`, `history_unsupported_record_keys`, or
+  `history_unsupported_count`.
+
+Counts and `expected_count` are nonnegative integers. Per-history filters are
+invalid without `history_type`.
+
+Only the aggregate `RetainedAuditCompactionBatchPreviewResult` enters
+`World.action_results`. Nested children do not enter an independent result
+stream. The action logs `retained_audit_compaction_batch_previewed`. Detailed
+snapshots append copied `retained_audit_compaction_batch_preview_results` after
+`retained_audit_compaction_batch_apply_results`; all previous detailed keys and
+compact `world.snapshot()` retain their prior behavior.
+
+Checked-in v1.13 retained-audit scenarios:
+
+- `scenarios/088_retained_audit_batch_preview_success.yaml`
+- `scenarios/089_retained_audit_batch_preview_stale.yaml`
+- `scenarios/090_retained_audit_batch_preview_isolation.yaml`
+
+The checked-in scenario set is contiguous from `001` through `090`. The
+package and CLI report `darwin-sim 1.13.0`.
+
+This simulator-local, deterministic, source-only preview surface adds no
+automatic apply; preview ledger, reservation, uniqueness, deduplication, or
+idempotency behavior; strict stale abort; rollback or transactions; new
+history type, filter, or replay dimension; mixed apply; automatic cleanup;
+workers; retries; queues; live clocks; networking; DNS; external services;
+real cryptography; production E2EE; or production security, privacy,
+compliance, or retention guarantees.

@@ -61,6 +61,11 @@ V1_12_RELEASE_SNAPSHOT_DOCS = [
     PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_12_DRAFT.md",
     PROJECT_ROOT / "docs" / "RETAINED_AUDIT_BATCH_APPLY_v1_12.md",
 ]
+V1_13_RELEASE_SNAPSHOT_DOCS = [
+    PROJECT_ROOT / "docs" / "V1_13_ROADMAP.md",
+    PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_13_DRAFT.md",
+    PROJECT_ROOT / "docs" / "RETAINED_AUDIT_BATCH_PREVIEW_v1_13.md",
+]
 V1_3_RELEASE_CANDIDATE_CAVEATS = [
     "simulator-local",
     "symbolic",
@@ -291,6 +296,39 @@ V1_12_RELEASE_SNAPSHOT_CAVEATS = [
     "compliance",
     "data-retention guarantees",
 ]
+V1_13_RELEASE_SNAPSHOT_CAVEATS = [
+    "simulator-local",
+    "deterministic",
+    "source-only",
+    "symbolic",
+    "automatic apply",
+    "preview ledger",
+    "reservation",
+    "deduplication",
+    "idempotency",
+    "strict stale",
+    "rollback",
+    "transactions",
+    "new history",
+    "filters",
+    "replay dimensions",
+    "mixed apply",
+    "automatic cleanup",
+    "workers",
+    "retries",
+    "queues",
+    "live clocks",
+    "networking",
+    "DNS",
+    "external services",
+    "real cryptography",
+    "production E2EE",
+    "TrafficHub",
+    "compact snapshots",
+    "canonical identity",
+    "compliance",
+    "data-retention guarantees",
+]
 
 
 def _repo_relative_backtick_paths(text: str) -> set[str]:
@@ -335,6 +373,7 @@ def test_documentation_links_exist():
         *V1_10_RELEASE_SNAPSHOT_DOCS,
         *V1_11_RELEASE_SNAPSHOT_DOCS,
         *V1_12_RELEASE_SNAPSHOT_DOCS,
+        *V1_13_RELEASE_SNAPSHOT_DOCS,
     ]
 
     referenced_paths = {
@@ -361,14 +400,14 @@ def test_version_consistency():
         encoding="utf-8"
     )
     current_release_notes = (
-        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_12_DRAFT.md"
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_13_DRAFT.md"
     ).read_text(encoding="utf-8")
 
     assert darwin.__version__ == project_version
     assert f"[{project_version}]" in changelog or f"## v{project_version}" in changelog
     assert f"v{project_version}" in current_release_notes
-    assert "darwin-sim 1.12.0" in current_release_notes
-    assert "Scenarios `085` through `087`" in current_release_notes
+    assert "darwin-sim 1.13.0" in current_release_notes
+    assert "Scenarios `088` through `090`" in current_release_notes
     assert "networking" in current_release_notes
     assert "TrafficHub" in current_release_notes
     assert "v0.1.0" in release_notes
@@ -836,7 +875,115 @@ def test_v1_12_docs_describe_source_release_snapshot():
         assert caveat in combined_docs_normalized
 
 
-def test_v1_12_python_and_ci_release_contract():
+def test_v1_13_docs_describe_validated_source_release_snapshot():
+    release_notes = (
+        PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_13_DRAFT.md"
+    ).read_text(encoding="utf-8")
+    roadmap = (PROJECT_ROOT / "docs" / "V1_13_ROADMAP.md").read_text(
+        encoding="utf-8"
+    )
+    specification = (
+        PROJECT_ROOT / "docs" / "RETAINED_AUDIT_BATCH_PREVIEW_v1_13.md"
+    ).read_text(encoding="utf-8")
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    development = (PROJECT_ROOT / "docs" / "DEVELOPMENT.md").read_text(
+        encoding="utf-8"
+    )
+    checklist = (PROJECT_ROOT / "RELEASE_CHECKLIST.md").read_text(encoding="utf-8")
+    changelog = (PROJECT_ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+    combined_docs = "\n".join(
+        path.read_text(encoding="utf-8") for path in V1_13_RELEASE_SNAPSHOT_DOCS
+    )
+    combined_docs_normalized = re.sub(r"\s+", " ", combined_docs)
+
+    assert "v1.13.0 source-release snapshot" in release_notes
+    assert "darwin-sim 1.13.0" in combined_docs_normalized
+    assert "without using repository text" in release_notes
+    assert "releases/tag/v1.13.0" not in combined_docs
+    assert "No package-index publication is performed" in release_notes
+    assert "No release assets are uploaded" in release_notes
+    assert "Release date: 2026-08-01 (America/Los_Angeles)." in release_notes
+    assert "Final pytest count: 1021 passing tests." in release_notes
+    assert "Final validation passed Ruff, 1021 tests" in combined_docs
+    assert "Scenarios `088` through `090`" in release_notes
+    assert "from `001` through `090`" in combined_docs_normalized
+
+    preview_block = specification.split(
+        "`RetainedAuditCompactionPreviewResult` serializes fields in this order:",
+        maxsplit=1,
+    )[1].split("```text\n", maxsplit=1)[1].split("```", maxsplit=1)[0]
+    assert preview_block.split() == [
+        "hub_id",
+        "policy_id",
+        "history_type",
+        "would_compact_record_keys",
+        "retained_record_keys",
+        "ignored_record_keys",
+        "missing_record_keys",
+        "unsupported_record_keys",
+        "would_compact_count",
+        "retained_count",
+        "ignored_count",
+        "missing_count",
+        "unsupported_count",
+        "metadata",
+    ]
+    batch_block = specification.split(
+        "Its summary\nserializes:", maxsplit=1
+    )[1].split("```text\n", maxsplit=1)[1].split("```", maxsplit=1)[0]
+    assert batch_block.split() == [
+        "hub_id",
+        "batch_id",
+        "history_types",
+        "preview_results",
+        "would_compact_count",
+        "retained_count",
+        "ignored_count",
+        "missing_count",
+        "unsupported_count",
+        "metadata",
+    ]
+
+    for phrase in (
+        "RetainedAuditCompactionBatchPreviewResult",
+        "preview_retained_audit_compaction_batch",
+        "summarize_retained_audit_compaction_preview_result",
+        "summarize_retained_audit_compaction_batch_preview_result",
+        "SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES",
+        "at least two",
+        "no standalone single-history preview helper",
+        "correlation metadata only",
+        "Batch apply does not call the public preview helper",
+        "would_compact_record_keys",
+        "unsupported keys are always empty",
+        "apply_parity_requires_unchanged_state=True",
+        "apply_parity_runtime_confirmed=False",
+        "registry_hub_mutated=False",
+        "retained_history_mutated=False",
+        "records_compacted=False",
+        "records_deleted=False",
+        "records_rewritten=False",
+        "would_mutate_selected_history",
+        "retained_audit_compaction_batch_preview_result_contains",
+        "retained_audit_compaction_batch_previewed",
+        "retained_audit_compaction_batch_preview_results",
+        "retained_audit_compaction_batch_apply_results",
+    ):
+        assert phrase in specification
+
+    assert "Python 3.11 through 3.14" in roadmap
+    assert "docs/RETAINED_AUDIT_BATCH_PREVIEW_v1_13.md" in readme
+    assert "docs/RETAINED_AUDIT_BATCH_PREVIEW_v1_13.md" in development
+    assert "v1.13.0 source-release snapshot prepared and validated" in re.sub(
+        r"\s+", " ", checklist
+    )
+    assert re.search(r"## \[1\.13\.0\] - 2026-08-01", changelog)
+
+    for caveat in V1_13_RELEASE_SNAPSHOT_CAVEATS:
+        assert caveat in combined_docs_normalized
+
+
+def test_v1_13_python_and_ci_release_contract():
     pyproject = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     project = pyproject["project"]
     ci = (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(
@@ -849,7 +996,7 @@ def test_v1_12_python_and_ci_release_contract():
         assert f"Programming Language :: Python :: {version}" in project["classifiers"]
         assert f'"{version}"' in ci
 
-    assert ci.count("darwin-sim 1.12.0") == 2
+    assert ci.count("darwin-sim 1.13.0") == 2
     assert "python -m darwin.cli.main scenario-index" in ci
     assert "diff -u docs/SCENARIO_INDEX.md /tmp/generated_scenario_index.md" in ci
     assert "  wheel-smoke:\n" in ci
@@ -859,14 +1006,14 @@ def test_v1_12_python_and_ci_release_contract():
     assert "upload" not in wheel_job.lower()
 
 
-def test_checked_in_scenarios_are_contiguous_through_087():
+def test_checked_in_scenarios_are_contiguous_through_090():
     scenario_numbers = sorted(
         path.name[:3]
         for path in (PROJECT_ROOT / "scenarios").glob("*.yaml")
         if path.name[:3].isdigit()
     )
 
-    assert scenario_numbers == [f"{number:03}" for number in range(1, 88)]
+    assert scenario_numbers == [f"{number:03}" for number in range(1, 91)]
 
 
 def test_license_consistency():

@@ -407,6 +407,187 @@ class RetainedAuditCompactionApplyResult:
 
 
 @dataclass(frozen=True, slots=True)
+class RetainedAuditCompactionPreviewResult:
+    """Read-only result for previewing one retained audit compaction decision."""
+
+    hub_id: str
+    policy_id: str
+    history_type: str
+    would_compact_record_keys: tuple[str, ...] | list[str] = ()
+    retained_record_keys: tuple[str, ...] | list[str] = ()
+    ignored_record_keys: tuple[str, ...] | list[str] = ()
+    missing_record_keys: tuple[str, ...] | list[str] = ()
+    unsupported_record_keys: tuple[str, ...] | list[str] = ()
+    would_compact_count: int = 0
+    retained_count: int = 0
+    ignored_count: int = 0
+    missing_count: int = 0
+    unsupported_count: int = 0
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_required_string(self.policy_id, "policy_id")
+        _validate_required_string(self.history_type, "history_type")
+        object.__setattr__(
+            self,
+            "would_compact_record_keys",
+            _string_tuple(
+                self.would_compact_record_keys,
+                "would_compact_record_keys",
+            ),
+        )
+        object.__setattr__(
+            self,
+            "retained_record_keys",
+            _string_tuple(self.retained_record_keys, "retained_record_keys"),
+        )
+        object.__setattr__(
+            self,
+            "ignored_record_keys",
+            _string_tuple(self.ignored_record_keys, "ignored_record_keys"),
+        )
+        object.__setattr__(
+            self,
+            "missing_record_keys",
+            _string_tuple(self.missing_record_keys, "missing_record_keys"),
+        )
+        object.__setattr__(
+            self,
+            "unsupported_record_keys",
+            _string_tuple(self.unsupported_record_keys, "unsupported_record_keys"),
+        )
+        _validate_order(self.would_compact_count, "would_compact_count")
+        _validate_order(self.retained_count, "retained_count")
+        _validate_order(self.ignored_count, "ignored_count")
+        _validate_order(self.missing_count, "missing_count")
+        _validate_order(self.unsupported_count, "unsupported_count")
+        if self.metadata is not None and not isinstance(self.metadata, dict):
+            raise TypeError("metadata must be a JSON-safe dict")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic, JSON-safe compaction preview metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "policy_id": self.policy_id,
+            "history_type": self.history_type,
+            "would_compact_record_keys": list(self.would_compact_record_keys),
+            "retained_record_keys": list(self.retained_record_keys),
+            "ignored_record_keys": list(self.ignored_record_keys),
+            "missing_record_keys": list(self.missing_record_keys),
+            "unsupported_record_keys": list(self.unsupported_record_keys),
+            "would_compact_count": self.would_compact_count,
+            "retained_count": self.retained_count,
+            "ignored_count": self.ignored_count,
+            "missing_count": self.missing_count,
+            "unsupported_count": self.unsupported_count,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
+class RetainedAuditCompactionBatchPreviewResult:
+    """Aggregate read-only preview for a canonical multi-history batch."""
+
+    hub_id: str
+    batch_id: str
+    preview_results: (
+        tuple[RetainedAuditCompactionPreviewResult, ...]
+        | list[RetainedAuditCompactionPreviewResult]
+    ) = ()
+    metadata: dict[str, Any] | None = None
+
+    def __post_init__(self) -> None:
+        _validate_required_string(self.hub_id, "hub_id")
+        _validate_required_string(self.batch_id, "batch_id")
+        if not isinstance(self.preview_results, tuple | list):
+            raise TypeError("preview_results must be a list or tuple")
+        if len(self.preview_results) < 2:
+            raise ValueError("preview_results must contain at least two results")
+
+        results: list[RetainedAuditCompactionPreviewResult] = []
+        seen_history_types: set[str] = set()
+        for result in self.preview_results:
+            if not isinstance(result, RetainedAuditCompactionPreviewResult):
+                raise TypeError(
+                    "preview_results must contain "
+                    "RetainedAuditCompactionPreviewResult values"
+                )
+            if result.hub_id != self.hub_id:
+                raise ValueError("preview result hub_id must match batch hub_id")
+            if result.history_type not in SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES:
+                raise ValueError(
+                    "preview result history_type must be a supported retained audit "
+                    "history"
+                )
+            if result.history_type in seen_history_types:
+                raise ValueError("preview result history_types must be distinct")
+            seen_history_types.add(result.history_type)
+            results.append(result)
+
+        history_order = {
+            history_type: index
+            for index, history_type in enumerate(SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES)
+        }
+        results.sort(key=lambda result: history_order[result.history_type])
+        object.__setattr__(self, "preview_results", tuple(results))
+        if self.metadata is not None and not isinstance(self.metadata, dict):
+            raise TypeError("metadata must be a JSON-safe dict")
+        object.__setattr__(self, "metadata", _json_safe_copy(self.metadata or {}))
+
+    @property
+    def history_types(self) -> tuple[str, ...]:
+        """Return the canonical history order represented by this preview."""
+        return tuple(result.history_type for result in self.preview_results)
+
+    @property
+    def would_compact_count(self) -> int:
+        return sum(result.would_compact_count for result in self.preview_results)
+
+    @property
+    def retained_count(self) -> int:
+        return sum(result.retained_count for result in self.preview_results)
+
+    @property
+    def ignored_count(self) -> int:
+        return sum(result.ignored_count for result in self.preview_results)
+
+    @property
+    def missing_count(self) -> int:
+        return sum(result.missing_count for result in self.preview_results)
+
+    @property
+    def unsupported_count(self) -> int:
+        return sum(result.unsupported_count for result in self.preview_results)
+
+    def to_summary(self) -> dict[str, object]:
+        """Return deterministic aggregate and per-history preview metadata."""
+        return {
+            "hub_id": self.hub_id,
+            "batch_id": self.batch_id,
+            "history_types": list(self.history_types),
+            "preview_results": [
+                result.to_summary() for result in self.preview_results
+            ],
+            "would_compact_count": self.would_compact_count,
+            "retained_count": self.retained_count,
+            "ignored_count": self.ignored_count,
+            "missing_count": self.missing_count,
+            "unsupported_count": self.unsupported_count,
+            "metadata": _json_safe_copy(self.metadata or {}),
+        }
+
+    def to_dict(self) -> dict[str, object]:
+        """Return a deterministic, JSON-safe representation."""
+        return self.to_summary()
+
+
+@dataclass(frozen=True, slots=True)
 class RetainedAuditCompactionBatchApplyResult:
     """Aggregate result for a canonical multi-history compaction batch."""
 

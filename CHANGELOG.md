@@ -1,5 +1,62 @@
 # Changelog
 
+## [1.13.0] - 2026-08-01
+
+The DARWIN v1.13.0 source-release snapshot adds deterministic, read-only
+multi-history retained-audit compaction preview. The package and CLI identify
+the snapshot as `darwin-sim 1.13.0`.
+
+Added:
+
+- `RetainedAuditCompactionPreviewResult` and
+  `RetainedAuditCompactionBatchPreviewResult` with canonical copied child
+  summaries and aggregate would-compact/retained/ignored/missing/unsupported
+  counts.
+- Copied public summarizers and
+  `preview_retained_audit_compaction_batch`; no standalone single-history
+  preview helper is added.
+- One private canonical preflight/evaluator shared with existing batch apply,
+  while apply retains its public outputs/errors and does not call the public
+  preview helper.
+- Point-in-time ordering and stale semantics: present matches follow current
+  history order, missing keys follow decision order, and unsupported is empty
+  for valid previews.
+- Reserved copied metadata for reusable batch correlation, canonical order,
+  structural preflight, would-mutate/read-only facts, unchanged-state parity,
+  and simulator-safety limits.
+- Aggregate-only scenario action-result recording, diagnostic event logging,
+  and the appended detailed snapshot key
+  `retained_audit_compaction_batch_preview_results`.
+- Scenario action/assertion support and scenarios `088` through `090` for
+  canonical success plus immediate apply parity, stale repeatability, and
+  state isolation.
+
+Compatibility and limits:
+
+- All eight v1.12 history labels/order, exact keys, policies, replay summaries,
+  single/batch apply outputs and errors, nonfatal stale behavior, existing
+  result streams, and compact snapshots remain unchanged.
+- Direct preview success and rejection preserve serialized RegistryHub,
+  retained-history, and TrafficHub state. Scenario execution adds only the
+  documented aggregate result and diagnostic event.
+- `batch_id` is correlation metadata, not a reservation, uniqueness
+  constraint, deduplication key, or idempotency ledger. Apply parity requires
+  unchanged state and is not runtime-confirmed by preview.
+- The source scenario set is contiguous from `001` through `090`.
+- v1.13 remains simulator-local, deterministic, source-only, and symbolic. It
+  adds no automatic apply, preview ledger, strict stale abort,
+  rollback/transactions, new histories/filters/replay dimensions, mixed
+  apply, automatic cleanup, workers, retries, queues, live clocks, networking,
+  DNS, external services, real cryptography, production E2EE, or production
+  security, privacy, compliance, or retention guarantees.
+- Publication remains GitHub source-only with no package-index publication and
+  no uploaded release assets.
+- Final validation on 2026-08-01 (America/Los_Angeles) passed
+  `python -m ruff check .`, `python -m pytest` with 1021 tests, all scenarios
+  `001` through `090`, exact scenario-index verification, exact source CLI
+  output, wheel build, isolated install, and out-of-tree wheel CLI
+  verification.
+
 ## [1.12.0] - 2026-07-30
 
 The DARWIN v1.12.0 source-release snapshot composes existing retained-audit

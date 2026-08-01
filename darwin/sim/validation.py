@@ -257,6 +257,11 @@ STEP_REQUIRED_FIELDS = {
         "batch_id",
         "decision_policy_ids",
     ),
+    "preview_retained_audit_compaction_batch": (
+        "registry_hub",
+        "batch_id",
+        "decision_policy_ids",
+    ),
     "evaluate_lane_admission_policy": (
         "registry_hub",
         "policy_id",
@@ -339,6 +344,7 @@ ASSERTION_REQUIRED_FIELDS = {
     "retained_audit_replay_summary_contains": ("registry_hub",),
     "retained_audit_compaction_apply_result_contains": ("registry_hub",),
     "retained_audit_compaction_batch_apply_result_contains": ("registry_hub",),
+    "retained_audit_compaction_batch_preview_result_contains": ("registry_hub",),
     "stream_offer_status_transition_contains": ("registry_hub",),
 }
 
@@ -929,6 +935,77 @@ def _validate_assertion_type_fields(
                 )
             )
         return
+    if assertion_type == "retained_audit_compaction_batch_preview_result_contains":
+        _validate_optional_enum_list_or_string(
+            assertion,
+            "history_types",
+            SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES,
+            location,
+            errors,
+        )
+        _validate_enum(
+            location,
+            assertion,
+            "history_type",
+            SUPPORTED_RETAINED_AUDIT_HISTORY_TYPES,
+            errors,
+        )
+        for category in (
+            "would_compact",
+            "retained",
+            "ignored",
+            "missing",
+            "unsupported",
+        ):
+            _validate_optional_non_negative_int(
+                assertion,
+                f"{category}_count",
+                location,
+                errors,
+            )
+            _validate_optional_string(
+                assertion,
+                f"history_{category}_record_key",
+                location,
+                errors,
+            )
+            _validate_optional_string_list_or_string(
+                assertion,
+                f"history_{category}_record_keys",
+                location,
+                errors,
+            )
+            _validate_optional_non_negative_int(
+                assertion,
+                f"history_{category}_count",
+                location,
+                errors,
+            )
+        has_history_filter = any(
+            field_name in assertion
+            for field_name in (
+                "policy_id",
+                *(
+                    f"history_{category}_{suffix}"
+                    for category in (
+                        "would_compact",
+                        "retained",
+                        "ignored",
+                        "missing",
+                        "unsupported",
+                    )
+                    for suffix in ("record_key", "record_keys", "count")
+                ),
+            )
+        )
+        if has_history_filter and "history_type" not in assertion:
+            errors.append(
+                _issue(
+                    f"{location}.history_type",
+                    "history_type is required for per-history batch preview filters",
+                )
+            )
+        return
     if assertion_type == "mailbox_encryption_policy_registered":
         _validate_optional_bool(assertion, "allow_plaintext_fallback", location, errors)
         return
@@ -1100,6 +1177,9 @@ def _validate_step_type_fields(
             )
     if action == "apply_retained_audit_compaction_batch":
         _validate_retained_audit_batch_step(step, location, errors)
+    if action == "preview_retained_audit_compaction_batch":
+        _validate_retained_audit_batch_step(step, location, errors)
+        _validate_optional_mapping(step, "metadata", location, errors)
     if action == "evaluate_lane_admission_policy":
         _validate_optional_bool(step, "require_discoverable", location, errors)
         _validate_optional_non_negative_int(step, "max_visibility_tier", location, errors)
@@ -1218,6 +1298,38 @@ def _validate_optional_bool(
     value = item.get(field_name)
     if value is not None and not isinstance(value, bool):
         errors.append(_issue(f"{location}.{field_name}", f"{field_name} must be a boolean"))
+
+
+def _validate_optional_string(
+    item: dict[str, Any],
+    field_name: str,
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    value = item.get(field_name)
+    if value is not None and not isinstance(value, str):
+        errors.append(
+            _issue(
+                f"{location}.{field_name}",
+                f"{field_name} must be a string",
+            )
+        )
+
+
+def _validate_optional_mapping(
+    item: dict[str, Any],
+    field_name: str,
+    location: str,
+    errors: list[ValidationIssue],
+) -> None:
+    value = item.get(field_name)
+    if value is not None and not isinstance(value, dict):
+        errors.append(
+            _issue(
+                f"{location}.{field_name}",
+                f"{field_name} must be a mapping",
+            )
+        )
 
 
 def _validate_optional_non_negative_int(

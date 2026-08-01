@@ -1,0 +1,157 @@
+scenario_id: 089_retained_audit_batch_preview_stale
+name: Retained audit batch preview stale
+category: registry
+description: repeated previews report one stale and one current decision without mutating either selected history
+tags:
+  - retained_audit
+  - batch_preview
+  - stale
+  - deterministic
+  - v1.13
+demonstrates:
+  - a previously compacted candidate is reported missing without aborting preview
+  - a current candidate remains would-compact across repeated previews
+  - repeated previews are point-in-time deterministic and read-only
+expected_result: both previews report the same missing message key and current authority candidate
+setup:
+  registry_hubs:
+    - hub_id: registry_home_089
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_089
+    - hub_id: registry_family_089
+      scope_path: global.family.david
+      parent_hub_id: registry_global_089
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+    - hub_id: registry_global_089
+      scope_path: global
+  devices:
+    - device_id: dev_ALPHA_089
+      label: alpha
+    - device_id: dev_BETA_089
+      label: beta
+steps:
+  - action: register_device
+    registry_hub: registry_home_089
+    device: dev_ALPHA_089
+    label: alpha
+  - action: register_device
+    registry_hub: registry_family_089
+    device: dev_ALPHA_089
+    label: alpha
+  - action: register_device
+    registry_hub: registry_global_089
+    device: dev_ALPHA_089
+    label: alpha
+  - action: register_device
+    registry_hub: registry_home_089
+    device: dev_BETA_089
+    label: beta
+  - action: register_device
+    registry_hub: registry_family_089
+    device: dev_BETA_089
+    label: beta
+  - action: register_device
+    registry_hub: registry_global_089
+    device: dev_BETA_089
+    label: beta
+  - action: register_lane_definition
+    registry_hub: registry_home_089
+    lane_signature: basic_messaging:v1
+  - action: deliver_message
+    registry_hub: registry_home_089
+    message_id: message_compact_089
+    sender_id: dev_ALPHA_089
+    recipient_address: darwin://global.family.david.home.missing/inbox
+    payload: stale before preview
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_089
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_ALPHA_089
+    requested_by_device: dev_ALPHA_089
+    fallback_allowed: true
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_089
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_BETA_089
+    requested_by_device: dev_BETA_089
+    fallback_allowed: true
+    visibility: scope_local
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_089
+    policy_id: retained_audit_message_delivery_089
+    history_types:
+      - message_delivery_result
+    record_history_types:
+      - message_delivery_result
+    compact_statuses:
+      - bounced
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_089
+    policy_id: retained_audit_authority_089
+    history_types:
+      - authority_outcome
+    record_history_types:
+      - authority_outcome
+    compact_statuses:
+      - name_taken
+  - action: apply_retained_audit_compaction_decision
+    registry_hub: registry_home_089
+    decision_policy_id: retained_audit_message_delivery_089
+  - action: preview_retained_audit_compaction_batch
+    registry_hub: registry_home_089
+    batch_id: retained_audit_batch_089
+    decision_policy_ids:
+      message_delivery_result: retained_audit_message_delivery_089
+      authority_outcome: retained_audit_authority_089
+  - action: preview_retained_audit_compaction_batch
+    registry_hub: registry_home_089
+    batch_id: retained_audit_batch_089
+    decision_policy_ids:
+      authority_outcome: retained_audit_authority_089
+      message_delivery_result: retained_audit_message_delivery_089
+assertions:
+  - type: retained_audit_compaction_batch_preview_result_contains
+    registry_hub: registry_home_089
+    batch_id: retained_audit_batch_089
+    history_types:
+      - message_delivery_result
+      - authority_outcome
+    would_compact_count: 1
+    retained_count: 1
+    ignored_count: 0
+    missing_count: 1
+    unsupported_count: 0
+    expected_count: 2
+  - type: retained_audit_compaction_batch_preview_result_contains
+    registry_hub: registry_home_089
+    batch_id: retained_audit_batch_089
+    history_type: message_delivery_result
+    policy_id: retained_audit_message_delivery_089
+    history_would_compact_count: 0
+    history_retained_count: 0
+    history_missing_count: 1
+    history_unsupported_count: 0
+    expected_count: 2
+  - type: retained_audit_compaction_batch_preview_result_contains
+    registry_hub: registry_home_089
+    batch_id: retained_audit_batch_089
+    history_type: authority_outcome
+    policy_id: retained_audit_authority_089
+    history_would_compact_count: 1
+    history_retained_count: 1
+    history_missing_count: 0
+    history_unsupported_count: 0
+    expected_count: 2
+  - type: authority_outcome_history_contains
+    registry_hub: registry_home_089
+    requested_alias: global.alpha
+    device_id: dev_BETA_089
+    final_status: name_taken
+    expected_count: 1
+  - type: event_seen
+    event_type: retained_audit_compaction_batch_previewed

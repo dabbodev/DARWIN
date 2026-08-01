@@ -1,0 +1,198 @@
+scenario_id: 088_retained_audit_batch_preview_success
+name: Retained audit batch preview success
+category: registry
+description: reverse-ordered decisions preview canonically and match an immediate same-ID batch apply
+tags:
+  - retained_audit
+  - batch_preview
+  - deterministic
+  - explicit_apply
+  - v1.13
+demonstrates:
+  - caller decision order does not change canonical batch preview order
+  - preview reports exact per-history categories without mutating retained histories
+  - immediate same-ID apply has category parity with the unchanged-state preview
+expected_result: canonical preview categories exactly match the immediate explicit batch apply
+setup:
+  registry_hubs:
+    - hub_id: registry_home_088
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_088
+    - hub_id: registry_family_088
+      scope_path: global.family.david
+      parent_hub_id: registry_global_088
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+    - hub_id: registry_global_088
+      scope_path: global
+  devices:
+    - device_id: dev_ALPHA_088
+      label: alpha
+    - device_id: dev_BETA_088
+      label: beta
+    - device_id: dev_NEO_088
+      label: neo
+steps:
+  - action: register_device
+    registry_hub: registry_home_088
+    device: dev_ALPHA_088
+    label: alpha
+  - action: register_device
+    registry_hub: registry_family_088
+    device: dev_ALPHA_088
+    label: alpha
+  - action: register_device
+    registry_hub: registry_global_088
+    device: dev_ALPHA_088
+    label: alpha
+  - action: register_device
+    registry_hub: registry_home_088
+    device: dev_BETA_088
+    label: beta
+  - action: register_device
+    registry_hub: registry_family_088
+    device: dev_BETA_088
+    label: beta
+  - action: register_device
+    registry_hub: registry_global_088
+    device: dev_BETA_088
+    label: beta
+  - action: register_device
+    registry_hub: registry_home_088
+    device: dev_NEO_088
+    label: neo
+  - action: register_lane_definition
+    registry_hub: registry_home_088
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_home_088
+    mailbox_id: mailbox_neo_088
+    canonical_device_id: dev_NEO_088
+    local_name: neo
+    scope: global.family.david.home
+  - action: bind_mailbox_capability
+    registry_hub: registry_home_088
+    mailbox_id: mailbox_neo_088
+    lane_signature: basic_messaging:v1
+  - action: register_adapter_endpoint
+    registry_hub: registry_home_088
+    endpoint_id: endpoint_mailbox_neo_088
+    subject_id: mailbox_neo_088
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: available
+    lane_signatures:
+      - basic_messaging:v1
+    scope: global.family.david.home
+  - action: deliver_message
+    registry_hub: registry_home_088
+    message_id: message_keep_088
+    sender_id: dev_ALPHA_088
+    recipient_address: darwin://global.family.david.home.neo/inbox
+    payload: preserved delivery
+  - action: deliver_message
+    registry_hub: registry_home_088
+    message_id: message_compact_088
+    sender_id: dev_ALPHA_088
+    recipient_address: darwin://global.family.david.home.missing/inbox
+    payload: previewed delivery result
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_088
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_ALPHA_088
+    requested_by_device: dev_ALPHA_088
+    fallback_allowed: true
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_088
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_BETA_088
+    requested_by_device: dev_BETA_088
+    fallback_allowed: true
+    visibility: scope_local
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_088
+    policy_id: retained_audit_authority_088
+    history_types:
+      - authority_outcome
+    record_history_types:
+      - authority_outcome
+    compact_statuses:
+      - name_taken
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_088
+    policy_id: retained_audit_message_delivery_088
+    history_types:
+      - message_delivery_result
+    record_history_types:
+      - message_delivery_result
+    compact_statuses:
+      - bounced
+  - action: preview_retained_audit_compaction_batch
+    registry_hub: registry_home_088
+    batch_id: retained_audit_batch_088
+    decision_policy_ids:
+      authority_outcome: retained_audit_authority_088
+      message_delivery_result: retained_audit_message_delivery_088
+    metadata:
+      caller_order: reverse_canonical
+  - action: apply_retained_audit_compaction_batch
+    registry_hub: registry_home_088
+    batch_id: retained_audit_batch_088
+    decision_policy_ids:
+      authority_outcome: retained_audit_authority_088
+      message_delivery_result: retained_audit_message_delivery_088
+assertions:
+  - type: retained_audit_compaction_batch_preview_result_contains
+    registry_hub: registry_home_088
+    batch_id: retained_audit_batch_088
+    history_types:
+      - message_delivery_result
+      - authority_outcome
+    would_compact_count: 2
+    retained_count: 2
+    ignored_count: 0
+    missing_count: 0
+    unsupported_count: 0
+    expected_count: 1
+  - type: retained_audit_compaction_batch_preview_result_contains
+    registry_hub: registry_home_088
+    batch_id: retained_audit_batch_088
+    history_type: message_delivery_result
+    policy_id: retained_audit_message_delivery_088
+    history_would_compact_count: 1
+    history_retained_count: 1
+    history_ignored_count: 0
+    history_missing_count: 0
+    history_unsupported_count: 0
+    expected_count: 1
+  - type: retained_audit_compaction_batch_preview_result_contains
+    registry_hub: registry_home_088
+    batch_id: retained_audit_batch_088
+    history_type: authority_outcome
+    policy_id: retained_audit_authority_088
+    history_would_compact_count: 1
+    history_retained_count: 1
+    history_ignored_count: 0
+    history_missing_count: 0
+    history_unsupported_count: 0
+    expected_count: 1
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_088
+    batch_id: retained_audit_batch_088
+    history_types:
+      - message_delivery_result
+      - authority_outcome
+    compacted_count: 2
+    retained_count: 2
+    ignored_count: 0
+    missing_count: 0
+    unsupported_count: 0
+    expected_count: 1
+  - type: event_seen
+    event_type: retained_audit_compaction_batch_previewed
+  - type: event_seen
+    event_type: retained_audit_compaction_batch_applied
