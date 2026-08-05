@@ -12,10 +12,10 @@ checks, and all-scenario regression runs.
 
 ## Current Source-Release Snapshot
 
-The v1.14.0 source-release snapshot is prepared for validation and reports
-`darwin-sim 1.14.0`. Its actual America/Los_Angeles validation date and final
-pytest count remain pending the first complete passing release-gate set. Its
-bounded retained-audit strict-stale batch-apply contract is documented in:
+The v1.14.0 source-release snapshot was validated on 2026-08-05
+(America/Los_Angeles) with 1056 passing tests and reports
+`darwin-sim 1.14.0`. Its bounded retained-audit strict-stale batch-apply
+contract is documented in:
 
 - `docs/V1_14_ROADMAP.md`
 - `docs/RETAINED_AUDIT_STRICT_STALE_BATCH_APPLY_v1_14.md`

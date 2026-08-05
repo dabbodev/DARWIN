@@ -8,13 +8,12 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-DARWIN v1.14.0 is a source-release snapshot prepared for validation and
-reports `darwin-sim 1.14.0`. Its actual America/Los_Angeles validation date
-and final pytest count remain pending the first complete passing release-gate
-set. Its publication contract is an annotated `v1.14.0` tag and a GitHub
-source release created from the exact same validated commit, with no
-package-index publication and no uploaded release assets. This repository text
-deliberately does not claim those remote publication actions have occurred.
+DARWIN v1.14.0 is a source-release snapshot validated on 2026-08-05
+(America/Los_Angeles) with 1056 passing tests and reports `darwin-sim 1.14.0`.
+Its publication contract is an annotated `v1.14.0` tag and a GitHub source
+release created from the exact same validated commit, with no package-index
+publication and no uploaded release assets. This repository text deliberately
+does not claim those remote publication actions have occurred.
 
 The previous DARWIN v1.13.0 source release is on `main` as
 `darwin-sim 1.13.0`. Its historical release documents remain unchanged.
@@ -144,8 +143,10 @@ and canonical evaluation, strict mode rejects the whole batch before result
 construction or mutation if any compaction candidate is missing. Omitted or
 explicit false preserves v1.13 partial-apply behavior. Preview remains
 point-in-time and read-only. Scenarios `091` through `093` cover strict
-success, explicit-false compatibility, and isolation. Validation date and
-final pytest count remain pending the first complete passing gate set.
+success, explicit-false compatibility, and isolation. Final validation on
+2026-08-05 (America/Los_Angeles) passed Ruff, 1056 tests, all scenarios `001`
+through `093`, exact scenario-index verification, exact source CLI output,
+wheel build, isolated install, and out-of-tree wheel CLI verification.
 
 The v0.1 simulator answers questions like:
 
@@ -525,8 +526,8 @@ compatibility, scenario DSL visibility, and scenarios `091` through `093`.
 Release gates include Ruff, pytest, all scenarios `001` through `093`,
 exact generated-versus-checked-in scenario-index comparison, CLI output
 `darwin-sim 1.14.0`, and an isolated wheel build/install smoke check. The
-validation date and final pytest count are pending; the source release does
-not publish a package or upload assets.
+snapshot was validated on 2026-08-05 (America/Los_Angeles) with 1056 passing
+tests. The source release does not publish a package or upload assets.
 
 The v1.5 release docs cover read-only lifecycle explanation retention
 classification, read-only pruning plans, explicit retained-history pruning

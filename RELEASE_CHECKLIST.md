@@ -1168,9 +1168,8 @@ python -m build --wheel
 
 # DARWIN v1.14 Strict-Stale Batch Apply Release Checklist
 
-This checklist describes the v1.14.0 source-release snapshot prepared for
-validation. The actual America/Los_Angeles validation date and final pytest
-count remain pending the first complete passing release-gate set. Remote
+This checklist describes the v1.14.0 source-release snapshot prepared and
+validated on 2026-08-05 (America/Los_Angeles) with 1056 passing tests. Remote
 publication state is intentionally not inferred from repository contents. The
 publication procedure creates an annotated `v1.14.0` tag and GitHub source
 release from the exact validated commit; it performs no package-index
@@ -1220,12 +1219,12 @@ publication and uploads no release assets.
   exports, helpers, results/events, snapshots, histories, filters/replay
   dimensions, mixed apply, background work, real networking/cryptography, and
   production guarantees.
-- [ ] Run Ruff, pytest, scenarios `001` through `093`, exact scenario-index
+- [x] Run Ruff, pytest, scenarios `001` through `093`, exact scenario-index
   comparison, exact source CLI output, wheel build, isolated installation, and
   out-of-tree wheel CLI verification as one complete gate set.
-- [ ] Record the actual America/Los_Angeles validation date after that gate set.
-- [ ] Record the actual final pytest count after that gate set.
-- [ ] Rerun the complete gate set after factualization without adding or
+- [x] Record the actual America/Los_Angeles validation date: 2026-08-05.
+- [x] Record the actual final pytest count: 1056 passing tests.
+- [x] Rerun the complete gate set after factualization without adding or
   removing tests.
 
 ## v1.14 Source-Snapshot Validation Commands

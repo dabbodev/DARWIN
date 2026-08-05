@@ -1047,7 +1047,7 @@ def test_v1_13_python_and_ci_release_contract():
     assert "upload" not in wheel_job.lower()
 
 
-def test_v1_14_docs_describe_prepared_source_release_snapshot():
+def test_v1_14_docs_describe_validated_source_release_snapshot():
     release_notes = (
         PROJECT_ROOT / "docs" / "RELEASE_NOTES_v1_14_DRAFT.md"
     ).read_text(encoding="utf-8")
@@ -1070,23 +1070,15 @@ def test_v1_14_docs_describe_prepared_source_release_snapshot():
     )
     combined_docs_normalized = re.sub(r"\s+", " ", combined_docs)
 
-    assert "v1.14.0 source-release snapshot prepared for validation" in release_notes
+    assert "v1.14.0 source-release snapshot" in release_notes
     assert "darwin-sim 1.14.0" in combined_docs_normalized
     assert "without using repository" in release_notes
     assert "releases/tag/v1.14.0" not in combined_docs
     assert "No package-index publication is performed" in release_notes
     assert "No release assets are uploaded" in release_notes
-    assert (
-        "Release date: pending complete release-gate validation "
-        "(America/Los_Angeles)."
-    ) in combined_docs_normalized
-    assert (
-        "Final pytest count: pending complete release-gate validation."
-        in release_notes
-    )
-    assert "Final validation is pending the first complete passing gate set." in (
-        combined_docs
-    )
+    assert "Release date: 2026-08-05 (America/Los_Angeles)." in release_notes
+    assert "Final pytest count: 1056 passing tests." in release_notes
+    assert "Final validation passed Ruff, 1056 tests" in combined_docs
     assert "Scenarios `091` through `093`" in release_notes
     assert "from `001` through `093`" in combined_docs_normalized
 
@@ -1111,10 +1103,10 @@ def test_v1_14_docs_describe_prepared_source_release_snapshot():
     assert "Python 3.11 through 3.14" in roadmap
     assert "docs/RETAINED_AUDIT_STRICT_STALE_BATCH_APPLY_v1_14.md" in readme
     assert "docs/RETAINED_AUDIT_STRICT_STALE_BATCH_APPLY_v1_14.md" in development
-    assert "v1.14.0 source-release snapshot prepared for validation" in re.sub(
+    assert "v1.14.0 source-release snapshot prepared and validated" in re.sub(
         r"\s+", " ", checklist
     )
-    assert re.search(r"## \[1\.14\.0\] - Pending validation", changelog)
+    assert re.search(r"## \[1\.14\.0\] - 2026-08-05", changelog)
 
     for caveat in V1_14_RELEASE_SNAPSHOT_CAVEATS:
         assert caveat in combined_docs_normalized

@@ -1,9 +1,8 @@
 # Retained Audit Strict-Stale Batch Apply v1.14
 
-Status: included in the v1.14.0 source-release snapshot prepared for
-validation. The actual America/Los_Angeles validation date and final pytest
-count are pending the first complete passing release-gate set. The package and
-CLI report `darwin-sim 1.14.0`.
+Status: included in the v1.14.0 source-release snapshot validated on
+2026-08-05 (America/Los_Angeles) with 1056 passing tests. The package and CLI
+report `darwin-sim 1.14.0`.
 
 This specification adds one opt-in fail-closed stale-candidate guard to
 DARWIN's existing explicit retained-audit batch apply. The behavior remains

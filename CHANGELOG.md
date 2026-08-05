@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.14.0] - Pending validation
+## [1.14.0] - 2026-08-05
 
 The DARWIN v1.14.0 source-release snapshot adds an opt-in, fail-closed
 strict-stale guard to existing retained-audit batch apply. The package and CLI
@@ -41,8 +41,11 @@ Compatibility and limits:
   security, privacy, compliance, or retention guarantees.
 - Publication remains GitHub source-only with no package-index publication and
   no uploaded release assets.
-- The actual America/Los_Angeles validation date and final pytest count remain
-  pending the first complete passing release-gate set.
+- Final validation on 2026-08-05 (America/Los_Angeles) passed
+  `python -m ruff check .`, `python -m pytest` with 1056 tests, all scenarios
+  `001` through `093`, exact scenario-index verification, exact source CLI
+  output, wheel build, isolated install, and out-of-tree wheel CLI
+  verification.
 
 ## [1.13.0] - 2026-08-01
 
