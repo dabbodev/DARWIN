@@ -1165,3 +1165,75 @@ python -m darwin.cli.main scenario-index
 python -m darwin.cli.main --version
 python -m build --wheel
 ```
+
+# DARWIN v1.14 Strict-Stale Batch Apply Release Checklist
+
+This checklist describes the v1.14.0 source-release snapshot prepared and
+validated on 2026-08-05 (America/Los_Angeles) with 1056 passing tests. Remote
+publication state is intentionally not inferred from repository contents. The
+publication procedure creates an annotated `v1.14.0` tag and GitHub source
+release from the exact validated commit; it performs no package-index
+publication and uploads no release assets.
+
+- [x] v1.14 roadmap is checked in at `docs/V1_14_ROADMAP.md`.
+- [x] v1.14 release notes retain the compatible permanent path
+  `docs/RELEASE_NOTES_v1_14_DRAFT.md`.
+- [x] The strict-stale batch-apply specification is checked in at
+  `docs/RETAINED_AUDIT_STRICT_STALE_BATCH_APPLY_v1_14.md`.
+- [x] README and development guidance link to all v1.14 release documents.
+- [x] Package, CLI, smoke tests, and both CI assertions expect exact output
+  `darwin-sim 1.14.0`.
+- [x] Batch apply appends keyword-only
+  `strict_stale_abort: bool = False` without changing prior parameter order
+  or result types.
+- [x] Complete structural preflight and canonical eight-history evaluation
+  retain precedence before strict flag validation and stale rejection.
+- [x] Strict mode rejects missing compaction candidates before child-result
+  construction and the first write, using canonical history order and original
+  decision-key order.
+- [x] Strict rejection creates no result, action-result entry, detailed-
+  snapshot entry, or event and leaves the serialized RegistryHub unchanged.
+- [x] Empty-candidate strict decisions remain valid no-ops, while a decision
+  containing current and missing candidates rejects wholesale.
+- [x] Omitted and explicit false preserve v1.13 partial apply, missing-key
+  reporting, repeat no-op, child metadata, and result serialization behavior.
+- [x] Aggregate metadata reports the actual `strict_stale_abort` value and
+  generated metadata overrides caller spoofing; child metadata is unchanged.
+- [x] The scenario action parses `strict_stale_abort` strictly as a boolean,
+  and the existing batch-result assertion can filter the aggregate value.
+- [x] Preview stays point-in-time and read-only, creates no reservation, and
+  does not guarantee later strict application.
+- [x] Scenarios `091` through `093` cover strict success, explicit-false
+  compatibility, and isolation; checked-in metadata is contiguous from `001`
+  through `093`.
+- [x] Strict exception paths remain in Python tests; no expected-action-error
+  DSL mechanism is added.
+- [x] Python 3.11 through 3.14 CI and separate Python 3.11 wheel smoke remain in
+  place.
+- [x] CI fails when generated scenario-index stdout differs from
+  `docs/SCENARIO_INDEX.md`.
+- [x] The wheel is an isolated validation artifact; the workflow performs no
+  upload or package-index publication.
+- [x] Release documentation excludes strict single-history apply or preview,
+  automatic apply, preview reservations, rollback/transactions, new models,
+  exports, helpers, results/events, snapshots, histories, filters/replay
+  dimensions, mixed apply, background work, real networking/cryptography, and
+  production guarantees.
+- [x] Run Ruff, pytest, scenarios `001` through `093`, exact scenario-index
+  comparison, exact source CLI output, wheel build, isolated installation, and
+  out-of-tree wheel CLI verification as one complete gate set.
+- [x] Record the actual America/Los_Angeles validation date: 2026-08-05.
+- [x] Record the actual final pytest count: 1056 passing tests.
+- [x] Rerun the complete gate set after factualization without adding or
+  removing tests.
+
+## v1.14 Source-Snapshot Validation Commands
+
+```bash
+python -m ruff check .
+python -m pytest
+python scripts/run_all_scenarios.py
+python -m darwin.cli.main scenario-index
+python -m darwin.cli.main --version
+python -m build --wheel
+```

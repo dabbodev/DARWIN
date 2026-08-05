@@ -2522,6 +2522,7 @@ def _step_apply_retained_audit_compaction_batch(
         decisions,
         batch_id=str(fields["batch_id"]),
         metadata=_optional_dict(fields.get("metadata")),
+        strict_stale_abort=fields.get("strict_stale_abort", False),
     )
     world.action_results.append(result)
     world.log(

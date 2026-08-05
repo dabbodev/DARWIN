@@ -877,6 +877,16 @@ def _validate_assertion_type_fields(
             )
         return
     if assertion_type == "retained_audit_compaction_batch_apply_result_contains":
+        if "strict_stale_abort" in assertion and not isinstance(
+            assertion["strict_stale_abort"],
+            bool,
+        ):
+            errors.append(
+                _issue(
+                    f"{location}.strict_stale_abort",
+                    "strict_stale_abort must be a boolean",
+                )
+            )
         _validate_optional_enum_list_or_string(
             assertion,
             "history_types",
@@ -1177,6 +1187,16 @@ def _validate_step_type_fields(
             )
     if action == "apply_retained_audit_compaction_batch":
         _validate_retained_audit_batch_step(step, location, errors)
+        if "strict_stale_abort" in step and not isinstance(
+            step["strict_stale_abort"],
+            bool,
+        ):
+            errors.append(
+                _issue(
+                    f"{location}.strict_stale_abort",
+                    "strict_stale_abort must be a boolean",
+                )
+            )
     if action == "preview_retained_audit_compaction_batch":
         _validate_retained_audit_batch_step(step, location, errors)
         _validate_optional_mapping(step, "metadata", location, errors)

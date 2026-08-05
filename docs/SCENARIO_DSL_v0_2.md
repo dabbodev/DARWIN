@@ -1621,3 +1621,73 @@ history type, filter, or replay dimension; mixed apply; automatic cleanup;
 workers; retries; queues; live clocks; networking; DNS; external services;
 real cryptography; production E2EE; or production security, privacy,
 compliance, or retention guarantees.
+
+## v1.14 Retained-Audit Strict-Stale Batch Apply
+
+v1.14 extends the existing batch-apply action with one optional field:
+
+```yaml
+- action: apply_retained_audit_compaction_batch
+  registry_hub: registry_home_091
+  batch_id: retained_audit_batch_091
+  strict_stale_abort: true
+  decision_policy_ids:
+    authority_outcome: retained_audit_authority_091
+    message_delivery_result: retained_audit_message_delivery_091
+```
+
+`strict_stale_abort` is optional and defaults to `false`. When supplied, it
+must be a YAML boolean; integers, strings, null values, sequences, and mappings
+are rejected rather than coerced. All existing required action fields,
+decision resolution, metadata parsing, and canonical history ordering remain
+unchanged.
+
+The existing complete structural preflight and canonical evaluation run before
+strict flag validation. With strict mode enabled, any missing compaction-
+candidate key rejects the whole batch before child-result construction or the
+first write. Missing keys are grouped by canonical history order and retain
+original decision-key order within each history. Strict rejection creates no
+action result or event. Empty-candidate decisions remain valid no-ops.
+
+Omitting the option or supplying `false` preserves existing partial-apply
+behavior: one stale child can report missing keys while another selected
+history compacts current candidates. Existing child metadata is unchanged.
+Aggregate generated metadata records the actual `strict_stale_abort` value
+and overrides a caller-provided value with the same key.
+
+The existing assertion accepts an optional aggregate-metadata filter:
+
+```yaml
+- type: retained_audit_compaction_batch_apply_result_contains
+  registry_hub: registry_home_091
+  batch_id: retained_audit_batch_091
+  strict_stale_abort: true
+  compacted_count: 2
+  missing_count: 0
+  expected_count: 1
+```
+
+The filter must be a boolean and compares the generated aggregate metadata.
+All existing aggregate and per-history filters retain their behavior. The DSL
+does not add expected-action-error handling, so strict rejection paths remain
+covered by direct Python tests.
+
+Batch preview remains unchanged, read-only, and point-in-time. It does not
+accept a strict option, reserve state, or guarantee a later strict apply.
+
+Checked-in v1.14 retained-audit scenarios:
+
+- `scenarios/091_retained_audit_strict_stale_batch_success.yaml`
+- `scenarios/092_retained_audit_strict_stale_batch_default_compatibility.yaml`
+- `scenarios/093_retained_audit_strict_stale_batch_isolation.yaml`
+
+The checked-in scenario set is contiguous from `001` through `093`. The
+package and CLI report `darwin-sim 1.14.0`.
+
+This simulator-local, deterministic, source-only apply option adds no strict
+single-history apply or strict preview; automatic apply; preview reservation
+or parity guarantee; rollback or transactions; new models, exports, helpers,
+result or event types, snapshot keys, histories, compaction filters, or replay
+dimensions; mixed apply; automatic cleanup; workers; retries; queues; live
+clocks; networking; DNS; external services; real cryptography; production
+E2EE; or production security, privacy, compliance, or retention guarantees.

@@ -507,6 +507,7 @@ def apply_retained_audit_compaction_batch(
     *,
     batch_id: str,
     metadata: dict[str, object] | None = None,
+    strict_stale_abort: bool = False,
 ) -> RetainedAuditCompactionBatchApplyResult:
     """Preflight and apply distinct single-history decisions in canonical order."""
     evaluations, safe_metadata = _preflight_retained_audit_compaction_batch(
@@ -515,6 +516,20 @@ def apply_retained_audit_compaction_batch(
         batch_id=batch_id,
         metadata=metadata,
     )
+    if not isinstance(strict_stale_abort, bool):
+        raise TypeError("strict_stale_abort must be a boolean")
+
+    missing_by_history = {
+        evaluation.decision.history_type: list(evaluation.missing_record_keys)
+        for evaluation in evaluations
+        if evaluation.missing_record_keys
+    }
+    if strict_stale_abort and missing_by_history:
+        raise ValueError(
+            f"strict_stale_abort rejected batch {batch_id}: "
+            "missing compaction candidate record keys "
+            f"{missing_by_history}"
+        )
 
     apply_results: list[RetainedAuditCompactionApplyResult] = []
     batch_size = len(evaluations)
@@ -548,7 +563,7 @@ def apply_retained_audit_compaction_batch(
             "canonical_batch_order": True,
             "structural_preflight_passed": True,
             "stale_keys_reported": bool(missing_count),
-            "strict_stale_abort": False,
+            "strict_stale_abort": strict_stale_abort,
             "read_only": False,
             "registry_hub_mutated": bool(compacted_count),
             "retained_history_mutated": bool(compacted_count),
