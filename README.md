@@ -8,17 +8,16 @@ This repository is a **simulator-first prototype**, not a real network stack. Th
 
 ## Current Status
 
-DARWIN v1.13.0 is a source-release snapshot validated on 2026-08-01
-(America/Los_Angeles) with 1021 passing tests and reports `darwin-sim 1.13.0`.
-Its publication contract is an annotated `v1.13.0` tag and a GitHub release
-created from the exact same validated commit, with no package-index publication
-and no uploaded release assets. This repository text deliberately does not
-claim those remote publication actions have occurred.
+DARWIN v1.14.0 is a source-release snapshot prepared for validation and
+reports `darwin-sim 1.14.0`. Its actual America/Los_Angeles validation date
+and final pytest count remain pending the first complete passing release-gate
+set. Its publication contract is an annotated `v1.14.0` tag and a GitHub
+source release created from the exact same validated commit, with no
+package-index publication and no uploaded release assets. This repository text
+deliberately does not claim those remote publication actions have occurred.
 
-The previous DARWIN v1.12.0 release is on `main` as `darwin-sim 1.12.0`. The
-annotated `v1.12.0` tag and GitHub release exist:
-https://github.com/dabbodev/DARWIN/releases/tag/v1.12.0. No package
-publication was performed, and no release assets were uploaded.
+The previous DARWIN v1.13.0 source release is on `main` as
+`darwin-sim 1.13.0`. Its historical release documents remain unchanged.
 
 v1.4 adds lifecycle policy explanation and stream-offer audit summaries while
 keeping mailbox delivery, encrypted delivery, canonical identity, TrafficHub
@@ -138,6 +137,15 @@ repeatability, and isolation. Final validation on 2026-08-01
 (America/Los_Angeles) passed Ruff, 1021 tests, all scenarios `001` through
 `090`, exact scenario-index verification, exact source CLI output, wheel build,
 isolated install, and out-of-tree wheel CLI verification.
+
+The v1.14 source snapshot adds an opt-in strict-stale guard to existing
+retained-audit batch apply. After the unchanged complete structural preflight
+and canonical evaluation, strict mode rejects the whole batch before result
+construction or mutation if any compaction candidate is missing. Omitted or
+explicit false preserves v1.13 partial-apply behavior. Preview remains
+point-in-time and read-only. Scenarios `091` through `093` cover strict
+success, explicit-false compatibility, and isolation. Validation date and
+final pytest count remain pending the first complete passing gate set.
 
 The v0.1 simulator answers questions like:
 
@@ -377,6 +385,11 @@ audit batch preview success and immediate apply parity, stale repeatability,
 and state isolation. The checked-in scenario set spans `001` through `090`,
 and the package and CLI version report `darwin-sim 1.13.0`.
 
+In the v1.14 source snapshot, scenarios `091` through `093` cover strict-
+stale batch success, explicit-false legacy compatibility, and state isolation.
+The checked-in scenario set spans `001` through `093`, and the package and
+CLI version report `darwin-sim 1.14.0`.
+
 v0.9 mailbox delivery is a toy, in-memory, RegistryHub-local simulator path.
 It does not add production chat behavior, production encryption or E2EE, real
 networking, sockets, HTTP/WebSocket clients or servers, DNS lookup, registrar
@@ -505,6 +518,15 @@ scenario-index comparison, CLI output `darwin-sim 1.13.0`, and an isolated
 wheel build/install smoke check. Final validation on 2026-08-01
 (America/Los_Angeles) passed 1021 tests. The source release does not publish a
 package or upload assets.
+
+The v1.14 source-release docs cover opt-in strict-stale batch apply,
+whole-batch stale atomicity after canonical preflight, exact default
+compatibility, scenario DSL visibility, and scenarios `091` through `093`.
+Release gates include Ruff, pytest, all scenarios `001` through `093`,
+exact generated-versus-checked-in scenario-index comparison, CLI output
+`darwin-sim 1.14.0`, and an isolated wheel build/install smoke check. The
+validation date and final pytest count are pending; the source release does
+not publish a package or upload assets.
 
 The v1.5 release docs cover read-only lifecycle explanation retention
 classification, read-only pruning plans, explicit retained-history pruning
@@ -1336,6 +1358,12 @@ For v1.13 retained-audit batch-preview release docs, see:
 - `docs/V1_13_ROADMAP.md`
 - `docs/RETAINED_AUDIT_BATCH_PREVIEW_v1_13.md`
 - `docs/RELEASE_NOTES_v1_13_DRAFT.md`
+
+For v1.14 retained-audit strict-stale batch-apply release docs, see:
+
+- `docs/V1_14_ROADMAP.md`
+- `docs/RETAINED_AUDIT_STRICT_STALE_BATCH_APPLY_v1_14.md`
+- `docs/RELEASE_NOTES_v1_14_DRAFT.md`
 
 ## What v0.1 Is Not
 

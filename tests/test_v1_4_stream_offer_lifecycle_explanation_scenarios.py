@@ -186,14 +186,14 @@ def test_v1_4_checked_in_lifecycle_explanation_scenarios_validate_and_run():
     assert not failures
 
 
-def test_v1_4_scenario_sweep_remains_contiguous_001_through_090():
+def test_v1_4_scenario_sweep_remains_contiguous_001_through_093():
     scenario_numbers = sorted(
         int(path.name[:3])
         for path in list_scenario_files(SCENARIOS_DIR)
         if path.name[:3].isdigit()
     )
 
-    assert scenario_numbers == list(range(1, 91))
+    assert scenario_numbers == list(range(1, 94))
 
 
 def _minimal_invalid_v1_4_validation_scenario() -> dict[str, object]:

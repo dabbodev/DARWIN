@@ -2265,6 +2265,10 @@ def _retained_audit_compaction_batch_apply_result_contains(
     filters: dict[str, object] = {
         "hub_id": hub_id,
         "batch_id": _optional_filter_str(assertion, "batch_id"),
+        "strict_stale_abort": _optional_bool_filter(
+            assertion,
+            "strict_stale_abort",
+        ),
         "history_types": _optional_str_sequence_filter(assertion, "history_types"),
         "history_type": _optional_filter_str(assertion, "history_type"),
         "policy_id": _optional_filter_str(assertion, "policy_id"),
@@ -3339,6 +3343,13 @@ def _matches_retained_audit_compaction_batch_apply_result_filters(
         value = filters[field_name]
         if value is not None and record.get(field_name) != value:
             return False
+    strict_stale_abort = filters["strict_stale_abort"]
+    metadata = record.get("metadata")
+    if strict_stale_abort is not None and (
+        not isinstance(metadata, dict)
+        or metadata.get("strict_stale_abort") is not strict_stale_abort
+    ):
+        return False
     history_types = filters["history_types"]
     if history_types is not None and record.get("history_types") != list(history_types):
         return False

@@ -1,5 +1,49 @@
 # Changelog
 
+## [1.14.0] - Pending validation
+
+The DARWIN v1.14.0 source-release snapshot adds an opt-in, fail-closed
+strict-stale guard to existing retained-audit batch apply. The package and CLI
+identify the snapshot as `darwin-sim 1.14.0`.
+
+Added:
+
+- Keyword-only `strict_stale_abort: bool = False` on
+  `apply_retained_audit_compaction_batch`.
+- Whole-batch stale rejection after existing complete structural preflight and
+  canonical evaluation but before child-result construction or mutation.
+- Deterministic missing-candidate diagnostics in canonical history order and
+  original decision-key order.
+- Strictly boolean scenario-action input and an aggregate-metadata assertion
+  filter.
+- Scenarios `091` through `093` for strict success, explicit-false legacy
+  compatibility, and state isolation.
+
+Compatibility and limits:
+
+- Omitted or explicit false preserves v1.13 partial application, missing-key
+  reporting, repeat no-ops, child metadata, and result serialization.
+- Strict rejection creates no result, action-result entry, snapshot entry, or
+  event and leaves the complete serialized RegistryHub unchanged.
+- Empty-candidate decisions remain valid strict no-ops; a decision mixing
+  current and missing candidates rejects wholesale.
+- Generated aggregate metadata records the actual strict flag and overrides
+  caller spoofing. Child metadata remains unchanged.
+- Batch preview remains point-in-time and read-only; it creates no reservation
+  and does not guarantee later strict application.
+- The source scenario set is contiguous from `001` through `093`.
+- v1.14 remains simulator-local, deterministic, source-only, and symbolic. It
+  adds no strict single-history apply or strict preview; automatic apply;
+  rollback/transactions; new models, exports, helpers, result/event types,
+  snapshot keys, histories, filters, or replay dimensions; mixed apply;
+  automatic cleanup, workers, retries, queues, or live clocks; networking,
+  DNS, external services, real cryptography, production E2EE, or production
+  security, privacy, compliance, or retention guarantees.
+- Publication remains GitHub source-only with no package-index publication and
+  no uploaded release assets.
+- The actual America/Los_Angeles validation date and final pytest count remain
+  pending the first complete passing release-gate set.
+
 ## [1.13.0] - 2026-08-01
 
 The DARWIN v1.13.0 source-release snapshot adds deterministic, read-only

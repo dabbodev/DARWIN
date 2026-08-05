@@ -1,0 +1,167 @@
+scenario_id: 092_retained_audit_strict_stale_batch_default_compatibility
+name: Retained audit strict-stale batch default compatibility
+category: registry
+description: explicit false preserves the legacy partial-apply contract when one child compaction candidate is stale
+tags:
+  - retained_audit
+  - batch_apply
+  - strict_stale
+  - compatibility
+  - v1.14
+demonstrates:
+  - explicit false retains v1.13 stale-candidate behavior
+  - a stale child is reported missing while a fresh child still compacts
+  - aggregate metadata records strict stale protection as disabled
+expected_result: the fresh authority candidate compacts and the stale message candidate is reported missing without aborting the batch
+setup:
+  registry_hubs:
+    - hub_id: registry_home_092
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_092
+    - hub_id: registry_family_092
+      scope_path: global.family.david
+      parent_hub_id: registry_global_092
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+    - hub_id: registry_global_092
+      scope_path: global
+  devices:
+    - device_id: dev_ALPHA_092
+      label: alpha
+    - device_id: dev_BETA_092
+      label: beta
+steps:
+  - action: register_device
+    registry_hub: registry_home_092
+    device: dev_ALPHA_092
+    label: alpha
+  - action: register_device
+    registry_hub: registry_family_092
+    device: dev_ALPHA_092
+    label: alpha
+  - action: register_device
+    registry_hub: registry_global_092
+    device: dev_ALPHA_092
+    label: alpha
+  - action: register_device
+    registry_hub: registry_home_092
+    device: dev_BETA_092
+    label: beta
+  - action: register_device
+    registry_hub: registry_family_092
+    device: dev_BETA_092
+    label: beta
+  - action: register_device
+    registry_hub: registry_global_092
+    device: dev_BETA_092
+    label: beta
+  - action: register_lane_definition
+    registry_hub: registry_home_092
+    lane_signature: basic_messaging:v1
+  - action: deliver_message
+    registry_hub: registry_home_092
+    message_id: message_compact_092
+    sender_id: dev_ALPHA_092
+    recipient_address: darwin://global.family.david.home.missing/inbox
+    payload: compact before batch
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_092
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_ALPHA_092
+    requested_by_device: dev_ALPHA_092
+    fallback_allowed: true
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_092
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_BETA_092
+    requested_by_device: dev_BETA_092
+    fallback_allowed: true
+    visibility: scope_local
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_092
+    policy_id: retained_audit_message_delivery_092
+    history_types:
+      - message_delivery_result
+    record_history_types:
+      - message_delivery_result
+    compact_statuses:
+      - bounced
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_092
+    policy_id: retained_audit_authority_092
+    history_types:
+      - authority_outcome
+    record_history_types:
+      - authority_outcome
+    compact_statuses:
+      - name_taken
+  - action: apply_retained_audit_compaction_decision
+    registry_hub: registry_home_092
+    decision_policy_id: retained_audit_message_delivery_092
+  - action: apply_retained_audit_compaction_batch
+    registry_hub: registry_home_092
+    batch_id: retained_audit_batch_092
+    decision_policy_ids:
+      message_delivery_result: retained_audit_message_delivery_092
+      authority_outcome: retained_audit_authority_092
+    strict_stale_abort: false
+assertions:
+  - type: retained_audit_compaction_apply_result_contains
+    registry_hub: registry_home_092
+    policy_id: retained_audit_message_delivery_092
+    history_type: message_delivery_result
+    compacted_count: 1
+    missing_count: 0
+    expected_count: 1
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_092
+    batch_id: retained_audit_batch_092
+    strict_stale_abort: false
+    history_types:
+      - message_delivery_result
+      - authority_outcome
+    compacted_count: 1
+    retained_count: 1
+    missing_count: 1
+    unsupported_count: 0
+    expected_count: 1
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_092
+    batch_id: retained_audit_batch_092
+    strict_stale_abort: true
+    expected_count: 0
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_092
+    batch_id: retained_audit_batch_092
+    history_type: message_delivery_result
+    policy_id: retained_audit_message_delivery_092
+    history_compacted_count: 0
+    history_missing_count: 1
+    expected_count: 1
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_092
+    batch_id: retained_audit_batch_092
+    history_type: authority_outcome
+    policy_id: retained_audit_authority_092
+    history_compacted_count: 1
+    history_missing_count: 0
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_home_092
+    message_id: message_compact_092
+    expected_count: 0
+  - type: authority_outcome_history_contains
+    registry_hub: registry_home_092
+    requested_alias: global.alpha
+    device_id: dev_BETA_092
+    final_status: name_taken
+    expected_count: 0
+  - type: alias_resolves_to
+    registry_hub: registry_family_092
+    alias: global.family.david.alpha
+    device: dev_ALPHA_092
+    identity_chain: global.family.david.alpha

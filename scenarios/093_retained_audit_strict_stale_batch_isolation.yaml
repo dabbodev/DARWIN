@@ -1,0 +1,253 @@
+scenario_id: 093_retained_audit_strict_stale_batch_isolation
+name: Retained audit strict-stale batch isolation
+category: registry
+description: a successful strict batch changes only selected retained histories while preserving identity delivery encryption security traffic and snapshot boundaries
+tags:
+  - retained_audit
+  - batch_apply
+  - strict_stale
+  - isolation
+  - source_only
+  - v1.14
+demonstrates:
+  - fresh message delivery and authority outcome candidates compact atomically
+  - encryption mailbox delivery identity conflict and security records remain available
+  - TrafficHub lane state and compact snapshot boundaries remain unchanged
+expected_result: selected retained histories compact under strict protection while all unrelated registry and traffic state remains available
+setup:
+  registry_hubs:
+    - hub_id: registry_home_093
+      scope_path: global.family.david.home
+      parent_hub_id: registry_family_093
+    - hub_id: registry_family_093
+      scope_path: global.family.david
+      parent_hub_id: registry_global_093
+      alias_authority_policy:
+        allow_pass_up: false
+        allow_fallback: true
+    - hub_id: registry_global_093
+      scope_path: global
+  traffic_hubs:
+    - hub_id: traffic_home_093
+    - hub_id: traffic_remote_093
+  links:
+    - from: traffic_home_093
+      to: traffic_remote_093
+  devices:
+    - device_id: dev_ALPHA_093
+      label: alpha
+      traffic_hub: traffic_home_093
+    - device_id: dev_BETA_093
+      label: beta
+      traffic_hub: traffic_remote_093
+    - device_id: dev_NEO_093
+      label: neo
+steps:
+  - action: register_device
+    registry_hub: registry_home_093
+    device: dev_ALPHA_093
+    label: alpha
+  - action: register_device
+    registry_hub: registry_family_093
+    device: dev_ALPHA_093
+    label: alpha
+  - action: register_device
+    registry_hub: registry_global_093
+    device: dev_ALPHA_093
+    label: alpha
+  - action: register_device
+    registry_hub: registry_home_093
+    device: dev_BETA_093
+    label: beta
+  - action: register_device
+    registry_hub: registry_family_093
+    device: dev_BETA_093
+    label: beta
+  - action: register_device
+    registry_hub: registry_global_093
+    device: dev_BETA_093
+    label: beta
+  - action: register_device
+    registry_hub: registry_home_093
+    device: dev_NEO_093
+    label: neo
+  - action: open_lane
+    source: dev_ALPHA_093
+    target: dev_BETA_093
+    traffic_hub: traffic_home_093
+    lane_id: lane_preserved_093
+  - action: send_lane_data
+    traffic_hub: traffic_home_093
+    lane: lane_preserved_093
+    payload:
+      message: preserved traffic
+  - action: register_lane_definition
+    registry_hub: registry_home_093
+    lane_signature: basic_messaging:v1
+  - action: register_mailbox
+    registry_hub: registry_home_093
+    mailbox_id: mailbox_neo_093
+    canonical_device_id: dev_NEO_093
+    local_name: neo
+    scope: global.family.david.home
+  - action: bind_mailbox_capability
+    registry_hub: registry_home_093
+    mailbox_id: mailbox_neo_093
+    lane_signature: basic_messaging:v1
+  - action: register_adapter_endpoint
+    registry_hub: registry_home_093
+    endpoint_id: endpoint_mailbox_neo_093
+    subject_id: mailbox_neo_093
+    subject_kind: mailbox
+    adapter_kind: in_memory
+    status: available
+    lane_signatures:
+      - basic_messaging:v1
+    scope: global.family.david.home
+  - action: register_encryption_identity
+    registry_hub: registry_home_093
+    encryption_identity_id: enc_mailbox_neo_093
+    subject_id: mailbox_neo_093
+    subject_kind: mailbox
+  - action: register_key_bundle_reference
+    registry_hub: registry_home_093
+    key_bundle_id: kb_mailbox_neo_093
+    encryption_identity_id: enc_mailbox_neo_093
+    public_ref: symbolic://public/mailbox_neo_093/001
+  - action: register_mailbox_encryption_binding
+    registry_hub: registry_home_093
+    mailbox_id: mailbox_neo_093
+    encryption_identity_id: enc_mailbox_neo_093
+    key_bundle_id: kb_mailbox_neo_093
+    required_for_lanes:
+      - basic_messaging:v1
+  - action: register_mailbox_encryption_policy
+    registry_hub: registry_home_093
+    policy_id: policy_mailbox_neo_093
+    mailbox_id: mailbox_neo_093
+  - action: evaluate_encrypted_delivery_request
+    registry_hub: registry_home_093
+    request_id: request_encrypted_093
+    message_id: message_keep_093
+    sender_id: dev_ALPHA_093
+    recipient_address: darwin://global.family.david.home.neo/inbox
+    mailbox_id: mailbox_neo_093
+    policy_id: policy_mailbox_neo_093
+    envelope_id: envelope_encrypted_093
+    encryption_identity_id: enc_mailbox_neo_093
+    key_bundle_id: kb_mailbox_neo_093
+    profile: symbolic_e2ee_v1
+    state: symbolically_encrypted
+    status: ready
+    attempt_delivery: true
+    payload: preserved encrypted delivery
+  - action: deliver_message
+    registry_hub: registry_home_093
+    message_id: message_compact_093
+    sender_id: dev_ALPHA_093
+    recipient_address: darwin://global.family.david.home.missing/inbox
+    payload: compacted result only
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_093
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_ALPHA_093
+    requested_by_device: dev_ALPHA_093
+    fallback_allowed: true
+    visibility: scope_local
+  - action: claim_alias_through_authority_chain
+    registry_hub: registry_home_093
+    requested_alias: global.alpha
+    local_name: alpha
+    target_device: dev_BETA_093
+    requested_by_device: dev_BETA_093
+    fallback_allowed: true
+    visibility: scope_local
+  - action: verify_rolling_proof
+    registry_hub: registry_home_093
+    device: dev_BETA_093
+    proof_valid: false
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_093
+    policy_id: retained_audit_message_delivery_093
+    history_types:
+      - message_delivery_result
+    record_history_types:
+      - message_delivery_result
+    compact_statuses:
+      - bounced
+  - action: classify_retained_audit_records_for_compaction
+    registry_hub: registry_home_093
+    policy_id: retained_audit_authority_093
+    history_types:
+      - authority_outcome
+    record_history_types:
+      - authority_outcome
+    compact_statuses:
+      - name_taken
+  - action: apply_retained_audit_compaction_batch
+    registry_hub: registry_home_093
+    batch_id: retained_audit_batch_093
+    decision_policy_ids:
+      authority_outcome: retained_audit_authority_093
+      message_delivery_result: retained_audit_message_delivery_093
+    strict_stale_abort: true
+assertions:
+  - type: retained_audit_compaction_batch_apply_result_contains
+    registry_hub: registry_home_093
+    batch_id: retained_audit_batch_093
+    strict_stale_abort: true
+    history_types:
+      - message_delivery_result
+      - authority_outcome
+    compacted_count: 2
+    retained_count: 2
+    ignored_count: 0
+    missing_count: 0
+    unsupported_count: 0
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_home_093
+    message_id: message_keep_093
+    mailbox_id: mailbox_neo_093
+    status: delivered
+    expected_count: 1
+  - type: message_delivery_result_contains
+    registry_hub: registry_home_093
+    message_id: message_compact_093
+    expected_count: 0
+  - type: mailbox_inbox_contains
+    registry_hub: registry_home_093
+    mailbox_id: mailbox_neo_093
+    message_id: message_keep_093
+    payload: preserved encrypted delivery
+    expected_count: 1
+  - type: encrypted_delivery_result_contains
+    registry_hub: registry_home_093
+    request_id: request_encrypted_093
+    message_id: message_keep_093
+    status: delivered
+    expected_count: 1
+  - type: encryption_policy_decision_contains
+    registry_hub: registry_home_093
+    policy_id: policy_mailbox_neo_093
+    message_id: message_keep_093
+    status: accepted
+    expected_count: 1
+  - type: alias_resolves_to
+    registry_hub: registry_family_093
+    alias: global.family.david.alpha
+    device: dev_ALPHA_093
+    identity_chain: global.family.david.alpha
+  - type: quarantine_exists
+    registry_hub: registry_home_093
+    device: dev_BETA_093
+  - type: lane_state
+    traffic_hub: traffic_home_093
+    lane: lane_preserved_093
+    expected: active
+  - type: lane_sequence
+    traffic_hub: traffic_home_093
+    lane: lane_preserved_093
+    last_sent: 1
+    last_acknowledged: 1
